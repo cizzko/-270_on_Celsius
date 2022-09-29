@@ -56,12 +56,11 @@ public class TextureLoader {
         buffer.flip(); //FOR THE LOVE OF GOD DO NOT FORGET THIS
         //генерация айдишника текстуры
         int textureID = glGenTextures();
-        //три строчки ниже настройка камеры, пояснение каждой буквы скину по надобности в дс
+        //три строчки ниже настройка камеры
         glMatrixMode(GL_PROJECTION);
-        glOrtho(ScreenWidth/2, ScreenWidth/2, ScreenHeight/2, ScreenHeight/2, -1, 1);
+        glOrtho(0, ScreenHeight, ScreenWidth, 0, -1.0, 1.0);
         glMatrixMode(GL_MODELVIEW);
         //параметры, бинд текстур, и прочее
-        glBindTexture(GL_TEXTURE_2D, textureID);
         glBindTexture(GL_TEXTURE_2D, textureID);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -73,11 +72,11 @@ public class TextureLoader {
         glBindTexture(GL_TEXTURE_2D, textureID);
         glEnable(GL_TEXTURE_2D);
         glBegin(GL_QUADS);
-        //настройки отрисовки и позиций, за разбором тоже в дс
+        //настройки отрисовки и позиций
         glTexCoord2i(0, 0); glVertex2i(0, 0);
-        glTexCoord2i(0, 1); glVertex2i(0, ScreenWidth);
-        glTexCoord2i(1, 1); glVertex2i(ScreenHeight, ScreenWidth);
-        glTexCoord2i(1, 0); glVertex2i(ScreenHeight, 0);
+        glTexCoord2i(0, 1); glVertex2i(0, image.getWidth());
+        glTexCoord2i(1, 1); glVertex2i(image.getHeight(), image.getWidth());
+        glTexCoord2i(1, 0); glVertex2i(image.getHeight(), 0);
 
         glEnd();
         glDisable(GL_TEXTURE_2D);

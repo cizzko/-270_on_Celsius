@@ -67,7 +67,7 @@ public class Window {
         //подключает инструменты библиотеки
         GL.createCapabilities();
 
-        TextureLoader.loadTexture("D:\\22\\-270° on Celsius\\src\\assets\\img.png");
+        TextureLoader.loadTexture("D:\\-270 on Celsius\\src\\assets\\img.png");
     }
     public void loop() {
         //в gl двойная буфферизация, меняет буффер и чистит его
