@@ -1,8 +1,11 @@
-package Textures;
+package World.Textures;
+
+import World.WorldObjects;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
+
 import static org.lwjgl.opengl.GL11.*;
 
 public class TextureDrawing {
@@ -15,10 +18,7 @@ public class TextureDrawing {
 
         //генерация айдишника текстуры
         int textureID = glGenTextures();
-        //три строчки ниже настройка камеры
-        glMatrixMode(GL_PROJECTION);
         glOrtho(0, ScreenHeight, ScreenWidth, 0, -1.0, 1.0);
-        glMatrixMode(GL_MODELVIEW);
         //параметры, бинд текстур, и прочее
         glBindTexture(GL_TEXTURE_2D, textureID);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

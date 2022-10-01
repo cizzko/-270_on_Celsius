@@ -1,4 +1,4 @@
-import Textures.TextureLoader;
+import World.Textures.TextureLoader;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import java.awt.*;
@@ -25,7 +25,6 @@ public class Window {
     }
 
     public static Window get() {
-
         //если объект окна null, то оно создается
         if (Window.window == null) {
             Window.window = new Window();
@@ -38,6 +37,7 @@ public class Window {
     }
 
     public void init(){
+
         //инициализирует библиотеку
         glfwInit();
         System.out.println("'glfw' has been initialized");
@@ -70,6 +70,9 @@ public class Window {
         //пока окно не закрыто будет каждый такт опрашивать glfw
         while (!glfwWindowShouldClose(glfwWindow)) {
             glfwPollEvents();
+            if (glfwGetKey(glfwWindow, 32) == 1) {
+
+            }
         }
     }
 }
