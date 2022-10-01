@@ -6,7 +6,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.ByteBuffer;
 
-
 public class TextureLoader {
     public static void loadTexture(String path){
 

@@ -1,13 +1,7 @@
-
 import Textures.TextureLoader;
-import org.lwjgl.Version;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.openvr.Texture;
-
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 
 import static java.sql.Types.NULL;
