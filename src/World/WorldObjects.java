@@ -1,4 +1,4 @@
-package Textures;
+package World;
 
 public class WorldObjects {
     boolean gas, liquid, solid, plasma, sleeping, onCamera, destroyed = false;
