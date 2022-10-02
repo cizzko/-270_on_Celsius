@@ -6,7 +6,7 @@ public class WorldObjects {
     int y;
     int x;
 
-    WorldObjects(boolean gas, boolean onCamera, boolean destroyed, boolean liquid, boolean solid, boolean plasma, boolean sleeping, String options, int x, int y) {
+    public WorldObjects(boolean gas, boolean onCamera, boolean destroyed, boolean liquid, boolean solid, boolean plasma, boolean sleeping, String options, int x, int y) {
         this.gas = gas;
         this.onCamera = onCamera;
         this.destroyed = destroyed;
@@ -17,6 +17,7 @@ public class WorldObjects {
         this.options = options;
         this.x = x;
         this.y = y;
+
     }
 }
 

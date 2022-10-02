@@ -1,15 +1,18 @@
 package World.Textures;
 
+import World.WorldGenerator;
 import World.WorldObjects;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 
 import static org.lwjgl.opengl.GL11.*;
 
 public class TextureDrawing {
     public static void draw(BufferedImage image, ByteBuffer buffer) {
+
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         int ScreenWidth;
         int ScreenHeight;
