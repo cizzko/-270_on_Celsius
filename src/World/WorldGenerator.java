@@ -6,7 +6,7 @@ public class WorldGenerator {
     public static void Generate(int SizeY, int SizeX, int Time, Boolean ModePvP, Boolean ModeSurvival, int Players){
         WorldObjects[][] test = new WorldObjects[SizeX + 20][SizeY + 20];
 
-        //Внимаение, насрано!
+        //Внимание, насрано!
         //переделать
 
         int x = 0;
