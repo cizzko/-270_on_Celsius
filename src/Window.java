@@ -16,7 +16,6 @@ public class Window {
     private static Window window = null;
 
     private Window() {
-
         //чекает размеры твоего экрана
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.width = dim.width;
@@ -61,7 +60,7 @@ public class Window {
         //подключает инструменты библиотеки
         GL.createCapabilities();
 
-        TextureLoader.loadTexture("D:\\-270 on Celsius\\src\\assets\\player.png");
+        TextureLoader.loadTexture("D:\\-270 on Celsius\\src\\assets\\TestImageForDrawing.png");
     }
     public void loop() {
         //в gl двойная буфферизация, меняет буффер и чистит его

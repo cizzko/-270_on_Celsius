@@ -1,18 +1,13 @@
 package World.Textures;
 
-import World.WorldGenerator;
-import World.WorldObjects;
-
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.glTexCoord2i;
 
 public class TextureDrawing {
     public static void draw(BufferedImage image, ByteBuffer buffer) {
-
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         int ScreenWidth;
         int ScreenHeight;
@@ -34,19 +29,27 @@ public class TextureDrawing {
         glBindTexture(GL_TEXTURE_2D, textureID);
         glEnable(GL_TEXTURE_2D);
         glBegin(GL_QUADS);
+
         //настройки отрисовки и позиций
+        //верхний левый угол
         glTexCoord2i(0, 0);
         glVertex2i(0, 0);
+        //нижний левый угол
         glTexCoord2i(0, 1);
         glVertex2i(0, image.getWidth());
+        //нижний правый угол
         glTexCoord2i(1, 1);
         glVertex2i(image.getHeight(), image.getWidth());
+        //верхний правый угол
         glTexCoord2i(1, 0);
         glVertex2i(image.getHeight(), 0);
+
+        //glVertex2i Задает вершины
+        //glTexCoord2i Задает текущие координаты текстуры
 
         glEnd();
         glDisable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, 0);
-
+        buffer.clear();
     }
 }

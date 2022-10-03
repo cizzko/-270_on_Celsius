@@ -6,9 +6,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.ByteBuffer;
 
+import static org.lwjgl.opengl.GL11.glOrtho;
+
 public class TextureLoader {
     public static void loadTexture(String path){
-
         System.out.println("'textureLoader' method has been initialized");
         BufferedImage image = null;
         //если картинка не создана - пытается создать
