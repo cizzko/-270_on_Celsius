@@ -1,10 +1,8 @@
 package World;
 
-import java.util.HashMap;
-
 public class WorldGenerator {
-    public static void Generate(int SizeY, int SizeX, int Time, Boolean ModePvP, Boolean ModeSurvival, int Players){
-        WorldObjects[][] test = new WorldObjects[SizeX + 20][SizeY + 20];
+    public static WorldObjects[][] Generate(int SizeY, int SizeX, int Time, Boolean ModePvP, Boolean ModeSurvival, int Players){
+        WorldObjects[][] objects = new WorldObjects[SizeX + 20][SizeY + 20];
 
         //Внимание, насрано!
         //переделать
@@ -23,9 +21,10 @@ public class WorldGenerator {
                     x++;
             }
                 WorldObjects grass = new WorldObjects(false, false, false, false, false, false, false, null, GrassX, GrassY);
-                test[x][y] = grass;
+                objects[x][y] = grass;
                 GrassY += 4;
 
         }
+        return objects;
     }
 }

@@ -1,3 +1,4 @@
+import World.Textures.TextureDrawing;
 import World.Textures.TextureLoader;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -60,7 +61,7 @@ public class Window {
         //подключает инструменты библиотеки
         GL.createCapabilities();
 
-        TextureLoader.loadTexture("D:\\-270 on Celsius\\src\\assets\\TestImageForDrawing.png");
+        TextureDrawing.drawOnPath("D:\\-270 on Celsius\\src\\assets\\TestImageForDrawing.png", 0, 0);
     }
     public void loop() {
         //в gl двойная буфферизация, меняет буффер и чистит его

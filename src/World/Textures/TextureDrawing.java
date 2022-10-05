@@ -7,7 +7,10 @@ import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.glTexCoord2i;
 
 public class TextureDrawing {
-    public static void draw(BufferedImage image, ByteBuffer buffer) {
+    public static void drawOnPath(String path, int x, int y) {
+        ByteBuffer buffer = TextureLoader.ByteBufferEncoder(path);
+        BufferedImage image = TextureLoader.BufferedImageEncoder(path);
+
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         int ScreenWidth;
         int ScreenHeight;
@@ -31,6 +34,7 @@ public class TextureDrawing {
         glBegin(GL_QUADS);
 
         //настройки отрисовки и позиций
+        //положительный y - вниз, положительный x - вправо
         //верхний левый угол
         glTexCoord2i(0, 0);
         glVertex2i(0, 0);
@@ -51,5 +55,11 @@ public class TextureDrawing {
         glDisable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, 0);
         buffer.clear();
+    }
+    public static void drawOnByteBuff(ByteBuffer buffer, int x, int y){
+
+    }
+    public static void drawOnHitBox(String path, int x, int y){
+
     }
 }
