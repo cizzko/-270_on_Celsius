@@ -2,13 +2,11 @@ import World.WorldGenerator;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import java.awt.*;
-import java.nio.ByteBuffer;
 import static java.sql.Types.NULL;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;
 
 public class Window {
-    public ByteBuffer buffer;
     private int width, height;
     private String title;
     private long glfwWindow;
@@ -23,7 +21,7 @@ public class Window {
     }
 
     public static Window get() {
-        //если объект окна null, то оно создается
+        //если объект окна null (не существует), то оно создается
         if (Window.window == null) {
             Window.window = new Window();
         }
@@ -68,6 +66,7 @@ public class Window {
         //пока окно не закрыто будет каждый такт опрашивать glfw
         while (!glfwWindowShouldClose(glfwWindow)) {
             glfwPollEvents();
+            //считывание нажатой клавиши, лежит до востребования, обязательно должно быть в цикле
             //if (glfwGetKey(glfwWindow, 32) == 1) {}
 
         }

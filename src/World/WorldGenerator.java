@@ -28,9 +28,7 @@ public class WorldGenerator {
                 WorldObjects grass = new WorldObjects(false, false, false, false, false, false, false, null, "D:\\22\\-270_on_Celsius\\src\\assets\\grass1.png", GrassX, GrassY);
                 GrassY += 4;
                 objects[x][y] = grass;
-
-
-                //ОГРОМНОЕ ИЗМЕНЕНИЕ КОДА
+                //тут был сложный код отрисовки, но работал он отвратительно, мб можно даже в истории найти
         }
     }
 }

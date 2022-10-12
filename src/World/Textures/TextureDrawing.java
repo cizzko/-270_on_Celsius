@@ -8,6 +8,7 @@ import static org.lwjgl.opengl.GL11.glTexCoord2i;
 
 public class TextureDrawing {
     public static void drawOnPath(String path, int x, int y, ByteBuffer buffer, BufferedImage image) {
+        //если при вызове не приходят буфферы, то сам декодирует их исходя из пути
         if(buffer == null){
             System.out.println("drawOnPath: ByteBuffer is null!");
             buffer = TextureLoader.ByteBufferEncoder(path);
@@ -16,6 +17,7 @@ public class TextureDrawing {
             System.out.println("drawOnPath: ImageBuffer is null!");
             image = TextureLoader.BufferedImageEncoder(path);
         }
+        //считывает размеры экрана
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         int ScreenWidth;
         int ScreenHeight;
@@ -30,9 +32,10 @@ public class TextureDrawing {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        glBindTexture(GL_TEXTURE_2D, textureID);
 
         //очистка и рисовка квада на экране
+        //РИСОВКА ОБЯЗАТЕЛЬНО ИДЕТ МЕЖДУ glBegin(); и glEnd();
         glBindTexture(GL_TEXTURE_2D, textureID);
         glEnable(GL_TEXTURE_2D);
         glBegin(GL_QUADS);
@@ -72,11 +75,11 @@ public class TextureDrawing {
         glVertex2i(image.getHeight() + y, 0 + x);
 
         //glVertex2i Задает вершины
-        //glTexCoord2i Задает текущие координаты текстуры
+        //glTexCoord2i Задает текущие координаты текстуры, понятия не имею как работает, попробуй поизменять
 
         glEnd();
         glDisable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        //чистит буффер, что бы следующая отрисовка была верной, временно закоменчен
         //buffer.clear();
     }
     public static void drawOnByteBuff(ByteBuffer buffer, int x, int y){
