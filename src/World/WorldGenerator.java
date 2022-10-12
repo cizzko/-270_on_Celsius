@@ -29,6 +29,8 @@ public class WorldGenerator {
                 GrassY += 4;
                 objects[x][y] = grass;
 
+
+                //ОГРОМНОЕ ИЗМЕНЕНИЕ КОДА
         }
     }
 }
