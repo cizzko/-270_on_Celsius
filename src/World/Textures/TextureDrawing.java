@@ -1,7 +1,5 @@
 package World.Textures;
 
-import World.WorldObjects;
-
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;

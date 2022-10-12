@@ -3,10 +3,7 @@ import World.WorldGenerator;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import java.awt.*;
-import java.awt.event.KeyEvent;
 import java.nio.ByteBuffer;
-import java.util.Scanner;
-
 import static java.sql.Types.NULL;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.*;

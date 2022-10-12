@@ -1,13 +1,7 @@
 package World;
 
-import World.Textures.TextureDrawing;
-import World.Textures.TextureLoader;
-
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
-
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 
 public class WorldGenerator {
     public static void Generate(int SizeY, int SizeX, int Time, Boolean ModePvP, Boolean ModeSurvival, int Players) {
@@ -34,7 +28,6 @@ public class WorldGenerator {
                 WorldObjects grass = new WorldObjects(false, false, false, false, false, false, false, null, "D:\\22\\-270_on_Celsius\\src\\assets\\grass1.png", GrassX, GrassY);
                 GrassY += 4;
                 objects[x][y] = grass;
-                System.out.println(objects[x][y].x - 4);
 
         }
     }
