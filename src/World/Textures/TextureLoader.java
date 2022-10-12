@@ -44,7 +44,7 @@ public class TextureLoader {
 
 
     @NotNull
-    static ByteBuffer ByteBufferEncoder(String path){
+    public static ByteBuffer ByteBufferEncoder(String path){
         BufferedImage image = null;
         //если картинка не создана - пытается создать
         if (image == null) {

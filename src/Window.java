@@ -1,9 +1,11 @@
-import World.Textures.TextureDrawing;
-import World.Textures.TextureLoader;
+
+import World.WorldGenerator;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 import java.nio.ByteBuffer;
+import java.util.Scanner;
 
 import static java.sql.Types.NULL;
 import static org.lwjgl.glfw.GLFW.*;
@@ -61,7 +63,7 @@ public class Window {
         //подключает инструменты библиотеки
         GL.createCapabilities();
 
-        TextureDrawing.drawOnPath("D:\\-270 on Celsius\\src\\assets\\TestImageForDrawing.png", 0, 0);
+        WorldGenerator.Generate(20, 20, 1, false, false, 2);
     }
     public void loop() {
         //в gl двойная буфферизация, меняет буффер и чистит его
@@ -70,9 +72,8 @@ public class Window {
         //пока окно не закрыто будет каждый такт опрашивать glfw
         while (!glfwWindowShouldClose(glfwWindow)) {
             glfwPollEvents();
-            if (glfwGetKey(glfwWindow, 32) == 1) {
+            //if (glfwGetKey(glfwWindow, 32) == 1) {}
 
-            }
         }
     }
 }
