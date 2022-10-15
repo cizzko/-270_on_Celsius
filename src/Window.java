@@ -57,7 +57,7 @@ public class Window {
         //подключает инструменты библиотеки
         GL.createCapabilities();
 
-        WorldGenerator.Generate(20, 20, 1, false, false, 2);
+        WorldGenerator.Generate(200, 200, 1, false, false, 2);
     }
     public void loop() {
         //в gl двойная буфферизация, меняет буффер и чистит его
