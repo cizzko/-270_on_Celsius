@@ -1,3 +1,4 @@
+import World.MainMenu;
 import World.WorldGenerator;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWWindowRefreshCallback;
@@ -34,6 +35,7 @@ public class Window {
     }
 
     public void init(){
+
         //инициализирует библиотеку
         glfwInit();
         System.out.println("'glfw' has been initialized");
