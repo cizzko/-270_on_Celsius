@@ -1,7 +1,5 @@
-import World.MainMenu;
 import World.WorldGenerator;
 import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWWindowRefreshCallback;
 import org.lwjgl.opengl.GL;
 import java.awt.*;
 import static java.sql.Types.NULL;
@@ -11,10 +9,10 @@ import static org.lwjgl.opengl.GL11.*;
 public class Window {
     private int width, height;
     private String title;
-    private long glfwWindow;
-    private static Window window = null;
+    public long glfwWindow;
+    private static Window window;
 
-    private Window() {
+    public Window() {
         //чекает размеры твоего экрана
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         this.width = dim.width;
@@ -23,7 +21,7 @@ public class Window {
     }
 
     public static Window get() {
-        //если объект окна null (не существует), то оно создается
+        //если окно не существует (null), то оно создается
         if (Window.window == null) {
             Window.window = new Window();
         }
@@ -35,21 +33,19 @@ public class Window {
     }
 
     public void init(){
-
+        //glfwSwapInterval(20);
         //инициализирует библиотеку
         glfwInit();
         System.out.println("'glfw' has been initialized");
         GLFWErrorCallback.createPrint(System.err).set();
-        //параметры создания окна, видимость, изменяемость размера
-        glfwDefaultWindowHints();
-        glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-        glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
-        //создание окна
-        glfwWindow = glfwCreateWindow(this.width, this.height, this.title, NULL, NULL);
-        //если не получается создать объект окна - ткнет носом
+
         if(glfwWindow == NULL){
-            System.out.println("failed to create window");
+            //если окна не существует - создаст
+            glfwWindow = glfwCreateWindow(this.width, this.height, this.title, NULL, NULL);
+        }
+        else {
+            //при попытке создания окна возникла ошибка - сообщит
+            System.err.println("error at create glfwWindow");
         }
         glfwMakeContextCurrent(glfwWindow);
         //vsync
@@ -59,18 +55,26 @@ public class Window {
         //подключает инструменты библиотеки
         GL.createCapabilities();
 
-        WorldGenerator.Generate(200, 200, 1, false, false, 2);
+        //WorldGenerator.Generate(20, 20, 0, false, false, 0);
     }
     public void loop() {
-        //в gl двойная буфферизация, меняет буффер и чистит его
-        glfwSwapBuffers(glfwWindow);
+        int targerFps = 75;
         glClear(GL_COLOR_BUFFER_BIT);
         //пока окно не закрыто будет каждый такт опрашивать glfw
         while (!glfwWindowShouldClose(glfwWindow)) {
-            glfwPollEvents();
-            //считывание нажатой клавиши, лежит до востребования, обязательно должно быть в цикле
-            //if (glfwGetKey(glfwWindow, 32) == 1) {}
+            try {
+                Thread.sleep(1000/targerFps);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
 
+            //считывание нажатой клавиши, лежит до востребования, обязательно должно быть в цикле
+            //пробел
+            if (glfwGetKey(glfwWindow, 257) == 1) {
+                WorldGenerator.Generate(20, 20, 0, false, false, 0);
+            }
+            glfwSwapBuffers(glfwWindow);
+            glfwWaitEvents();
         }
     }
 }

@@ -2,10 +2,10 @@ package World;
 
 import World.Textures.TextureDrawing;
 import World.Textures.TextureLoader;
-
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
-import java.util.Timer;
+
+import static org.lwjgl.glfw.GLFW.glfwGetCurrentContext;
 
 public class WorldGenerator {
     public static void Generate(int SizeY, int SizeX, int Time, Boolean ModePvP, Boolean ModeSurvival, int Players) {
@@ -28,7 +28,7 @@ public class WorldGenerator {
             если 'x' и 'y' равны размеру буффера объектов, значит все ячейки заполнены, можно выходить
             break; прерывает цикл
             */
-            WorldObjects grass = new WorldObjects(false, false, false, false, false, false, false, null, "D:\\-270_on_Celsius\\src\\assets\\World\\grass1.png", x + 4, y + 4);
+            WorldObjects grass = new WorldObjects(false, false, false, false, false, false, false, null, "D:\\-270_on_Celsius\\src\\assets\\TestImageForDrawing.png", x + 200, y + 200);
             StaticObjects[x][y] = grass;
             x++;
             if (x >= SizeX) {
@@ -36,32 +36,36 @@ public class WorldGenerator {
                 y += 1;
             }
             if (y >= SizeY + 1) {
-                System.out.println("WorldObjects generated");
+                System.out.println("WorldObjects is generated");
                 break;
             }
         }
-        int X = 0;
-        int Y = 0;
-        boolean dec = false;
-        ByteBuffer buff = TextureLoader.ByteBufferEncoder(StaticObjects[X][Y].path);
-        BufferedImage image = TextureLoader.BufferedImageEncoder(StaticObjects[X][Y].path);
-
+        Drawing(SizeY, SizeX, StaticObjects);
     }
 
-    public static void Drawing(WorldObjects[][] StaticObjects, int SizeX, int SizeY, boolean dec, BufferedImage image, ByteBuffer buff, int X, int Y){
-        for(int d = 0; d <= SizeX * SizeY; d++){
+    public static void Drawing(int SizeY, int SizeX, WorldObjects StaticObjects[][]) {
+        glfwGetCurrentContext();
+        boolean dec = false;
+        int X = 0;
+        int Y = 0;
+
+        ByteBuffer buff = TextureLoader.ByteBufferEncoder(StaticObjects[0][0].path);
+        BufferedImage image = TextureLoader.BufferedImageEncoder(StaticObjects[0][0].path);
+
+        for (int d = 0; d <= SizeX * SizeY; d++) {
             //если следующая картинка отличается путем от текущей, то загрузит ее, должно стоять перед рисованием
             //dec просто переменная, создается перед циклом с параметром false
             //buff - ByteBuffer (название), image - BufferedImage (название)
-            if (dec == true){
+            if (dec == true) {
                 buff = TextureLoader.ByteBufferEncoder(StaticObjects[X][Y].path);
                 image = TextureLoader.BufferedImageEncoder(StaticObjects[X][Y].path);
                 dec = false;
             }
-            //if(StaticObjects[X + 1][Y + 1].path  != StaticObjects[X][Y].path){
-            //    dec = true;
-            //}
-
+            if (X + 1 < SizeX && Y + 1 < SizeY) {
+                if (StaticObjects[X + 1][Y + 1].path != StaticObjects[X][Y].path) {
+                    dec = true;
+                }
+            }
             TextureDrawing.drawOnPath(StaticObjects[X][Y].path, StaticObjects[X][Y].x, StaticObjects[X][Y].y, buff, image);
 
             X++;
@@ -74,7 +78,6 @@ public class WorldGenerator {
                 X = 0;
                 buff.clear();
                 image = null;
-                break;
             }
         }
     }

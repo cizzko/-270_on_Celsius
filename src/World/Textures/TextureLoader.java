@@ -17,7 +17,7 @@ public class TextureLoader {
             try {
                 image = ImageIO.read(new File(path));
             } catch (Exception e) {
-                System.out.println("Critical err at BufferedImageEncoder'" + e + "', Path '" + path + "'");
+                System.err.println("Critical err at BufferedImageEncoder'" + e + "', Path '" + path + "'");
                 //команда выхода из программы
                 System.exit(0);
             }
@@ -37,7 +37,7 @@ public class TextureLoader {
             try {
                 image = ImageIO.read(new File(path));
             } catch (Exception e) {
-                System.out.println("Critical err at ByteBufferEncoder'" + e + "', Path '" + path + "'");
+                System.err.println("Critical err at ByteBufferEncoder'" + e + "', Path '" + path + "'");
                 System.exit(0);
             }
             System.out.println("Image encode to ByteBuffer: " + path);

@@ -3,6 +3,9 @@ package World.Textures;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
+
+import static org.lwjgl.glfw.GLFW.glfwGetCurrentContext;
+import static org.lwjgl.glfw.GLFW.glfwSwapBuffers;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.opengl.GL11.glTexCoord2i;
 
@@ -10,11 +13,11 @@ public class TextureDrawing {
     public static void drawOnPath(String path, int x, int y, ByteBuffer buffer, BufferedImage image) {
         //если при вызове не приходят буфферы, то сам декодирует их исходя из пути
         if(buffer == null){
-            System.out.println("drawOnPath: ByteBuffer is null!");
+            System.err.println("drawOnPath: ByteBuffer is null!");
             buffer = TextureLoader.ByteBufferEncoder(path);
         }
         if(image == null) {
-            System.out.println("drawOnPath: ImageBuffer is null!");
+            System.err.println("drawOnPath: ImageBuffer is null!");
             image = TextureLoader.BufferedImageEncoder(path);
         }
         //считывает размеры экрана
@@ -25,18 +28,18 @@ public class TextureDrawing {
         ScreenHeight = dim.height;
 
         //генерация айдишника текстуры
-        int textureID = glGenTextures();
+        //int textureID = glGenTextures();
+
         glOrtho(0, ScreenHeight, ScreenWidth, 0, -1.0, 1.0);
         //параметры, бинд текстур, и прочее
-        glBindTexture(GL_TEXTURE_2D, textureID);
+        //glBindTexture(GL_TEXTURE_2D, textureID);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-        glBindTexture(GL_TEXTURE_2D, textureID);
 
         //очистка и рисовка квада на экране
         //РИСОВКА ОБЯЗАТЕЛЬНО ИДЕТ МЕЖДУ glBegin(); и glEnd();
-        glBindTexture(GL_TEXTURE_2D, textureID);
+        //разрешение рисовки/наложения текстур
         glEnable(GL_TEXTURE_2D);
         glBegin(GL_QUADS);
 
@@ -76,9 +79,9 @@ public class TextureDrawing {
 
         //glVertex2i Задает вершины
         //glTexCoord2i Задает текущие координаты текстуры, понятия не имею как работает, попробуй поизменять
-
         glEnd();
         glDisable(GL_TEXTURE_2D);
+        glfwSwapBuffers(glfwGetCurrentContext());
         //чистит буффер, что бы следующая отрисовка была верной, временно закоменчен
         //buffer.clear();
     }
