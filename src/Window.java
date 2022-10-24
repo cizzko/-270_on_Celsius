@@ -8,8 +8,8 @@ import static org.lwjgl.opengl.GL11.*;
 
 public class Window {
     private int width, height;
-    private String title;
-    public long glfwWindow;
+    private final String title;
+    private long glfwWindow;
     private static Window window;
 
     public Window() {
