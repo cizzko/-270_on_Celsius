@@ -68,8 +68,8 @@ public class Window {
                 e.printStackTrace();
             }
 
-            //считывание нажатой клавиши, лежит до востребования, обязательно должно быть в цикле
-            //пробел
+            //считывание нажатой клавиши
+            //enter
             if (glfwGetKey(glfwWindow, 257) == 1) {
                 WorldGenerator.Generate(20, 20, 0, false, false, 0);
             }

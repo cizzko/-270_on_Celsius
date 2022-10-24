@@ -81,7 +81,6 @@ public class TextureDrawing {
         //glTexCoord2i Задает текущие координаты текстуры, понятия не имею как работает, попробуй поизменять
         glEnd();
         glDisable(GL_TEXTURE_2D);
-        glfwSwapBuffers(glfwGetCurrentContext());
         //чистит буффер, что бы следующая отрисовка была верной, временно закоменчен
         //buffer.clear();
     }
