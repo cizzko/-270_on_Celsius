@@ -1,3 +1,4 @@
+import World.Textures.TextureDrawing;
 import World.WorldGenerator;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -9,7 +10,7 @@ import static org.lwjgl.opengl.GL11.*;
 public class Window {
     private int width, height;
     private final String title;
-    private long glfwWindow;
+    public static long glfwWindow;
     private static Window window;
 
     public Window() {
@@ -27,6 +28,7 @@ public class Window {
         }
         return Window.window;
     }
+
     public void run(){
         init();
         loop();
@@ -49,19 +51,19 @@ public class Window {
         }
         glfwMakeContextCurrent(glfwWindow);
         //vsync
-        glfwSwapInterval(1);
+        //glfwSwapInterval(1);
         //настройка отображения
         glfwShowWindow(glfwWindow);
         //подключает инструменты библиотеки
         GL.createCapabilities();
 
-        //WorldGenerator.Generate(20, 20, 0, false, false, 0);
     }
     public void loop() {
         int targerFps = 75;
         glClear(GL_COLOR_BUFFER_BIT);
-        //пока окно не закрыто будет каждый такт опрашивать glfw
+        //пока окно не закрыто - каждый такт опрашивает glfw
         while (!glfwWindowShouldClose(glfwWindow)) {
+            glfwSwapBuffers(glfwWindow);
             try {
                 Thread.sleep(1000/targerFps);
             } catch (InterruptedException e) {
@@ -71,9 +73,10 @@ public class Window {
             //считывание нажатой клавиши
             //enter
             if (glfwGetKey(glfwWindow, 257) == 1) {
-                WorldGenerator.Generate(20, 20, 0, false, false, 0);
+                //TextureDrawing.draw("D:\\-270_on_Celsius\\src\\assets\\World\\air.png", 0, 0, null, null);
+                //TextureDrawing.draw("D:\\-270_on_Celsius\\src\\assets\\World\\grass1.png", 60, 0, null, null);
+                WorldGenerator.Generate(20, 20);
             }
-            glfwSwapBuffers(glfwWindow);
             glfwWaitEvents();
         }
     }
