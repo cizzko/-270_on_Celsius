@@ -15,7 +15,7 @@ public class Shader {
     public Shader(String filepath){
         this.filepath = filepath;
         try{
-            //ищет два шаблона #type, обрезает им все точки и пробелы
+            ищет два шаблона #type, обрезает им все точки и пробелы
 
             String source = new String(Files.readAllBytes(Paths.get(filepath)));
             String[] splitString = source.split("(#type)( )+([a-zA-Z]+)");
@@ -35,7 +35,6 @@ public class Shader {
             } else {
                 throw new IOException("Unexpected token '" + firstPattern + "'");
             }
-            //////////////////////////////////////
 
             if(secondPattern.equals("vertex")){
                 vertexSource = splitString[1];

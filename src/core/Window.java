@@ -6,7 +6,7 @@ import org.lwjgl.opengl.GL;
 import java.awt.*;
 import static java.sql.Types.NULL;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL13.*;
 public class Window {
     private int width, height;
     private final String title;
@@ -30,17 +30,16 @@ public class Window {
     }
 
     public void run(){
+
         init();
         loop();
     }
 
     public void init(){
-        //glfwSwapInterval(20);
         //инициализирует библиотеку
         glfwInit();
         System.out.println("'glfw' has been initialized");
         GLFWErrorCallback.createPrint(System.err).set();
-
         if(glfwWindow == NULL){
             //если окна не существует - создаст
             glfwWindow = glfwCreateWindow(this.width, this.height, this.title, NULL, NULL);
@@ -57,9 +56,12 @@ public class Window {
         //подключает инструменты библиотеки
         GL.createCapabilities();
 
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+        glMatrixMode(GL_PROJECTION);
+        glOrtho(0, dim.height, dim.width, 0, -1.0, 1.0);
+        glMatrixMode(GL_MODELVIEW);
     }
     public void loop() {
-
         int targerFps = 75;
         glClear(GL_COLOR_BUFFER_BIT);
         //пока окно не закрыто - каждый такт опрашивает glfw
