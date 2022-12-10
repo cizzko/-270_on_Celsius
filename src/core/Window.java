@@ -4,9 +4,11 @@ import core.World.Textures.TextureDrawing;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import java.awt.*;
+
 import static java.sql.Types.NULL;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL13.*;
+
 public class Window {
     private int width, height;
     private final String title;

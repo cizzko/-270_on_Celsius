@@ -1,13 +1,10 @@
 package core.World.Textures;
 
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 
-import static org.lwjgl.opengl.GL11.glClear;
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL13.glTexCoord2i;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE1;
 import static org.lwjgl.opengl.GL13.glActiveTexture;
 
 public class TextureDrawing {
@@ -36,7 +33,7 @@ public class TextureDrawing {
 
         //очистка и рисовка квада на экране
         //РИСОВКА ОБЯЗАТЕЛЬНО ИДЕТ МЕЖДУ glBegin(); и glEnd();
-        //введите сюда кодразрешение рисовки/наложения текстур
+        //разрешение рисовки/наложения текстур
         glBegin(GL_QUADS);
         //верхний левый угол
         glTexCoord2i(0, 0);
