@@ -1,6 +1,6 @@
-package World.Textures;
+package core.World.Textures;
 
-import com.sun.jdi.ByteValue;
+import core.World.Textures.TextureLoader;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

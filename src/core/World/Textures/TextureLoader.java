@@ -1,4 +1,4 @@
-package World.Textures;
+package core.World.Textures;
 
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.BufferUtils;
@@ -32,6 +32,7 @@ public class TextureLoader {
     @NotNull
     public static ByteBuffer ByteBufferEncoder(String path){
         BufferedImage image = null;
+        ByteBuffer buffer;
         //если картинка не создана - пытается создать
         if (image == null) {
             try {
@@ -47,7 +48,7 @@ public class TextureLoader {
         int BYTES_PER_PIXEL = 4;
         int[] pixels = new int[image.getWidth() * image.getHeight()];
         image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
-        ByteBuffer buffer = BufferUtils.createByteBuffer(image.getWidth() * image.getHeight() * BYTES_PER_PIXEL); //4 байта на пиксель для ргба, 3 под ргб
+        buffer = BufferUtils.createByteBuffer(image.getWidth() * image.getHeight() * BYTES_PER_PIXEL); //4 байта на пиксель для ргба, 3 под ргб
 
         //вложенный цикл для загрузки каждого пикселя
         for (int y = 0; y < image.getHeight(); y++) {
