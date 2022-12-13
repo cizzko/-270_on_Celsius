@@ -1,6 +1,7 @@
 package core;
 
 import core.World.Textures.TextureDrawing;
+import core.World.WorldObjects;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import java.awt.*;
@@ -31,13 +32,13 @@ public class Window {
         return Window.window;
     }
 
-    public void run(){
+    public void run() {
 
         init();
         loop();
     }
 
-    public void init(){
+    public void init() {
         //инициализирует библиотеку
         glfwInit();
         System.out.println("'glfw' has been initialized");
@@ -65,26 +66,41 @@ public class Window {
     }
     public void loop() {
         int targerFps = 75;
+        int x = 0;
+        int y = 0;
+        boolean start = false;
+        WorldObjects[][] objects;
+        Physics thread = new Physics();
+        thread.setDaemon(true);
+
         glClear(GL_COLOR_BUFFER_BIT);
         //пока окно не закрыто - каждый такт опрашивает glfw
         while (!glfwWindowShouldClose(glfwWindow)) {
-            glfwWaitEvents();
+            glfwPollEvents();
             try {
                 Thread.sleep(1000 / targerFps);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
 
-            //считывание нажатой клавиши
-            //f1 f2
-            if (glfwGetKey(glfwWindow, 290) == 1) {
-                Physics thread = new Physics();
-                thread.setDaemon(true);
+            //после нажатия ф1 стартует
+            if(glfwGetKey(glfwWindow, 290) == 1) {
                 thread.start();
-                TextureDrawing.draw("D:\\-270_on_Celsius\\src\\assets\\World\\air.png", 1, 1, null, null);
+                start = true;
             }
-            if (glfwGetKey(glfwWindow, 291) == 1) {
-                TextureDrawing.draw("D:\\-270_on_Celsius\\src\\assets\\World\\grass1.png", 1, 50, null, null);
+            if(start == true) {
+                objects = thread.getWorldObjects();
+                TextureDrawing.draw(objects[x][y].path, objects[x][y].x, objects[x][y].y, null, null);
+                x++;
+
+                if(x == 30){
+                    y++;
+                    x = 0;
+                }
+                if(y == 30){
+                    y = 0;
+                    x = 0;
+                }
             }
             glfwSwapBuffers(glfwWindow);
         }

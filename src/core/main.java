@@ -4,6 +4,8 @@ import java.time.Duration;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+//main -> developments -> event handling -> TextureDrawing
+//main -> developments -> event handling -> physics -> hit box check -> TextureDrawing
 public class main {
 
     static final Application app = new Application(Duration.ofNanos(300), 128);

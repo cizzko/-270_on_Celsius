@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 public class TextureLoader {
     //не может вернуть null значение
     @NotNull
-    public static BufferedImage BufferedImageEncoder(String path){
+    public static BufferedImage BufferedImageEncoder(String path) {
         BufferedImage image = null;
         //если картинка не создана - пытается создать, иначе выдаст ошибку
         if (image == null) {
@@ -30,7 +30,7 @@ public class TextureLoader {
 
 
     @NotNull
-    public static ByteBuffer ByteBufferEncoder(String path){
+    public static ByteBuffer ByteBufferEncoder(String path) {
         BufferedImage image = null;
         ByteBuffer buffer;
         //если картинка не создана - пытается создать

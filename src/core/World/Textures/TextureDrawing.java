@@ -19,7 +19,6 @@ public class TextureDrawing {
             System.err.println("image is null");
             image = TextureLoader.BufferedImageEncoder(path);
         }
-        //считывает размеры экрана
 
         //параметры, бинд текстур, и прочее
         int textureID = glGenTextures();
@@ -29,7 +28,6 @@ public class TextureDrawing {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-        System.out.println(image);
 
         //очистка и рисовка квада на экране
         //РИСОВКА ОБЯЗАТЕЛЬНО ИДЕТ МЕЖДУ glBegin(); и glEnd();
