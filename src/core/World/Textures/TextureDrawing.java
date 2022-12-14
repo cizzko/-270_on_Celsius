@@ -38,10 +38,10 @@ public class TextureDrawing {
         glVertex2i(x, y);
         //нижний левый угол
         glTexCoord2i(0, 1);
-        glVertex2i(0 + x, image.getWidth() * 2 + y);
+        glVertex2i(0 + x, image.getWidth() + y);
         //нижний правый угол
         glTexCoord2i(1, 1);
-        glVertex2i(image.getHeight() + x, image.getWidth() * 2 + y);
+        glVertex2i(image.getHeight() + x, image.getWidth() + y);
         //верхний правый угол
         glTexCoord2i(1, 0);
         glVertex2i(image.getHeight() + x, 0 + y);
