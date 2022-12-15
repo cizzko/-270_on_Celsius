@@ -4,7 +4,7 @@ import core.World.WorldGenerator;
 import core.World.WorldObjects;
 
 public class Physics extends Thread {
-    private WorldObjects[][] Objects = WorldGenerator.Generate(30, 30);
+    private WorldObjects[][] Objects = WorldGenerator.Generate(50, 50);
     private WorldObjects[][] ObjectsNonProcessed = Objects; //если физика не успела обработаться, то рисует ее прошлый кадр
     private int x;
     private int y;
@@ -37,8 +37,8 @@ public class Physics extends Thread {
                 System.err.println(e);
             }
 
-            if (!Objects[x][y - 1].solid || Objects[x][y].player){
-                Objects[x][y].y = y--;
+            if (!Objects[x][y - 1].solid){
+                Objects[x][y].y = y --;
             }
             isProcessed = true;
         }

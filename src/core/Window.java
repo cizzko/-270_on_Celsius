@@ -84,20 +84,20 @@ public class Window {
             }
 
             //после нажатия ф1 стартует
-            if(glfwGetKey(glfwWindow, 290) == 1) {
+            if (glfwGetKey(glfwWindow, 290) == 1) {
                 thread.start();
                 start = true;
             }
-            if(start == true) {
+            if (start == true) {
                 objects = thread.getWorldObjects();
                 TextureDrawing.draw(objects[x][y].path, objects[x][y].x, objects[x][y].y, null, null);
                 x++;
 
-                if(x == 30){
+                if (x == 30) {
                     y++;
                     x = 0;
                 }
-                if(y == 30){
+                if (y == 30) {
                     y = 0;
                     x = 0;
                 }
