@@ -57,7 +57,7 @@ public class Window {
         }
         glfwMakeContextCurrent(glfwWindow);
         //vsync
-        //glfwSwapInterval(1);
+        glfwSwapInterval(0);
         //настройка отображения
         glfwShowWindow(glfwWindow);
         //подключает инструменты библиотеки
@@ -71,7 +71,6 @@ public class Window {
     public void loop() {
         Hashtable<String, ByteBuffer> byteBuffer = WorldGenerator.GenerateByteBuffer();
         Hashtable<String, BufferedImage> bufferedImage = WorldGenerator.GenerateBufferedImage();
-        int targerFps = 75;
         int x = 0;
         int y = 0;
         boolean start = false;

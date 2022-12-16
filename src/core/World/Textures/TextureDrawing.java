@@ -5,7 +5,6 @@ import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.GL13.*;
 import static org.lwjgl.opengl.GL13.glTexCoord2i;
-import static org.lwjgl.opengl.GL13.glActiveTexture;
 
 public class TextureDrawing {
     public static void draw(String path, int x, int y, ByteBuffer buffer, BufferedImage image) {
@@ -20,9 +19,6 @@ public class TextureDrawing {
             image = TextureLoader.BufferedImageEncoder(path);
         }
         //параметры, бинд текстур, и прочее
-        int textureID = glGenTextures();
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, textureID);
 
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -50,6 +46,5 @@ public class TextureDrawing {
 
         glEnd();
         glDisable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, 0);
     }
 }
