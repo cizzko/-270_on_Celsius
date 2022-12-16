@@ -63,9 +63,8 @@ public class Window {
         //подключает инструменты библиотеки
         GL.createCapabilities();
 
-        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         glMatrixMode(GL_PROJECTION);
-        glOrtho(0, dim.height, dim.width, 0, -1.0, 1.0);
+        glOrtho(0, 1000, 1000, 0, -1.0, 1.0);
         glMatrixMode(GL_MODELVIEW);
     }
     public void loop() {
@@ -82,17 +81,17 @@ public class Window {
         //пока окно не закрыто - каждый такт опрашивает glfw
         while (!glfwWindowShouldClose(glfwWindow)) {
             glfwPollEvents();
-
             if (start == true) {
                 objects = thread.getWorldObjects();
                 TextureDrawing.draw(objects[x][y].path, objects[x][y].x, objects[x][y].y, byteBuffer.get(objects[x][y].path), bufferedImage.get(objects[x][y].path));
                 x++;
 
-                if (x == 30) {
+                if (x == 50) {
                     y++;
                     x = 0;
                 }
-                if (y == 30) {
+                if (y == 50) {
+                    glfwSwapBuffers(glfwWindow);
                     y = 0;
                     x = 0;
                 }
@@ -102,7 +101,6 @@ public class Window {
                 thread.start();
                 start = true;
             }
-            glfwSwapBuffers(glfwWindow);
         }
     }
 }

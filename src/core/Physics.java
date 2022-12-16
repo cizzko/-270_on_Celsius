@@ -37,9 +37,9 @@ public class Physics extends Thread {
                 System.err.println(e);
             }
 
-            if (!Objects[x][y - 1].solid || Objects[x][y].player){
-                Objects[x][y].y = y --;
-            }
+            //if (!Objects[x][y - 1].solid || Objects[x][y].player){
+            //   Objects[x][y].y = y --;
+            //}
             isProcessed = true;
         }
     }
