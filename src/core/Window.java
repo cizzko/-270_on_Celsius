@@ -1,10 +1,14 @@
 package core;
 
 import core.World.Textures.TextureDrawing;
+import core.World.WorldGenerator;
 import core.World.WorldObjects;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.nio.ByteBuffer;
+import java.util.Hashtable;
 
 import static java.sql.Types.NULL;
 import static org.lwjgl.glfw.GLFW.*;
@@ -53,7 +57,7 @@ public class Window {
         }
         glfwMakeContextCurrent(glfwWindow);
         //vsync
-        glfwSwapInterval(1);
+        //glfwSwapInterval(1);
         //настройка отображения
         glfwShowWindow(glfwWindow);
         //подключает инструменты библиотеки
@@ -65,6 +69,8 @@ public class Window {
         glMatrixMode(GL_MODELVIEW);
     }
     public void loop() {
+        Hashtable<String, ByteBuffer> byteBuffer = WorldGenerator.GenerateByteBuffer();
+        Hashtable<String, BufferedImage> bufferedImage = WorldGenerator.GenerateBufferedImage();
         int targerFps = 75;
         int x = 0;
         int y = 0;
@@ -77,15 +83,10 @@ public class Window {
         //пока окно не закрыто - каждый такт опрашивает glfw
         while (!glfwWindowShouldClose(glfwWindow)) {
             glfwPollEvents();
-            try {
-                Thread.sleep(1000 / targerFps);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
 
             if (start == true) {
                 objects = thread.getWorldObjects();
-                TextureDrawing.draw(objects[x][y].path, objects[x][y].x, objects[x][y].y, null, null);
+                TextureDrawing.draw(objects[x][y].path, objects[x][y].x, objects[x][y].y, byteBuffer.get(objects[x][y].path), bufferedImage.get(objects[x][y].path));
                 x++;
 
                 if (x == 30) {
