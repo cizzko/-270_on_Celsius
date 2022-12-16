@@ -19,7 +19,6 @@ public class TextureDrawing {
             System.err.println("image is null");
             image = TextureLoader.BufferedImageEncoder(path);
         }
-
         //параметры, бинд текстур, и прочее
         int textureID = glGenTextures();
         glActiveTexture(GL_TEXTURE0);

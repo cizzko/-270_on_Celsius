@@ -1,22 +1,44 @@
 package core.World;
 
+import core.World.Textures.TextureLoader;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.nio.ByteBuffer;
+import java.util.Hashtable;
+
 public class WorldGenerator {
-    public static WorldObjects[][] Generate(int SizeX, int SizeY) {
+    public static WorldObjects[][] GenerateWorld(int SizeX, int SizeY) {
         WorldObjects[][] StaticObjects = new WorldObjects[SizeX + 1][SizeY + 1];
-        int rand = 1;
+        int rand;
 
         for (int x = 0; x < SizeX; x++) {
             for (int y = 0; y < SizeY; y++) {
                 if (y < SizeY / 2) {
-                    WorldObjects air = new WorldObjects(false, true, true, false, false, false, false, false, false, null, "D:\\-270_on_Celsius\\src\\assets\\World\\air.png", x * 16, y * 16);
+                    WorldObjects air = new WorldObjects(false, true, true, false, false, false, false, false, false, null, ".\\src\\assets\\World\\air.png", x * 16, y * 16);
                     StaticObjects[x][y] = air;
                 } else {
                     rand = 1 + (int) (Math.random() * 3);
-                    WorldObjects grass = new WorldObjects(false, true, false, false, true, false, false, false, false, null, "D:\\-270_on_Celsius\\src\\assets\\World\\grass" + rand + ".png", x * 16, y * 16);
+                    WorldObjects grass = new WorldObjects(false, true, false, false, true, false, false, false, false, null, ".\\src\\assets\\World\\grass" + rand + ".png", x * 16, y * 16);
                     StaticObjects[x][y] = grass;
                 }
             }
         }
+        GenerateBuffers();
         return StaticObjects;
+    }
+
+    public static void GenerateBuffers(){
+        Hashtable<String, BufferedImage> bufferedImage = new Hashtable();
+        Hashtable<String, ByteBuffer> byteBuffer = new Hashtable();
+        String path;
+        File dir = new File(".\\src\\assets\\World");
+
+        for (File file : dir.listFiles()){
+            if (file.isFile()) {
+                path = file.toString();
+                byteBuffer.put(path, TextureLoader.ByteBufferEncoder(path));
+                bufferedImage.put(path, TextureLoader.BufferedImageEncoder(path));
+            }
+        }
     }
 }

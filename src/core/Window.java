@@ -83,11 +83,6 @@ public class Window {
                 e.printStackTrace();
             }
 
-            //после нажатия ф1 стартует
-            if (glfwGetKey(glfwWindow, 290) == 1) {
-                thread.start();
-                start = true;
-            }
             if (start == true) {
                 objects = thread.getWorldObjects();
                 TextureDrawing.draw(objects[x][y].path, objects[x][y].x, objects[x][y].y, null, null);
@@ -101,6 +96,11 @@ public class Window {
                     y = 0;
                     x = 0;
                 }
+            }
+            //f1
+            else if (glfwGetKey(glfwWindow, 290) == 1) {
+                thread.start();
+                start = true;
             }
             glfwSwapBuffers(glfwWindow);
         }

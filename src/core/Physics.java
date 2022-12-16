@@ -4,7 +4,7 @@ import core.World.WorldGenerator;
 import core.World.WorldObjects;
 
 public class Physics extends Thread {
-    private WorldObjects[][] Objects = WorldGenerator.Generate(50, 50);
+    private WorldObjects[][] Objects = WorldGenerator.GenerateWorld(50, 50);
     private WorldObjects[][] ObjectsNonProcessed = Objects; //если физика не успела обработаться, то рисует ее прошлый кадр
     private int x;
     private int y;
