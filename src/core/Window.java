@@ -1,9 +1,11 @@
 package core;
 
+import core.World.EventHandler;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
 import core.World.WorldObjects;
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWScrollCallback;
 import org.lwjgl.opengl.GL;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -77,7 +79,9 @@ public class Window {
         Physics thread = new Physics();
         thread.setDaemon(true);
 
+        glfwSwapBuffers(glfwWindow);
         glClear(GL_COLOR_BUFFER_BIT);
+
         //пока окно не закрыто - каждый такт опрашивает glfw
         while (!glfwWindowShouldClose(glfwWindow)) {
             glfwPollEvents();
