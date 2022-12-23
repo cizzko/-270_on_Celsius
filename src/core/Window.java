@@ -1,6 +1,7 @@
 package core;
 
 import core.World.EventHandler;
+import core.World.MainMenu;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
 import core.World.WorldObjects;
@@ -66,8 +67,10 @@ public class Window {
         GL.createCapabilities();
 
         glMatrixMode(GL_PROJECTION);
-        glOrtho(0, 1000, 1000, 0, -1.0, 1.0);
+        glOrtho(0, width, height, 0, 1.0, -1.0);
         glMatrixMode(GL_MODELVIEW);
+
+        MainMenu.Create();
     }
     public void loop() {
         Hashtable<String, ByteBuffer> byteBuffer = WorldGenerator.GenerateByteBuffer();
@@ -104,6 +107,11 @@ public class Window {
             else if (glfwGetKey(glfwWindow, 290) == 1) {
                 thread.start();
                 start = true;
+            }
+            boolean isClicked = EventHandler.getRectangleClick(10, 200, 42, 328);
+            if(isClicked == true){
+                System.err.println("dsdsdsdsds");
+                isClicked = false;
             }
         }
     }

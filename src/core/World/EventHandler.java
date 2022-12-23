@@ -6,32 +6,22 @@ import static core.Window.glfwWindow;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class EventHandler {
-    public static Point getMousePos(){
+    public static Point getMousePos() {
         double mouseX = MouseInfo.getPointerInfo().getLocation().getX();
         double mouseY = MouseInfo.getPointerInfo().getLocation().getY();
         Point mousePos = new Point((int) mouseX, (int) mouseY);
         return mousePos;
     }
 
-    public static boolean getKey(int key){
-        if (glfwGetKey(glfwWindow, key) == 1) {
-            return true;
-        }
-        return false;
+    public static boolean getKey(int key) {
+        return glfwGetKey(glfwWindow, key) == 1;
     }
 
-    public static boolean getRectangleClick(int x, int y, int x1, int y1){
+    public static boolean getRectangleClick(int x, int y, int x1, int y1) {
         Point mousePos = getMousePos();
         int state = glfwGetMouseButton(glfwWindow, GLFW_MOUSE_BUTTON_LEFT);
-        int mouseX = mousePos.x;
-        int mouseY = mousePos.y;
 
-        if(mouseX <= x || mouseX >= x1 || mouseY <= y || mouseY >= y1) {
-            if (state == GLFW_PRESS) {
-                return true;
-            }
-        }
-        return false;
+        return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 && state == GLFW_PRESS;
     }
 }
 
