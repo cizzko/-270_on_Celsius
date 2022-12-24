@@ -1,7 +1,5 @@
 package core.World;
 
-import core.World.Textures.TextureDrawing;
-
 import java.awt.*;
 
 import static core.Window.glfwWindow;
