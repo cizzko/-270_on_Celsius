@@ -1,5 +1,7 @@
 package core.World;
 
+import core.World.Textures.TextureDrawing;
+
 import java.awt.*;
 
 import static core.Window.glfwWindow;
@@ -21,6 +23,9 @@ public class EventHandler {
         Point mousePos = getMousePos();
         int state = glfwGetMouseButton(glfwWindow, GLFW_MOUSE_BUTTON_LEFT);
 
+        if(mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1){
+            glfwSwapBuffers(glfwWindow);
+        }
         return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 && state == GLFW_PRESS;
     }
 }

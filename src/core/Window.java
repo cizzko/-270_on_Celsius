@@ -52,7 +52,7 @@ public class Window {
         GLFWErrorCallback.createPrint(System.err).set();
         if(glfwWindow == NULL){
             //если окна не существует - создаст
-            glfwWindow = glfwCreateWindow(this.width, this.height, this.title, NULL, NULL);
+            glfwWindow = glfwCreateWindow(this.width, this.height, this.title, glfwGetPrimaryMonitor(), NULL);
         }
         else {
             //при попытке создания окна возникла ошибка - сообщит
@@ -108,7 +108,7 @@ public class Window {
                 thread.start();
                 start = true;
             }
-            boolean isClicked = EventHandler.getRectangleClick(10, 200, 42, 328);
+            boolean isClicked = EventHandler.getRectangleClick(10, 200, 138, 264);
             if(isClicked == true){
                 System.err.println("dsdsdsdsds");
                 isClicked = false;
