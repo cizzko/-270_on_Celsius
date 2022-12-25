@@ -5,42 +5,37 @@ import core.World.WorldObjects;
 
 public class Physics extends Thread {
     private WorldObjects[][] Objects = WorldGenerator.GenerateWorld(50, 50);
-    private WorldObjects[][] ObjectsNonProcessed = Objects; //если физика не успела обработаться, то рисует ее прошлый кадр
-    private int x;
-    private int y;
-    volatile private boolean isProcessed = false;
+    private int x = 0;
+    private int y = 0;
 
-    public WorldObjects[][] getWorldObjects() {
-        if (isProcessed == true) {
-            ObjectsNonProcessed = Objects;
-            return Objects;
-        }
-        else {
-            return ObjectsNonProcessed;
-        }
+    public WorldObjects[][] getWorldObjects(){
+        return Objects;
     }
-
     public void run(){
         //main.app.offerTask(() -> start());
 
         // TODO: Переделать, переписать, изменить, переиначить.
         short targetFps = 240;
         while(true){
-            isProcessed = false;
-            x++;
-            y++;
-
             try {
                 Thread.sleep(1000 / targetFps);
-            }
-            catch (Exception e){
-                System.err.println(e);
+            } catch (Exception e) {
+                System.out.println(e);
             }
 
-            //if (!Objects[x][y - 1].solid || Objects[x][y].player){
-            //   Objects[x][y].y = y --;
-            //}
-            isProcessed = true;
+            if (Objects[x][y + 1] != null && !Objects[x][y + 1].solid && Objects[x][y].player) {
+                Objects[x][y].y = Objects[x][y].y--;
+            }
+
+            x++;
+            if (x == 50) {
+                y++;
+                x = 0;
+            }
+            if (y == 50) {
+                y = 0;
+                x = 0;
+            }
         }
     }
 }

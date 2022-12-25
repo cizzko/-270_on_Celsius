@@ -1,10 +1,7 @@
 package core;
 
-import core.World.EventHandler;
-import core.World.MainMenu;
+import core.World.*;
 import core.World.Textures.TextureDrawing;
-import core.World.WorldGenerator;
-import core.World.WorldObjects;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWScrollCallback;
 import org.lwjgl.opengl.GL;
@@ -73,14 +70,12 @@ public class Window {
         MainMenu.Create();
     }
     public void loop() {
-        Hashtable<String, ByteBuffer> byteBuffer = WorldGenerator.GenerateByteBuffer();
-        Hashtable<String, BufferedImage> bufferedImage = WorldGenerator.GenerateBufferedImage();
-        int x = 0;
-        int y = 0;
-        boolean start = false;
-        WorldObjects[][] objects;
         Physics thread = new Physics();
+        World world = new World();
         thread.setDaemon(true);
+        world.setDaemon(true);
+        thread.start();
+        world.start();
 
         glfwSwapBuffers(glfwWindow);
         glClear(GL_COLOR_BUFFER_BIT);
@@ -88,31 +83,7 @@ public class Window {
         //пока окно не закрыто - каждый такт опрашивает glfw
         while (!glfwWindowShouldClose(glfwWindow)) {
             glfwPollEvents();
-            if (start == true) {
-                objects = thread.getWorldObjects();
-                TextureDrawing.draw(objects[x][y].path, objects[x][y].x, objects[x][y].y, byteBuffer.get(objects[x][y].path), bufferedImage.get(objects[x][y].path));
-                x++;
 
-                if (x == 50) {
-                    y++;
-                    x = 0;
-                }
-                if (y == 50) {
-                    glfwSwapBuffers(glfwWindow);
-                    y = 0;
-                    x = 0;
-                }
-            }
-            //f1
-            else if (glfwGetKey(glfwWindow, 290) == 1) {
-                thread.start();
-                start = true;
-            }
-            boolean isClicked = EventHandler.getRectangleClick(10, 200, 138, 264);
-            if(isClicked == true){
-                System.err.println("dsdsdsdsds");
-                isClicked = false;
-            }
         }
     }
 }

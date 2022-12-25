@@ -26,7 +26,6 @@ public class WorldGenerator {
         return StaticObjects;
     }
 
-    //TODO: насрано, рекомендуется переделать
     public static Hashtable GenerateByteBuffer(){
         Hashtable<String, ByteBuffer> byteBuffer = new Hashtable();
         String path;

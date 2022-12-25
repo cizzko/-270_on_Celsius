@@ -17,6 +17,7 @@ public class EventHandler {
         return glfwGetKey(glfwWindow, key) == 1;
     }
 
+    @Deprecated
     public static boolean getRectangleClick(int x, int y, int x1, int y1) {
         Point mousePos = getMousePos();
         int state = glfwGetMouseButton(glfwWindow, GLFW_MOUSE_BUTTON_LEFT);
