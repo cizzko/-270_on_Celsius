@@ -1,7 +1,10 @@
 package core;
 
-import core.World.*;
+import core.World.EventHandler;
+import core.World.MainMenu;
 import core.World.Textures.TextureDrawing;
+import core.World.WorldGenerator;
+import core.World.WorldObjects;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWScrollCallback;
 import org.lwjgl.opengl.GL;
@@ -57,7 +60,7 @@ public class Window {
         }
         glfwMakeContextCurrent(glfwWindow);
         //vsync
-        glfwSwapInterval(0);
+        glfwSwapInterval(1);
         //настройка отображения
         glfwShowWindow(glfwWindow);
         //подключает инструменты библиотеки
@@ -70,20 +73,49 @@ public class Window {
         MainMenu.Create();
     }
     public void loop() {
+        Hashtable<String, ByteBuffer> byteBuffer = WorldGenerator.GenerateByteBuffer();
+        Hashtable<String, BufferedImage> bufferedImage = WorldGenerator.GenerateBufferedImage();
+        final double FPS = 60.0; // Ограничение по числу кадров в секунду
+        final double sigleFrameTime = 1.0 / FPS; // Время на формирование одного кадра
+        double lastTime = 0.0; // Время начала формирования последнего кадра
+        double currentTime; // Текущее время
+        int x = 0;
+        int y = 0;
+        boolean start = false;
+        WorldObjects[][] objects;
         Physics thread = new Physics();
-        World world = new World();
         thread.setDaemon(true);
-        world.setDaemon(true);
-        thread.start();
-        world.start();
 
         glfwSwapBuffers(glfwWindow);
         glClear(GL_COLOR_BUFFER_BIT);
 
         //пока окно не закрыто - каждый такт опрашивает glfw
         while (!glfwWindowShouldClose(glfwWindow)) {
+            currentTime = glfwGetTime();
             glfwPollEvents();
+            if (start == true) {
+                objects = thread.getWorldObjects();
+                TextureDrawing.draw(objects[x][y].path, objects[x][y].x, objects[x][y].y, byteBuffer.get(objects[x][y].path), bufferedImage.get(objects[x][y].path));
+                x++;
 
+                if (x == 50) {
+                    y++;
+                    x = 0;
+                }
+                if (y == 50) {
+                    y = 0;
+                    x = 0;
+                }
+            }
+            //f1
+            else if (glfwGetKey(glfwWindow, 290) == 1) {
+                thread.start();
+                start = true;
+            }
+            if(currentTime - lastTime >= sigleFrameTime) {
+                lastTime = currentTime;
+                glfwSwapBuffers(glfwWindow);
+            }
         }
     }
 }
