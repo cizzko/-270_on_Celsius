@@ -1,11 +1,5 @@
 package core.World;
 
-import core.World.Textures.TextureLoader;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.nio.ByteBuffer;
-import java.util.Hashtable;
-
 public class WorldGenerator {
     public static WorldObjects[][] GenerateWorld(int SizeX, int SizeY) {
         WorldObjects[][] StaticObjects = new WorldObjects[SizeX + 1][SizeY + 1];
@@ -24,33 +18,5 @@ public class WorldGenerator {
             }
         }
         return StaticObjects;
-    }
-
-    public static Hashtable GenerateByteBuffer(){
-        Hashtable<String, ByteBuffer> byteBuffer = new Hashtable();
-        String path;
-        File dir = new File(".\\src\\assets\\World");
-
-        for (File file : dir.listFiles()){
-            if (file.isFile()) {
-                path = file.toString();
-                byteBuffer.put(path, TextureLoader.ByteBufferEncoder(path));
-            }
-        }
-        return byteBuffer;
-    }
-
-    public static Hashtable GenerateBufferedImage(){
-        Hashtable<String, BufferedImage> bufferedImage = new Hashtable();
-        String path;
-        File dir = new File(".\\src\\assets\\World");
-
-        for (File file : dir.listFiles()){
-            if (file.isFile()) {
-                path = file.toString();
-                bufferedImage.put(path, TextureLoader.BufferedImageEncoder(path));
-            }
-        }
-        return bufferedImage;
     }
 }

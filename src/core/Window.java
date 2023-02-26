@@ -1,12 +1,12 @@
 package core;
 
-import core.World.EventHandler;
 import core.World.MainMenu;
+import core.Buttons.Button;
 import core.World.Textures.TextureDrawing;
+import core.World.Textures.TextureLoader;
 import core.World.WorldGenerator;
 import core.World.WorldObjects;
 import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWScrollCallback;
 import org.lwjgl.opengl.GL;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -40,12 +40,13 @@ public class Window {
     }
 
     public void run() {
-
         init();
         loop();
     }
 
     public void init() {
+        Button.CreateButton(12, 12, "play", "D:\\-270_on_Celsius\\src\\assets\\GUI\\buttonStart1.png", false);
+
         //инициализирует библиотеку
         glfwInit();
         System.out.println("'glfw' has been initialized");
@@ -73,14 +74,10 @@ public class Window {
         MainMenu.Create();
     }
     public void loop() {
-        Hashtable<String, ByteBuffer> byteBuffer = WorldGenerator.GenerateByteBuffer();
-        Hashtable<String, BufferedImage> bufferedImage = WorldGenerator.GenerateBufferedImage();
         final double FPS = 60.0; // Ограничение по числу кадров в секунду
         final double sigleFrameTime = 1.0 / FPS; // Время на формирование одного кадра
         double lastTime = 0.0; // Время начала формирования последнего кадра
         double currentTime; // Текущее время
-        int x = 0;
-        int y = 0;
         boolean start = false;
         WorldObjects[][] objects;
         Physics thread = new Physics();
@@ -92,19 +89,15 @@ public class Window {
         //пока окно не закрыто - каждый такт опрашивает glfw
         while (!glfwWindowShouldClose(glfwWindow)) {
             currentTime = glfwGetTime();
+            objects = thread.getWorldObjects();
+
             glfwPollEvents();
             if (start == true) {
-                objects = thread.getWorldObjects();
-                TextureDrawing.draw(objects[x][y].path, objects[x][y].x, objects[x][y].y, byteBuffer.get(objects[x][y].path), bufferedImage.get(objects[x][y].path));
-                x++;
 
-                if (x == 50) {
-                    y++;
-                    x = 0;
-                }
-                if (y == 50) {
-                    y = 0;
-                    x = 0;
+                for(int x = 0; x < 50; x++){
+                    for (int y = 0; y < 50; y++){
+                        TextureDrawing.draw(objects[x][y].path, objects[x][y].x, objects[x][y].y, TextureLoader.ByteBufferEncoder(objects[x][y].path), TextureLoader.BufferedImageEncoder(objects[x][y].path));
+                    }
                 }
             }
             //f1
