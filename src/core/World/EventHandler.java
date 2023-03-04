@@ -1,6 +1,7 @@
 package core.World;
 
 import core.World.Textures.TextureLoader;
+
 import java.awt.*;
 
 import static core.Window.glfwWindow;
@@ -21,7 +22,7 @@ public class EventHandler {
     @Deprecated
     public static boolean getRectangleClick(int x, int y, int x1, int y1, String path) {
 
-        if(path != null) {
+        if (path != null) {
             x1 = TextureLoader.BufferedImageEncoder(path).getWidth();
             y1 = TextureLoader.BufferedImageEncoder(path).getHeight();
         }
@@ -29,9 +30,6 @@ public class EventHandler {
         Point mousePos = getMousePos();
         int state = glfwGetMouseButton(glfwWindow, GLFW_MOUSE_BUTTON_LEFT);
 
-        if (mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1) {
-            glfwSwapBuffers(glfwWindow);
-        }
         return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 && state == GLFW_PRESS;
     }
 }

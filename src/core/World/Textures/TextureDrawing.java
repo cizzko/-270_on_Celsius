@@ -4,17 +4,16 @@ import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 
 import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL13.glTexCoord2i;
 
 public class TextureDrawing {
     public static void draw(String path, int x, int y, ByteBuffer buffer, BufferedImage image) {
         glEnable(GL_TEXTURE_2D);
         //если при вызове не приходят буфферы, то сам декодирует их исходя из пути
-        if(buffer == null){
+        if (buffer == null) {
             System.err.println("buffer is null");
             buffer = TextureLoader.ByteBufferEncoder(path);
         }
-        if(image == null) {
+        if (image == null) {
             System.err.println("image is null");
             image = TextureLoader.BufferedImageEncoder(path);
         }

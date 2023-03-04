@@ -1,24 +1,24 @@
 package core;
 
+import core.Buttons.Buttons;
+import core.Buttons.ButtonsObjects;
 import core.World.MainMenu;
-import core.Buttons.Button;
 import core.World.Textures.TextureDrawing;
 import core.World.Textures.TextureLoader;
-import core.World.WorldGenerator;
 import core.World.WorldObjects;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.nio.ByteBuffer;
 import java.util.Hashtable;
+
 
 import static java.sql.Types.NULL;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL13.*;
 
 public class Window {
-    private int width, height;
+    private final int width;
+    private final int height;
     private final String title;
     public static long glfwWindow;
     private static Window window;
@@ -45,17 +45,15 @@ public class Window {
     }
 
     public void init() {
-        Button.CreateButton(12, 12, "play", "D:\\-270_on_Celsius\\src\\assets\\GUI\\buttonStart1.png", false);
-
         //инициализирует библиотеку
         glfwInit();
         System.out.println("'glfw' has been initialized");
         GLFWErrorCallback.createPrint(System.err).set();
-        if(glfwWindow == NULL){
+        if (glfwWindow == NULL) {
             //если окна не существует - создаст
+            glfwGetCurrentContext();
             glfwWindow = glfwCreateWindow(this.width, this.height, this.title, glfwGetPrimaryMonitor(), NULL);
-        }
-        else {
+        } else {
             //при попытке создания окна возникла ошибка - сообщит
             System.err.println("error at create glfwWindow");
         }
@@ -73,13 +71,15 @@ public class Window {
 
         MainMenu.Create();
     }
+
     public void loop() {
-        final double FPS = 60.0; // Ограничение по числу кадров в секунду
+        final double FPS = 75.0; // Ограничение по числу кадров в секунду
         final double sigleFrameTime = 1.0 / FPS; // Время на формирование одного кадра
         double lastTime = 0.0; // Время начала формирования последнего кадра
         double currentTime; // Текущее время
         boolean start = false;
         WorldObjects[][] objects;
+
         Physics thread = new Physics();
         thread.setDaemon(true);
 
@@ -90,12 +90,11 @@ public class Window {
         while (!glfwWindowShouldClose(glfwWindow)) {
             currentTime = glfwGetTime();
             objects = thread.getWorldObjects();
-
             glfwPollEvents();
-            if (start == true) {
 
-                for(int x = 0; x < 50; x++){
-                    for (int y = 0; y < 50; y++){
+            if (start) {
+                for (int x = 0; x < objects.length - 1; x++) {
+                    for (int y = 0; y < objects[x].length - 1; y++) {
                         TextureDrawing.draw(objects[x][y].path, objects[x][y].x, objects[x][y].y, TextureLoader.ByteBufferEncoder(objects[x][y].path), TextureLoader.BufferedImageEncoder(objects[x][y].path));
                     }
                 }
@@ -105,7 +104,7 @@ public class Window {
                 thread.start();
                 start = true;
             }
-            if(currentTime - lastTime >= sigleFrameTime) {
+            if (currentTime - lastTime >= sigleFrameTime) {
                 lastTime = currentTime;
                 glfwSwapBuffers(glfwWindow);
             }

@@ -4,19 +4,20 @@ import core.World.WorldGenerator;
 import core.World.WorldObjects;
 
 public class Physics extends Thread {
-    private WorldObjects[][] Objects = WorldGenerator.GenerateWorld(50, 50);
+    private final WorldObjects[][] Objects = WorldGenerator.GenerateWorld(50, 50);
     private int x = 0;
     private int y = 0;
 
-    public WorldObjects[][] getWorldObjects(){
+    public WorldObjects[][] getWorldObjects() {
         return Objects;
     }
-    public void run(){
+
+    public void run() {
         //main.app.offerTask(() -> start());
 
         // TODO: Переделать, переписать, изменить, переиначить.
         short targetFps = 240;
-        while(true){
+        while (true) {
             try {
                 Thread.sleep(1000 / targetFps);
             } catch (Exception e) {

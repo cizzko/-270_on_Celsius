@@ -21,4 +21,3 @@ public class WorldObjects {
         this.y = y;                    //мировая координата у
     }
 }
-

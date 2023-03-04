@@ -2,6 +2,7 @@ package core.World.Textures;
 
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.BufferUtils;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -19,7 +20,7 @@ public class TextureLoader {
         if (bufferedImages.get(path) == null) {
             try {
                 bufferedImages.put(path, ImageIO.read(new File(path)));
-                System.err.println(path);
+                System.out.println(path);
             } catch (Exception e) {
                 System.err.println("Critical err at BufferedImageEncoder'" + e + "', Path '" + path + "'");
                 //команда выхода из программы
@@ -36,7 +37,7 @@ public class TextureLoader {
         ByteBuffer buffer;
         BufferedImage image = BufferedImageEncoder(path);
 
-        if(byteBuffers.get(path) == null) {
+        if (byteBuffers.get(path) == null) {
             //декодирует картинку в ргба, и загружает каждый байт в буффер
             int BYTES_PER_PIXEL = 4;
             int[] pixels = new int[image.getWidth() * image.getHeight()];
