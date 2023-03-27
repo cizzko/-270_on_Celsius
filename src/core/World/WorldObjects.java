@@ -4,9 +4,9 @@ package core.World;
 public class WorldObjects {
     public boolean gas, liquid, solid, plasma, sleeping, onCamera, destroyed, player;
     public String options, path;
-    public int y, x;
+    public float y, x;
 
-    public WorldObjects(boolean destroyed, boolean onCamera, boolean gas, boolean liquid, boolean solid, boolean plasma, boolean player, boolean sleeping, String options, String path, int x, int y) {
+    public WorldObjects(boolean destroyed, boolean onCamera, boolean gas, boolean liquid, boolean solid, boolean plasma, boolean player, boolean sleeping, String options, String path, float x, float y) {
         this.destroyed = destroyed;    //уничтожен ли -> после следующего прохода будет удален из переменных
         this.onCamera = onCamera;      //находится ли в фокусе, для оптимизации
         this.player = player;          //является ли игроком (временная мера)

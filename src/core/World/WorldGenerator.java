@@ -19,4 +19,8 @@ public class WorldGenerator {
         }
         return StaticObjects;
     }
+
+    public static void createObject(boolean destroyed, boolean onCamera, boolean gas, boolean liquid, boolean solid, boolean plasma, boolean player, boolean sleeping, String options, String path, float x, float y){
+
+    }
 }

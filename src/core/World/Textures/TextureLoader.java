@@ -7,11 +7,11 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.ByteBuffer;
-import java.util.Hashtable;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class TextureLoader {
-    static Hashtable<String, BufferedImage> bufferedImages = new Hashtable<>();
-    static Hashtable<String, ByteBuffer> byteBuffers = new Hashtable<>();
+    static ConcurrentHashMap<String, BufferedImage> bufferedImages = new ConcurrentHashMap<>();
+    static ConcurrentHashMap<String, ByteBuffer> byteBuffers = new ConcurrentHashMap<>();
 
     //не может вернуть null значение
     @NotNull

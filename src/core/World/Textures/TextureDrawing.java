@@ -2,21 +2,18 @@ package core.World.Textures;
 
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
-
 import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
-    public static void draw(String path, int x, int y, ByteBuffer buffer, BufferedImage image) {
+
+    @Deprecated
+    //Not recommended, because all draw automatically at window
+    public static void draw(String path, int x, int y) {
         glEnable(GL_TEXTURE_2D);
-        //если при вызове не приходят буфферы, то сам декодирует их исходя из пути
-        if (buffer == null) {
-            System.err.println("buffer is null");
-            buffer = TextureLoader.ByteBufferEncoder(path);
-        }
-        if (image == null) {
-            System.err.println("image is null");
-            image = TextureLoader.BufferedImageEncoder(path);
-        }
+
+        ByteBuffer buffer = TextureLoader.ByteBufferEncoder(path);
+        BufferedImage image = TextureLoader.BufferedImageEncoder(path);
+
         //параметры, бинд текстур, и прочее
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

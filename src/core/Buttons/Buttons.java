@@ -1,7 +1,6 @@
 package core.Buttons;
 
-import core.World.EventHandler;
-
+import core.EventHandling.EventHandler;
 import java.util.Hashtable;
 
 public class Buttons extends Thread {
@@ -33,8 +32,8 @@ public class Buttons extends Thread {
     public void run() {
         while (true) {
             try {
-                for (int i = 0; i < nameCount - 1; i++) {
-                    if (EventHandler.getRectangleClick(buttons.get(names[i]).x, buttons.get(names[i]).y, 0, 0, names[i]) && buttons.get(names[i]).visible) {
+                for (int i = 0; i < nameCount; i++) {
+                    if (EventHandler.getRectangleClick(buttons.get(names[i]).x,buttons.get(names[i]).y, 0, 0, buttons.get(names[i]).path) && buttons.get(names[i]).visible) {
                         buttons.get(names[i]).isClicked = true;
                     }
                     buttons.get(names[i]).isClicked = false;

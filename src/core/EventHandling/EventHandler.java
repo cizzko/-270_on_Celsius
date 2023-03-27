@@ -1,9 +1,7 @@
-package core.World;
+package core.EventHandling;
 
 import core.World.Textures.TextureLoader;
-
 import java.awt.*;
-
 import static core.Window.glfwWindow;
 import static org.lwjgl.glfw.GLFW.*;
 
