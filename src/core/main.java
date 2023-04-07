@@ -17,6 +17,7 @@ public class main {
         Window window = Window.get();
         window.run();
         app.start();
+
     }
 
     static class Application {

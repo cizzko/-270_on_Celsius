@@ -1,6 +1,8 @@
 package core.Buttons;
 
 import core.EventHandling.EventHandler;
+import core.World.WorldGenerator;
+
 import java.util.Hashtable;
 
 public class Buttons extends Thread {

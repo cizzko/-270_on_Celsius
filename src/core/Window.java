@@ -3,6 +3,7 @@ package core;
 import core.EventHandling.MouseScrollCallback;
 import core.World.MainMenu;
 import core.World.Textures.TextureLoader;
+import core.World.WorldGenerator;
 import core.World.WorldObjects;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -12,6 +13,7 @@ import java.nio.ByteBuffer;
 import static java.sql.Types.NULL;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL13.*;
+import static org.lwjgl.opengl.GL43.GL_DEBUG_OUTPUT;
 
 public class Window {
     public final int width;
@@ -65,7 +67,7 @@ public class Window {
         System.out.println(glfwGetVersionString());
 
         glMatrixMode(GL_PROJECTION);
-        glOrtho(0, width, height, 0, 1.0, -1.0);
+        glOrtho(0, width, 0, height, 1, -1);
         glMatrixMode(GL_MODELVIEW);
 
         MainMenu.Create();
@@ -73,20 +75,23 @@ public class Window {
     }
 
     public void draw() {
+        glEnable(GL_DEBUG_OUTPUT);
+        float cameraX = 1f;
+        float cameraY = 1f;
+        float zoom = 4f;
         boolean start = false;
-        float zoom = 6.09f;
-        WorldObjects[][] objects;
-        objects = thread.getWorldObjects();
-        thread.setDaemon(true);
+
+        WorldGenerator.generateDynamicsObjects();
+        WorldGenerator.generateStaticObjects(1000, 20);
+        WorldObjects[][] objects = WorldGenerator.StaticObjects;
 
         glfwSwapBuffers(glfwWindow);
         glClear(GL_COLOR_BUFFER_BIT);
 
         //пока окно не закрыто
         while (!glfwWindowShouldClose(glfwWindow)) {
-            glfwPollEvents();
-            //alt f4
-            if(glfwGetKey(glfwWindow, 342) == 1 || glfwGetKey(glfwWindow, 293) == 1){
+            //alt
+            if(glfwGetKey(glfwWindow, 342) == 1){
                 System.exit(0);
             }
 
@@ -95,32 +100,53 @@ public class Window {
                 for (int x = 0; x < objects.length - 1; x++) {
                     for (int y = 0; y < objects[x].length - 1; y++) {
 
+                        float left = cameraX - width / zoom;
+                        float right = cameraX + width / zoom;
+                        float top = cameraY - height / zoom;
+                        float bottom = cameraY + height / zoom;
+
+                        if (objects[x][y].x < left || objects[x][y].x > right || objects[x][y].y < top || objects[x][y].y > bottom) {
+                            objects[x][y].onCamera = false;
+                        } else {
+                            objects[x][y].onCamera = true;
+                        }
+
+                        if (glfwGetKey(glfwWindow, GLFW_KEY_1) == GLFW_PRESS) zoom += 0.000005f;
+                        if (glfwGetKey(glfwWindow, GLFW_KEY_2) == GLFW_PRESS) zoom -= 0.000005f;
+                        if (glfwGetKey(glfwWindow, GLFW_KEY_D) == GLFW_PRESS) cameraX += 0.0057f;
+                        if (glfwGetKey(glfwWindow, GLFW_KEY_A) == GLFW_PRESS) cameraX -= 0.0057f;
+                        if (glfwGetKey(glfwWindow, GLFW_KEY_W) == GLFW_PRESS) cameraY += 0.0057f;
+                        if (glfwGetKey(glfwWindow, GLFW_KEY_S) == GLFW_PRESS) cameraY -= 0.0057f;
+
                         if (objects[x][y].onCamera) {
                             glPushMatrix();
                             glEnable(GL_TEXTURE_2D);
+                            glEnable(GL_BLEND);
+                            glTranslatef(-cameraX, -cameraY, 0);
                             glScalef(zoom, zoom, 0);
 
                             ByteBuffer buffer = TextureLoader.ByteBufferEncoder(objects[x][y].path);
                             BufferedImage image = TextureLoader.BufferedImageEncoder(objects[x][y].path);
 
                             // параметры, бинд текстур, и прочее
+                            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getHeight(), image.getWidth(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 
                             // верхний левый угол
                             glBegin(GL_QUADS);
-                            glTexCoord2i(0, 0);
-                            glVertex2i((int) objects[x][y].x, (int) objects[x][y].y);
-                            // нижний левый угол
                             glTexCoord2i(0, 1);
-                            glVertex2i((int) objects[x][y].x, image.getWidth() + (int) objects[x][y].y);
-                            // нижний правый угол
-                            glTexCoord2i(1, 1);
-                            glVertex2i(image.getHeight() + (int) objects[x][y].x, image.getWidth() + (int) objects[x][y].y);
+                            glVertex2i((int) objects[x][y].x, (int) objects[x][y].y);
                             // верхний правый угол
-                            glTexCoord2i(1, 0);
+                            glTexCoord2i(1, 1);
                             glVertex2i(image.getHeight() + (int) objects[x][y].x, (int) objects[x][y].y);
+                            // нижний правый угол
+                            glTexCoord2i(1, 0);
+                            glVertex2i(image.getHeight() + (int) objects[x][y].x, image.getWidth() + (int) objects[x][y].y);
+                            // нижний левый угол
+                            glTexCoord2i(0, 0);
+                            glVertex2i((int) objects[x][y].x, image.getWidth() + (int) objects[x][y].y);
 
                             //glVertex2i Задает вершины
                             //glTexCoord2i Задает текущие координаты текстуры
@@ -128,13 +154,6 @@ public class Window {
                             glEnd();
                             glDisable(GL_TEXTURE_2D);
                             glPopMatrix();
-                        }
-
-                        if(glfwGetKey(glfwWindow, 49) == 1){
-                            zoom += 0.000005f;
-                        }
-                        if(glfwGetKey(glfwWindow, 50) == 1){
-                            zoom -= 0.000005f;
                         }
                     }
                 }
@@ -145,6 +164,7 @@ public class Window {
                 thread.start();
                 start = true;
             }
+            glfwPollEvents();
         }
     }
 }
