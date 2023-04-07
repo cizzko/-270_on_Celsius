@@ -5,14 +5,21 @@ import core.World.MainMenu;
 import core.World.Textures.TextureLoader;
 import core.World.WorldGenerator;
 import core.World.WorldObjects;
+import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.*;
+
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
+import java.nio.FloatBuffer;
+
 import static java.sql.Types.NULL;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL13.*;
+import static org.lwjgl.opengl.GL20.*;
+import static org.lwjgl.opengl.GL30.glBindVertexArray;
+import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 import static org.lwjgl.opengl.GL43.GL_DEBUG_OUTPUT;
 
 public class Window {
@@ -88,6 +95,69 @@ public class Window {
         glfwSwapBuffers(glfwWindow);
         glClear(GL_COLOR_BUFFER_BIT);
 
+
+        // создаем вершинный шейдер
+        String vertexShaderSource = "#version 330 core\n" +
+                "layout(location = 0) in vec2 position;\n" +
+                "layout(location = 1) in vec2 texCoord;\n" +
+                "out vec2 fragTexCoord;\n" +
+                "void main() {\n" +
+                "    gl_Position = vec4(position, 0.0, 1.0);\n" +
+                "    fragTexCoord = texCoord;\n" +
+                "}";
+
+        int vertexShader = GL20.glCreateShader(GL20.GL_VERTEX_SHADER);
+        glShaderSource(vertexShader, vertexShaderSource);
+        glCompileShader(vertexShader);
+
+        // создаем фрагментный шейдер
+        String fragmentShaderSource = "#version 330 core\n" +
+                "in vec2 fragTexCoord;\n" +
+                "out vec4 fragColor;\n" +
+                "uniform sampler2D texture;\n" +
+                "void main() {\n" +
+                "    fragColor = texture2D(texture, fragTexCoord);\n" +
+                "}";
+
+        int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(fragmentShader, fragmentShaderSource);
+        glCompileShader(fragmentShader);
+
+        // создаем шейдерную программу
+        int program = glCreateProgram();
+        glAttachShader(program, vertexShader);
+        glAttachShader(program, fragmentShader);
+        glLinkProgram(program);
+        glUseProgram(program);
+
+        // создаем массив вершин и текстурных координат
+        float[] vertices = {
+                -1, 1,  0, 0, // верхний левый угол
+                1, 1,  1, 0, // верхний правый угол
+                1, -1, 1, 1, // нижний правый угол
+                -1, -1, 0, 1  // нижний левый угол
+        };
+
+        // создаем буфер вершин и загружаем данные
+        FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertices.length);
+        vertexBuffer.put(vertices).flip();
+
+        // создаем VAO и связываем буфер вершин
+        int vao = glGenVertexArrays();
+        glBindVertexArray(vao);
+        int vbo = glGenBuffers();
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
+        glVertexAttribPointer(0, 2, GL11.GL_FLOAT, false, 16, 0);
+        glVertexAttribPointer(1, 2, GL11.GL_FLOAT, false, 16, 8);
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+
+        // устанавливаем uniform переменные
+        int textureLoc = glGetUniformLocation(program, "texture");
+        glUniform1i(textureLoc, 0);
+
+
         //пока окно не закрыто
         while (!glfwWindowShouldClose(glfwWindow)) {
             //alt
@@ -119,40 +189,17 @@ public class Window {
                         if (glfwGetKey(glfwWindow, GLFW_KEY_S) == GLFW_PRESS) cameraY -= 0.0057f;
 
                         if (objects[x][y].onCamera) {
-                            glPushMatrix();
-                            glEnable(GL_TEXTURE_2D);
-                            glEnable(GL_BLEND);
-                            glTranslatef(-cameraX, -cameraY, 0);
-                            glScalef(zoom, zoom, 0);
-
                             ByteBuffer buffer = TextureLoader.ByteBufferEncoder(objects[x][y].path);
                             BufferedImage image = TextureLoader.BufferedImageEncoder(objects[x][y].path);
 
-                            // параметры, бинд текстур, и прочее
-                            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
                             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getHeight(), image.getWidth(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 
-                            // верхний левый угол
-                            glBegin(GL_QUADS);
-                            glTexCoord2i(0, 1);
-                            glVertex2i((int) objects[x][y].x, (int) objects[x][y].y);
-                            // верхний правый угол
-                            glTexCoord2i(1, 1);
-                            glVertex2i(image.getHeight() + (int) objects[x][y].x, (int) objects[x][y].y);
-                            // нижний правый угол
-                            glTexCoord2i(1, 0);
-                            glVertex2i(image.getHeight() + (int) objects[x][y].x, image.getWidth() + (int) objects[x][y].y);
-                            // нижний левый угол
-                            glTexCoord2i(0, 0);
-                            glVertex2i((int) objects[x][y].x, image.getWidth() + (int) objects[x][y].y);
-
-                            //glVertex2i Задает вершины
-                            //glTexCoord2i Задает текущие координаты текстуры
-
-                            glEnd();
-                            glDisable(GL_TEXTURE_2D);
+                            glPushMatrix();
+                            glTranslatef(-cameraX, -cameraY, 0);
+                            glScalef(zoom, zoom, 0);
+                            glDrawArrays(GL_QUADS, 0, 4);
                             glPopMatrix();
                         }
                     }
