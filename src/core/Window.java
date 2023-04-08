@@ -8,9 +8,12 @@ import core.World.WorldObjects;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.*;
+import org.lwjgl.openvr.Texture;
+import render.Draw;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 
@@ -21,6 +24,7 @@ import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.glBindVertexArray;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 import static org.lwjgl.opengl.GL43.GL_DEBUG_OUTPUT;
+import static render.Draw.compileShader;
 
 public class Window {
     public final int width;
@@ -48,7 +52,11 @@ public class Window {
 
     public void run() {
         init();
-        draw();
+        try {
+            draw();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void init() {
@@ -81,8 +89,29 @@ public class Window {
         glfwSetScrollCallback(glfwWindow, new MouseScrollCallback());
     }
 
-    public void draw() {
-        glEnable(GL_DEBUG_OUTPUT);
+    public void draw() throws IOException {
+        glfwSwapBuffers(glfwWindow);
+
+        // Загрузка шейдеров
+        int vertexShader = Draw.compileShader(GL_VERTEX_SHADER, Draw.loadShaderFromFile("D:\\-270_on_Celsius\\src\\render\\shaders\\vertex.glsl"));
+        int fragmentShader = Draw.compileShader(GL_FRAGMENT_SHADER, Draw.loadShaderFromFile("D:\\-270_on_Celsius\\src\\render\\shaders\\fragment.glsl"));
+
+        // Создание шейдерной программы
+        int shaderProgram = glCreateProgram();
+        glAttachShader(shaderProgram, vertexShader);
+        glAttachShader(shaderProgram, fragmentShader);
+
+        // Привязка вершинных атрибутов
+        glBindAttribLocation(shaderProgram, 0, "position");
+        glBindAttribLocation(shaderProgram, 1, "textureCoords");
+
+        // Компиляция шейдерной программы
+        glLinkProgram(shaderProgram);
+        glValidateProgram(shaderProgram);
+
+        // Отрисовка текстуры
+        Draw.drawTexture("D:\\-270_on_Celsius\\src\\assets\\TestImageForDrawing.png", 0, 0, shaderProgram);
+
         float cameraX = 1f;
         float cameraY = 1f;
         float zoom = 4f;
@@ -93,69 +122,6 @@ public class Window {
         WorldObjects[][] objects = WorldGenerator.StaticObjects;
 
         glfwSwapBuffers(glfwWindow);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-
-        // создаем вершинный шейдер
-        String vertexShaderSource = "#version 330 core\n" +
-                "layout(location = 0) in vec2 position;\n" +
-                "layout(location = 1) in vec2 texCoord;\n" +
-                "out vec2 fragTexCoord;\n" +
-                "void main() {\n" +
-                "    gl_Position = vec4(position, 0.0, 1.0);\n" +
-                "    fragTexCoord = texCoord;\n" +
-                "}";
-
-        int vertexShader = GL20.glCreateShader(GL20.GL_VERTEX_SHADER);
-        glShaderSource(vertexShader, vertexShaderSource);
-        glCompileShader(vertexShader);
-
-        // создаем фрагментный шейдер
-        String fragmentShaderSource = "#version 330 core\n" +
-                "in vec2 fragTexCoord;\n" +
-                "out vec4 fragColor;\n" +
-                "uniform sampler2D texture;\n" +
-                "void main() {\n" +
-                "    fragColor = texture2D(texture, fragTexCoord);\n" +
-                "}";
-
-        int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-        glShaderSource(fragmentShader, fragmentShaderSource);
-        glCompileShader(fragmentShader);
-
-        // создаем шейдерную программу
-        int program = glCreateProgram();
-        glAttachShader(program, vertexShader);
-        glAttachShader(program, fragmentShader);
-        glLinkProgram(program);
-        glUseProgram(program);
-
-        // создаем массив вершин и текстурных координат
-        float[] vertices = {
-                -1, 1,  0, 0, // верхний левый угол
-                1, 1,  1, 0, // верхний правый угол
-                1, -1, 1, 1, // нижний правый угол
-                -1, -1, 0, 1  // нижний левый угол
-        };
-
-        // создаем буфер вершин и загружаем данные
-        FloatBuffer vertexBuffer = BufferUtils.createFloatBuffer(vertices.length);
-        vertexBuffer.put(vertices).flip();
-
-        // создаем VAO и связываем буфер вершин
-        int vao = glGenVertexArrays();
-        glBindVertexArray(vao);
-        int vbo = glGenBuffers();
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, vertexBuffer, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 2, GL11.GL_FLOAT, false, 16, 0);
-        glVertexAttribPointer(1, 2, GL11.GL_FLOAT, false, 16, 8);
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-
-        // устанавливаем uniform переменные
-        int textureLoc = glGetUniformLocation(program, "texture");
-        glUniform1i(textureLoc, 0);
 
 
         //пока окно не закрыто
@@ -188,20 +154,6 @@ public class Window {
                         if (glfwGetKey(glfwWindow, GLFW_KEY_W) == GLFW_PRESS) cameraY += 0.0057f;
                         if (glfwGetKey(glfwWindow, GLFW_KEY_S) == GLFW_PRESS) cameraY -= 0.0057f;
 
-                        if (objects[x][y].onCamera) {
-                            ByteBuffer buffer = TextureLoader.ByteBufferEncoder(objects[x][y].path);
-                            BufferedImage image = TextureLoader.BufferedImageEncoder(objects[x][y].path);
-
-                            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-                            glPushMatrix();
-                            glTranslatef(-cameraX, -cameraY, 0);
-                            glScalef(zoom, zoom, 0);
-                            glDrawArrays(GL_QUADS, 0, 4);
-                            glPopMatrix();
-                        }
                     }
                 }
                 glfwSwapBuffers(glfwWindow);
