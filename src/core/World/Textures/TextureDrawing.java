@@ -6,12 +6,12 @@ import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
 
-    @Deprecated
-    //not recommended since it is a pipeline, now all rendering goes in the shader
-    public static void draw(String path, int x, int y) {
+    public static void draw(String path, int x, int y, float zoom, float cameraX, float cameraY) {
         glPushMatrix();
         glEnable(GL_TEXTURE_2D);
-        glEnable(GL_BLEND);;
+        glEnable(GL_BLEND);
+        glTranslatef(-cameraX, -cameraY, 0);
+        glScalef(zoom, zoom, 0);
 
         ByteBuffer buffer = TextureLoader.ByteBufferEncoder(path);
         BufferedImage image = TextureLoader.BufferedImageEncoder(path);

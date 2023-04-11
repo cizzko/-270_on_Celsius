@@ -1,24 +1,14 @@
 package render;
 
-import core.World.Textures.TextureDrawing;
 import core.World.Textures.TextureLoader;
 import core.World.WorldObjects;
-import org.lwjgl.BufferUtils;
-
-import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
-
 import static org.lwjgl.opengl.ARBVertexArrayObject.glBindVertexArray;
 import static org.lwjgl.opengl.GL20.*;
 import static org.lwjgl.opengl.GL30.glGenVertexArrays;
-import static org.lwjgl.opengl.GL43.GL_DEBUG_OUTPUT;
-import static org.lwjgl.opengl.GL43.glDebugMessageCallback;
 
 public class Draw {
     public static String loadShaderFromFile(String filePath) throws IOException {
@@ -53,7 +43,6 @@ public class Draw {
 
             return 0;
         }
-
         return shader;
     }
 
@@ -70,28 +59,22 @@ public class Draw {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, TextureLoader.ByteBufferEncoder(path));
 
         float[] vertices = {
-                // Положение вершин (x + x_offset, y + y_offset) и координаты текстуры (s, t)
-                0.5f + x, 0.5f + y, 1.0f, 1.0f,  // Верхний правый угол
-                0.5f + x, -0.5f + y, 1.0f, 0.0f,  // Нижний правый угол
-                -0.5f + x, -0.5f + y, 0.0f, 0.0f,  // Нижний левый угол
-                -0.5f + x, 0.5f + y, 0.0f, 1.0f   // Верхний левый угол
+                0.5f + x, 0.5f + y, 1.0f, 1.0f,
+                0.5f + x, -0.5f + y, 1.0f, 0.0f,
+                -0.5f + x, -0.5f + y, 0.0f, 0.0f,
+                -0.5f + x, 0.5f + y, 0.0f, 1.0f
         };
 
         int vao = glGenVertexArrays();
         glBindVertexArray(vao);
 
-        // Создание буфера вершин и связывание с контекстом OpenGL
         int vbo = glGenBuffers();
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
-
-        // Загрузка данных вершин в буфер
         glBufferData(GL_ARRAY_BUFFER, vertices, GL_STATIC_DRAW);
 
-        // Создание EBO и связывание с контекстом OpenGL
         int ebo = glGenBuffers();
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 
-        // Загрузка индексных данных в буфер
         glUseProgram(shader);
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, false, 5 * Float.BYTES, 0);
@@ -102,13 +85,13 @@ public class Draw {
         glBindVertexArray(vao);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 
-        int textureLocation = glGetUniformLocation(shader, "myTexture");
+        int textureLocation = glGetUniformLocation(shader, "Texture");
         glUniform1i(textureLocation, 0);
 
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, textureID);
 
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_QUADS, 4, GL_UNSIGNED_BYTE, 0);
     }
 
     public static void drawEffect(String type, int x, int y, int time, int radius) {

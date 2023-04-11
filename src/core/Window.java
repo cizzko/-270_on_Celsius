@@ -1,30 +1,21 @@
 package core;
 
+import core.EventHandling.EventHandler;
 import core.EventHandling.MouseScrollCallback;
 import core.World.MainMenu;
+import core.World.Textures.TextureDrawing;
 import core.World.Textures.TextureLoader;
 import core.World.WorldGenerator;
 import core.World.WorldObjects;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.opengl.*;
-import org.lwjgl.openvr.Texture;
-import render.Draw;
-
+import org.lwjgl.opengl.GL;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.FloatBuffer;
-
 import static java.sql.Types.NULL;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL20.*;
-import static org.lwjgl.opengl.GL30.glBindVertexArray;
-import static org.lwjgl.opengl.GL30.glGenVertexArrays;
 import static org.lwjgl.opengl.GL43.GL_DEBUG_OUTPUT;
-import static render.Draw.compileShader;
 
 public class Window {
     public final int width;
@@ -52,11 +43,7 @@ public class Window {
 
     public void run() {
         init();
-        try {
-            draw();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        draw();
     }
 
     public void init() {
@@ -89,40 +76,20 @@ public class Window {
         glfwSetScrollCallback(glfwWindow, new MouseScrollCallback());
     }
 
-    public void draw() throws IOException {
-        glfwSwapBuffers(glfwWindow);
-
-        // Загрузка шейдеров
-        int vertexShader = Draw.compileShader(GL_VERTEX_SHADER, Draw.loadShaderFromFile("D:\\-270_on_Celsius\\src\\render\\shaders\\vertex.glsl"));
-        int fragmentShader = Draw.compileShader(GL_FRAGMENT_SHADER, Draw.loadShaderFromFile("D:\\-270_on_Celsius\\src\\render\\shaders\\fragment.glsl"));
-
-        // Создание шейдерной программы
-        int shaderProgram = glCreateProgram();
-        glAttachShader(shaderProgram, vertexShader);
-        glAttachShader(shaderProgram, fragmentShader);
-
-        // Привязка вершинных атрибутов
-        glBindAttribLocation(shaderProgram, 0, "position");
-        glBindAttribLocation(shaderProgram, 1, "textureCoords");
-
-        // Компиляция шейдерной программы
-        glLinkProgram(shaderProgram);
-        glValidateProgram(shaderProgram);
-
-        // Отрисовка текстуры
-        Draw.drawTexture("D:\\-270_on_Celsius\\src\\assets\\TestImageForDrawing.png", 0, 0, shaderProgram);
-
+    public void draw() {
+        glEnable(GL_DEBUG_OUTPUT);
         float cameraX = 1f;
-        float cameraY = 1f;
+        float cameraY = 160f;
         float zoom = 4f;
         boolean start = false;
 
-        WorldGenerator.generateDynamicsObjects();
         WorldGenerator.generateStaticObjects(1000, 20);
+        WorldGenerator.generateDynamicsObjects();
+        WorldObjects[] DynamicObjects = WorldGenerator.DynamicObjects;
         WorldObjects[][] objects = WorldGenerator.StaticObjects;
 
         glfwSwapBuffers(glfwWindow);
-
+        glClear(GL_COLOR_BUFFER_BIT);
 
         //пока окно не закрыто
         while (!glfwWindowShouldClose(glfwWindow)) {
@@ -147,19 +114,27 @@ public class Window {
                             objects[x][y].onCamera = true;
                         }
 
-                        if (glfwGetKey(glfwWindow, GLFW_KEY_1) == GLFW_PRESS) zoom += 0.000005f;
-                        if (glfwGetKey(glfwWindow, GLFW_KEY_2) == GLFW_PRESS) zoom -= 0.000005f;
-                        if (glfwGetKey(glfwWindow, GLFW_KEY_D) == GLFW_PRESS) cameraX += 0.0057f;
-                        if (glfwGetKey(glfwWindow, GLFW_KEY_A) == GLFW_PRESS) cameraX -= 0.0057f;
-                        if (glfwGetKey(glfwWindow, GLFW_KEY_W) == GLFW_PRESS) cameraY += 0.0057f;
-                        if (glfwGetKey(glfwWindow, GLFW_KEY_S) == GLFW_PRESS) cameraY -= 0.0057f;
+                        if (EventHandler.getKey(GLFW_KEY_1)) zoom += 0.000005f;
+                        if (EventHandler.getKey(GLFW_KEY_2)) zoom -= 0.000005f;
+                        if (EventHandler.getKey(GLFW_KEY_D)) cameraX += 0.0057f;
+                        if (EventHandler.getKey(GLFW_KEY_A)) cameraX -= 0.0057f;
+                        if (EventHandler.getKey(GLFW_KEY_W)) cameraY += 0.0057f;
+                        if (EventHandler.getKey(GLFW_KEY_S)) cameraY -= 0.0057f;
 
+                        if (objects[x][y].onCamera) {
+                            TextureDrawing.draw(objects[x][y].path, (int) objects[x][y].x, (int) objects[x][y].y, zoom, cameraX, cameraY);
+                        }
+                    }
+                }
+                for (int i = 0; i < WorldGenerator.DynamicObjects.length; i++) {
+                    if (WorldGenerator.DynamicObjects[i] != null && WorldGenerator.DynamicObjects[i].onCamera == true){
+                        TextureDrawing.draw(WorldGenerator.DynamicObjects[i].path, (int) WorldGenerator.DynamicObjects[i].x, (int) WorldGenerator.DynamicObjects[i].y, zoom, cameraX, cameraY);
                     }
                 }
                 glfwSwapBuffers(glfwWindow);
             }
             //f1
-            else if (glfwGetKey(glfwWindow, 290) == 1) {
+            else if (EventHandler.getKey(GLFW_KEY_F1)) {
                 thread.start();
                 start = true;
             }

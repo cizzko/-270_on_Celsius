@@ -2,7 +2,6 @@ package core.World.Textures;
 
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.BufferUtils;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;

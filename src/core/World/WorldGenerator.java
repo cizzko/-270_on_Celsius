@@ -10,7 +10,6 @@ public class WorldGenerator {
         WorldGenerator.SizeX = SizeX;
         WorldGenerator.SizeY = SizeY;
 
-
         for (int x = 0; x < SizeX; x++) {
             for (int y = 0; y < SizeY; y++) {
                 if (y > SizeY / 2) {
@@ -26,8 +25,14 @@ public class WorldGenerator {
     }
 
     public static void generateDynamicsObjects() {
-        DynamicObjects = new WorldObjects[SizeX * SizeY + 1];
-        WorldObjects player = new WorldObjects(false, true, false, false, false, false, true, false, null, "", 0, SizeY * 8 + 16);
+        try {
+            DynamicObjects = new WorldObjects[SizeX * SizeY + 1];
+        } catch (OutOfMemoryError e) {
+            System.err.println("Failed to allocate memory for DynamicObjects: " + "DynamicObjects size < 2147483647: DynamicObject created as size 4096");
+            DynamicObjects = new WorldObjects[4096];
+        }
+
+        WorldObjects player = new WorldObjects(false, true, false, false, false, false, true, false, null, ".\\src\\assets\\World\\player.png", 0, SizeY * 8 + 16);
         DynamicObjects[0] = player;
 
     }
