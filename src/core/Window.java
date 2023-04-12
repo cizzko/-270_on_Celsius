@@ -4,18 +4,14 @@ import core.EventHandling.EventHandler;
 import core.EventHandling.MouseScrollCallback;
 import core.World.MainMenu;
 import core.World.Textures.TextureDrawing;
-import core.World.Textures.TextureLoader;
 import core.World.WorldGenerator;
 import core.World.WorldObjects;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.nio.ByteBuffer;
 import static java.sql.Types.NULL;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL13.*;
-import static org.lwjgl.opengl.GL43.GL_DEBUG_OUTPUT;
 
 public class Window {
     public final int width;
@@ -77,7 +73,6 @@ public class Window {
     }
 
     public void draw() {
-        glEnable(GL_DEBUG_OUTPUT);
         float cameraX = 1f;
         float cameraY = 160f;
         float zoom = 4f;
@@ -85,7 +80,6 @@ public class Window {
 
         WorldGenerator.generateStaticObjects(1000, 20);
         WorldGenerator.generateDynamicsObjects();
-        WorldObjects[] DynamicObjects = WorldGenerator.DynamicObjects;
         WorldObjects[][] objects = WorldGenerator.StaticObjects;
 
         glfwSwapBuffers(glfwWindow);
@@ -116,19 +110,15 @@ public class Window {
 
                         if (EventHandler.getKey(GLFW_KEY_1)) zoom += 0.000005f;
                         if (EventHandler.getKey(GLFW_KEY_2)) zoom -= 0.000005f;
-                        if (EventHandler.getKey(GLFW_KEY_D)) cameraX += 0.0057f;
-                        if (EventHandler.getKey(GLFW_KEY_A)) cameraX -= 0.0057f;
-                        if (EventHandler.getKey(GLFW_KEY_W)) cameraY += 0.0057f;
-                        if (EventHandler.getKey(GLFW_KEY_S)) cameraY -= 0.0057f;
 
                         if (objects[x][y].onCamera) {
-                            TextureDrawing.draw(objects[x][y].path, (int) objects[x][y].x, (int) objects[x][y].y, zoom, cameraX, cameraY);
+                            TextureDrawing.draw(objects[x][y].path, (int) objects[x][y].x, (int) objects[x][y].y, zoom);
                         }
                     }
                 }
                 for (int i = 0; i < WorldGenerator.DynamicObjects.length; i++) {
                     if (WorldGenerator.DynamicObjects[i] != null && WorldGenerator.DynamicObjects[i].onCamera == true){
-                        TextureDrawing.draw(WorldGenerator.DynamicObjects[i].path, (int) WorldGenerator.DynamicObjects[i].x, (int) WorldGenerator.DynamicObjects[i].y, zoom, cameraX, cameraY);
+                        TextureDrawing.draw(WorldGenerator.DynamicObjects[i].path, (int) WorldGenerator.DynamicObjects[i].x, (int) WorldGenerator.DynamicObjects[i].y, zoom);
                     }
                 }
                 glfwSwapBuffers(glfwWindow);

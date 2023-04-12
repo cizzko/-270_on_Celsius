@@ -1,16 +1,19 @@
 package core.World.Textures;
 
+import core.Window;
+import core.World.WorldGenerator;
+
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
 
-    public static void draw(String path, int x, int y, float zoom, float cameraX, float cameraY) {
+    public static void draw(String path, int x, int y, float zoom) {
         glPushMatrix();
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_BLEND);
-        glTranslatef(-cameraX, -cameraY, 0);
+        glTranslatef(-WorldGenerator.DynamicObjects[0].x * zoom + Window.get().width / 2 - 32, -WorldGenerator.DynamicObjects[0].y, 0);
         glScalef(zoom, zoom, 0);
 
         ByteBuffer buffer = TextureLoader.ByteBufferEncoder(path);
