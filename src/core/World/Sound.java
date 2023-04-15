@@ -1,24 +1,29 @@
 package core.World;
 
+import core.Physics;
+
 import javax.sound.sampled.*;
 import java.io.File;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class Sound extends Thread {
     private static String path;
     private static boolean stop = true;
+    private static ConcurrentHashMap<String, File> sounds = new ConcurrentHashMap<>();
 
     public static void SoundPlay(String path) {
         Sound.path = path;
         Sound.stop = false;
+
+        if (sounds.isEmpty()) new Thread(new Sound()).start();
+        sounds.putIfAbsent(path, new File(path));
     }
 
     public void run() {
         while (true) {
             if (!stop) {
                 try {
-                    // загрузить аудио-файл
-                    File file = new File(path);
-                    AudioInputStream inputStream = AudioSystem.getAudioInputStream(file);
+                    AudioInputStream inputStream = AudioSystem.getAudioInputStream(sounds.get(path));
                     AudioFormat format = inputStream.getFormat();
 
                     // преобразовать формат в PCM
