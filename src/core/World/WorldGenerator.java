@@ -1,9 +1,9 @@
 package core.World;
 
 public class WorldGenerator {
-    public static  int SizeX, SizeY;
-    public static WorldObjects StaticObjects[][];
-    public static WorldObjects DynamicObjects[];
+    public static int SizeX, SizeY;
+    public static WorldObjects[][] StaticObjects;
+    public static WorldObjects[] DynamicObjects;
     public static void generateStaticObjects(int SizeX, int SizeY) {
         StaticObjects = new WorldObjects[SizeX + 1][SizeY + 1];
         int rand;
@@ -34,6 +34,5 @@ public class WorldGenerator {
 
         WorldObjects player = new WorldObjects(false, true, false, false, false, false, true, false, null, ".\\src\\assets\\World\\player.png", 0, SizeY * 8 + 16);
         DynamicObjects[0] = player;
-
     }
 }

@@ -3,23 +3,24 @@ package core;
 import core.EventHandling.EventHandler;
 import core.EventHandling.MouseScrollCallback;
 import core.World.MainMenu;
+import core.World.Sound;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
 import core.World.WorldObjects;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
+
 import java.awt.*;
+
 import static java.sql.Types.NULL;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL13.*;
 
 public class Window {
-    public final int width;
-    public final int height;
+    public final int width, height;
     private final String title;
     public static long glfwWindow;
     private static Window window;
-    private static Physics thread = new Physics();
 
     public Window() {
         //чекает размеры твоего экрана
@@ -73,8 +74,10 @@ public class Window {
     }
 
     public void draw() {
+        new Thread(new Sound()).start();
+
         float cameraX = 1f;
-        float cameraY = 160f;
+        float cameraY = 1f;
         float zoom = 4f;
         boolean start = false;
 
@@ -88,10 +91,11 @@ public class Window {
         //пока окно не закрыто
         while (!glfwWindowShouldClose(glfwWindow)) {
             //alt
-            if(glfwGetKey(glfwWindow, 342) == 1){
+            if (EventHandler.getKey(GLFW_KEY_LEFT_ALT)){
                 System.exit(0);
             }
 
+            //Это настолько костыльно, что надо переписать
             if (start) {
                 glClear(GL_COLOR_BUFFER_BIT);
                 for (int x = 0; x < objects.length - 1; x++) {
@@ -102,11 +106,7 @@ public class Window {
                         float top = cameraY - height / zoom;
                         float bottom = cameraY + height / zoom;
 
-                        if (objects[x][y].x < left || objects[x][y].x > right || objects[x][y].y < top || objects[x][y].y > bottom) {
-                            objects[x][y].onCamera = false;
-                        } else {
-                            objects[x][y].onCamera = true;
-                        }
+                        objects[x][y].onCamera = !(objects[x][y].x < left) && !(objects[x][y].x > right) && !(objects[x][y].y < top) && !(objects[x][y].y > bottom);
 
                         if (EventHandler.getKey(GLFW_KEY_1)) zoom += 0.000005f;
                         if (EventHandler.getKey(GLFW_KEY_2)) zoom -= 0.000005f;
@@ -117,7 +117,7 @@ public class Window {
                     }
                 }
                 for (int i = 0; i < WorldGenerator.DynamicObjects.length; i++) {
-                    if (WorldGenerator.DynamicObjects[i] != null && WorldGenerator.DynamicObjects[i].onCamera == true){
+                    if (WorldGenerator.DynamicObjects[i] != null && WorldGenerator.DynamicObjects[i].onCamera){
                         TextureDrawing.draw(WorldGenerator.DynamicObjects[i].path, (int) WorldGenerator.DynamicObjects[i].x, (int) WorldGenerator.DynamicObjects[i].y, zoom);
                     }
                 }
@@ -125,7 +125,7 @@ public class Window {
             }
             //f1
             else if (EventHandler.getKey(GLFW_KEY_F1)) {
-                thread.start();
+                new Thread(new Physics()).start();
                 start = true;
             }
             glfwPollEvents();

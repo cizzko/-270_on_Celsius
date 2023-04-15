@@ -1,19 +1,14 @@
 package core.World.Textures;
 
-import core.Window;
-import core.World.WorldGenerator;
-
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
-
     public static void draw(String path, int x, int y, float zoom) {
         glPushMatrix();
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_BLEND);
-        glTranslatef(-WorldGenerator.DynamicObjects[0].x * zoom + Window.get().width / 2 - 32, -WorldGenerator.DynamicObjects[0].y, 0);
         glScalef(zoom, zoom, 0);
 
         ByteBuffer buffer = TextureLoader.ByteBufferEncoder(path);
@@ -23,21 +18,30 @@ public class TextureDrawing {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getHeight(), image.getWidth(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        if (width < height) {
+            width = image.getHeight();
+            height = image.getWidth();
+        }
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 
         // верхний левый угол
         glBegin(GL_QUADS);
-        glTexCoord2i(0, 1);
-        glVertex2i(x, y);
+        glTexCoord2f(0, 1);
+        glVertex2f(x, y);
         // верхний правый угол
-        glTexCoord2i(1, 1);
-        glVertex2i(image.getHeight() + x, y);
+        glTexCoord2f(1, 1);
+        glVertex2f(x + width, y);
         // нижний правый угол
-        glTexCoord2i(1, 0);
-        glVertex2i(image.getHeight() + x, image.getWidth() + y);
+        glTexCoord2f(1, 0);
+        glVertex2f(x + width, y + height);
         // нижний левый угол
-        glTexCoord2i(0, 0);
-        glVertex2i(x, image.getWidth() + y);
+        glTexCoord2f(0, 0);
+        glVertex2f(x, y + height);
 
         //glVertex2i Задает вершины
         //glTexCoord2i Задает текущие координаты текстуры

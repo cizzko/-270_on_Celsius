@@ -8,7 +8,7 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class TextureLoader {
+public class TextureLoader extends Thread {
     static ConcurrentHashMap<String, BufferedImage> bufferedImages = new ConcurrentHashMap<>();
     static ConcurrentHashMap<String, ByteBuffer> byteBuffers = new ConcurrentHashMap<>();
 
@@ -19,7 +19,6 @@ public class TextureLoader {
         if (bufferedImages.get(path) == null) {
             try {
                 bufferedImages.put(path, ImageIO.read(new File(path)));
-                System.out.println(path);
             } catch (Exception e) {
                 System.err.println("Critical err at BufferedImageEncoder'" + e + "', Path '" + path + "'");
                 //команда выхода из программы

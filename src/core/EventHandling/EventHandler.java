@@ -2,6 +2,8 @@ package core.EventHandling;
 
 import core.World.Textures.TextureLoader;
 import java.awt.*;
+
+import static core.Window.get;
 import static core.Window.glfwWindow;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -9,7 +11,9 @@ public class EventHandler {
     public static Point getMousePos() {
         double mouseX = MouseInfo.getPointerInfo().getLocation().getX();
         double mouseY = MouseInfo.getPointerInfo().getLocation().getY();
-        Point mousePos = new Point((int) mouseX, (int) mouseY);
+        int invertedY = get().height - (int) mouseY;
+        Point mousePos = new Point((int) mouseX, invertedY);
+
         return mousePos;
     }
 
@@ -17,16 +21,18 @@ public class EventHandler {
         return glfwGetKey(glfwWindow, key) == 1;
     }
 
-    @Deprecated
-    public static boolean getRectangleClick(int x, int y, int x1, int y1, String path) {
-
-        if (path != null) {
-            x1 = TextureLoader.BufferedImageEncoder(path).getWidth();
-            y1 = TextureLoader.BufferedImageEncoder(path).getHeight();
-        }
-
-        Point mousePos = getMousePos();
+    public static boolean getRectangleClick(int x, int y, String path) {
+        int x1 = TextureLoader.BufferedImageEncoder(path).getWidth();
+        int y1 = TextureLoader.BufferedImageEncoder(path).getHeight();
         int state = glfwGetMouseButton(glfwWindow, GLFW_MOUSE_BUTTON_LEFT);
+        Point mousePos = getMousePos();
+
+        return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 && state == GLFW_PRESS;
+    }
+
+    public static boolean getRectangleClick(int x, int y, int x1, int y1) {
+        int state = glfwGetMouseButton(glfwWindow, GLFW_MOUSE_BUTTON_LEFT);
+        Point mousePos = getMousePos();
 
         return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 && state == GLFW_PRESS;
     }
