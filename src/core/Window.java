@@ -74,8 +74,6 @@ public class Window {
     }
 
     public void draw() {
-        new Thread(new Sound()).start();
-
         float cameraX = 1f;
         float cameraY = 1f;
         float zoom = 4f;
