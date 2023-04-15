@@ -16,14 +16,15 @@ public class TextureLoader extends Thread {
     @NotNull
     public static BufferedImage BufferedImageEncoder(String path) {
         //если картинка не создана - пытается создать, иначе выдаст ошибку
+        if (bufferedImages.get(path) == null) {
             try {
-                bufferedImages.putIfAbsent(path, ImageIO.read(new File(path)));
+                bufferedImages.put(path, ImageIO.read(new File(path)));
             } catch (Exception e) {
                 System.err.println("Critical err at BufferedImageEncoder'" + e + "', Path '" + path + "'");
                 //команда выхода из программы
                 System.exit(0);
             }
-
+        }
         //декодируется картинка - вернется буффер картинки
         return bufferedImages.get(path);
     }

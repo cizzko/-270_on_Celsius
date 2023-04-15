@@ -1,5 +1,7 @@
 package core.World.Textures;
 
+import core.Window;
+import core.World.WorldGenerator;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import static org.lwjgl.opengl.GL13.*;
@@ -9,6 +11,7 @@ public class TextureDrawing {
         glPushMatrix();
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_BLEND);
+        glTranslatef(-WorldGenerator.DynamicObjects[0].x * zoom + Window.get().width / 2 - 32, -WorldGenerator.DynamicObjects[0].y, 0);
         glScalef(zoom, zoom, 0);
 
         ByteBuffer buffer = TextureLoader.ByteBufferEncoder(path);
