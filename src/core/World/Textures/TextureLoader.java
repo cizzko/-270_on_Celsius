@@ -12,10 +12,12 @@ public class TextureLoader extends Thread {
     static ConcurrentHashMap<String, BufferedImage> bufferedImages = new ConcurrentHashMap<>();
     static ConcurrentHashMap<String, ByteBuffer> byteBuffers = new ConcurrentHashMap<>();
 
-    //не может вернуть null значение
     @NotNull
     public static BufferedImage BufferedImageEncoder(String path) {
-        //если картинка не создана - пытается создать, иначе выдаст ошибку
+        /* если картинка не создана - пытается создать, иначе выдаст ошибку
+        намеренно сделана сначала проверка через if, содержится ли значение, поскольку
+        putIfAbsent просаживал производительность более чем на 2000% */
+
         if (bufferedImages.get(path) == null) {
             try {
                 bufferedImages.put(path, ImageIO.read(new File(path)));
@@ -42,7 +44,7 @@ public class TextureLoader extends Thread {
             image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
             buffer = BufferUtils.createByteBuffer(image.getWidth() * image.getHeight() * BYTES_PER_PIXEL); //4 байта на пиксель для ргба, 3 под ргб
 
-            //вложенный цикл для загрузки каждого пикселя
+            //загрузка пикселей
             for (int y = 0; y < image.getHeight(); y++) {
                 for (int x = 0; x < image.getWidth(); x++) {
                     int pixel = pixels[y * image.getWidth() + x];
@@ -52,7 +54,7 @@ public class TextureLoader extends Thread {
                     buffer.put((byte) ((pixel >> 24) & 0xFF));     // альфа компонент, используется в ргба и обозначает степень прозрачности пикселя
                 }
             }
-            //я вам запрещаю забывать про эту строчку
+            //подготовка буффера к чтению
             buffer.flip();
             byteBuffers.put(path, buffer);
         }
