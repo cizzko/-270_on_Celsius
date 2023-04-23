@@ -1,5 +1,6 @@
 package core.World.Textures;
 
+import core.Logging.logger;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.BufferUtils;
 import javax.imageio.ImageIO;
@@ -22,7 +23,7 @@ public class TextureLoader extends Thread {
             try {
                 bufferedImages.put(path, ImageIO.read(new File(path)));
             } catch (Exception e) {
-                System.err.println("Critical err at BufferedImageEncoder'" + e + "', Path '" + path + "'");
+                logger.log("Critical err at BufferedImageEncoder'" + e + "', Path '" + path + "'");
                 //команда выхода из программы
                 System.exit(0);
             }

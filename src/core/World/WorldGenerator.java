@@ -1,11 +1,15 @@
 package core.World;
 
+import core.Logging.logger;
+import core.World.Textures.DynamicWorldObjects;
+import core.World.Textures.StaticWorldObjects;
+
 public class WorldGenerator {
     public static int SizeX, SizeY;
-    public static WorldObjects[][] StaticObjects;
-    public static WorldObjects[] DynamicObjects;
-    public static void generateStaticObjects(int SizeX, int SizeY) {
-        StaticObjects = new WorldObjects[SizeX + 1][SizeY + 1];
+    public static StaticWorldObjects[][] StaticObjects;
+    public static DynamicWorldObjects[] DynamicObjects;
+    public static void generateWorld(int SizeX, int SizeY) {
+        StaticObjects = new StaticWorldObjects[SizeX + 1][SizeY + 1];
         int rand;
         WorldGenerator.SizeX = SizeX;
         WorldGenerator.SizeY = SizeY;
@@ -13,12 +17,18 @@ public class WorldGenerator {
         for (int x = 0; x < SizeX; x++) {
             for (int y = 0; y < SizeY; y++) {
                 if (y > SizeY / 2) {
-                    WorldObjects air = new WorldObjects(false, true, true, false, false, false, false, false, null, ".\\src\\assets\\World\\air.png", x * 16, y * 16);
-                    StaticObjects[x][y] = air;
+                    StaticObjects[x][y] = new StaticWorldObjects(true, true, false, false, false, false, null, ".\\src\\assets\\World\\blocks\\air.png", x * 16, y * 16);;
                 } else {
                     rand = 1 + (int) (Math.random() * 3);
-                    WorldObjects grass = new WorldObjects(false, true, false, false, true, false, false, false, null, ".\\src\\assets\\World\\grass" + rand + ".png", x * 16, y * 16);
-                    StaticObjects[x][y] = grass;
+                    StaticObjects[x][y] = new StaticWorldObjects(true, false, false, true, false, false, null, ".\\src\\assets\\World\\blocks\\grass" + rand + ".png", x * 16, y * 16);
+                }
+            }
+        }
+        for (int x = 0; x < StaticObjects.length - 1; x++) {
+            for (int y = 0; y < StaticObjects[x].length - 1; y++) {
+                if (y > SizeY / 2 && StaticObjects[x][y - 1].solid && Math.random() * 1 == 1) {
+                    rand = 1 + (int) (Math.random() * 3);
+                    StaticObjects[x][y] = new StaticWorldObjects(true, false, false, true, false, false, null, ".\\src\\assets\\World\\blocks\\grass" + rand + ".png", x * 16, y * 16);
                 }
             }
         }
@@ -26,13 +36,13 @@ public class WorldGenerator {
 
     public static void generateDynamicsObjects() {
         try {
-            DynamicObjects = new WorldObjects[SizeX * SizeY + 1];
+            DynamicObjects = new DynamicWorldObjects[SizeX * SizeY / 2 + 1];
         } catch (OutOfMemoryError e) {
-            System.err.println("Failed to allocate memory for DynamicObjects: " + "DynamicObjects size < 2147483647: DynamicObject created as size 4096");
-            DynamicObjects = new WorldObjects[4096];
+            logger.log("Failed to allocate memory for DynamicObjects: " + "DynamicObjects size < 2147483647: DynamicObject created as size 4096");
+            DynamicObjects = new DynamicWorldObjects[4096];
         }
 
-        WorldObjects player = new WorldObjects(false, true, false, false, false, false, true, false, null, ".\\src\\assets\\World\\player.png", 0, SizeY * 8 + 16);
+        DynamicWorldObjects player = new DynamicWorldObjects(1, 0, ".\\src\\assets\\World\\creatures\\player.png", true, true, 0, SizeY * 8 + 16);
         DynamicObjects[0] = player;
     }
 }

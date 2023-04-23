@@ -1,5 +1,7 @@
 package core.World;
 
+import core.Logging.logger;
+
 import javax.sound.sampled.*;
 import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
@@ -48,7 +50,7 @@ public class Sound {
                 sourceDataLine.close();
 
             } catch (Exception e) {
-                System.err.println("Error during sound playback: " + e);
+                logger.log("Error during sound playback: " + e);
             } finally {
                 sounds.put(path, false);
             }

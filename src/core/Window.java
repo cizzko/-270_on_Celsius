@@ -2,32 +2,34 @@ package core;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.MouseScrollCallback;
+import core.Logging.config;
+import core.Logging.logger;
 import core.World.MainMenu;
-import core.World.Sound;
-import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
-import core.World.WorldObjects;
+import core.World.creatures.CreaturesLogic;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
-
 import java.awt.*;
+import java.time.LocalDateTime;
 
+import static core.World.Textures.TextureDrawing.*;
 import static java.sql.Types.NULL;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL13.*;
 
 public class Window {
     public final int width, height;
+    long lastFrameTime = System.currentTimeMillis();
+    public static int deltaTime;
     private final String title;
+    public static boolean start = false, fullScreen = Boolean.parseBoolean(config.jetFromConfig("FullScreen"));
     public static long glfwWindow;
     private static Window window;
 
     public Window() {
-        //чекает размеры твоего экрана
-        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
-        this.width = dim.width;
-        this.height = dim.height;
-        this.title = "-270 on Celsius";
+        this.width = Integer.parseInt(config.jetFromConfig("ScreenWidth"));
+        this.height = Integer.parseInt(config.jetFromConfig("ScreenHeight"));
+        this.title = "-270 on Celsius: 'dev 0.0.1'";
     }
 
     public static Window get() {
@@ -46,15 +48,20 @@ public class Window {
     public void init() {
         //инициализирует библиотеку
         glfwInit();
-        System.out.println("'glfw' has been initialized");
+        glfwGetCurrentContext();
         GLFWErrorCallback.createPrint(System.err).set();
         if (glfwWindow == NULL) {
             //если окна не существует - создаст
-            glfwGetCurrentContext();
-            glfwWindow = glfwCreateWindow(this.width, this.height, this.title, glfwGetPrimaryMonitor(), NULL);
+            if (fullScreen) {
+                glfwWindow = glfwCreateWindow(this.width, this.height, this.title, glfwGetPrimaryMonitor(), NULL);
+            }
+            else {
+                glfwWindow = glfwCreateWindow(this.width, this.height, this.title, NULL, NULL);
+            }
+            glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         } else {
             //при попытке создания окна возникла ошибка - сообщит
-            System.err.println("error at create glfwWindow");
+            logger.log("error at create window");
         }
         glfwMakeContextCurrent(glfwWindow);
         //vsync
@@ -63,7 +70,6 @@ public class Window {
         glfwShowWindow(glfwWindow);
         //подключает инструменты библиотеки
         GL.createCapabilities();
-        System.out.println(glfwGetVersionString());
 
         glMatrixMode(GL_PROJECTION);
         glOrtho(0, width, 0, height, 1, -1);
@@ -71,60 +77,35 @@ public class Window {
 
         MainMenu.Create();
         glfwSetScrollCallback(glfwWindow, new MouseScrollCallback());
+
+        logger.log("init: true" + "\nglfw version: " + glfwGetVersionString() + "\ntime: " + LocalDateTime.now());
     }
 
     public void draw() {
-        float cameraX = 1f;
-        float cameraY = 1f;
-        float zoom = 4f;
-        boolean start = false;
-
-        WorldGenerator.generateStaticObjects(1000, 20);
+        logger.log("drawing started");
+        WorldGenerator.generateWorld(1000, 20);
         WorldGenerator.generateDynamicsObjects();
-        WorldObjects[][] objects = WorldGenerator.StaticObjects;
 
-        glfwSwapBuffers(glfwWindow);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        //пока окно не закрыто
         while (!glfwWindowShouldClose(glfwWindow)) {
-            //alt
-            if (EventHandler.getKey(GLFW_KEY_LEFT_ALT)){
-                System.exit(0);
-            }
+            long currentTime = System.currentTimeMillis();
+            deltaTime = (int) (currentTime - lastFrameTime);
+            lastFrameTime = currentTime;
 
-            //Это настолько костыльно, что надо переписать
+            if (EventHandler.getKey(GLFW_KEY_F1) && !start) {
+                start = true;
+                new Thread(new Physics()).start();
+                //new Thread(new CreaturesLogic()).start();
+            }
             if (start) {
                 glClear(GL_COLOR_BUFFER_BIT);
-                for (int x = 0; x < objects.length - 1; x++) {
-                    for (int y = 0; y < objects[x].length - 1; y++) {
-
-                        float left = cameraX - width / zoom;
-                        float right = cameraX + width / zoom;
-                        float top = cameraY - height / zoom;
-                        float bottom = cameraY + height / zoom;
-
-                        objects[x][y].onCamera = !(objects[x][y].x < left) && !(objects[x][y].x > right) && !(objects[x][y].y < top) && !(objects[x][y].y > bottom);
-
-                        if (EventHandler.getKey(GLFW_KEY_1)) zoom += 0.000005f;
-                        if (EventHandler.getKey(GLFW_KEY_2)) zoom -= 0.000005f;
-
-                        if (objects[x][y].onCamera) {
-                            TextureDrawing.draw(objects[x][y].path, (int) objects[x][y].x, (int) objects[x][y].y, zoom);
-                        }
-                    }
-                }
-                for (int i = 0; i < WorldGenerator.DynamicObjects.length; i++) {
-                    if (WorldGenerator.DynamicObjects[i] != null && WorldGenerator.DynamicObjects[i].onCamera){
-                        TextureDrawing.draw(WorldGenerator.DynamicObjects[i].path, (int) WorldGenerator.DynamicObjects[i].x, (int) WorldGenerator.DynamicObjects[i].y, zoom);
-                    }
-                }
-                glfwSwapBuffers(glfwWindow);
+                updateStaticObj();
+                updateDynamicObj();
             }
-            //f1
-            else if (EventHandler.getKey(GLFW_KEY_F1)) {
-                new Thread(new Physics()).start();
-                start = true;
+            //updateGUI();
+            glfwSwapBuffers(glfwWindow);
+
+            if (EventHandler.getKey(GLFW_KEY_LEFT_ALT)) {
+                System.exit(0);
             }
             glfwPollEvents();
         }

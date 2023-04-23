@@ -1,18 +1,27 @@
 package core.World.Textures;
 
+import core.EventHandling.MouseScrollCallback;
 import core.Window;
 import core.World.WorldGenerator;
+
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
+import java.util.Enumeration;
+import static core.GUI.CreateElement.elements;
 import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
+    private static int accumulator = 0;
+    public static StaticWorldObjects[][] StaticObjects = WorldGenerator.StaticObjects;
+    public static DynamicWorldObjects[] DynamicObjects = WorldGenerator.DynamicObjects;
+
     public static void draw(String path, int x, int y, float zoom) {
         glPushMatrix();
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_BLEND);
-        glTranslatef(-WorldGenerator.DynamicObjects[0].x * zoom + Window.get().width / 2 - 32, -WorldGenerator.DynamicObjects[0].y, 0);
-        glScalef(zoom, zoom, 0);
+        glLoadIdentity();
+        glTranslatef(-DynamicObjects[0].x * zoom + Window.get().width / 2 - 32, -DynamicObjects[0].y, 0);
+        glMultMatrixf(new float[] {zoom + (float)(zoom + MouseScrollCallback.getScroll()) / 10, 0, 0, 0, 0, zoom + (float)(zoom + MouseScrollCallback.getScroll()) / 10, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
 
         ByteBuffer buffer = TextureLoader.ByteBufferEncoder(path);
         BufferedImage image = TextureLoader.BufferedImageEncoder(path);
@@ -52,5 +61,50 @@ public class TextureDrawing {
         glEnd();
         glDisable(GL_TEXTURE_2D);
         glPopMatrix();
+    }
+
+    public static void updateStaticObj() {
+        float left = DynamicObjects[0].x - 1920 / 3;
+        float right = DynamicObjects[0].x + 1920 / 3;
+        float top = DynamicObjects[0].y - 1080 / 3;
+        float bottom = DynamicObjects[0].x + 1080 / 3;
+
+        for (int x = 0; x < StaticObjects.length - 1; x++) {
+            for (int y = 0; y < StaticObjects[x].length - 1; y++) {
+                StaticObjects[x][y].onCamera = !(StaticObjects[x][y].x < left) && !(StaticObjects[x][y].x > right) && !(StaticObjects[x][y].y < top) && !(StaticObjects[x][y].y > bottom);
+                if (StaticObjects[x][y].onCamera) {
+                    draw(StaticObjects[x][y].path, (int) StaticObjects[x][y].x, (int) StaticObjects[x][y].y, 3);
+                }
+            }
+        }
+    }
+
+    public static void updateDynamicObj() {
+        accumulator += Window.deltaTime;
+
+        for (int i = 0; i < DynamicObjects.length; i++) {
+            if (DynamicObjects[i] != null && DynamicObjects[i].onCamera && DynamicObjects[i].framesCount == 1) {
+                draw(DynamicObjects[i].path, (int) DynamicObjects[i].x, (int) DynamicObjects[i].y, 3);
+            }
+            if (DynamicObjects[i] != null && DynamicObjects[i].onCamera && DynamicObjects[i].framesCount != 1) {
+                int animTime = (int) (DynamicObjects[i].animSpeed * 1000); // время на анимацию одного кадра
+                int framesTime = (DynamicObjects[i].framesCount - 1) * animTime; // время на все кадры анимации (исключая последний)
+                int loopTime = framesTime + animTime; // время на один полный цикл анимации
+                int frameIndex = ((accumulator % loopTime) / animTime) + 1; // индекс текущего кадра
+
+                DynamicObjects[i].currentFrame = frameIndex;
+                draw(DynamicObjects[i].path + frameIndex + ".png", (int) DynamicObjects[i].x, (int) DynamicObjects[i].y, 2);
+            }
+        }
+    }
+
+    public static void updateGUI() {
+        Enumeration<String> keys = elements.keys();
+        while (keys.hasMoreElements()) {
+            String key = keys.nextElement();
+            if (elements.get(key).visible && elements.get(key).isButton) {
+                draw(elements.get(key).path, elements.get(key).x, elements.get(key).y, 1);
+            }
+        }
     }
 }
