@@ -3,7 +3,6 @@ package core.World.Textures;
 import core.EventHandling.MouseScrollCallback;
 import core.Window;
 import core.World.WorldGenerator;
-
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.util.Enumeration;
@@ -15,7 +14,7 @@ public class TextureDrawing {
     public static StaticWorldObjects[][] StaticObjects = WorldGenerator.StaticObjects;
     public static DynamicWorldObjects[] DynamicObjects = WorldGenerator.DynamicObjects;
 
-    public static void draw(String path, int x, int y, float zoom) {
+    public static void drawTexture(String path, int x, int y, float zoom) {
         glPushMatrix();
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_BLEND);
@@ -73,7 +72,7 @@ public class TextureDrawing {
             for (int y = 0; y < StaticObjects[x].length - 1; y++) {
                 StaticObjects[x][y].onCamera = !(StaticObjects[x][y].x < left) && !(StaticObjects[x][y].x > right) && !(StaticObjects[x][y].y < top) && !(StaticObjects[x][y].y > bottom);
                 if (StaticObjects[x][y].onCamera) {
-                    draw(StaticObjects[x][y].path, (int) StaticObjects[x][y].x, (int) StaticObjects[x][y].y, 3);
+                    drawTexture(StaticObjects[x][y].path, (int) StaticObjects[x][y].x, (int) StaticObjects[x][y].y, 3);
                 }
             }
         }
@@ -84,7 +83,7 @@ public class TextureDrawing {
 
         for (int i = 0; i < DynamicObjects.length; i++) {
             if (DynamicObjects[i] != null && DynamicObjects[i].onCamera && DynamicObjects[i].framesCount == 1) {
-                draw(DynamicObjects[i].path, (int) DynamicObjects[i].x, (int) DynamicObjects[i].y, 3);
+                drawTexture(DynamicObjects[i].path, (int) DynamicObjects[i].x, (int) DynamicObjects[i].y, 3);
             }
             if (DynamicObjects[i] != null && DynamicObjects[i].onCamera && DynamicObjects[i].framesCount != 1) {
                 int animTime = (int) (DynamicObjects[i].animSpeed * 1000); // время на анимацию одного кадра
@@ -93,7 +92,7 @@ public class TextureDrawing {
                 int frameIndex = ((accumulator % loopTime) / animTime) + 1; // индекс текущего кадра
 
                 DynamicObjects[i].currentFrame = frameIndex;
-                draw(DynamicObjects[i].path + frameIndex + ".png", (int) DynamicObjects[i].x, (int) DynamicObjects[i].y, 2);
+                drawTexture(DynamicObjects[i].path + frameIndex + ".png", (int) DynamicObjects[i].x, (int) DynamicObjects[i].y, 2);
             }
         }
     }
@@ -103,7 +102,7 @@ public class TextureDrawing {
         while (keys.hasMoreElements()) {
             String key = keys.nextElement();
             if (elements.get(key).visible && elements.get(key).isButton) {
-                draw(elements.get(key).path, elements.get(key).x, elements.get(key).y, 1);
+                drawTexture(elements.get(key).path, elements.get(key).x, elements.get(key).y, 1);
             }
         }
     }

@@ -94,7 +94,7 @@ public class Window {
             if (EventHandler.getKey(GLFW_KEY_F1) && !start) {
                 start = true;
                 new Thread(new Physics()).start();
-                //new Thread(new CreaturesLogic()).start();
+                new Thread(new CreaturesLogic()).start();
             }
             if (start) {
                 glClear(GL_COLOR_BUFFER_BIT);

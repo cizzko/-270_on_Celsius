@@ -12,7 +12,7 @@ public class CreaturesLogic extends Thread {
 
     public void run() {
         while (!glfwWindowShouldClose(glfwWindow)) {
-            if (System.currentTimeMillis() - deltaTime > 10000 && (int) (Math.random() * 100) == 1 && count < 11) {
+            if (System.currentTimeMillis() - deltaTime > 10000 && (int) (Math.random() * 10) == 1 && count < 11) {
                 for (int x = 0; x < DynamicObjects.length; x++) {
                     if (DynamicObjects[x] == null) {
                         DynamicObjects[x] = new DynamicWorldObjects(2, 0.1f, ".\\src\\assets\\World\\creatures\\butterfly", true, false, 0, 70);
