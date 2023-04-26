@@ -17,9 +17,9 @@ import static org.lwjgl.opengl.GL13.*;
 
 public class Window {
     public final int width, height;
-    long lastFrameTime = System.currentTimeMillis();
+    public long lastFrameTime = System.currentTimeMillis();
     public static int deltaTime;
-    private final String title, version = "dev 0.0.1";
+    private final String title, version = "dev 0.0.2";
     public static boolean start = false, fullScreen = Boolean.parseBoolean(config.jetFromConfig("FullScreen"));
     public static long glfwWindow;
     private static Window window;
