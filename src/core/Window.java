@@ -6,12 +6,10 @@ import core.Logging.config;
 import core.Logging.logger;
 import core.World.MainMenu;
 import core.World.WorldGenerator;
-import core.World.creatures.CreaturesLogic;
+import core.World.creatures.CreaturesGenerate;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
-import java.awt.*;
 import java.time.LocalDateTime;
-
 import static core.World.Textures.TextureDrawing.*;
 import static java.sql.Types.NULL;
 import static org.lwjgl.glfw.GLFW.*;
@@ -21,7 +19,7 @@ public class Window {
     public final int width, height;
     long lastFrameTime = System.currentTimeMillis();
     public static int deltaTime;
-    private final String title;
+    private final String title, version = "dev 0.0.1";
     public static boolean start = false, fullScreen = Boolean.parseBoolean(config.jetFromConfig("FullScreen"));
     public static long glfwWindow;
     private static Window window;
@@ -29,7 +27,7 @@ public class Window {
     public Window() {
         this.width = Integer.parseInt(config.jetFromConfig("ScreenWidth"));
         this.height = Integer.parseInt(config.jetFromConfig("ScreenHeight"));
-        this.title = "-270 on Celsius: 'dev 0.0.1'";
+        this.title = "-270 on Celsius";
     }
 
     public static Window get() {
@@ -78,7 +76,7 @@ public class Window {
         MainMenu.Create();
         glfwSetScrollCallback(glfwWindow, new MouseScrollCallback());
 
-        logger.log("init: true" + "\nglfw version: " + glfwGetVersionString() + "\ntime: " + LocalDateTime.now());
+        logger.log("--------" + "\ninit: true" + "\nglfw version: " + glfwGetVersionString() + "\ngame version: " + version + "\ntime: " + LocalDateTime.now() + "\n--------");
     }
 
     public void draw() {
@@ -94,7 +92,7 @@ public class Window {
             if (EventHandler.getKey(GLFW_KEY_F1) && !start) {
                 start = true;
                 new Thread(new Physics()).start();
-                new Thread(new CreaturesLogic()).start();
+                new Thread(new CreaturesGenerate()).start();
             }
             if (start) {
                 glClear(GL_COLOR_BUFFER_BIT);

@@ -85,14 +85,17 @@ public class TextureDrawing {
             if (DynamicObjects[i] != null && DynamicObjects[i].onCamera && DynamicObjects[i].framesCount == 1) {
                 drawTexture(DynamicObjects[i].path, (int) DynamicObjects[i].x, (int) DynamicObjects[i].y, 3);
             }
-            if (DynamicObjects[i] != null && DynamicObjects[i].onCamera && DynamicObjects[i].framesCount != 1) {
+            if (DynamicObjects[i] != null && DynamicObjects[i].onCamera && DynamicObjects[i].framesCount != 1 && DynamicObjects[i].animSpeed != 0) {
                 int animTime = (int) (DynamicObjects[i].animSpeed * 1000); // время на анимацию одного кадра
                 int framesTime = (DynamicObjects[i].framesCount - 1) * animTime; // время на все кадры анимации (исключая последний)
                 int loopTime = framesTime + animTime; // время на один полный цикл анимации
                 int frameIndex = ((accumulator % loopTime) / animTime) + 1; // индекс текущего кадра
 
                 DynamicObjects[i].currentFrame = frameIndex;
-                drawTexture(DynamicObjects[i].path + frameIndex + ".png", (int) DynamicObjects[i].x, (int) DynamicObjects[i].y, 2);
+                drawTexture(DynamicObjects[i].path + frameIndex + ".png", (int) DynamicObjects[i].x, (int) DynamicObjects[i].y, 3);
+            }
+            else if (DynamicObjects[i] != null && DynamicObjects[i].onCamera && DynamicObjects[i].framesCount != 1 && DynamicObjects[i].animSpeed == 0) {
+                drawTexture(DynamicObjects[i].path + DynamicObjects[i].currentFrame + ".png", (int) DynamicObjects[i].x, (int) DynamicObjects[i].y, 3);
             }
         }
     }

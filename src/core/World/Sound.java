@@ -1,20 +1,28 @@
 package core.World;
 
+import core.Logging.config;
 import core.Logging.logger;
-
 import javax.sound.sampled.*;
 import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Sound {
+    private static int effectVolume = Integer.parseInt(config.jetFromConfig("EffectsVolume")), musicVolume = Integer.parseInt(config.jetFromConfig("MusicVolume")), volume;
+    private static boolean suppVolumeLevel = true;
     private static ConcurrentHashMap<String, Boolean> sounds = new ConcurrentHashMap<>();
 
-    public static void SoundPlay(String path) {
+    public static void SoundPlay(String path, String type) {
         if (sounds.get(path) != null && sounds.get(path)) {
             return;
         }
+        if (!suppVolumeLevel) {
+            logger.log("this device not supported volume level");
+        }
 
         new Thread(() -> {
+            if (type.equals("effect")) volume = effectVolume;
+            if (type.equals("music")) volume = musicVolume;
+
             try {
                 sounds.put(path, true);
 
@@ -36,6 +44,12 @@ public class Sound {
 
                 DataLine.Info info = new DataLine.Info(SourceDataLine.class, format);
                 SourceDataLine sourceDataLine = (SourceDataLine) AudioSystem.getLine(info);
+                suppVolumeLevel = sourceDataLine.isControlSupported(FloatControl.Type.MASTER_GAIN);
+
+                FloatControl gainControl = (FloatControl) sourceDataLine.getControl(FloatControl.Type.MASTER_GAIN);
+                gainControl.setValue(20f * (float) Math.log10(volume));
+
+                sourceDataLine.open(format);
                 sourceDataLine.open(format);
                 sourceDataLine.start();
 
