@@ -72,6 +72,7 @@ public class TextureDrawing {
         glVertex2f(x + width, y);
         glVertex2f(x + width, y + height);
         glVertex2f(x, y + height);
+        glColor3f(1, 1, 1);
 
         glEnd();
         glPopMatrix();
@@ -92,6 +93,8 @@ public class TextureDrawing {
             float dy = (float) (radius * Math.sin(angle));
             glVertex2f(x + dx, y + dy);
         }
+        glColor3f(1, 1, 1);
+
         glEnd();
         glPopMatrix();
     }
