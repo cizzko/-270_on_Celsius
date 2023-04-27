@@ -62,6 +62,40 @@ public class TextureDrawing {
         glPopMatrix();
     }
 
+    public static void drawRectangle(int x, int y, int width, int height, float r, float g, float b) {
+        glPushMatrix();
+        glBegin(GL_QUADS);
+        glEnable(GL_TEXTURE_2D);
+
+        glColor3f(r / 255, g / 255, b / 255);
+        glVertex2f(x, y);
+        glVertex2f(x + width, y);
+        glVertex2f(x + width, y + height);
+        glVertex2f(x, y + height);
+
+        glEnd();
+        glPopMatrix();
+    }
+
+    public static void drawCircle(int x, int y, float radius, float r, float g, float b) {
+        int samples = 64;
+        glPushMatrix();
+        glBegin(GL_TRIANGLE_FAN);
+        glEnable(GL_TEXTURE_2D);
+
+        glColor3f(r / 255, g / 255, b / 255);
+        glVertex2f(x, y);
+
+        for (int i = 0; i <= samples; i++) {
+            float angle = (float) (i * 2 * Math.PI / samples);
+            float dx = (float) (radius * Math.cos(angle));
+            float dy = (float) (radius * Math.sin(angle));
+            glVertex2f(x + dx, y + dy);
+        }
+        glEnd();
+        glPopMatrix();
+    }
+
     public static void updateStaticObj() {
         float left = DynamicObjects[0].x - 1920 / 3;
         float right = DynamicObjects[0].x + 1920 / 3;
