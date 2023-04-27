@@ -63,6 +63,10 @@ public class TextureDrawing {
     }
 
     public static void drawRectangle(int x, int y, int width, int height, float r, float g, float b) {
+        if (r < 1) r = 1;
+        if (g < 1) g = 1;
+        if (b < 1) b = 1;
+
         glPushMatrix();
         glBegin(GL_QUADS);
         glEnable(GL_TEXTURE_2D);
@@ -79,6 +83,10 @@ public class TextureDrawing {
     }
 
     public static void drawCircle(int x, int y, float radius, float r, float g, float b) {
+        if (r < 1) r = 1;
+        if (g < 1) g = 1;
+        if (b < 1) b = 1;
+
         int samples = 64;
         glPushMatrix();
         glBegin(GL_TRIANGLE_FAN);
