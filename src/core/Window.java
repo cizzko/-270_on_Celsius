@@ -5,10 +5,12 @@ import core.EventHandling.MouseScrollCallback;
 import core.Logging.config;
 import core.Logging.logger;
 import core.World.MainMenu;
+import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
 import core.World.creatures.CreaturesGenerate;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import static core.World.Textures.TextureDrawing.*;
 import static java.sql.Types.NULL;
@@ -20,6 +22,7 @@ public class Window {
     public long lastFrameTime = System.currentTimeMillis();
     public static int deltaTime;
     private final String title, version = "dev 0.0.2";
+    public static String defPath = String.valueOf(Paths.get("").toAbsolutePath());
     public static boolean start = false, fullScreen = Boolean.parseBoolean(config.jetFromConfig("FullScreen"));
     public static long glfwWindow;
     private static Window window;
@@ -80,7 +83,6 @@ public class Window {
     }
 
     public void draw() {
-        logger.log("drawing started");
         WorldGenerator.generateWorld(1000, 20);
         WorldGenerator.generateDynamicsObjects();
 

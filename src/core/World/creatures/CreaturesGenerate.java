@@ -1,10 +1,9 @@
 package core.World.creatures;
 
 import core.World.Textures.DynamicWorldObjects;
-import core.World.WorldGenerator;
-
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import static core.Window.defPath;
 import static core.Window.glfwWindow;
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
@@ -31,7 +30,7 @@ public class CreaturesGenerate extends Thread {
 
     public void run() {
         while (!glfwWindowShouldClose(glfwWindow)) {
-            if (System.currentTimeMillis() - deltaTime > 1000 && (int) (Math.random() * 1000000000) == 1 && count < 10) {
+            if (System.currentTimeMillis() - deltaTime > 1000 && (int) (Math.random() * 10000000) == 1 && count < 3) {
                 generate();
                 deltaTime = System.currentTimeMillis();
             }
@@ -45,8 +44,8 @@ public class CreaturesGenerate extends Thread {
         //я
         //больше так не делай
         int rand = (int) (Math.random() * 2);
-        if (rand == 1) path = ".\\src\\assets\\World\\creatures\\bird";
-        if (rand == 0) path = ".\\src\\assets\\World\\creatures\\butterfly";
+        if (rand == 1) path = defPath + "\\src\\assets\\World\\creatures\\bird";
+        if (rand == 0) path = defPath + "\\src\\assets\\World\\creatures\\butterfly";
 
         for (int x = 0; x < DynamicObjects.length; x++) {
             if (DynamicObjects[x] == null) {

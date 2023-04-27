@@ -1,8 +1,11 @@
 package core.World;
 
 import core.Logging.logger;
+import core.Window;
 import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.StaticWorldObjects;
+
+import static core.Window.defPath;
 
 public class WorldGenerator {
     public static int SizeX, SizeY;
@@ -17,10 +20,10 @@ public class WorldGenerator {
         for (int x = 0; x < SizeX; x++) {
             for (int y = 0; y < SizeY; y++) {
                 if (y > SizeY / 2) {
-                    StaticObjects[x][y] = new StaticWorldObjects(true, true, false, false, false, false, null, ".\\src\\assets\\World\\blocks\\air.png", x * 16, y * 16);;
+                    StaticObjects[x][y] = new StaticWorldObjects(true, true, false, false, false, false, null, defPath + "\\src\\assets\\World\\blocks\\air.png", x * 16, y * 16);;
                 } else {
                     rand = 1 + (int) (Math.random() * 3);
-                    StaticObjects[x][y] = new StaticWorldObjects(true, false, false, true, false, false, null, ".\\src\\assets\\World\\blocks\\grass" + rand + ".png", x * 16, y * 16);
+                    StaticObjects[x][y] = new StaticWorldObjects(true, false, false, true, false, false, null, defPath + "\\src\\assets\\World\\blocks\\grass" + rand + ".png", x * 16, y * 16);
                 }
             }
         }
@@ -28,7 +31,7 @@ public class WorldGenerator {
             for (int y = 0; y < StaticObjects[x].length - 1; y++) {
                 if (y > SizeY / 2 && StaticObjects[x][y - 1].solid && Math.random() * 1 == 1) {
                     rand = 1 + (int) (Math.random() * 3);
-                    StaticObjects[x][y] = new StaticWorldObjects(true, false, false, true, false, false, null, ".\\src\\assets\\World\\blocks\\grass" + rand + ".png", x * 16, y * 16);
+                    StaticObjects[x][y] = new StaticWorldObjects(true, false, false, true, false, false, null, defPath + "\\src\\assets\\World\\blocks\\grass" + rand + ".png", x * 16, y * 16);
                 }
             }
         }
@@ -42,7 +45,7 @@ public class WorldGenerator {
             DynamicObjects = new DynamicWorldObjects[4096];
         }
 
-        DynamicWorldObjects player = new DynamicWorldObjects(1, 0, ".\\src\\assets\\World\\creatures\\player.png", true, true, 0, SizeY * 8 + 16);
+        DynamicWorldObjects player = new DynamicWorldObjects(1, 0, defPath + "\\src\\assets\\World\\creatures\\player.png", true, true, 0, SizeY * 8 + 16);
         DynamicObjects[0] = player;
     }
 }
