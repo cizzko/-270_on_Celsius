@@ -14,7 +14,7 @@ public class logger {
             if (!cleanup) {
                 try {
                     cleanup = true;
-                    FileWriter fileWriter = new FileWriter(defPath + "\\src\\assets\\log.txt");
+                    FileWriter fileWriter = new FileWriter(defPath + "\\log.txt");
                     PrintWriter printWriter = new PrintWriter(fileWriter);
 
                     printWriter.print("");
@@ -24,7 +24,7 @@ public class logger {
                 }
             }
             try {
-                FileWriter fileWriter = new FileWriter(defPath + "\\src\\assets\\log.txt", true);
+                FileWriter fileWriter = new FileWriter(defPath + "\\log.txt", true);
                 PrintWriter printWriter = new PrintWriter(fileWriter);
 
                 printWriter.println(message);

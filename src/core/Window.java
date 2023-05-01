@@ -2,6 +2,7 @@ package core;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.MouseScrollCallback;
+import core.GUI.CreateElement;
 import core.Logging.config;
 import core.Logging.logger;
 import core.World.MainMenu;
@@ -83,6 +84,8 @@ public class Window {
     }
 
     public void draw() {
+        new Thread(new CreateElement()).start();
+
         WorldGenerator.generateWorld(1000, 20);
         WorldGenerator.generateDynamicsObjects();
 
@@ -97,12 +100,12 @@ public class Window {
                 new Thread(new CreaturesGenerate()).start();
             }
             if (start) {
-                glClear(GL_COLOR_BUFFER_BIT);
                 updateStaticObj();
                 updateDynamicObj();
             }
             //updateGUI();
             glfwSwapBuffers(glfwWindow);
+            glClear(GL_COLOR_BUFFER_BIT);
 
             if (EventHandler.getKey(GLFW_KEY_LEFT_ALT)) {
                 System.exit(0);

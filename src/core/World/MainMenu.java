@@ -4,6 +4,6 @@ import core.GUI.CreateElement;
 
 public class MainMenu {
     public static void Create() {
-        CreateElement.createButton(12, 12, ".\\src\\assets\\GUI\\buttonStart1.png", "play", true);
+        CreateElement.createSlider(200, 200, 1500, 20, 100, "sl", true);
     }
 }

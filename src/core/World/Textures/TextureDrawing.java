@@ -1,12 +1,16 @@
 package core.World.Textures;
 
 import core.EventHandling.MouseScrollCallback;
+import core.GUI.ButtonObject;
+import core.GUI.SliderObject;
 import core.Window;
 import core.World.WorldGenerator;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
-import java.util.Enumeration;
-import static core.GUI.CreateElement.elements;
+import java.util.Map;
+
+import static core.GUI.CreateElement.buttons;
+import static core.GUI.CreateElement.sliders;
 import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
@@ -63,9 +67,9 @@ public class TextureDrawing {
     }
 
     public static void drawRectangle(int x, int y, int width, int height, float r, float g, float b) {
-        if (r < 1) r = 1;
-        if (g < 1) g = 1;
-        if (b < 1) b = 1;
+        if (r < 0 || r > 255) r = 0;
+        if (g < 0 || g > 255) g = 0;
+        if (b < 0 || b > 255) b = 0;
 
         glPushMatrix();
         glBegin(GL_QUADS);
@@ -83,9 +87,9 @@ public class TextureDrawing {
     }
 
     public static void drawCircle(int x, int y, float radius, float r, float g, float b) {
-        if (r < 1) r = 1;
-        if (g < 1) g = 1;
-        if (b < 1) b = 1;
+        if (r < 0 || r > 255) r = 0;
+        if (g < 0 || g > 255) g = 0;
+        if (b < 0 || b > 255) b = 0;
 
         int samples = 64;
         glPushMatrix();
@@ -146,12 +150,16 @@ public class TextureDrawing {
     }
 
     public static void updateGUI() {
-        Enumeration<String> keys = elements.keys();
-        while (keys.hasMoreElements()) {
-            String key = keys.nextElement();
-            if (elements.get(key).visible && elements.get(key).isButton) {
-                drawTexture(elements.get(key).path, elements.get(key).x, elements.get(key).y, 1);
-            }
+        for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
+            String button = entry.getKey();
+
+            drawRectangle(buttons.get(button).x, buttons.get(button).y, buttons.get(button).width, buttons.get(button).height, 200, 200, 1);
+        }
+        for (Map.Entry<String, SliderObject> entry : sliders.entrySet()) {
+            String slider = entry.getKey();
+
+            drawRectangle(sliders.get(slider).x, sliders.get(slider).y, sliders.get(slider).width - sliders.get(slider).x, sliders.get(slider).height, 200, 1, 1);
+            drawCircle(sliders.get(slider).sliderPos, sliders.get(slider).y + sliders.get(slider).height / 2, sliders.get(slider).height / 1.1f, 1, 1, 200);
         }
     }
 }
