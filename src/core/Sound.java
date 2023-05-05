@@ -1,4 +1,4 @@
-package core.World;
+package core;
 
 import core.Logging.config;
 import core.Logging.logger;
