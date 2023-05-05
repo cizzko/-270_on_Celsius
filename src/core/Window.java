@@ -2,11 +2,11 @@ package core;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.MouseScrollCallback;
+import core.GUI.ButtonObject;
 import core.GUI.CreateElement;
 import core.Logging.config;
 import core.Logging.logger;
 import core.World.MainMenu;
-import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
 import core.World.creatures.CreaturesGenerate;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -22,7 +22,7 @@ public class Window {
     public final int width, height;
     public long lastFrameTime = System.currentTimeMillis();
     public static int deltaTime;
-    private final String title, version = "dev 0.0.2";
+    private final String title, version = "dev 0.0.3";
     public static String defPath = String.valueOf(Paths.get("").toAbsolutePath());
     public static boolean start = false, fullScreen = Boolean.parseBoolean(config.jetFromConfig("FullScreen"));
     public static long glfwWindow;
@@ -77,10 +77,10 @@ public class Window {
         glOrtho(0, width, 0, height, 1, -1);
         glMatrixMode(GL_MODELVIEW);
 
-        MainMenu.Create();
+        //MainMenu.Create();
         glfwSetScrollCallback(glfwWindow, new MouseScrollCallback());
 
-        logger.log("--------" + "\ninit: true" + "\nglfw version: " + glfwGetVersionString() + "\ngame version: " + version + "\ntime: " + LocalDateTime.now() + "\n--------");
+        logger.log("--------" + "\ninit: true" + "\nglfw version: " + glfwGetVersionString() + "\ngame version: " + version + "\ntime: " + LocalDateTime.now());
     }
 
     public void draw() {
@@ -90,6 +90,7 @@ public class Window {
         WorldGenerator.generateDynamicsObjects();
 
         while (!glfwWindowShouldClose(glfwWindow)) {
+            //glClearColor(133 / 255f, 234 / 255f, 255 / 255f, 0);
             long currentTime = System.currentTimeMillis();
             deltaTime = (int) (currentTime - lastFrameTime);
             lastFrameTime = currentTime;
@@ -103,11 +104,14 @@ public class Window {
                 updateStaticObj();
                 updateDynamicObj();
             }
-            //updateGUI();
+            updateVideo();
+            updateGUI();
+
             glfwSwapBuffers(glfwWindow);
             glClear(GL_COLOR_BUFFER_BIT);
 
             if (EventHandler.getKey(GLFW_KEY_LEFT_ALT)) {
+                logger.log("program exit at: " + LocalDateTime.now() + "\n--------");
                 System.exit(0);
             }
             glfwPollEvents();

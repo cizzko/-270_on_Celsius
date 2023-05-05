@@ -3,18 +3,20 @@ package core.World.Textures;
 import core.EventHandling.MouseScrollCallback;
 import core.GUI.ButtonObject;
 import core.GUI.SliderObject;
+import core.GUI.Video;
 import core.Window;
 import core.World.WorldGenerator;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.util.Map;
-
 import static core.GUI.CreateElement.buttons;
 import static core.GUI.CreateElement.sliders;
+import static core.GUI.Video.*;
 import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
     private static int accumulator = 0;
+    public static boolean staticObjUpdated, dynamicObjUpdated, guiUpdated, videoUpdated;
     public static StaticWorldObjects[][] StaticObjects = WorldGenerator.StaticObjects;
     public static DynamicWorldObjects[] DynamicObjects = WorldGenerator.DynamicObjects;
 
@@ -23,7 +25,7 @@ public class TextureDrawing {
         glEnable(GL_TEXTURE_2D);
         glEnable(GL_BLEND);
         glLoadIdentity();
-        glTranslatef(-DynamicObjects[0].x * zoom + Window.get().width / 2 - 32, -DynamicObjects[0].y, 0);
+        glTranslatef(-DynamicObjects[0].x * zoom + Window.get().width / 2f - 32, -DynamicObjects[0].y, 0);
         glMultMatrixf(new float[] {zoom + (float)(zoom + MouseScrollCallback.getScroll()) / 10, 0, 0, 0, 0, zoom + (float)(zoom + MouseScrollCallback.getScroll()) / 10, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
 
         ByteBuffer buffer = TextureLoader.ByteBufferEncoder(path);
@@ -60,6 +62,44 @@ public class TextureDrawing {
 
         //glVertex2i Задает вершины
         //glTexCoord2i Задает текущие координаты текстуры
+
+        glEnd();
+        glDisable(GL_TEXTURE_2D);
+        glPopMatrix();
+    }
+
+    public static void drawTexture(int x, int y, ByteBuffer buffer, BufferedImage image) {
+        glPushMatrix();
+        glEnable(GL_TEXTURE_2D);
+        glEnable(GL_BLEND);
+        glLoadIdentity();
+
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        if (width < height) {
+            width = image.getHeight();
+            height = image.getWidth();
+        }
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+
+        glBegin(GL_QUADS);
+        glTexCoord2f(0, 1);
+        glVertex2f(x, y);
+
+        glTexCoord2f(1, 1);
+        glVertex2f(x + width, y);
+
+        glTexCoord2f(1, 0);
+        glVertex2f(x + width, y + height);
+
+        glTexCoord2f(0, 0);
+        glVertex2f(x, y + height);
 
         glEnd();
         glDisable(GL_TEXTURE_2D);
@@ -111,11 +151,32 @@ public class TextureDrawing {
         glPopMatrix();
     }
 
+    public static void updateVideo() {
+        for (Map.Entry<String, Video> entry : video.entrySet()) {
+            String name = entry.getKey();
+            int timeSinceLastFrame = (int) (System.currentTimeMillis() - video.get(name).lastFrameTime);
+            int targetTimePerFrame = 1000 / video.get(name).fps;
+            ByteBuffer[] buffer = byteBuffers.get(name);
+            BufferedImage[] image = bufferedImages.get(name);
+
+            if (timeSinceLastFrame >= targetTimePerFrame) {
+                video.get(name).lastFrameTime = (int) System.currentTimeMillis();
+                video.get(name).frame++;
+                if (video.get(name).frame > byteBuffers.get(name).length) {
+                    video.get(name).isPlayed = false;
+                }
+            }
+            if (video.get(name).isPlayed) {
+                drawTexture(video.get(name).x, video.get(name).y, buffer[video.get(name).frame], image[video.get(name).frame]);
+            }
+        }
+    }
+
     public static void updateStaticObj() {
-        float left = DynamicObjects[0].x - 1920 / 3;
-        float right = DynamicObjects[0].x + 1920 / 3;
-        float top = DynamicObjects[0].y - 1080 / 3;
-        float bottom = DynamicObjects[0].x + 1080 / 3;
+        float left = DynamicObjects[0].x - 1920 / 3f;
+        float right = DynamicObjects[0].x + 1920 / 3f;
+        float top = DynamicObjects[0].y - 1080 / 3f;
+        float bottom = DynamicObjects[0].x + 1080 / 3f;
 
         for (int x = 0; x < StaticObjects.length - 1; x++) {
             for (int y = 0; y < StaticObjects[x].length - 1; y++) {

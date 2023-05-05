@@ -1,6 +1,6 @@
 package core.GUI;
 
-public class ButtonObject extends Thread {
+public class ButtonObject {
     public boolean visible, isClicked;
     public int x, y, width, height;
     public String name;

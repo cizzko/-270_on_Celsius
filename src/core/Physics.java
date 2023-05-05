@@ -58,7 +58,7 @@ public class Physics extends Thread {
     }
 
     public static void move() {
-        if (EventHandler.getKey(GLFW_KEY_D)) DynamicObjects[0].x += 1;
-        if (EventHandler.getKey(GLFW_KEY_A) && DynamicObjects[0].x > 0) DynamicObjects[0].x -= 1;
+        if (EventHandler.getKey(GLFW_KEY_D)) DynamicObjects[0].x++;
+        if (EventHandler.getKey(GLFW_KEY_A) && DynamicObjects[0].x > 0) DynamicObjects[0].x--;
     }
 }
