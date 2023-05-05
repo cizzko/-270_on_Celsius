@@ -2,11 +2,9 @@ package core;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.MouseScrollCallback;
-import core.GUI.ButtonObject;
 import core.GUI.CreateElement;
 import core.Logging.config;
 import core.Logging.logger;
-import core.World.MainMenu;
 import core.World.WorldGenerator;
 import core.World.creatures.CreaturesGenerate;
 import org.lwjgl.glfw.GLFWErrorCallback;

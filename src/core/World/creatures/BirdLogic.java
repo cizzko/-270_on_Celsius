@@ -5,7 +5,7 @@ import static core.World.creatures.CreaturesGenerate.getEntityName;
 
 public class BirdLogic {
     //длительность парения
-    private static int[] birdFlying = new int[DynamicObjects.length];
+    private static final int[] birdFlying = new int[DynamicObjects.length];
     private static long deltaTime = System.currentTimeMillis();
     private static long deltaTime1 = System.currentTimeMillis();
 

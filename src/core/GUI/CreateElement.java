@@ -3,8 +3,6 @@ package core.GUI;
 import core.EventHandling.EventHandler;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static core.EventHandling.EventHandler.getKey;
 import static core.Window.glfwWindow;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -24,6 +22,7 @@ public class CreateElement extends Thread {
     @Override
     public void run() {
         while (!glfwWindowShouldClose(glfwWindow)) {
+            //buttons
             for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
                 String button = entry.getKey();
 
@@ -36,6 +35,7 @@ public class CreateElement extends Thread {
                     buttons.get(button).isClicked = false;
                 }
             }
+            //sliders
             for (Map.Entry<String, SliderObject> entry : sliders.entrySet()) {
                 String slider = entry.getKey();
 

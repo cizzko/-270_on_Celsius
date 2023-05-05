@@ -7,7 +7,7 @@ import java.util.Properties;
 import static core.Window.defPath;
 
 public class config {
-    private static Properties prop = new Properties();
+    private static final Properties prop = new Properties();
     public static String jetFromConfig(String key) {
         if (prop.isEmpty()) {
             try (FileInputStream fis = new FileInputStream(defPath + "\\src\\assets\\config.properties")) {

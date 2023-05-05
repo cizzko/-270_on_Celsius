@@ -7,9 +7,11 @@ import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Sound {
-    private static int effectVolume = Integer.parseInt(config.jetFromConfig("EffectsVolume")), musicVolume = Integer.parseInt(config.jetFromConfig("MusicVolume")), volume;
+    private static final int effectVolume = Integer.parseInt(config.jetFromConfig("EffectsVolume"));
+    private static final int musicVolume = Integer.parseInt(config.jetFromConfig("MusicVolume"));
+    private static int volume;
     private static boolean suppVolumeLevel = true;
-    private static ConcurrentHashMap<String, Boolean> sounds = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, Boolean> sounds = new ConcurrentHashMap<>();
 
     public static void SoundPlay(String path, String type) {
         if (sounds.get(path) != null && sounds.get(path)) {
