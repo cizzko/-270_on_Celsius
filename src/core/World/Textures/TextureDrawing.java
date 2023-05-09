@@ -154,20 +154,16 @@ public class TextureDrawing {
     public static void updateVideo() {
         for (Map.Entry<String, Video> entry : video.entrySet()) {
             String name = entry.getKey();
-            int timeSinceLastFrame = (int) (System.currentTimeMillis() - video.get(name).lastFrameTime);
-            int targetTimePerFrame = 1000 / video.get(name).fps;
-            ByteBuffer[] buffer = byteBuffers.get(name);
-            BufferedImage[] image = bufferedImages.get(name);
+            Video video = entry.getValue();
 
-            if (timeSinceLastFrame >= targetTimePerFrame) {
-                video.get(name).lastFrameTime = (int) System.currentTimeMillis();
-                video.get(name).frame++;
-                if (video.get(name).frame > byteBuffers.get(name).length) {
-                    video.get(name).isPlayed = false;
+            if (video != null && video.isPlaying) {
+                if (video.frame == video.totalFrames) {
+                    video.isPlaying = false;
+                    video.frame = 1;
                 }
-            }
-            if (video.get(name).isPlayed) {
-                drawTexture(video.get(name).x, video.get(name).y, buffer[video.get(name).frame], image[video.get(name).frame]);
+                if (bufferedImage.get(name) != null && byteBuffer.get(name) != null) {
+                    drawTexture(video.x, video.y, byteBuffer.get(name), bufferedImage.get(name));
+                }
             }
         }
     }

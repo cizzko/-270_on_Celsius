@@ -3,6 +3,7 @@ package core;
 import core.EventHandling.EventHandler;
 import core.EventHandling.MouseScrollCallback;
 import core.GUI.CreateElement;
+import core.GUI.Video;
 import core.Logging.config;
 import core.Logging.logger;
 import core.World.WorldGenerator;
@@ -98,11 +99,12 @@ public class Window {
                 new Thread(new Physics()).start();
                 new Thread(new CreaturesGenerate()).start();
             }
+
+            updateVideo();
             if (start) {
                 updateStaticObj();
                 updateDynamicObj();
             }
-            updateVideo();
             updateGUI();
 
             glfwSwapBuffers(glfwWindow);
