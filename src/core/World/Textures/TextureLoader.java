@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 public class TextureLoader extends Thread {
     public static ConcurrentHashMap<String, BufferedImage> bufferedImages = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, ByteBuffer> byteBuffers = new ConcurrentHashMap<>();
-    public static ConcurrentHashMap<BufferedImage, ByteBuffer> byteBuffersImg = new ConcurrentHashMap<>();
 
     @NotNull
     public static BufferedImage BufferedImageEncoder(String path) {

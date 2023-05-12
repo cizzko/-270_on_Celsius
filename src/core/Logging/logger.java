@@ -3,7 +3,7 @@ package core.Logging;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-
+import java.time.LocalDateTime;
 import static core.Window.defPath;
 
 public class logger {
@@ -36,5 +36,10 @@ public class logger {
             err = true;
             System.err.println("logger: access denied, because debug false or null");
         }
+    }
+
+    public static void logExit(int status) {
+        logger.log("program exit at: " + LocalDateTime.now() + "\n--------");
+        System.exit(status);
     }
 }

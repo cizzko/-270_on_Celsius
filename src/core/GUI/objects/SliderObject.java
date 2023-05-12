@@ -1,4 +1,4 @@
-package core.GUI;
+package core.GUI.objects;
 
 public class SliderObject {
     public int x, y, width, height, sliderPos, max;

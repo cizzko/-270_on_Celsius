@@ -1,4 +1,4 @@
-package core;
+package core.World.creatures;
 
 import core.EventHandling.EventHandler;
 import core.World.Textures.StaticWorldObjects;

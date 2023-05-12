@@ -1,0 +1,15 @@
+{
+
+  "eng": {
+    "Play": "Play",
+    "Settings": "Settings",
+    "Exit": "Exit"
+  },
+
+  "ru": {
+    "Play": "Начать",
+    "Settings": "Настройки",
+    "Exit": "Выход"
+  }
+
+}

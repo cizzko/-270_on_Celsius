@@ -1,13 +1,13 @@
 package core;
 
-import core.EventHandling.EventHandler;
 import core.EventHandling.MouseScrollCallback;
 import core.GUI.CreateElement;
+import core.GUI.Fonts;
 import core.GUI.Video;
 import core.Logging.config;
 import core.Logging.logger;
+import core.Menu.MainMenu;
 import core.World.WorldGenerator;
-import core.World.creatures.CreaturesGenerate;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import java.nio.file.Paths;
@@ -18,10 +18,10 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL13.*;
 
 public class Window {
-    public final int width, height;
+    public static int width, height;
     public long lastFrameTime = System.currentTimeMillis();
     public static int deltaTime;
-    private final String title, version = "dev 0.0.3";
+    private final String title, version = "dev 0.0.3.5";
     public static String defPath = String.valueOf(Paths.get("").toAbsolutePath());
     public static boolean start = false, fullScreen = Boolean.parseBoolean(config.jetFromConfig("FullScreen"));
     public static long glfwWindow;
@@ -65,6 +65,7 @@ public class Window {
             logger.log("error at create window");
         }
         glfwMakeContextCurrent(glfwWindow);
+        glfwSetScrollCallback(glfwWindow, new MouseScrollCallback());
         //vsync
         glfwSwapInterval(1);
         //настройка отображения
@@ -76,10 +77,11 @@ public class Window {
         glOrtho(0, width, 0, height, 1, -1);
         glMatrixMode(GL_MODELVIEW);
 
-        //MainMenu.Create();
-        glfwSetScrollCallback(glfwWindow, new MouseScrollCallback());
+        Fonts.generateFont(defPath + "\\src\\assets\\GUI\\arial.ttf");
+        Video.drawVideo(defPath + "\\src\\assets\\World\\kaif.mp4", 1, 30, 0, 0, 1920, 1080);
+        MainMenu.create();
 
-        logger.log("--------" + "\ninit: true" + "\nglfw version: " + glfwGetVersionString() + "\ngame version: " + version + "\ntime: " + LocalDateTime.now());
+        logger.log("--------" + "\ninit: true" + "\nglfw version: " + glfwGetVersionString() + "\ngame version: " + version + "\nstart time: " + LocalDateTime.now());
     }
 
     public void draw() {
@@ -89,16 +91,9 @@ public class Window {
         WorldGenerator.generateDynamicsObjects();
 
         while (!glfwWindowShouldClose(glfwWindow)) {
-            //glClearColor(133 / 255f, 234 / 255f, 255 / 255f, 0);
             long currentTime = System.currentTimeMillis();
             deltaTime = (int) (currentTime - lastFrameTime);
             lastFrameTime = currentTime;
-
-            if (EventHandler.getKey(GLFW_KEY_F1) && !start) {
-                start = true;
-                new Thread(new Physics()).start();
-                new Thread(new CreaturesGenerate()).start();
-            }
 
             updateVideo();
             if (start) {
@@ -110,10 +105,6 @@ public class Window {
             glfwSwapBuffers(glfwWindow);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            if (EventHandler.getKey(GLFW_KEY_LEFT_ALT)) {
-                logger.log("program exit at: " + LocalDateTime.now() + "\n--------");
-                System.exit(0);
-            }
             glfwPollEvents();
         }
     }
