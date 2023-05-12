@@ -25,19 +25,10 @@ public class Window {
     public static String defPath = Paths.get("").toAbsolutePath().toString();
     public static boolean start = false, fullScreen = Boolean.parseBoolean(config.jetFromConfig("FullScreen"));
     public static long glfwWindow;
-    private static Window window;
 
     public Window() {
         width = Integer.parseInt(config.jetFromConfig("ScreenWidth"));
         height = Integer.parseInt(config.jetFromConfig("ScreenHeight"));
-    }
-
-    public static Window get() {
-        //если окно не существует (null), то оно создается
-        if (Window.window == null) {
-            Window.window = new Window();
-        }
-        return Window.window;
     }
 
     public void run() {

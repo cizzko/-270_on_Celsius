@@ -4,9 +4,8 @@ package core;
 //THE CODE IS MADE BAD AND WILL BE REWRITTEN DOZENS MORE TIMES                     <--------
 
 public class main {
-
     public static void main(String[] args) {
-        Window window = Window.get();
+        Window window = new Window();
         window.run();
     }
 }

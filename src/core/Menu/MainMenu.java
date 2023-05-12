@@ -7,8 +7,8 @@ import static core.GUI.CreateElement.*;
 
 public class MainMenu {
     public static void create() {
-        int width = Window.get().width;
-        int height = Window.get().height;
+        int width = Window.width;
+        int height = Window.height;
 
         createPanel(width - (width / 8) * 2, 0, width / 8,height, "defPan", true, true);
 

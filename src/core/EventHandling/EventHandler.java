@@ -1,9 +1,8 @@
 package core.EventHandling;
 
+import core.Window;
 import core.World.Textures.TextureLoader;
 import java.awt.*;
-
-import static core.Window.get;
 import static core.Window.glfwWindow;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -11,7 +10,7 @@ public class EventHandler {
     public static Point getMousePos() {
         double mouseX = MouseInfo.getPointerInfo().getLocation().getX();
         double mouseY = MouseInfo.getPointerInfo().getLocation().getY();
-        int invertedY = get().height - (int) mouseY;
+        int invertedY = Window.height - (int) mouseY;
         Point mousePos = new Point((int) mouseX, invertedY);
 
         return mousePos;
