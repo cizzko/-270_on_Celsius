@@ -53,10 +53,10 @@ public class Window {
         if (glfwWindow == NULL) {
             //если окна не существует - создаст
             if (fullScreen) {
-                glfwWindow = glfwCreateWindow(this.width, this.height, this.title, glfwGetPrimaryMonitor(), NULL);
+                glfwWindow = glfwCreateWindow(width, height, title, glfwGetPrimaryMonitor(), NULL);
             }
             else {
-                glfwWindow = glfwCreateWindow(this.width, this.height, this.title, NULL, NULL);
+                glfwWindow = glfwCreateWindow(width, height, title, NULL, NULL);
             }
             glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         } else {
