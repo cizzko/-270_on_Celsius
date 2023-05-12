@@ -21,16 +21,15 @@ public class Window {
     public static int width, height;
     public long lastFrameTime = System.currentTimeMillis();
     public static int deltaTime;
-    private final String title, version = "dev 0.0.3.5";
-    public static String defPath = String.valueOf(Paths.get("").toAbsolutePath());
+    private static final String title = "-270 on Celsius", version = "dev 0.0.3.5";
+    public static String defPath = Paths.get("").toAbsolutePath().toString();
     public static boolean start = false, fullScreen = Boolean.parseBoolean(config.jetFromConfig("FullScreen"));
     public static long glfwWindow;
     private static Window window;
 
     public Window() {
-        this.width = Integer.parseInt(config.jetFromConfig("ScreenWidth"));
-        this.height = Integer.parseInt(config.jetFromConfig("ScreenHeight"));
-        this.title = "-270 on Celsius";
+        width = Integer.parseInt(config.jetFromConfig("ScreenWidth"));
+        height = Integer.parseInt(config.jetFromConfig("ScreenHeight"));
     }
 
     public static Window get() {
