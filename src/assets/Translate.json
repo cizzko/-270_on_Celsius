@@ -3,13 +3,15 @@
   "eng": {
     "Play": "Play",
     "Settings": "Settings",
-    "Exit": "Exit"
+    "Exit": "Exit",
+    "GenerateWorld": "Generate world"
   },
 
   "ru": {
     "Play": "Начать",
     "Settings": "Настройки",
-    "Exit": "Выход"
+    "Exit": "Выход",
+    "GenerateWorld": "Создать мир"
   }
 
 }

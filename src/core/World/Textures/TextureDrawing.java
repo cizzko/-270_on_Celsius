@@ -13,23 +13,28 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.util.Map;
+import java.util.List;
 import static core.GUI.CreateElement.*;
 import static core.GUI.Video.*;
 import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
     private static int accumulator = 0;
-    private static int spacingBetweenLetters = Integer.parseInt(config.jetFromConfig("SpacingBetweenLetters"));
+    private static final int spacingBetweenLetters = Integer.parseInt(config.jetFromConfig("SpacingBetweenLetters"));
     public static StaticWorldObjects[][] StaticObjects = WorldGenerator.StaticObjects;
     public static DynamicWorldObjects[] DynamicObjects = WorldGenerator.DynamicObjects;
 
     public static void drawTexture(String path, int x, int y, float zoom) {
         glPushMatrix();
         glEnable(GL_TEXTURE_2D);
+
         glEnable(GL_BLEND);
         glLoadIdentity();
-        glTranslatef(-DynamicObjects[0].x * zoom + Window.width / 2f - 32, -DynamicObjects[0].y, 0);
-        glMultMatrixf(new float[] {zoom + (float)(zoom + MouseScrollCallback.getScroll()) / 10, 0, 0, 0, 0, zoom + (float)(zoom + MouseScrollCallback.getScroll()) / 10, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
+
+        if (Window.start) {
+            glTranslatef(-DynamicObjects[0].x * zoom + Window.width / 2f - 32, -DynamicObjects[0].y, 0);
+            glMultMatrixf(new float[]{zoom + (float) (zoom + MouseScrollCallback.getScroll()) / 10, 0, 0, 0, 0, zoom + (float) (zoom + MouseScrollCallback.getScroll()) / 10, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
+        }
 
         ByteBuffer buffer = TextureLoader.ByteBufferEncoder(path);
         BufferedImage image = TextureLoader.BufferedImageEncoder(path);
@@ -48,6 +53,7 @@ public class TextureDrawing {
         }
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+        glColor4f(255f, 255f, 255f, 255f);
 
         // верхний левый угол
         glBegin(GL_QUADS);
@@ -80,13 +86,6 @@ public class TextureDrawing {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-//        if (width < height) {
-//            int buff;
-//            buff = width;
-//            width = height;
-//            height = buff;
-//        }
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
         glColor4f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
@@ -122,10 +121,26 @@ public class TextureDrawing {
         }
     }
 
+    public static void drawRectangleBorder(int x, int y, int width, int height, int thickness, Color color) {
+        glPushMatrix();
+        glLineWidth(thickness);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        drawRectangle(x, y, width, thickness, color); // Верхняя граница
+        drawRectangle(x + width - thickness, y + thickness, thickness, height - thickness * 2, color); // Правая граница
+        drawRectangle(x, y + height - thickness, width, thickness, color); // Нижняя граница
+        drawRectangle(x, y + thickness, thickness, height - thickness * 2, color); // Левая граница
+
+
+        glEnd();
+        glPopMatrix();
+    }
+
     public static void drawRectangle(int x, int y, int width, int height, Color color) {
         glPushMatrix();
         glBegin(GL_QUADS);
-        glEnable(GL_TEXTURE_2D);
 
         glColor4f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
         glVertex2f(x, y);
@@ -138,42 +153,6 @@ public class TextureDrawing {
         glPopMatrix();
     }
 
-    public static void drawCutRectangle(float x, float y, float width, float height, float cutSize, Color color) {
-        float d = Math.min(cutSize, Math.min(width, height));
-        float dx = d * (float) Math.cos(Math.PI / 4.0);
-        float dy = d * (float) Math.sin(Math.PI / 4.0);
-
-        glBegin(GL_POLYGON);
-        glColor4f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
-
-        glVertex2f(x + dx, y);
-        glVertex2f(x + width - dx, y);
-
-        glVertex2f(x + width - dx, y);
-        glVertex2f(x + width, y + dy);
-
-        glVertex2f(x + width, y + dy);
-        glVertex2f(x + width, y + height - dy);
-
-        glVertex2f(x + width, y + height - dy);
-        glVertex2f(x + width - dx, y + height);
-
-        glVertex2f(x + width - dx, y + height);
-        glVertex2f(x + dx, y + height);
-
-        glVertex2f(x + dx, y + height);
-        glVertex2f(x, y + height - dy);
-
-        glVertex2f(x, y + height - dy);
-        glVertex2f(x, y + dy);
-
-        glVertex2f(x, y + dy);
-        glVertex2f(x + dx, y);
-        glColor4f(1, 1, 1, 1);
-
-        glEnd();
-    }
-
     public static void drawRoundedRectangle(int x, int y, int width, int height, Color color) {
         int radius = height / 2;
         int SEGMENTS = 16;
@@ -181,7 +160,6 @@ public class TextureDrawing {
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glDisable(GL_TEXTURE_2D);
 
         glBegin(GL_TRIANGLE_FAN);
 
@@ -247,7 +225,6 @@ public class TextureDrawing {
         int samples = 64;
         glPushMatrix();
         glBegin(GL_TRIANGLE_FAN);
-        glEnable(GL_TEXTURE_2D);
 
         glColor4f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
         glVertex2f(x, y);
@@ -301,64 +278,76 @@ public class TextureDrawing {
     public static void updateDynamicObj() {
         accumulator += Window.deltaTime;
 
-        for (int i = 0; i < DynamicObjects.length; i++) {
-            if (DynamicObjects[i] != null && DynamicObjects[i].onCamera && DynamicObjects[i].framesCount == 1) {
-                drawTexture(DynamicObjects[i].path, (int) DynamicObjects[i].x, (int) DynamicObjects[i].y, 3);
+        for (DynamicWorldObjects dynamicObject : DynamicObjects) {
+            if (dynamicObject != null && dynamicObject.onCamera && dynamicObject.framesCount == 1) {
+                drawTexture(dynamicObject.path, (int) dynamicObject.x, (int) dynamicObject.y, 3);
             }
-            if (DynamicObjects[i] != null && DynamicObjects[i].onCamera && DynamicObjects[i].framesCount != 1 && DynamicObjects[i].animSpeed != 0) {
-                int animTime = (int) (DynamicObjects[i].animSpeed * 1000); // время на анимацию одного кадра
-                int framesTime = (DynamicObjects[i].framesCount - 1) * animTime; // время на все кадры анимации (исключая последний)
+            if (dynamicObject != null && dynamicObject.onCamera && dynamicObject.framesCount != 1 && dynamicObject.animSpeed != 0) {
+                int animTime = (int) (dynamicObject.animSpeed * 1000); // время на анимацию одного кадра
+                int framesTime = (dynamicObject.framesCount - 1) * animTime; // время на все кадры анимации (исключая последний)
                 int loopTime = framesTime + animTime; // время на один полный цикл анимации
                 int frameIndex = ((accumulator % loopTime) / animTime) + 1; // индекс текущего кадра
 
-                DynamicObjects[i].currentFrame = frameIndex;
-                drawTexture(DynamicObjects[i].path + frameIndex + ".png", (int) DynamicObjects[i].x, (int) DynamicObjects[i].y, 3);
-            }
-            else if (DynamicObjects[i] != null && DynamicObjects[i].onCamera && DynamicObjects[i].framesCount != 1 && DynamicObjects[i].animSpeed == 0) {
-                drawTexture(DynamicObjects[i].path + DynamicObjects[i].currentFrame + ".png", (int) DynamicObjects[i].x, (int) DynamicObjects[i].y, 3);
+                dynamicObject.currentFrame = frameIndex;
+                drawTexture(dynamicObject.path + frameIndex + ".png", (int) dynamicObject.x, (int) dynamicObject.y, 3);
+            } else if (dynamicObject != null && dynamicObject.onCamera && dynamicObject.framesCount != 1) {
+                drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", (int) dynamicObject.x, (int) dynamicObject.y, 3);
             }
         }
     }
 
     public static void updateGUI() {
         for (Map.Entry<String, PanelObject> entry : panels.entrySet()) {
-            String panel = entry.getKey();
-            if (!panels.get(panel).visible) {
+            PanelObject panel = entry.getValue();
+            if (!panel.visible) {
                 continue;
             }
 
-            if (!panels.get(panel).simple) {
-                float centerX = panels.get(panel).x + panels.get(panel).width / 2.0f;
-                float centerY = panels.get(panel).y + panels.get(panel).height / 2.0f;
-                float newWidth = panels.get(panel).width / 1.1f;
-                float newHeight = panels.get(panel).height / 1.1f;
-                float newX = centerX - newWidth / 2.0f;
-                float newY = centerY - newHeight / 2.0f;
+            if (panel.options != null) {
+                List<Integer> layers = panels.values().stream().map(p -> p.layer).distinct().sorted().toList();
 
-                drawCutRectangle(panels.get(panel).x, panels.get(panel).y, panels.get(panel).width, panels.get(panel).height, panels.get(panel).height / 15f, new Color(40, 40, 40, 240));
-                drawCutRectangle(newX, newY, newWidth, newHeight, panels.get(panel).height / 15f, new Color(85, 85, 85, 230));
+                for (int layer : layers) {
+                    for (PanelObject panelObj : panels.values()) {
+                        if (panelObj.layer == layer) {
+                            if (panelObj.options != null) {
+                                drawTexture(panelObj.options, panelObj.x, panelObj.y, 1);
+                            }
+                        }
+                    }
+                }
+                continue;
+            }
+
+            if (!panel.simple) {
+                drawRectangle(panel.x, panel.y, panel.width, panel.height, new Color(40, 40, 40, 240));
+                drawRectangleBorder(panel.x, panel.y, panel.width, panel.height, 20, new Color(20, 20, 20, 40));
             } else {
-                drawRectangle(panels.get(panel).x, panels.get(panel).y, panels.get(panel).width, panels.get(panel).height, new Color(40, 40, 40, 240));
+                drawRectangle(panel.x, panel.y, panel.width, panel.height, new Color(40, 40, 40, 240));
             }
         }
 
         for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
-            String button = entry.getKey();
-            if (!buttons.get(button).visible) {
+            ButtonObject button = entry.getValue();
+            if (!button.visible) {
                 continue;
             }
 
-            drawRectangle(buttons.get(button).x, buttons.get(button).y, buttons.get(button).width, buttons.get(button).height, buttons.get(button).color);
-            drawText((int) (buttons.get(button).x * 1.01f), (int) (buttons.get(button).y + buttons.get(button).height / 2.8f), buttons.get(button).name);
+            if (button.simple) {
+                drawRectangle(button.x, button.y,button.width, button.height, button.color);
+                drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
+            } else {
+                drawRectangleBorder(button.x, button.y, button.width, button.height, 6, button.color);
+                drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
+            }
         }
         for (Map.Entry<String, SliderObject> entry : sliders.entrySet()) {
-            String slider = entry.getKey();
-            if (!sliders.get(slider).visible) {
+            SliderObject slider = entry.getValue();
+            if (slider.visible) {
                 continue;
             }
 
-            drawRoundedRectangle(sliders.get(slider).x, sliders.get(slider).y, sliders.get(slider).width - sliders.get(slider).x, sliders.get(slider).height, new Color(200, 1, 1, 255));
-            drawCircle(sliders.get(slider).sliderPos, sliders.get(slider).y + sliders.get(slider).height / 2, sliders.get(slider).height / 1.1f, new Color(1, 1, 200, 255));
+            drawRoundedRectangle(slider.x, slider.y, slider.width - slider.x, slider.height, new Color(200, 1, 1, 255));
+            drawCircle(slider.sliderPos, slider.y + slider.height / 2, slider.height / 1.1f, new Color(1, 1, 200, 255));
         }
     }
 }

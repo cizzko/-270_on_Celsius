@@ -16,7 +16,7 @@ public class json {
             key = jsonObject.getAsJsonObject(lang).get(key).getAsString();
 
         } catch (IOException e) {
-            logger.log(e.toString());
+            logger.log("key " + key + " from lang " + lang + " notFound, exception: " + e);
         }
         return key;
     }

@@ -1,10 +1,13 @@
 package core.Logging;
 
+import core.Window;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import static core.Window.defPath;
+import static org.lwjgl.glfw.GLFW.glfwGetVersionString;
 
 public class logger {
     public static boolean err = false, cleanup = false;
@@ -41,5 +44,9 @@ public class logger {
     public static void logExit(int status) {
         logger.log("program exit at: " + LocalDateTime.now() + "\n--------");
         System.exit(status);
+    }
+
+    public static void logStart() {
+        logger.log("--------" + "\ninit: true" + "\nglfw version: " + glfwGetVersionString() + "\ngame version: " + Window.version + "\nstart time: " + LocalDateTime.now());
     }
 }

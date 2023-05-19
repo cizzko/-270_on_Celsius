@@ -6,6 +6,7 @@ import core.GUI.objects.PanelObject;
 import core.GUI.objects.SliderObject;
 import core.Logging.json;
 import core.Logging.logger;
+import core.Menu.CreatePlanetMenu;
 import core.Menu.MainMenu;
 import core.Window;
 import core.World.creatures.CreaturesGenerate;
@@ -16,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import static core.EventHandling.EventHandler.getKey;
 import static core.Window.defPath;
 import static core.Window.glfwWindow;
+import static core.World.Textures.TextureLoader.BufferedImageEncoder;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class CreateElement extends Thread {
@@ -23,17 +25,21 @@ public class CreateElement extends Thread {
     public static ConcurrentHashMap<String, SliderObject> sliders = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, PanelObject> panels = new ConcurrentHashMap<>();
 
-    public static void createButton(int x, int y, int width, int height, String name, Boolean visible, Color color) {
-        buttons.put(name, new ButtonObject(visible, x, y, height, width, name, color));
+    public static void createButton(int x, int y, int width, int height, String name, boolean simple, boolean swapButton, Color color) {
+        buttons.put(name, new ButtonObject(simple, swapButton, true, x, y, height, width, name, color));
     }
 
-    public static void createSlider(int x, int y, int width, int height, int max, String name, Boolean visible) {
-        sliders.put(name, new SliderObject(visible, x, y, width, height, max));
+    public static void createSlider(int x, int y, int width, int height, int max, String name) {
+        sliders.put(name, new SliderObject(true, x, y, width, height, max));
         sliders.get(name).sliderPos = x + 1;
     }
 
-    public static void createPanel(int x, int y, int width, int height, String name, boolean visible, boolean simple) {
-        panels.put(name, new PanelObject(x, y, width, height, name, visible, simple));
+    public static void createPanel(int x, int y, int width, int height, String name, boolean simple) {
+        panels.put(name, new PanelObject(x, y, width, height, 1, name, true, simple, null));
+    }
+
+    public static void createPicture(int x, int y, int layer, String name, String path) {
+        panels.put(name, new PanelObject(x, y, BufferedImageEncoder(path).getWidth(), BufferedImageEncoder(path).getHeight(), layer, name, true, true, path));
     }
 
     @Override
@@ -70,9 +76,13 @@ public class CreateElement extends Thread {
             buttons.get(button).isClicked = EventHandler.getRectangleClick(buttons.get(button).x, buttons.get(button).y, buttons.get(button).width + buttons.get(button).x, buttons.get(button).height + buttons.get(button).y);
 
             if (buttons.get(button).name.equals(json.getName("Play")) && buttons.get(button).isClicked && !Window.start) {
-                Video.video.get(defPath + "\\src\\assets\\World\\kaif.mp4").isPlaying = false;
                 MainMenu.delete();
+                CreatePlanetMenu.create();
+            }
+            if (buttons.get(button).name.equals(json.getName("GenerateWorld")) && buttons.get(button).isClicked && !Window.start) {
+                Video.video.get(defPath + "\\src\\assets\\World\\kaif.mp4").isPlaying = false;
                 Window.start = true;
+                CreatePlanetMenu.delete();
                 new Thread(new Physics()).start();
                 new Thread(new CreaturesGenerate()).start();
             }
@@ -83,7 +93,7 @@ public class CreateElement extends Thread {
     }
 
     public static void updateKeyShortcut() {
-        if ((getKey(GLFW_KEY_LEFT_ALT) || getKey(GLFW_KEY_RIGHT_ALT)) && getKey(GLFW_KEY_F4)) {
+        if (((getKey(GLFW_KEY_LEFT_ALT) || getKey(GLFW_KEY_RIGHT_ALT)) && getKey(GLFW_KEY_F4)) || getKey(GLFW_KEY_F7)) {
             logger.logExit(0);
         }
     }

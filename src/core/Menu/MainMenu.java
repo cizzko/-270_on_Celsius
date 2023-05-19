@@ -7,14 +7,16 @@ import static core.GUI.CreateElement.*;
 
 public class MainMenu {
     public static void create() {
-        int width = Window.width;
-        int height = Window.height;
+        int width = Window.width;   //ширина
+        int height = Window.height; //высота
 
-        createPanel(width - (width / 8) * 2, 0, width / 8,height, "defPan", true, true);
+        //x, y, ширина, высота, название, видимость, простая или нет
+        createPanel(width - (width / 2) * 2, (int) (height / 1.12), width, height, "defPan", true);
 
-        createButton(width - (width / 8) * 2, (int) (height / 13.9f), width / 8, height / 13, json.getName("Exit"), true, new Color(0, 0, 0, 55));
-        createButton(width - (width / 8) * 2, (int) (height / 4.19f), width / 8, height / 13, json.getName("Settings"), true, new Color(0, 0, 0, 55));
-        createButton(width - (width / 8) * 2, (int) (height / 1.19f), width / 8, height / 13, json.getName("Play"), true, new Color(234, 80, 0, 55));
+        //x, y, ширина, высота, не трогать, видимость, цвет width ширина height высота
+        createButton((int) (width - (width / 3.5) * 2), (int) (height / 1.09f), width / 8, height / 16, json.getName("Exit"), false, false, new Color(236, 236, 236, 55));
+        createButton((int) (width - (width / 2.8) * 2), (int) (height / 1.09f), width / 8, height / 16, json.getName("Settings"), false, false, new Color(236, 236, 236, 55));
+        createButton((int) (width - (width / 2.05) * 2), (int) (height / 1.09f), width / 8, height / 16, json.getName("Play"), false, false, new Color(255, 80, 0, 55));
     }
 
     public static void delete() {
