@@ -1,0 +1,7 @@
+--------
+init: true
+glfw version: 3.4.0 Win32 WGL Null EGL OSMesa VisualC DLL
+game version: dev 0.0.3.5
+start time: 2023-05-20T23:15:40.004064800
+program exit at: 2023-05-20T23:16:03.060653800
+--------
