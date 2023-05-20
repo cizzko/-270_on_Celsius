@@ -1,4 +1,4 @@
-package core.Logging;
+package core.EventHandling.Logging;
 
 import core.Window;
 

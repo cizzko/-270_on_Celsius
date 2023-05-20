@@ -1,7 +1,7 @@
-package core.Sounds;
+package core.UI.Sounds;
 
-import core.Logging.config;
-import core.Logging.logger;
+import core.EventHandling.Logging.config;
+import core.EventHandling.Logging.logger;
 import javax.sound.sampled.*;
 import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;

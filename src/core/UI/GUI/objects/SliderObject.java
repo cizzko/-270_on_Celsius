@@ -1,15 +1,20 @@
-package core.GUI.objects;
+package core.UI.GUI.objects;
+
+import java.awt.*;
 
 public class SliderObject {
     public int x, y, width, height, sliderPos, max;
     public boolean isClicked, visible;
+    public Color sliderColor, dotColor;
 
-    public SliderObject(boolean visible, int x, int y, int width, int height, int max) {
+    public SliderObject(boolean visible, int x, int y, int width, int height, int max, Color sliderColor, Color dotColor) {
         this.x = x;
+        this.y = y;
+        this.sliderColor = sliderColor;
+        this.dotColor = dotColor;
         this.visible = visible;
         this.isClicked = false;
         this.sliderPos = 0;
-        this.y = y;
         this.max = max;
         this.width = width;
         this.height = height;

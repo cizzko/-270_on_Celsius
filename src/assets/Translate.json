@@ -4,14 +4,18 @@
     "Play": "Play",
     "Settings": "Settings",
     "Exit": "Exit",
-    "GenerateWorld": "Generate world"
+    "GenerateWorld": "Generate world",
+    "GenerateFlatWorld": "Flat world",
+    "GenerateSimpleWorld": "Simplified generation"
   },
 
   "ru": {
     "Play": "Начать",
     "Settings": "Настройки",
     "Exit": "Выход",
-    "GenerateWorld": "Создать мир"
+    "GenerateWorld": "Создать мир",
+    "GenerateFlatWorld": "Плоский мир",
+    "GenerateSimpleWorld": "Упрощенная генерация"
   }
 
 }

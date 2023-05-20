@@ -1,12 +1,12 @@
 package core;
 
 import core.EventHandling.MouseScrollCallback;
-import core.GUI.CreateElement;
-import core.GUI.Fonts;
-import core.GUI.Video;
-import core.Logging.config;
-import core.Logging.logger;
-import core.Menu.MainMenu;
+import core.UI.GUI.CreateElement;
+import core.UI.GUI.Fonts;
+import core.UI.GUI.Video;
+import core.EventHandling.Logging.config;
+import core.EventHandling.Logging.logger;
+import core.UI.GUI.Menu.MainMenu;
 import core.World.WorldGenerator;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -18,7 +18,7 @@ import static org.lwjgl.opengl.GL13.*;
 
 public class Window {
     public static int width, height, deltaTime;
-    public static final String title = "-270 on Celsius", version = "dev 0.0.3.5";
+    public static final String title = "-270 on Celsius", version = "dev 0.0.4";
     public static String defPath = Paths.get("").toAbsolutePath().toString();
     public static boolean start = false, fullScreen = Boolean.parseBoolean(config.jetFromConfig("FullScreen"));
     public static long glfwWindow, lastFrameTime = System.currentTimeMillis();
@@ -73,9 +73,6 @@ public class Window {
 
     public void draw() {
         new Thread(new CreateElement()).start();
-
-        WorldGenerator.generateWorld(1000, 20, false);
-        WorldGenerator.generateDynamicsObjects();
 
         while (!glfwWindowShouldClose(glfwWindow)) {
             long currentTime = System.currentTimeMillis();

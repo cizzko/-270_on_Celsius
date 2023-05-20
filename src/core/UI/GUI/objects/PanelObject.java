@@ -1,4 +1,4 @@
-package core.GUI.objects;
+package core.UI.GUI.objects;
 
 public class PanelObject {
     public int x, y, width, height, layer;

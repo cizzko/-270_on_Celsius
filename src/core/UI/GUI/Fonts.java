@@ -1,7 +1,7 @@
-package core.GUI;
+package core.UI.GUI;
 
-import core.Logging.config;
-import core.Logging.logger;
+import core.EventHandling.Logging.config;
+import core.EventHandling.Logging.logger;
 import core.World.Textures.TextureLoader;
 import java.awt.*;
 import java.awt.font.FontRenderContext;

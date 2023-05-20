@@ -1,10 +1,11 @@
-package core.GUI.objects;
+package core.UI.GUI.objects;
 
 import java.awt.*;
 
 public class ButtonObject {
     public boolean visible, isClicked, simple, swapButton;
     public int x, y, width, height;
+    public long lastClickTime;
     public Color color;
     public String name;
 
@@ -19,5 +20,6 @@ public class ButtonObject {
         this.y = y;
         this.name = name;
         this.color = color;
+        this.lastClickTime = System.currentTimeMillis();
     }
 }

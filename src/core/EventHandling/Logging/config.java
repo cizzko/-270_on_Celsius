@@ -1,4 +1,4 @@
-package core.Logging;
+package core.EventHandling.Logging;
 
 import java.io.FileInputStream;
 import java.io.IOException;

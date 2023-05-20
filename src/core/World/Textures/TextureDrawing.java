@@ -1,12 +1,13 @@
 package core.World.Textures;
 
 import core.EventHandling.MouseScrollCallback;
-import core.GUI.Fonts;
-import core.GUI.objects.ButtonObject;
-import core.GUI.objects.PanelObject;
-import core.GUI.objects.SliderObject;
-import core.GUI.Video;
-import core.Logging.config;
+import core.UI.GUI.CreateElement;
+import core.UI.GUI.Fonts;
+import core.UI.GUI.objects.ButtonObject;
+import core.UI.GUI.objects.PanelObject;
+import core.UI.GUI.objects.SliderObject;
+import core.UI.GUI.Video;
+import core.EventHandling.Logging.config;
 import core.Window;
 import core.World.WorldGenerator;
 import java.awt.*;
@@ -14,16 +15,23 @@ import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.util.Map;
 import java.util.List;
-import static core.GUI.CreateElement.*;
-import static core.GUI.Video.*;
+import static core.UI.GUI.CreateElement.*;
+import static core.UI.GUI.Video.*;
+import static core.Window.defPath;
 import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
     private static int accumulator = 0;
     private static final int spacingBetweenLetters = Integer.parseInt(config.jetFromConfig("SpacingBetweenLetters"));
-    public static StaticWorldObjects[][] StaticObjects = WorldGenerator.StaticObjects;
-    public static DynamicWorldObjects[] DynamicObjects = WorldGenerator.DynamicObjects;
+    public static StaticWorldObjects[][] StaticObjects;
+    public static DynamicWorldObjects[] DynamicObjects;
 
+    public static void loadObjects() {
+        StaticObjects = WorldGenerator.StaticObjects;
+        DynamicObjects = WorldGenerator.DynamicObjects;
+    }
+
+    //for textures (world)
     public static void drawTexture(String path, int x, int y, float zoom) {
         glPushMatrix();
         glEnable(GL_TEXTURE_2D);
@@ -34,6 +42,9 @@ public class TextureDrawing {
         if (Window.start) {
             glTranslatef(-DynamicObjects[0].x * zoom + Window.width / 2f - 32, -DynamicObjects[0].y, 0);
             glMultMatrixf(new float[]{zoom + (float) (zoom + MouseScrollCallback.getScroll()) / 10, 0, 0, 0, 0, zoom + (float) (zoom + MouseScrollCallback.getScroll()) / 10, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
+        }
+        else {
+            glMultMatrixf(new float[]{zoom, 0, 0, 0, 0, zoom, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
         }
 
         ByteBuffer buffer = TextureLoader.ByteBufferEncoder(path);
@@ -77,11 +88,15 @@ public class TextureDrawing {
         glPopMatrix();
     }
 
-    public static void drawTexture(int x, int y, int width, int height, ByteBuffer buffer, Color color) {
+    //for video, text, etc
+    public static void drawTexture(int x, int y, int width, int height, ByteBuffer buffer, Color color, float zoom) {
         glPushMatrix();
         glEnable(GL_TEXTURE_2D);
+
         glEnable(GL_BLEND);
         glLoadIdentity();
+
+        glMultMatrixf(new float[]{zoom, 0, 0, 0, 0, zoom, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
 
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -116,7 +131,7 @@ public class TextureDrawing {
                 x += Fonts.letterSize.get('A').width;
                 continue;
             }
-            TextureDrawing.drawTexture(x, y, Fonts.letterSize.get(ch).width, Fonts.letterSize.get(ch).height, Fonts.chars.get(ch), new Color(210, 210, 210, 255));
+            TextureDrawing.drawTexture(x, y, Fonts.letterSize.get(ch).width, Fonts.letterSize.get(ch).height, Fonts.chars.get(ch), new Color(210, 210, 210, 255), 1);
             x += Fonts.letterSize.get(ch).width * (spacingBetweenLetters / 10);
         }
     }
@@ -132,7 +147,6 @@ public class TextureDrawing {
         drawRectangle(x + width - thickness, y + thickness, thickness, height - thickness * 2, color); // Правая граница
         drawRectangle(x, y + height - thickness, width, thickness, color); // Нижняя граница
         drawRectangle(x, y + thickness, thickness, height - thickness * 2, color); // Левая граница
-
 
         glEnd();
         glPopMatrix();
@@ -252,7 +266,7 @@ public class TextureDrawing {
                     video.frame = 1;
                 }
                 if (byteBuffer.get(name) != null && !byteBuffer.get(name).equals(buff)) {
-                    drawTexture(video.x, video.y, video.width, video.height, byteBuffer.get(name), new Color(255, 255, 255, 255));
+                    drawTexture(video.x, video.y, video.width, video.height, byteBuffer.get(name), new Color(255, 255, 255, 255), 1);
                     buff = byteBuffer.get(name);
                 }
             }
@@ -297,8 +311,7 @@ public class TextureDrawing {
     }
 
     public static void updateGUI() {
-        for (Map.Entry<String, PanelObject> entry : panels.entrySet()) {
-            PanelObject panel = entry.getValue();
+        for (PanelObject panel : panels.values()) {
             if (!panel.visible) {
                 continue;
             }
@@ -332,22 +345,46 @@ public class TextureDrawing {
                 continue;
             }
 
-            if (button.simple) {
-                drawRectangle(button.x, button.y,button.width, button.height, button.color);
-                drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
+            //if swap and simple
+            if (button.simple && button.swapButton && button.isClicked) {
+                drawRectangle(button.x, button.y, button.width, button.height, button.color);
+                drawTexture(defPath + "\\src\\assets\\GUI\\checkMarkTrue.png", (int) (button.x + button.width / 1.3f), button.y + button.height / 3, 1);
+                drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
+            } else if (button.simple && button.swapButton) {
+                drawRectangle(button.x, button.y, button.width, button.height, button.color);
+                drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
             } else {
-                drawRectangleBorder(button.x, button.y, button.width, button.height, 6, button.color);
-                drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
+
+                //if swap and not simple
+                if (button.swapButton && button.isClicked) {
+                    drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
+                    drawTexture(defPath + "\\src\\assets\\GUI\\checkMarkTrue.png", button.x, button.y, 1);
+                    drawText(button.width + button.x + 24, button.y, button.name);
+                    continue;
+                } else if (button.swapButton) {
+                    drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
+                    drawTexture(defPath + "\\src\\assets\\GUI\\checkMarkFalse.png", button.x, button.y, 1);
+                    drawText(button.width + button.x + 24, button.y, button.name);
+                    continue;
+                }
+
+                // if not swap
+                if (button.simple) {
+                    drawRectangle(button.x, button.y, button.width, button.height, button.color);
+                    drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
+                } else {
+                    drawRectangleBorder(button.x, button.y, button.width, button.height, 6, button.color);
+                    drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
+                }
             }
         }
-        for (Map.Entry<String, SliderObject> entry : sliders.entrySet()) {
-            SliderObject slider = entry.getValue();
-            if (slider.visible) {
+
+        for (SliderObject slider : sliders.values()) {
+            if (!slider.visible) {
                 continue;
             }
-
-            drawRoundedRectangle(slider.x, slider.y, slider.width - slider.x, slider.height, new Color(200, 1, 1, 255));
-            drawCircle(slider.sliderPos, slider.y + slider.height / 2, slider.height / 1.1f, new Color(1, 1, 200, 255));
+            drawRectangle(slider.x, slider.y, slider.width, slider.height, slider.sliderColor);
+            drawCircle(slider.sliderPos, slider.y + slider.height / 2, slider.height / 1.1f, slider.dotColor);
         }
     }
 }

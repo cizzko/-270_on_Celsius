@@ -1,8 +1,12 @@
 package core.World;
 
-import core.Logging.logger;
+import core.EventHandling.Logging.logger;
+import core.UI.GUI.CreateElement;
 import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.StaticWorldObjects;
+
+import java.awt.*;
+
 import static core.Window.defPath;
 
 public class WorldGenerator {
@@ -23,6 +27,8 @@ public class WorldGenerator {
     }
 
     private static void generateFlatWorld() {
+        CreateElement.createButton(40, 150, 20, 20, "Generating float world..", false, new Color(0, 0, 0, 0));
+
         int rand;
 
         for (int x = 0; x < SizeX; x++) {

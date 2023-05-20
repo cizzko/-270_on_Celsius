@@ -1,4 +1,4 @@
-package core.Logging;
+package core.EventHandling.Logging;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;

@@ -1,6 +1,6 @@
 package core.World.Textures;
 
-import core.Logging.logger;
+import core.EventHandling.Logging.logger;
 import org.jetbrains.annotations.NotNull;
 import org.lwjgl.BufferUtils;
 import javax.imageio.ImageIO;
