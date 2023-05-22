@@ -4,9 +4,7 @@ import core.EventHandling.Logging.logger;
 import core.UI.GUI.CreateElement;
 import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.StaticWorldObjects;
-
 import java.awt.*;
-
 import static core.Window.defPath;
 
 public class WorldGenerator {
@@ -28,20 +26,18 @@ public class WorldGenerator {
 
     private static void generateFlatWorld() {
         CreateElement.createButton(40, 150, 20, 20, "Generating float world..", false, new Color(0, 0, 0, 0));
-
         int rand;
 
         for (int x = 0; x < SizeX; x++) {
             for (int y = 0; y < SizeY; y++) {
                 if (y > SizeY / 2) {
-                    StaticWorldObjects obj = new StaticWorldObjects(null, defPath + "\\src\\assets\\World\\blocks\\air.png", x * 16, y * 16);
-                    obj.gas = true;
-                    StaticObjects[x][y] = obj;
+                    StaticObjects[x][y] = new StaticWorldObjects(null, defPath + "\\src\\assets\\World\\blocks\\air.png", x * 16, y * 16);
+                    StaticObjects[x][y].gas = true;
+                    StaticObjects[x][y].notForDrawing = true;
                 } else {
                     rand = 1 + (int) (Math.random() * 3);
-                    StaticWorldObjects obj = new StaticWorldObjects(null, defPath + "\\src\\assets\\World\\blocks\\grass" + rand + ".png", x * 16, y * 16);
-                    obj.solid = true;
-                    StaticObjects[x][y] = obj;
+                    StaticObjects[x][y] = new StaticWorldObjects(null, defPath + "\\src\\assets\\World\\blocks\\grass" + rand + ".png", x * 16, y * 16);
+                    StaticObjects[x][y].solid = true;
                 }
             }
         }

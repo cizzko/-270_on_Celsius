@@ -1,8 +1,6 @@
 package core.UI.GUI.Menu;
 
 import core.EventHandling.Logging.json;
-import core.UI.GUI.CreateElement;
-
 import java.awt.*;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.defPath;

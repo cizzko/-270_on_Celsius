@@ -2,7 +2,7 @@ package core.World.Textures;
 
 //объекты мира и возможные переменные у них
 public class StaticWorldObjects {
-    public boolean gas, liquid, solid, plasma, sleeping, onCamera;
+    public boolean gas, liquid, solid, plasma, notForDrawing, onCamera;
     public String options, path;
     public float y, x;
 
@@ -12,7 +12,7 @@ public class StaticWorldObjects {
         this.liquid = false;           //является ли жидкостью
         this.solid = false;            //является ли твердым
         this.plasma = false;           //является ли плазмой
-        this.sleeping = false;         //спит (находится вне фокуса и не рисуется/неактивен)
+        this.notForDrawing = false;         //для прозрачных газов типа воздуха
         this.options = options;        //описание и прочее
         this.path = path;              //путь до текстуры
         this.x = x;                    //мировая координата x

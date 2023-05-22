@@ -1,7 +1,12 @@
 --------
-init: true
-glfw version: 3.4.0 Win32 WGL Null EGL OSMesa VisualC DLL
-game version: dev 0.0.3.5
-start time: 2023-05-20T23:15:40.004064800
-program exit at: 2023-05-20T23:16:03.060653800
+GLFW version: 3.4.0 Win32 WGL Null EGL OSMesa VisualC DLL
+Game version: dev 0.0.4
+Start time: 2023-05-22T10:25:15.216294700
+--------
+Screen width: 1920
+Screen height: 1080
+Full screen: true
+Vertical sync: false (0)
+Lang: ru
+program exit at: 2023-05-22T10:25:17.712295400
 --------

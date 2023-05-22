@@ -1,11 +1,24 @@
 package core.EventHandling;
 
+import core.EventHandling.Logging.json;
+import core.EventHandling.Logging.logger;
+import core.UI.GUI.Menu.CreatePlanetMenu;
+import core.UI.GUI.Menu.MainMenu;
+import core.UI.GUI.Video;
+import core.UI.GUI.objects.ButtonObject;
+import core.UI.GUI.objects.SliderObject;
 import core.Window;
+import core.World.Textures.TextureDrawing;
+import core.World.WorldGenerator;
+import core.World.creatures.CreaturesGenerate;
+import core.World.creatures.Physics;
 import java.awt.*;
+import static core.UI.GUI.CreateElement.*;
+import static core.Window.defPath;
 import static core.Window.glfwWindow;
 import static org.lwjgl.glfw.GLFW.*;
 
-public class EventHandler {
+public class EventHandler extends Thread{
     public static Point getMousePos() {
         double mouseX = MouseInfo.getPointerInfo().getLocation().getX();
         double mouseY = MouseInfo.getPointerInfo().getLocation().getY();
@@ -24,6 +37,91 @@ public class EventHandler {
         Point mousePos = getMousePos();
 
         return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 && state == GLFW_PRESS;
+    }
+
+    public static void updateSliders() {
+        for (SliderObject slider : sliders.values()) {
+            if (!slider.visible) {
+                slider.isClicked = false;
+                continue;
+            }
+
+            if (EventHandler.getRectanglePress(slider.x, slider.y, slider.width + slider.x, slider.height + slider.y)) {
+                slider.sliderPos = EventHandler.getMousePos().x;
+            }
+        }
+    }
+
+    public static void updateButtons() {
+        for (ButtonObject button : buttons.values()) {
+            if (!button.visible) {
+                button.isClicked = false;
+                continue;
+            }
+
+            if (button.swapButton) {
+                if (System.currentTimeMillis() - button.lastClickTime >= 150 && EventHandler.getRectanglePress(button.x, button.y, button.width + button.x, button.height + button.y)) {
+                    button.isClicked = !button.isClicked;
+                    button.lastClickTime = System.currentTimeMillis();
+                }
+            } else {
+                button.isClicked = EventHandler.getRectanglePress(button.x, button.y, button.width + button.x, button.height + button.y);
+            }
+
+            if (button.name.equals(json.getName("Play")) && button.isClicked && !Window.start) {
+                MainMenu.delete();
+                CreatePlanetMenu.create();
+            }
+
+            if (button.name.equals(json.getName("GenerateWorld")) && button.isClicked && !Window.start) {
+                WorldGenerator.generateWorld(getSliderPos("worldSize"), 20, false);
+                WorldGenerator.generateDynamicsObjects();
+                TextureDrawing.loadObjects();
+
+                Video.video.get(defPath + "\\src\\assets\\World\\kaif.mp4").isPlaying = false;
+                CreatePlanetMenu.delete();
+
+                new Thread(new Physics()).start();
+                new Thread(new CreaturesGenerate()).start();
+                Window.start = true;
+            }
+
+            if (button.name.equals(json.getName("Exit")) && button.isClicked) {
+                logger.logExit(0);
+            }
+
+            if (sliders.get("worldSize") != null && !Window.start) {
+                float worldSize = sliders.get("worldSize").max;
+                String pic = null;
+
+                if (getSliderPos("worldSize") <= worldSize / 3) {
+                    pic = "planetMini.png";
+                }
+                if (getSliderPos("worldSize") >= worldSize / 3) {
+                    pic = "planetAverage.png";
+                }
+                if (getSliderPos("worldSize") >= worldSize / 1.5f) {
+                    pic = "planetBig.png";
+                }
+                createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\" + pic);
+            }
+        }
+    }
+
+    public static void updateKeyShortcut() {
+        if (((getKey(GLFW_KEY_LEFT_ALT) || getKey(GLFW_KEY_RIGHT_ALT)) && getKey(GLFW_KEY_F4)) || getKey(GLFW_KEY_F7)) {
+            logger.logExit(0);
+        }
+    }
+
+
+    @Override
+    public void run() {
+        while (!glfwWindowShouldClose(glfwWindow)) {
+            updateKeyShortcut();
+            updateButtons();
+            updateSliders();
+        }
     }
 }
 

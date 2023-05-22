@@ -1,24 +1,26 @@
 package core.EventHandling.Logging;
 
 import core.Window;
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
-import static core.Window.defPath;
+import static core.EventHandling.Logging.config.jetFromConfig;
+import static core.Window.*;
 import static org.lwjgl.glfw.GLFW.glfwGetVersionString;
+import static org.lwjgl.glfw.GLFW.glfwTerminate;
 
 public class logger {
-    public static boolean err = false, cleanup = false;
-    public static void log(String message) {
-        if (config.jetFromConfig("Debug").equals("true")) {
+    public static boolean err = false, cleanup = false, debug = Boolean.parseBoolean(jetFromConfig("Debug"));
+
+    public static void log(String message, boolean forcibly) {
+        if (debug || forcibly) {
             System.out.println(message);
+
             if (!cleanup) {
                 try {
                     cleanup = true;
-                    FileWriter fileWriter = new FileWriter(defPath + "\\log.txt");
-                    PrintWriter printWriter = new PrintWriter(fileWriter);
+                    PrintWriter printWriter = new PrintWriter(new FileWriter(defPath + "\\log.txt"));
 
                     printWriter.print("");
                     printWriter.close();
@@ -27,8 +29,7 @@ public class logger {
                 }
             }
             try {
-                FileWriter fileWriter = new FileWriter(defPath + "\\log.txt", true);
-                PrintWriter printWriter = new PrintWriter(fileWriter);
+                PrintWriter printWriter = new PrintWriter(new FileWriter(defPath + "\\log.txt", true));
 
                 printWriter.println(message);
                 printWriter.close();
@@ -37,8 +38,12 @@ public class logger {
             }
         } else if (!err) {
             err = true;
-            System.err.println("logger: access denied, because debug false or null");
+            log("See config. Access denied, because debug false or null.", true);
         }
+    }
+
+    public static void log(String message) {
+        log(message, false);
     }
 
     public static void logExit(int status) {
@@ -47,6 +52,7 @@ public class logger {
     }
 
     public static void logStart() {
-        logger.log("--------" + "\ninit: true" + "\nglfw version: " + glfwGetVersionString() + "\ngame version: " + Window.version + "\nstart time: " + LocalDateTime.now());
+        logger.log("--------" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\nStart time: " + LocalDateTime.now() + "\n--------");
+        logger.log("Screen width: " + width + "\nScreen height: " + height + "\nFull screen: " + jetFromConfig("FullScreen") + "\nVertical sync: " + config.jetFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\nLang: " + jetFromConfig("Lang"));
     }
 }

@@ -1,7 +1,6 @@
 package core.World.Textures;
 
 import core.EventHandling.MouseScrollCallback;
-import core.UI.GUI.CreateElement;
 import core.UI.GUI.Fonts;
 import core.UI.GUI.objects.ButtonObject;
 import core.UI.GUI.objects.PanelObject;
@@ -13,16 +12,20 @@ import core.World.WorldGenerator;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import static core.UI.GUI.CreateElement.*;
 import static core.UI.GUI.Video.*;
 import static core.Window.defPath;
+import static core.World.Textures.TextureLoader.BufferedImageEncoder;
+import static core.World.Textures.TextureLoader.ByteBufferEncoder;
 import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
     private static int accumulator = 0;
     private static final int spacingBetweenLetters = Integer.parseInt(config.jetFromConfig("SpacingBetweenLetters"));
+    private static Map<Integer, TextureData> textures = new HashMap<>();
     public static StaticWorldObjects[][] StaticObjects;
     public static DynamicWorldObjects[] DynamicObjects;
 
@@ -32,7 +35,41 @@ public class TextureDrawing {
     }
 
     //for textures (world)
-    public static void drawTexture(String path, int x, int y, float zoom) {
+    private static void drawTexture(String path, int x, int y, float zoom) {
+        int textureId = path.hashCode();
+        TextureData textureData = textures.get(textureId);
+
+        if (textureData == null) {
+            ByteBuffer buffer = ByteBufferEncoder(path);
+            BufferedImage image = BufferedImageEncoder(path);
+
+            int width = image.getWidth();
+            int height = image.getHeight();
+
+            if (width < height) {
+                width = image.getHeight();
+                height = image.getWidth();
+            }
+
+            int id = glGenTextures();
+            glBindTexture(GL_TEXTURE_2D, id);
+
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+
+            textureData = new TextureData(id, width, height);
+            textures.put(textureId, textureData);
+        }
+
+        int id = textureData.id;
+        int width = textureData.width;
+        int height = textureData.height;
+
+        glBindTexture(GL_TEXTURE_2D, id);
+
         glPushMatrix();
         glEnable(GL_TEXTURE_2D);
 
@@ -46,25 +83,6 @@ public class TextureDrawing {
         else {
             glMultMatrixf(new float[]{zoom, 0, 0, 0, 0, zoom, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
         }
-
-        ByteBuffer buffer = TextureLoader.ByteBufferEncoder(path);
-        BufferedImage image = TextureLoader.BufferedImageEncoder(path);
-
-        // параметры, бинд текстур, и прочее
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        int width = image.getWidth();
-        int height = image.getHeight();
-
-        if (width < height) {
-            width = image.getHeight();
-            height = image.getWidth();
-        }
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-        glColor4f(255f, 255f, 255f, 255f);
 
         // верхний левый угол
         glBegin(GL_QUADS);
@@ -86,6 +104,8 @@ public class TextureDrawing {
         glEnd();
         glDisable(GL_TEXTURE_2D);
         glPopMatrix();
+
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     //for video, text, etc
@@ -273,6 +293,7 @@ public class TextureDrawing {
         }
     }
 
+
     public static void updateStaticObj() {
         float left = DynamicObjects[0].x - 1920 / 3f;
         float right = DynamicObjects[0].x + 1920 / 3f;
@@ -282,7 +303,7 @@ public class TextureDrawing {
         for (int x = 0; x < StaticObjects.length - 1; x++) {
             for (int y = 0; y < StaticObjects[x].length - 1; y++) {
                 StaticObjects[x][y].onCamera = !(StaticObjects[x][y].x < left) && !(StaticObjects[x][y].x > right) && !(StaticObjects[x][y].y < top) && !(StaticObjects[x][y].y > bottom);
-                if (StaticObjects[x][y].onCamera) {
+                if (StaticObjects[x][y].onCamera && !StaticObjects[x][y].notForDrawing) {
                     drawTexture(StaticObjects[x][y].path, (int) StaticObjects[x][y].x, (int) StaticObjects[x][y].y, 3);
                 }
             }
