@@ -15,7 +15,7 @@ public class CreatePlanetMenu {
         createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\planetMini.png");
 
         createButton(1460, 260, 420, 67, json.getName("GenerateWorld"), true, new Color(255, 80, 0, 55));
-        createSwapButton(70, 980, 32, 32, json.getName("GenerateFlatWorld"), false, new Color(236, 236, 236, 55));
+        createSwapButton(70, 980, 32, 32, json.getName("GenerateSimpleWorld"), false, new Color(236, 236, 236, 55));
 
         createSlider(1460, 340, 420, 20, 2500, "worldSize", new Color(40, 40, 40, 240), new Color(255, 80, 0, 119));
     }
@@ -28,7 +28,7 @@ public class CreatePlanetMenu {
         panels.get("planetBackground").visible = false;
 
         buttons.get(json.getName("GenerateWorld")).visible = false;
-        buttons.get(json.getName("GenerateFlatWorld")).visible = false;
+        buttons.get(json.getName("GenerateSimpleWorld")).visible = false;
         buttons.get("Generating float world..").visible = false;
 
         sliders.get("worldSize").visible = false;

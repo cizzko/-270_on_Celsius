@@ -5,7 +5,6 @@
     "Settings": "Settings",
     "Exit": "Exit",
     "GenerateWorld": "Generate world",
-    "GenerateFlatWorld": "Flat world",
     "GenerateSimpleWorld": "Simplified generation"
   },
 
@@ -14,7 +13,6 @@
     "Settings": "Настройки",
     "Exit": "Выход",
     "GenerateWorld": "Создать мир",
-    "GenerateFlatWorld": "Плоский мир",
     "GenerateSimpleWorld": "Упрощенная генерация"
   }
 

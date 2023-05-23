@@ -3,7 +3,7 @@ package core.UI.GUI.objects;
 import java.awt.*;
 
 public class ButtonObject {
-    public boolean visible, isClicked, simple, swapButton;
+    public boolean visible, isClicked, simple, swapButton, isClickable;
     public int x, y, width, height;
     public long lastClickTime;
     public Color color;
@@ -11,6 +11,7 @@ public class ButtonObject {
 
     public ButtonObject(boolean simple, boolean swapButton, boolean visible, int x, int y, int height, int width, String name, Color color) {
         this.isClicked = false;
+        this.isClickable = true;
         this.simple = simple;
         this.swapButton = swapButton;
         this.visible = visible;

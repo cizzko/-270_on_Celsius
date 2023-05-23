@@ -7,8 +7,7 @@ import java.io.PrintWriter;
 import java.time.LocalDateTime;
 import static core.EventHandling.Logging.config.jetFromConfig;
 import static core.Window.*;
-import static org.lwjgl.glfw.GLFW.glfwGetVersionString;
-import static org.lwjgl.glfw.GLFW.glfwTerminate;
+import static org.lwjgl.glfw.GLFW.*;
 
 public class logger {
     public static boolean err = false, cleanup = false, debug = Boolean.parseBoolean(jetFromConfig("Debug"));
@@ -47,12 +46,13 @@ public class logger {
     }
 
     public static void logExit(int status) {
+        glfwDestroyWindow(glfwWindow);
         logger.log("program exit at: " + LocalDateTime.now() + "\n--------");
         System.exit(status);
     }
 
     public static void logStart() {
         logger.log("--------" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\nStart time: " + LocalDateTime.now() + "\n--------");
-        logger.log("Screen width: " + width + "\nScreen height: " + height + "\nFull screen: " + jetFromConfig("FullScreen") + "\nVertical sync: " + config.jetFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\nLang: " + jetFromConfig("Lang"));
+        logger.log("Screen width: " + width + "\nScreen height: " + height + "\nFull screen: " + jetFromConfig("FullScreen") + "\nVertical sync: " + config.jetFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\nLanguage: " + jetFromConfig("Language"));
     }
 }

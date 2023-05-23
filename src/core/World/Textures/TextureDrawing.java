@@ -54,6 +54,7 @@ public class TextureDrawing {
             int id = glGenTextures();
             glBindTexture(GL_TEXTURE_2D, id);
 
+            glColor4f(1f, 1f, 1f, 1f);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -64,11 +65,10 @@ public class TextureDrawing {
             textures.put(textureId, textureData);
         }
 
-        int id = textureData.id;
         int width = textureData.width;
         int height = textureData.height;
 
-        glBindTexture(GL_TEXTURE_2D, id);
+        glBindTexture(GL_TEXTURE_2D, textureData.id);
 
         glPushMatrix();
         glEnable(GL_TEXTURE_2D);
@@ -295,10 +295,10 @@ public class TextureDrawing {
 
 
     public static void updateStaticObj() {
-        float left = DynamicObjects[0].x - 1920 / 3f;
-        float right = DynamicObjects[0].x + 1920 / 3f;
-        float top = DynamicObjects[0].y - 1080 / 3f;
-        float bottom = DynamicObjects[0].x + 1080 / 3f;
+        float left = DynamicObjects[0].x - 1920 / 5.5f;
+        float right = DynamicObjects[0].x + 1920 / 5.5f;
+        float top = DynamicObjects[0].y - 1080 / 5.5f;
+        float bottom = DynamicObjects[0].x + 1080 / 5.5f;
 
         for (int x = 0; x < StaticObjects.length - 1; x++) {
             for (int y = 0; y < StaticObjects[x].length - 1; y++) {
@@ -381,22 +381,25 @@ public class TextureDrawing {
                     drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
                     drawTexture(defPath + "\\src\\assets\\GUI\\checkMarkTrue.png", button.x, button.y, 1);
                     drawText(button.width + button.x + 24, button.y, button.name);
-                    continue;
                 } else if (button.swapButton) {
                     drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
                     drawTexture(defPath + "\\src\\assets\\GUI\\checkMarkFalse.png", button.x, button.y, 1);
                     drawText(button.width + button.x + 24, button.y, button.name);
-                    continue;
                 }
 
                 // if not swap
-                if (button.simple) {
+                if (button.simple && !button.swapButton) {
                     drawRectangle(button.x, button.y, button.width, button.height, button.color);
                     drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
-                } else {
+                } else if (!button.swapButton) {
                     drawRectangleBorder(button.x, button.y, button.width, button.height, 6, button.color);
                     drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
                 }
+            }
+            if (!button.isClickable && !button.swapButton) {
+                drawRectangle(button.x, button.y, button.width, button.height, new Color(0, 0, 0, 123));
+            } else if (!button.isClickable) {
+                drawRectangle(button.x - 6, button.y - 6, button.width, button.height, new Color(0, 0, 0, 123));
             }
         }
 

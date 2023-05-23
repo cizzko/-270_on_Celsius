@@ -12,20 +12,33 @@ import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
 import core.World.creatures.CreaturesGenerate;
 import core.World.creatures.Physics;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.glfw.GLFWKeyCallback;
 import java.awt.*;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.defPath;
 import static core.Window.glfwWindow;
 import static org.lwjgl.glfw.GLFW.*;
 
-public class EventHandler extends Thread{
+public class EventHandler extends Thread {
+    public EventHandler() {
+        GLFWKeyCallback keyCallback = new GLFWKeyCallback() {
+            @Override
+            public void invoke(long window, int key, int scancode, int action, int mods) {
+                if (key == GLFW.GLFW_KEY_F4 && mods == GLFW.GLFW_MOD_ALT) {
+                    logger.logExit(1);
+                }
+            }
+        };
+        GLFW.glfwSetKeyCallback(glfwWindow, keyCallback);
+    }
+
     public static Point getMousePos() {
         double mouseX = MouseInfo.getPointerInfo().getLocation().getX();
         double mouseY = MouseInfo.getPointerInfo().getLocation().getY();
         int invertedY = Window.height - (int) mouseY;
-        Point mousePos = new Point((int) mouseX, invertedY);
 
-        return mousePos;
+        return new Point((int) mouseX, invertedY);
     }
 
     public static boolean getKey(int key) {
@@ -54,7 +67,7 @@ public class EventHandler extends Thread{
 
     public static void updateButtons() {
         for (ButtonObject button : buttons.values()) {
-            if (!button.visible) {
+            if (!button.visible || !button.isClickable) {
                 button.isClicked = false;
                 continue;
             }
@@ -71,6 +84,9 @@ public class EventHandler extends Thread{
             if (button.name.equals(json.getName("Play")) && button.isClicked && !Window.start) {
                 MainMenu.delete();
                 CreatePlanetMenu.create();
+            }
+            if (button.name.equals(json.getName("GenerateSimpleWorld")) && button.isClicked) {
+                button.isClickable = false;
             }
 
             if (button.name.equals(json.getName("GenerateWorld")) && button.isClicked && !Window.start) {
@@ -108,17 +124,9 @@ public class EventHandler extends Thread{
         }
     }
 
-    public static void updateKeyShortcut() {
-        if (((getKey(GLFW_KEY_LEFT_ALT) || getKey(GLFW_KEY_RIGHT_ALT)) && getKey(GLFW_KEY_F4)) || getKey(GLFW_KEY_F7)) {
-            logger.logExit(0);
-        }
-    }
-
-
     @Override
     public void run() {
         while (!glfwWindowShouldClose(glfwWindow)) {
-            updateKeyShortcut();
             updateButtons();
             updateSliders();
         }

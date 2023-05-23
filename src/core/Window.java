@@ -2,7 +2,6 @@ package core;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.MouseScrollCallback;
-import core.UI.GUI.CreateElement;
 import core.UI.GUI.Fonts;
 import core.UI.GUI.Video;
 import core.EventHandling.Logging.config;
@@ -44,6 +43,7 @@ public class Window {
         glfwInit();
         glfwGetCurrentContext();
         GLFWErrorCallback.createPrint(System.err).set();
+
         if (glfwWindow == NULL) {
             //если окна не существует - создаст
             if (fullScreen) {
@@ -55,7 +55,7 @@ public class Window {
             glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         } else {
             //при попытке создания окна возникла ошибка - сообщит
-            logger.log("error at create window");
+            logger.log("error at create glfwWindow: " + glfwWindow);
         }
         glfwMakeContextCurrent(glfwWindow);
         glfwSetScrollCallback(glfwWindow, new MouseScrollCallback());
@@ -72,8 +72,8 @@ public class Window {
 
         Fonts.generateFont(defPath + "\\src\\assets\\GUI\\arial.ttf");
         Video.drawVideo(defPath + "\\src\\assets\\World\\kaif.mp4", 1, 30, 0, 0, 1920, 1080);
-        MainMenu.create();
 
+        MainMenu.create();
         logger.logStart();
     }
 
