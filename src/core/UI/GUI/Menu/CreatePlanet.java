@@ -5,7 +5,7 @@ import java.awt.*;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.defPath;
 
-public class CreatePlanetMenu {
+public class CreatePlanet {
     public static void create() {
         createPanel(20, 20, 1880, 200, "downPanel", false);
         createPanel(20, 240, 1400, 820, "leftPanel", false);

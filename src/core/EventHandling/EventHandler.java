@@ -2,8 +2,9 @@ package core.EventHandling;
 
 import core.EventHandling.Logging.json;
 import core.EventHandling.Logging.logger;
-import core.UI.GUI.Menu.CreatePlanetMenu;
-import core.UI.GUI.Menu.MainMenu;
+import core.UI.GUI.Menu.CreatePlanet;
+import core.UI.GUI.Menu.Main;
+import core.UI.GUI.Menu.Settings;
 import core.UI.GUI.Video;
 import core.UI.GUI.objects.ButtonObject;
 import core.UI.GUI.objects.SliderObject;
@@ -15,9 +16,10 @@ import core.World.creatures.Physics;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import java.awt.*;
+import java.util.Arrays;
+
 import static core.UI.GUI.CreateElement.*;
-import static core.Window.defPath;
-import static core.Window.glfwWindow;
+import static core.Window.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class EventHandler extends Thread {
@@ -26,7 +28,7 @@ public class EventHandler extends Thread {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
                 if (key == GLFW.GLFW_KEY_F4 && mods == GLFW.GLFW_MOD_ALT) {
-                    logger.logExit(1);
+                    logger.logExit(1863);
                 }
             }
         };
@@ -72,7 +74,7 @@ public class EventHandler extends Thread {
                 continue;
             }
 
-            if (button.swapButton) {
+            if (button.swapButton || dropMenu.get(button.name) != null) {
                 if (System.currentTimeMillis() - button.lastClickTime >= 150 && EventHandler.getRectanglePress(button.x, button.y, button.width + button.x, button.height + button.y)) {
                     button.isClicked = !button.isClicked;
                     button.lastClickTime = System.currentTimeMillis();
@@ -80,30 +82,48 @@ public class EventHandler extends Thread {
             } else {
                 button.isClicked = EventHandler.getRectanglePress(button.x, button.y, button.width + button.x, button.height + button.y);
             }
+        }
+    }
 
-            if (button.name.equals(json.getName("Play")) && button.isClicked && !Window.start) {
-                MainMenu.delete();
-                CreatePlanetMenu.create();
-            }
-            if (button.name.equals(json.getName("GenerateSimpleWorld")) && button.isClicked) {
-                button.isClickable = false;
-            }
-
-            if (button.name.equals(json.getName("GenerateWorld")) && button.isClicked && !Window.start) {
-                WorldGenerator.generateWorld(getSliderPos("worldSize"), 20, false);
-                WorldGenerator.generateDynamicsObjects();
-                TextureDrawing.loadObjects();
-
-                Video.video.get(defPath + "\\src\\assets\\World\\kaif.mp4").isPlaying = false;
-                CreatePlanetMenu.delete();
-
-                new Thread(new Physics()).start();
-                new Thread(new CreaturesGenerate()).start();
-                Window.start = true;
+    private static void updateClicks() {
+        for (ButtonObject button : buttons.values()) {
+            if (!button.visible || !button.isClickable) {
+                button.isClicked = false;
+                continue;
             }
 
-            if (button.name.equals(json.getName("Exit")) && button.isClicked) {
-                logger.logExit(0);
+            if (button.isClicked) {
+                if (button.name.equals(json.getName("Play")) && !Window.start) {
+                    Main.delete();
+                    CreatePlanet.create();
+                }
+                if (button.name.equals(json.getName("Exit"))) {
+                    logger.logExit(0);
+                }
+
+                if (button.name.equals(json.getName("Settings"))) {
+                    Main.delete();
+                    Settings.create();
+                }
+                if (button.name.equals(json.getName("SettingsExit"))) {
+                    Settings.delete();
+                    if (!start) {
+                        Main.create();
+                    }
+                }
+
+                if (button.name.equals(json.getName("GenerateWorld")) && !Window.start) {
+                    WorldGenerator.generateWorld(getSliderPos("worldSize"), 20, false);
+                    WorldGenerator.generateDynamicsObjects();
+                    TextureDrawing.loadObjects();
+
+                    Video.video.get(defPath + "\\src\\assets\\World\\kaif.mp4").isPlaying = false;
+                    CreatePlanet.delete();
+
+                    new Thread(new Physics()).start();
+                    new Thread(new CreaturesGenerate()).start();
+                    Window.start = true;
+                }
             }
 
             if (sliders.get("worldSize") != null && !Window.start) {
@@ -124,10 +144,46 @@ public class EventHandler extends Thread {
         }
     }
 
+    private static void updateDropMenu() {
+        for (ButtonObject button : buttons.values()) {
+            if (!button.visible || !button.isClickable || dropMenu.get(button.name) == null) {
+                continue;
+            }
+
+            ButtonObject[] dropButtons = dropMenu.get(button.name);
+            long countPressed = 0;
+            int lastClickedIndex = 0;
+
+            for (int i = 0; i < dropButtons.length; i++) {
+                if (button.isClicked) {
+                    ButtonObject dropButton = dropButtons[i];
+
+                    if (System.currentTimeMillis() - dropButton.lastClickTime >= 150 && EventHandler.getRectanglePress(dropButton.x, dropButton.y, dropButton.width + dropButton.x, dropButton.height + dropButton.y)) {
+                        dropButton.isClicked = !dropButton.isClicked;
+                        dropButton.lastClickTime = System.currentTimeMillis();
+                        if (dropButton.isClicked) {
+                            lastClickedIndex = i;
+                        }
+                    }
+                }
+            }
+            countPressed = Arrays.stream(dropButtons).filter(buttons -> buttons.isClicked).count();
+            if (countPressed > 1) {
+                for (int i = 0; i < dropButtons.length; i++) {
+                    if (i != lastClickedIndex) {
+                        dropButtons[i].isClicked = false;
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public void run() {
         while (!glfwWindowShouldClose(glfwWindow)) {
             updateButtons();
+            updateClicks();
+            updateDropMenu();
             updateSliders();
         }
     }

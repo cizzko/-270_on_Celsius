@@ -79,8 +79,7 @@ public class TextureDrawing {
         if (Window.start) {
             glTranslatef(-DynamicObjects[0].x * zoom + Window.width / 2f - 32, -DynamicObjects[0].y, 0);
             glMultMatrixf(new float[]{zoom + (float) (zoom + MouseScrollCallback.getScroll()) / 10, 0, 0, 0, 0, zoom + (float) (zoom + MouseScrollCallback.getScroll()) / 10, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
-        }
-        else {
+        } else {
             glMultMatrixf(new float[]{zoom, 0, 0, 0, 0, zoom, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
         }
 
@@ -332,6 +331,14 @@ public class TextureDrawing {
     }
 
     public static void updateGUI() {
+        updatePanels();
+        updateSwapButtons();
+        updateButtons();
+        updateDropMenu();
+        updateSliders();
+    }
+
+    private static void updatePanels() {
         for (PanelObject panel : panels.values()) {
             if (!panel.visible) {
                 continue;
@@ -359,14 +366,43 @@ public class TextureDrawing {
                 drawRectangle(panel.x, panel.y, panel.width, panel.height, new Color(40, 40, 40, 240));
             }
         }
+    }
 
+    private static void updateDropMenu() {
+        for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
+            ButtonObject button = entry.getValue();
+            if (!button.visible || dropMenu.get(button.name) == null) {
+                continue;
+            }
+            drawRectangle(button.x, button.y, button.width, button.height, button.color);
+            drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
+
+            if (button.isClicked) {
+                ButtonObject[] dropButtons = dropMenu.get(button.name);
+
+                for (int i = 0; i < dropButtons.length; i++) {
+                    ButtonObject dropButton = dropButtons[i];
+
+                    if (dropButton.simple && dropButton.swapButton && dropButton.isClicked) {
+                        drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
+                        drawTexture(defPath + "\\src\\assets\\GUI\\checkMarkTrue.png", (int) (dropButton.x + dropButton.width / 1.3f), dropButton.y + dropButton.height / 3, 1);
+                        drawText((int) (dropButton.x * 1.1f), dropButton.y + dropButton.height / 3, dropButton.name);
+                    } else if (dropButton.simple && dropButton.swapButton) {
+                        drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
+                        drawText((int) (dropButton.x * 1.1f), dropButton.y + dropButton.height / 3, dropButton.name);
+                    }
+                }
+            }
+        }
+    }
+
+    private static void updateSwapButtons() {
         for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
             ButtonObject button = entry.getValue();
             if (!button.visible) {
                 continue;
             }
 
-            //if swap and simple
             if (button.simple && button.swapButton && button.isClicked) {
                 drawRectangle(button.x, button.y, button.width, button.height, button.color);
                 drawTexture(defPath + "\\src\\assets\\GUI\\checkMarkTrue.png", (int) (button.x + button.width / 1.3f), button.y + button.height / 3, 1);
@@ -386,15 +422,23 @@ public class TextureDrawing {
                     drawTexture(defPath + "\\src\\assets\\GUI\\checkMarkFalse.png", button.x, button.y, 1);
                     drawText(button.width + button.x + 24, button.y, button.name);
                 }
+            }
+        }
+    }
 
-                // if not swap
-                if (button.simple && !button.swapButton) {
-                    drawRectangle(button.x, button.y, button.width, button.height, button.color);
-                    drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
-                } else if (!button.swapButton) {
-                    drawRectangleBorder(button.x, button.y, button.width, button.height, 6, button.color);
-                    drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
-                }
+    private static void updateButtons() {
+        for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
+            ButtonObject button = entry.getValue();
+            if (!button.visible) {
+                continue;
+            }
+
+            if (button.simple && !button.swapButton) {
+                drawRectangle(button.x, button.y, button.width, button.height, button.color);
+                drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
+            } else if (!button.swapButton) {
+                drawRectangleBorder(button.x, button.y, button.width, button.height, 6, button.color);
+                drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
             }
             if (!button.isClickable && !button.swapButton) {
                 drawRectangle(button.x, button.y, button.width, button.height, new Color(0, 0, 0, 123));
@@ -402,7 +446,10 @@ public class TextureDrawing {
                 drawRectangle(button.x - 6, button.y - 6, button.width, button.height, new Color(0, 0, 0, 123));
             }
         }
+    }
 
+
+    private static void updateSliders() {
         for (SliderObject slider : sliders.values()) {
             if (!slider.visible) {
                 continue;

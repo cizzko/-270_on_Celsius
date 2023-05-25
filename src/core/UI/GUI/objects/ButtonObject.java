@@ -9,12 +9,12 @@ public class ButtonObject {
     public Color color;
     public String name;
 
-    public ButtonObject(boolean simple, boolean swapButton, boolean visible, int x, int y, int height, int width, String name, Color color) {
+    public ButtonObject(boolean simple, boolean swapButton, int x, int y, int height, int width, String name, Color color) {
         this.isClicked = false;
         this.isClickable = true;
         this.simple = simple;
         this.swapButton = swapButton;
-        this.visible = visible;
+        this.visible = true;
         this.height = height;
         this.width = width;
         this.x = x;

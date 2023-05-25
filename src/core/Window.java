@@ -1,12 +1,13 @@
 package core;
 
 import core.EventHandling.EventHandler;
+import core.EventHandling.Logging.json;
 import core.EventHandling.MouseScrollCallback;
 import core.UI.GUI.Fonts;
 import core.UI.GUI.Video;
 import core.EventHandling.Logging.config;
 import core.EventHandling.Logging.logger;
-import core.UI.GUI.Menu.MainMenu;
+import core.UI.GUI.Menu.Main;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import java.nio.file.Paths;
@@ -73,11 +74,12 @@ public class Window {
         Fonts.generateFont(defPath + "\\src\\assets\\GUI\\arial.ttf");
         Video.drawVideo(defPath + "\\src\\assets\\World\\kaif.mp4", 1, 30, 0, 0, 1920, 1080);
 
-        MainMenu.create();
+        Main.create();
         logger.logStart();
     }
 
     public void draw() {
+        json.getAllLanguages();
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
         new Thread(new EventHandler()).start();
 

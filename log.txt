@@ -1,12 +1,14 @@
 --------
 GLFW version: 3.4.0 Win32 WGL Null EGL OSMesa VisualC DLL
 Game version: dev 0.0.4
-Start time: 2023-05-22T10:25:15.216294700
+Start time: 2023-05-25T22:12:50.595438800
 --------
 Screen width: 1920
 Screen height: 1080
 Full screen: true
 Vertical sync: false (0)
-Lang: ru
-program exit at: 2023-05-22T10:25:17.712295400
+Current language: eng
+Available languages: eng, ru
+Program exit at: 2023-05-25T22:12:55.120474500
+Exit code: 0 (normal)
 --------

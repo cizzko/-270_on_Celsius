@@ -4,16 +4,28 @@
     "Play": "Play",
     "Settings": "Settings",
     "Exit": "Exit",
+
     "GenerateWorld": "Generate world",
-    "GenerateSimpleWorld": "Simplified generation"
+    "GenerateSimpleWorld": "Simplified generation",
+
+    "SettingsExit": "Cancel",
+    "SettingsGraphics": "Graphics",
+    "SettingsSound": "Sound",
+    "SettingsOther": "Other"
   },
 
   "ru": {
     "Play": "Начать",
     "Settings": "Настройки",
     "Exit": "Выход",
+
     "GenerateWorld": "Создать мир",
-    "GenerateSimpleWorld": "Упрощенная генерация"
+    "GenerateSimpleWorld": "Упрощенная генерация",
+
+    "SettingsExit": "Назад",
+    "SettingsGraphics": "Графика",
+    "SettingsSound": "Звук",
+    "SettingsOther": "Другое"
   }
 
 }

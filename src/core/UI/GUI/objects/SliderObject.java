@@ -7,12 +7,12 @@ public class SliderObject {
     public boolean isClicked, visible;
     public Color sliderColor, dotColor;
 
-    public SliderObject(boolean visible, int x, int y, int width, int height, int max, Color sliderColor, Color dotColor) {
+    public SliderObject(int x, int y, int width, int height, int max, Color sliderColor, Color dotColor) {
         this.x = x;
         this.y = y;
         this.sliderColor = sliderColor;
         this.dotColor = dotColor;
-        this.visible = visible;
+        this.visible = true;
         this.isClicked = false;
         this.sliderPos = 0;
         this.max = max;
