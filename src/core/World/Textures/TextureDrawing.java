@@ -297,8 +297,8 @@ public class TextureDrawing {
     public static void updateStaticObj() {
         float left = DynamicObjects[0].x - 1920 / 5.5f;
         float right = DynamicObjects[0].x + 1920 / 5.5f;
-        float top = DynamicObjects[0].y - 1080 / 1f;
-        float bottom = DynamicObjects[0].x + 1080 / 1f;
+        float top = DynamicObjects[0].y - 1080 / 2f;
+        float bottom = DynamicObjects[0].x + 1080 / 2f;
 
         for (int x = 0; x < StaticObjects.length - 1; x++) {
             for (int y = 0; y < StaticObjects[x].length - 1; y++) {
