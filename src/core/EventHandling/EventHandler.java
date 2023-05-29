@@ -24,6 +24,7 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class EventHandler extends Thread {
     public EventHandler() {
+        logger.log("Thread: Event handling started");
         GLFWKeyCallback keyCallback = new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
@@ -113,7 +114,7 @@ public class EventHandler extends Thread {
                 }
 
                 if (button.name.equals(json.getName("GenerateWorld")) && !Window.start) {
-                    WorldGenerator.generateWorld(getSliderPos("worldSize"), 20, false);
+                    WorldGenerator.generateWorld(getSliderPos("worldSize"), 90, buttons.get(json.getName("GenerateSimpleWorld")).isClicked);
                     WorldGenerator.generateDynamicsObjects();
                     TextureDrawing.loadObjects();
 
@@ -126,7 +127,7 @@ public class EventHandler extends Thread {
                 }
             }
 
-            if (sliders.get("worldSize") != null && !Window.start) {
+            if (sliders.get("worldSize") != null && sliders.get("worldSize").visible) {
                 float worldSize = sliders.get("worldSize").max;
                 String pic = null;
 
@@ -151,7 +152,6 @@ public class EventHandler extends Thread {
             }
 
             ButtonObject[] dropButtons = dropMenu.get(button.name);
-            long countPressed = 0;
             int lastClickedIndex = 0;
 
             for (int i = 0; i < dropButtons.length; i++) {
@@ -161,14 +161,14 @@ public class EventHandler extends Thread {
                     if (System.currentTimeMillis() - dropButton.lastClickTime >= 150 && EventHandler.getRectanglePress(dropButton.x, dropButton.y, dropButton.width + dropButton.x, dropButton.height + dropButton.y)) {
                         dropButton.isClicked = !dropButton.isClicked;
                         dropButton.lastClickTime = System.currentTimeMillis();
+
                         if (dropButton.isClicked) {
                             lastClickedIndex = i;
                         }
                     }
                 }
             }
-            countPressed = Arrays.stream(dropButtons).filter(buttons -> buttons.isClicked).count();
-            if (countPressed > 1) {
+            if (Arrays.stream(dropButtons).filter(buttons -> buttons.isClicked).count() > 1) {
                 for (int i = 0; i < dropButtons.length; i++) {
                     if (i != lastClickedIndex) {
                         dropButtons[i].isClicked = false;

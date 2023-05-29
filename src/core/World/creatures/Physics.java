@@ -1,17 +1,19 @@
 package core.World.creatures;
 
 import core.EventHandling.EventHandler;
+import core.EventHandling.Logging.logger;
 import core.World.Textures.StaticWorldObjects;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import static core.Window.glfwWindow;
-import static core.World.WorldGenerator.DynamicObjects;
-import static core.World.WorldGenerator.StaticObjects;
+import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Physics extends Thread {
 
     public void run() {
+        logger.log("Thread: Physics started");
+
         while (!glfwWindowShouldClose(glfwWindow)) {
             try { Thread.sleep(16); } catch (InterruptedException e) {
                 throw new RuntimeException(e);
@@ -58,7 +60,7 @@ public class Physics extends Thread {
     }
 
     public static void move() {
-        if (EventHandler.getKey(GLFW_KEY_D)) DynamicObjects[0].x++;
+        if (EventHandler.getKey(GLFW_KEY_D) && DynamicObjects[0].x < SizeX * 16 - 24) DynamicObjects[0].x++;
         if (EventHandler.getKey(GLFW_KEY_A) && DynamicObjects[0].x > 0) DynamicObjects[0].x--;
     }
 }

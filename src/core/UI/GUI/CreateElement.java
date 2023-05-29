@@ -5,6 +5,9 @@ import core.UI.GUI.objects.PanelObject;
 import core.UI.GUI.objects.SliderObject;
 import java.awt.*;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static core.Window.height;
+import static core.Window.width;
 import static core.World.Textures.TextureLoader.BufferedImageEncoder;
 
 public class CreateElement {
@@ -13,36 +16,56 @@ public class CreateElement {
     public static ConcurrentHashMap<String, PanelObject> panels = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, ButtonObject[]> dropMenu = new ConcurrentHashMap<>();
 
-    public static void createButton(int x, int y, int width, int height, String name, boolean simple, Color color) {
-        buttons.put(name, new ButtonObject(simple, false, x, y, height, width, name, color));
+    public static void createButton(int x, int y, int btnWidth, int btnHeight, String name, boolean simple, Color color) {
+        int newX = (int) Math.round((double) x / 1920 * width);
+        int newY = (int) Math.round((double) y / 1080 * height);
+        int newWidth = (int) Math.round((double) btnWidth / 1920 * width);
+        int newHeight = (int) Math.round((double) btnHeight / 1080 * height);
+
+        buttons.put(name, new ButtonObject(simple, false, newX, newY, newHeight, newWidth, name, color));
     }
 
-    public static void createDropMenu(int x, int y, int width, int height, String[] btnNames, String menuName, Color color) {
+    public static void createDropMenu(int x, int y, int menuWidth, int menuHeight, String[] btnNames, String menuName, Color color) {
+        int newX = (int) Math.round((double) x / 1920 * width);
+        int newY = (int) Math.round((double) y / 1080 * height);
+        int newWidth = (int) Math.round((double) menuWidth / 1920 * width);
+        int newHeight = (int) Math.round((double) menuHeight / 1080 * height);
+
         ButtonObject[] dropButtons = new ButtonObject[btnNames.length];
-        buttons.put(menuName, new ButtonObject(true, false, x, y, height, width, menuName, color));
+        buttons.put(menuName, new ButtonObject(true, false, newX, newY, newHeight, newWidth, menuName, color));
 
         for (int i = 0; i < btnNames.length; i++) {
             if (i == 0) {
-                dropButtons[i] = new ButtonObject(true, true, x, y - height, height, width, btnNames[i], color);
+                dropButtons[i] = new ButtonObject(true, true, newX, newY - newHeight, newHeight, newWidth, btnNames[i], color);
             } else {
-                dropButtons[i] = new ButtonObject(true, true, x, dropButtons[i - 1].y - height, height, width, btnNames[i], color);
+                dropButtons[i] = new ButtonObject(true, true, newX, dropButtons[i - 1].y - newHeight, newHeight, newWidth, btnNames[i], color);
             }
             dropButtons[i].visible = false;
         }
         dropMenu.put(menuName, dropButtons);
     }
 
-    public static void createSwapButton(int x, int y, int width, int height, String name, boolean simple, Color color) {
+    public static void createSwapButton(int x, int y, int btnWidth, int btnHeight, String name, boolean simple, Color color) {
+        int newX = (int) Math.round((double) x / 1920 * width);
+        int newY = (int) Math.round((double) y / 1080 * height);
+        int newWidth = (int) Math.round((double) btnWidth / 1920 * width);
+        int newHeight = (int) Math.round((double) btnHeight / 1080 * height);
+
         if (simple) {
-            buttons.put(name, new ButtonObject(simple, true, x, y, height, width, name, color));
+            buttons.put(name, new ButtonObject(simple, true, newX, newY, newHeight, newWidth, name, color));
         } else {
-            buttons.put(name, new ButtonObject(simple, true, x, y, 44, 44, name, color));
+            buttons.put(name, new ButtonObject(simple, true, newX, newY, 44, 44, name, color));
         }
     }
 
-    public static void createSlider(int x, int y, int width, int height, int max, String name, Color sliderColor, Color dotColor) {
-        sliders.put(name, new SliderObject(x, y, width, height, max, sliderColor, dotColor));
-        sliders.get(name).sliderPos = x + 1;
+    public static void createSlider(int x, int y, int sliderWidth, int sliderHeight, int max, String name, Color sliderColor, Color dotColor) {
+        int newX = (int) Math.round((double) x / 1920 * width);
+        int newY = (int) Math.round((double) y / 1080 * height);
+        int newWidth = (int) Math.round((double) sliderWidth / 1920 * width);
+        int newHeight = (int) Math.round((double) sliderHeight / 1080 * height);
+
+        sliders.put(name, new SliderObject(newX, newY, newWidth, newHeight, max, sliderColor, dotColor));
+        sliders.get(name).sliderPos = newX + 1;
     }
 
     public static int getSliderPos(String name) {
@@ -51,11 +74,21 @@ public class CreateElement {
         return Math.round(relativePos * slider.max);
     }
 
-    public static void createPanel(int x, int y, int width, int height, String name, boolean simple) {
-        panels.put(name, new PanelObject(x, y, width, height, 1, name, simple, null));
+    public static void createPanel(int x, int y, int panWidth, int panHeight, String name, boolean simple) {
+        int newX = (int) Math.round((double) x / 1920 * width);
+        int newY = (int) Math.round((double) y / 1080 * height);
+        int newWidth = (int) Math.round((double) panWidth / 1920 * width);
+        int newHeight = (int) Math.round((double) panHeight / 1080 * height);
+
+        panels.put(name, new PanelObject(newX, newY, newWidth, newHeight, 1, name, simple, null));
     }
 
     public static void createPicture(int x, int y, int layer, String name, String path) {
-        panels.put(name, new PanelObject(x, y, BufferedImageEncoder(path).getWidth(), BufferedImageEncoder(path).getHeight(), layer, name, true, path));
+        int newX = (int) Math.round((double) x / 1920 * width);
+        int newY = (int) Math.round((double) y / 1080 * height);
+        int newWidth = (int) Math.round((double) BufferedImageEncoder(path).getWidth() / 1920 * width);
+        int newHeight = (int) Math.round((double) BufferedImageEncoder(path).getHeight() / 1080 * height);
+
+        panels.put(name, new PanelObject(newX, newY, newWidth, newHeight, layer, name, true, path));
     }
 }

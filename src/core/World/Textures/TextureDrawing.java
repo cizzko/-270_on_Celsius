@@ -18,14 +18,16 @@ import java.util.List;
 import static core.UI.GUI.CreateElement.*;
 import static core.UI.GUI.Video.*;
 import static core.Window.defPath;
+import static core.Window.glfwWindow;
 import static core.World.Textures.TextureLoader.BufferedImageEncoder;
 import static core.World.Textures.TextureLoader.ByteBufferEncoder;
+import static core.World.WorldGenerator.SizeY;
 import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
     private static int accumulator = 0;
     private static final int spacingBetweenLetters = Integer.parseInt(config.jetFromConfig("SpacingBetweenLetters"));
-    private static Map<Integer, TextureData> textures = new HashMap<>();
+    private static HashMap<Integer, TextureData> textures = new HashMap<>();
     public static StaticWorldObjects[][] StaticObjects;
     public static DynamicWorldObjects[] DynamicObjects;
 
@@ -43,8 +45,8 @@ public class TextureDrawing {
             ByteBuffer buffer = ByteBufferEncoder(path);
             BufferedImage image = BufferedImageEncoder(path);
 
-            int width = image.getWidth();
-            int height = image.getHeight();
+            int width = (int) (image.getWidth() * (double) Window.width / 1920);
+            int height = (int) (image.getHeight() * (double) Window.height / 1080);
 
             if (width < height) {
                 width = image.getHeight();
@@ -59,7 +61,7 @@ public class TextureDrawing {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getHeight(), image.getWidth(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
 
             textureData = new TextureData(id, width, height);
             textures.put(textureId, textureData);
@@ -77,23 +79,22 @@ public class TextureDrawing {
         glLoadIdentity();
 
         if (Window.start) {
-            glTranslatef(-DynamicObjects[0].x * zoom + Window.width / 2f - 32, -DynamicObjects[0].y, 0);
-            glMultMatrixf(new float[]{zoom + (float) (zoom + MouseScrollCallback.getScroll()) / 10, 0, 0, 0, 0, zoom + (float) (zoom + MouseScrollCallback.getScroll()) / 10, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
-        } else {
-            glMultMatrixf(new float[]{zoom, 0, 0, 0, 0, zoom, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
+            glTranslatef(-DynamicObjects[0].x * zoom + Window.width / 2f - 32, -DynamicObjects[0].y * zoom + Window.height / 2f - 200, 0);
         }
 
-        // верхний левый угол
+        glMultMatrixf(new float[]{(float) (zoom + MouseScrollCallback.getScroll() / 10), 0, 0, 0, 0, (float) (zoom + MouseScrollCallback.getScroll() / 10), 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
+
+        // нижний левый угол
         glBegin(GL_QUADS);
         glTexCoord2f(0, 1);
         glVertex2f(x, y);
-        // верхний правый угол
+        // нижний правый угол
         glTexCoord2f(1, 1);
         glVertex2f(x + width, y);
-        // нижний правый угол
+        // верхний правый угол
         glTexCoord2f(1, 0);
         glVertex2f(x + width, y + height);
-        // нижний левый угол
+        // верхний левый угол
         glTexCoord2f(0, 0);
         glVertex2f(x, y + height);
 
@@ -296,12 +297,13 @@ public class TextureDrawing {
     public static void updateStaticObj() {
         float left = DynamicObjects[0].x - 1920 / 5.5f;
         float right = DynamicObjects[0].x + 1920 / 5.5f;
-        float top = DynamicObjects[0].y - 1080 / 5.5f;
-        float bottom = DynamicObjects[0].x + 1080 / 5.5f;
+        float top = DynamicObjects[0].y - 1080 / 1f;
+        float bottom = DynamicObjects[0].x + 1080 / 1f;
 
         for (int x = 0; x < StaticObjects.length - 1; x++) {
             for (int y = 0; y < StaticObjects[x].length - 1; y++) {
                 StaticObjects[x][y].onCamera = !(StaticObjects[x][y].x < left) && !(StaticObjects[x][y].x > right) && !(StaticObjects[x][y].y < top) && !(StaticObjects[x][y].y > bottom);
+
                 if (StaticObjects[x][y].onCamera && !StaticObjects[x][y].notForDrawing) {
                     drawTexture(StaticObjects[x][y].path, (int) StaticObjects[x][y].x, (int) StaticObjects[x][y].y, 3);
                 }
@@ -385,7 +387,7 @@ public class TextureDrawing {
 
                     if (dropButton.simple && dropButton.swapButton && dropButton.isClicked) {
                         drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
-                        drawTexture(defPath + "\\src\\assets\\GUI\\checkMarkTrue.png", (int) (dropButton.x + dropButton.width / 1.3f), dropButton.y + dropButton.height / 3, 1);
+                        drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", (int) (dropButton.x + dropButton.width / 1.3f), dropButton.y + dropButton.height / 3, 1);
                         drawText((int) (dropButton.x * 1.1f), dropButton.y + dropButton.height / 3, dropButton.name);
                     } else if (dropButton.simple && dropButton.swapButton) {
                         drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
@@ -405,7 +407,7 @@ public class TextureDrawing {
 
             if (button.simple && button.swapButton && button.isClicked) {
                 drawRectangle(button.x, button.y, button.width, button.height, button.color);
-                drawTexture(defPath + "\\src\\assets\\GUI\\checkMarkTrue.png", (int) (button.x + button.width / 1.3f), button.y + button.height / 3, 1);
+                drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", (int) (button.x + button.width / 1.3f), button.y + button.height / 3, 1);
                 drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
             } else if (button.simple && button.swapButton) {
                 drawRectangle(button.x, button.y, button.width, button.height, button.color);
@@ -415,11 +417,11 @@ public class TextureDrawing {
                 //if swap and not simple
                 if (button.swapButton && button.isClicked) {
                     drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
-                    drawTexture(defPath + "\\src\\assets\\GUI\\checkMarkTrue.png", button.x, button.y, 1);
+                    drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", button.x, button.y, 1);
                     drawText(button.width + button.x + 24, button.y, button.name);
                 } else if (button.swapButton) {
                     drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
-                    drawTexture(defPath + "\\src\\assets\\GUI\\checkMarkFalse.png", button.x, button.y, 1);
+                    drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkFalse.png", button.x, button.y, 1);
                     drawText(button.width + button.x + 24, button.y, button.name);
                 }
             }

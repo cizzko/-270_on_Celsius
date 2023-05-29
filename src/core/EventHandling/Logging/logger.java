@@ -59,12 +59,13 @@ public class logger {
         }
 
         glfwDestroyWindow(glfwWindow);
-        logger.log("Program exit at: " + LocalDateTime.now() + "\nExit code: " + status + exit + "\n--------");
+        logger.log("\nProgram exit at: " + LocalDateTime.now() + "\nExit code: " + status + exit + "\nTotal frames: " + totalFrames + "\n-------- Log ended --------");
         System.exit(status);
     }
 
     public static void logStart() {
-        logger.log("--------" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\nStart time: " + LocalDateTime.now() + "\n--------");
-        logger.log("Screen width: " + width + "\nScreen height: " + height + "\nFull screen: " + jetFromConfig("FullScreen") + "\nVertical sync: " + config.jetFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\nCurrent language: " + jetFromConfig("Language"));
+        logger.log("-------- Log started --------" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\nStart time: " + LocalDateTime.now() + "\n");
+        logger.log("Screen width: " + width + "\nScreen height: " + height + "\nFull screen: " + jetFromConfig("FullScreen"));
+        logger.log("Vertical sync: " + config.jetFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\n\nCurrent language: " + jetFromConfig("Language"));
     }
 }
