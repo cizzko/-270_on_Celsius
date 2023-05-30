@@ -1,8 +1,8 @@
-package core.World.creatures;
+package core.World.Creatures;
 
 import static core.World.WorldGenerator.*;
 import static core.World.WorldGenerator.DynamicObjects;
-import static core.World.creatures.CreaturesGenerate.getEntityName;
+import static core.World.Creatures.CreaturesGenerate.getEntityName;
 
 public class ButteflyLogic {
     private static long deltaTime = System.currentTimeMillis();

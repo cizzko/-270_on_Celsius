@@ -1,6 +1,6 @@
 package core.World.Textures;
 
-//объекты мира и возможные переменные у них
+//статичные объекты, ставятся в строго заданных координатах и не могут произвольно быть пермещены
 public class StaticWorldObjects {
     public boolean gas, liquid, solid, plasma, notForDrawing, onCamera;
     public String options, path;
@@ -17,5 +17,12 @@ public class StaticWorldObjects {
         this.path = path;              //путь до текстуры
         this.x = x;                    //мировая координата x
         this.y = y;                    //мировая координата у
+    }
+
+    public void destroyObject() {
+        this.solid = false;
+        this.liquid = false;
+        this.plasma = false;
+        this.gas = true;
     }
 }

@@ -1,6 +1,8 @@
 package core.UI.GUI.Menu;
 
-import core.EventHandling.Logging.json;
+import core.EventHandling.Logging.Json;
+import core.World.WorldGenerator;
+
 import java.awt.*;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.defPath;
@@ -14,8 +16,8 @@ public class CreatePlanet {
         createPicture(1460, 620, 1, "planetBackground", defPath + "\\src\\assets\\World\\neboLol.png");
         createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\planetMini.png");
 
-        createButton(1460, 260, 420, 67, json.getName("GenerateWorld"), true, new Color(255, 80, 0, 55));
-        createSwapButton(70, 980, 32, 32, json.getName("GenerateSimpleWorld"), false, new Color(236, 236, 236, 55));
+        createButton(1460, 260, 420, 67, Json.getName("GenerateWorld"), true, new Color(255, 80, 0, 55));
+        createSwapButton(70, 980, 32, 32, Json.getName("GenerateSimpleWorld"), false, new Color(236, 236, 236, 55));
 
         createSlider(1460, 340, 420, 20, 2500, "worldSize", new Color(40, 40, 40, 240), new Color(255, 80, 0, 119));
     }
@@ -27,9 +29,16 @@ public class CreatePlanet {
         panels.get("planet").visible = false;
         panels.get("planetBackground").visible = false;
 
-        buttons.get(json.getName("GenerateWorld")).visible = false;
-        buttons.get(json.getName("GenerateSimpleWorld")).visible = false;
-        buttons.get("Generating float world..").visible = false;
+        buttons.get(Json.getName("GenerateWorld")).visible = false;
+        buttons.get(Json.getName("GenerateSimpleWorld")).visible = false;
+
+        texts.get("generateFlatWorldText").visible = false;
+        texts.get("generatingDone").visible = false;
+        if (!buttons.get(Json.getName("GenerateSimpleWorld")).isClicked) {
+            texts.get("generateMountainsText").visible = false;
+            texts.get("fillHollowsText").visible = false;
+            texts.get("smoothWorldText").visible = false;
+        }
 
         sliders.get("worldSize").visible = false;
     }

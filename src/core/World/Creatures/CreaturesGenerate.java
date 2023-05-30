@@ -1,6 +1,6 @@
-package core.World.creatures;
+package core.World.Creatures;
 
-import core.EventHandling.Logging.logger;
+import core.EventHandling.Logging.Logger;
 import core.World.Textures.DynamicWorldObjects;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,7 +30,7 @@ public class CreaturesGenerate extends Thread {
     }
 
     public void run() {
-        logger.log("Thread: Creatures logic started");
+        Logger.log("Thread: Creatures logic started");
 
         while (!glfwWindowShouldClose(glfwWindow)) {
             if (System.currentTimeMillis() - deltaTime > 1000 && (int) (Math.random() * 10000000) == 1 && count < 3) {

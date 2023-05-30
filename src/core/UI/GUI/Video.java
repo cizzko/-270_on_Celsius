@@ -1,6 +1,6 @@
 package core.UI.GUI;
 
-import core.EventHandling.Logging.logger;
+import core.EventHandling.Logging.Logger;
 import core.World.Textures.TextureLoader;
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.io.NIOUtils;
@@ -56,7 +56,7 @@ public class Video {
                         }
                     }
                 } catch (Exception e) {
-                    logger.log(e.toString());
+                    Logger.log(e.toString());
                 }
             }).start();
         }

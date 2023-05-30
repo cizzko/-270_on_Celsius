@@ -1,7 +1,7 @@
 package core.UI.GUI.Menu;
 
 import java.awt.*;
-import static core.EventHandling.Logging.json.getName;
+import static core.EventHandling.Logging.Json.getName;
 import static core.UI.GUI.CreateElement.*;
 
 public class Main {

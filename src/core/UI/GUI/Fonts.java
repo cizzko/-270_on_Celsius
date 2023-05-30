@@ -1,7 +1,7 @@
 package core.UI.GUI;
 
-import core.EventHandling.Logging.config;
-import core.EventHandling.Logging.logger;
+import core.EventHandling.Logging.Config;
+import core.EventHandling.Logging.Logger;
 import core.World.Textures.TextureLoader;
 import java.awt.*;
 import java.awt.font.FontRenderContext;
@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 
 public class Fonts {
-    private static final int fontSize = Integer.parseInt(config.jetFromConfig("FontSize"));
+    private static final int fontSize = Integer.parseInt(Config.jetFromConfig("FontSize"));
     public static ConcurrentHashMap<Character, ByteBuffer> chars = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<Character, Dimension> letterSize = new ConcurrentHashMap<>();
 
@@ -57,7 +57,7 @@ public class Fonts {
                 letterSize.put(c, new Dimension(charWidth, charHeight));
                 chars.put(c, TextureLoader.ByteBufferEncoder(charImage));
             } else {
-                logger.log("charter '" + c + "' cannot displayed, file: " + pathTTF);
+                Logger.log("charter '" + c + "' cannot displayed, file: " + pathTTF);
             }
         }
     }

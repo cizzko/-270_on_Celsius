@@ -1,7 +1,7 @@
-package core.World.creatures;
+package core.World.Creatures;
 
 import core.EventHandling.EventHandler;
-import core.EventHandling.Logging.logger;
+import core.EventHandling.Logging.Logger;
 import core.World.Textures.StaticWorldObjects;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -12,7 +12,7 @@ import static org.lwjgl.glfw.GLFW.*;
 public class Physics extends Thread {
 
     public void run() {
-        logger.log("Thread: Physics started");
+        Logger.log("Thread: Physics started");
 
         while (!glfwWindowShouldClose(glfwWindow)) {
             try { Thread.sleep(16); } catch (InterruptedException e) {

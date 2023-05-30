@@ -1,5 +1,6 @@
 package core.World.Textures;
 
+//динамические объекты, могут иметь любые координаты внутри мира и быть перемещены когда угодно
 public class DynamicWorldObjects {
     public int framesCount, currentFrame;
     public float x, y, animSpeed;

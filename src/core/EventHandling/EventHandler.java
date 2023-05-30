@@ -1,18 +1,18 @@
 package core.EventHandling;
 
-import core.EventHandling.Logging.json;
-import core.EventHandling.Logging.logger;
+import core.EventHandling.Logging.Json;
+import core.EventHandling.Logging.Logger;
 import core.UI.GUI.Menu.CreatePlanet;
 import core.UI.GUI.Menu.Main;
 import core.UI.GUI.Menu.Settings;
 import core.UI.GUI.Video;
-import core.UI.GUI.objects.ButtonObject;
-import core.UI.GUI.objects.SliderObject;
+import core.UI.GUI.Objects.ButtonObject;
+import core.UI.GUI.Objects.SliderObject;
 import core.Window;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
-import core.World.creatures.CreaturesGenerate;
-import core.World.creatures.Physics;
+import core.World.Creatures.CreaturesGenerate;
+import core.World.Creatures.Physics;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import java.awt.*;
@@ -24,12 +24,12 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class EventHandler extends Thread {
     public EventHandler() {
-        logger.log("Thread: Event handling started");
+        Logger.log("Thread: Event handling started");
         GLFWKeyCallback keyCallback = new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
                 if (key == GLFW.GLFW_KEY_F4 && mods == GLFW.GLFW_MOD_ALT) {
-                    logger.logExit(1863);
+                    Logger.logExit(1863);
                 }
             }
         };
@@ -94,27 +94,27 @@ public class EventHandler extends Thread {
             }
 
             if (button.isClicked) {
-                if (button.name.equals(json.getName("Play")) && !Window.start) {
+                if (button.name.equals(Json.getName("Play")) && !Window.start) {
                     Main.delete();
                     CreatePlanet.create();
                 }
-                if (button.name.equals(json.getName("Exit"))) {
-                    logger.logExit(0);
+                if (button.name.equals(Json.getName("Exit"))) {
+                    Logger.logExit(0);
                 }
 
-                if (button.name.equals(json.getName("Settings"))) {
+                if (button.name.equals(Json.getName("Settings"))) {
                     Main.delete();
                     Settings.create();
                 }
-                if (button.name.equals(json.getName("SettingsExit"))) {
+                if (button.name.equals(Json.getName("SettingsExit"))) {
                     Settings.delete();
                     if (!start) {
                         Main.create();
                     }
                 }
 
-                if (button.name.equals(json.getName("GenerateWorld")) && !Window.start) {
-                    WorldGenerator.generateWorld(getSliderPos("worldSize"), 90, buttons.get(json.getName("GenerateSimpleWorld")).isClicked);
+                if (button.name.equals(Json.getName("GenerateWorld")) && !Window.start) {
+                    WorldGenerator.generateWorld(getSliderPos("worldSize"), 40, buttons.get(Json.getName("GenerateSimpleWorld")).isClicked);
                     WorldGenerator.generateDynamicsObjects();
                     TextureDrawing.loadObjects();
 

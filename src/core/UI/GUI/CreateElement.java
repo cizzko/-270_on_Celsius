@@ -1,11 +1,11 @@
 package core.UI.GUI;
 
-import core.UI.GUI.objects.ButtonObject;
-import core.UI.GUI.objects.PanelObject;
-import core.UI.GUI.objects.SliderObject;
+import core.UI.GUI.Objects.ButtonObject;
+import core.UI.GUI.Objects.PanelObject;
+import core.UI.GUI.Objects.SliderObject;
+import core.UI.GUI.Objects.TextObject;
 import java.awt.*;
 import java.util.concurrent.ConcurrentHashMap;
-
 import static core.Window.height;
 import static core.Window.width;
 import static core.World.Textures.TextureLoader.BufferedImageEncoder;
@@ -15,6 +15,7 @@ public class CreateElement {
     public static ConcurrentHashMap<String, SliderObject> sliders = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, PanelObject> panels = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, ButtonObject[]> dropMenu = new ConcurrentHashMap<>();
+    public static ConcurrentHashMap<String, TextObject> texts = new ConcurrentHashMap<>();
 
     public static void createButton(int x, int y, int btnWidth, int btnHeight, String name, boolean simple, Color color) {
         int newX = (int) Math.round((double) x / 1920 * width);
@@ -81,6 +82,10 @@ public class CreateElement {
         int newHeight = (int) Math.round((double) panHeight / 1080 * height);
 
         panels.put(name, new PanelObject(newX, newY, newWidth, newHeight, 1, name, simple, null));
+    }
+
+    public static void createText(int x, int y, String name, String text, Color color) {
+        texts.put(name, new TextObject(x, y, text, color));
     }
 
     public static void createPicture(int x, int y, int layer, String name, String path) {

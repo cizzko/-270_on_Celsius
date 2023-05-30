@@ -1,6 +1,6 @@
 package core.World;
 
-import core.EventHandling.Logging.logger;
+import core.EventHandling.Logging.Logger;
 import core.UI.GUI.CreateElement;
 import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.StaticWorldObjects;
@@ -8,6 +8,9 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
+import static core.EventHandling.Logging.Logger.log;
+import static core.UI.GUI.CreateElement.createText;
 import static core.Window.defPath;
 
 public class WorldGenerator {
@@ -16,7 +19,7 @@ public class WorldGenerator {
     public static DynamicWorldObjects[] DynamicObjects;
 
     public static void generateWorld(int SizeX, int SizeY, boolean simple) {
-        logger.log("World generator version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world at size: x - " + SizeX + ", y - " + SizeY + "; with arguments 'simple: " + simple + "' ");
+        log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world at size: x - " + SizeX + ", y - " + SizeY + "; with arguments 'simple: " + simple + "' ");
 
         StaticObjects = new StaticWorldObjects[SizeX + 1][SizeY + 1];
         WorldGenerator.SizeX = SizeX;
@@ -28,12 +31,20 @@ public class WorldGenerator {
             smoothWorld();
             fillHollows();
         }
+        log("World generator: generating done!\n");
+        createText(42, 50, "generatingDone", "Done! Starting world", new Color(147, 51, 0, 255));
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            log(e.toString());
+        }
     }
 
     private static void generateFlatWorld() {
-        logger.log("World generator: generating flat world");
+        log("World generator: generating flat world");
+        createText(42, 170, "generateFlatWorldText", "Generating flat world", new Color(210, 210, 210, 255));
 
-        CreateElement.createButton(40, 150, 20, 20, "Generating float world..", false, new Color(0, 0, 0, 0));
         int rand;
 
         for (int x = 0; x < SizeX; x++) {
@@ -52,6 +63,9 @@ public class WorldGenerator {
     }
 
     private static void generateMountains() {
+        log("World generator: generating mountains");
+        createText(42, 140, "generateMountainsText", "Generating mountains", new Color(210, 210, 210, 255));
+
         float randGrass = 1.4f;
         float randAir = 7f;
 
@@ -59,15 +73,14 @@ public class WorldGenerator {
             for (int x = 1; x < SizeX - 1; x++) {
                 for (int y = SizeY / 3; y < SizeY - 1; y++) {
                     // меньше число - меньше шанс генерации высоких гор
-                    randGrass += y / 5500000f;
+                    randGrass += y / 400000f;
 
                     if ((StaticObjects[x + 1][y].solid || StaticObjects[x - 1][y].solid || StaticObjects[x][y + 1].solid || StaticObjects[x][y - 1].solid) && Math.random() * randGrass < 1) {
                         StaticObjects[x][y] = new StaticWorldObjects(null, defPath + "\\src\\assets\\World\\blocks\\grass1.png", x * 16, y * 16);
                         StaticObjects[x][y].solid = true;
                     }
                     if (Math.random() * randAir < 1) {
-                        StaticObjects[x][y].gas = true;
-                        StaticObjects[x][y].solid = false;
+                        StaticObjects[x][y].destroyObject();
                     }
                 }
             }
@@ -75,6 +88,9 @@ public class WorldGenerator {
     }
 
     private static void fillHollows() {
+        log("World generator: filling hollows");
+        createText(42, 80, "fillHollowsText", "Filling hollows", new Color(210, 210, 210, 255));
+
         boolean[][] visited = new boolean[SizeX][SizeY];
 
         for (int x = 1; x < SizeX - 1; x++) {
@@ -91,6 +107,9 @@ public class WorldGenerator {
     }
 
     private static void smoothWorld() {
+        log("World generator: smoothing world");
+        createText(42, 110, "smoothWorldText", "Smoothing world", new Color(210, 210, 210, 255));
+
         for (int x = 1; x < SizeX - 1; x++) {
             for (int y = 1; y < SizeY - 1; y++) {
                 if (StaticObjects[x][y].gas && (StaticObjects[x + 1][y].solid && StaticObjects[x - 1][y].solid && StaticObjects[x][y - 1].solid) || (StaticObjects[x + 1][y + 1].solid && StaticObjects[x - 1][y - 1].solid) || (StaticObjects[x - 1][y + 1].solid && StaticObjects[x + 1][y - 1].solid) && Math.random() * 3 < 1) {
@@ -148,41 +167,17 @@ public class WorldGenerator {
     }
 
     private static void generateCanyons() {
-        for (int x = 0; x < SizeX; x++) {
-            for (int y = 1; y < SizeY; y++) {
-                if (StaticObjects[x][y].gas && StaticObjects[x][y - 1].solid && (int) (Math.random() * 50) == 1) {
-                    int width = (int)(Math.random() * 20) + 5; // случайная ширина овала
-                    int height = (int)(Math.random() * 20) + 15; // случайная высота овала
-                    int radiusX = (int)((y * 2 + SizeY) / (SizeY / 2.0) * Math.random() / 4) + y / 2; // случайный радиус по X
-                    int radiusY = (int)((y * 2 + SizeY) / (SizeY / 2.0) * Math.random() / 4) + y / 2; // случайный радиус по Y
-                    radiusX = Math.min(radiusX, SizeY / 2); // ограничиваем радиусы половиной размера мира
-                    radiusY = Math.min(radiusY, SizeY / 2);
 
-                    for (int X = Math.max(0, x - radiusX); X < Math.min(SizeX, x + radiusX); X++) {
-                        for (int Y = Math.max(1, y - radiusY); Y < Math.min(SizeY, y + radiusY); Y++) {
-                            double distance = Math.hypot((X - x) * width, (Y - y) * height);
-
-                            if (distance <= radiusX * radiusY) { // проверяем, попадает ли блок внутрь овала
-                                StaticWorldObjects obj = new StaticWorldObjects(null, defPath + "\\src\\assets\\World\\blocks\\air.png", X * 16, Y * 16);
-                                obj.solid = true;
-                                StaticObjects[X][Y] = obj;
-                            }
-                        }
-                    }
-                }
-            }
-        }
     }
 
     public static void generateDynamicsObjects() {
         try {
             DynamicObjects = new DynamicWorldObjects[SizeX * SizeY / 2 + 1];
         } catch (OutOfMemoryError e) {
-            logger.log("Failed to allocate memory for DynamicObjects: " + "DynamicObjects size < 2147483647: DynamicObject created as size 4096");
+            log("Failed to allocate memory for DynamicObjects: " + "DynamicObjects size < 2147483647: DynamicObject created as size 4096");
             DynamicObjects = new DynamicWorldObjects[4096];
         }
 
-        DynamicWorldObjects player = new DynamicWorldObjects(1, 0f, defPath + "\\src\\assets\\World\\creatures\\player.png", true, true, 0, SizeY * 8 + 16);
-        DynamicObjects[0] = player;
+        DynamicObjects[0] = new DynamicWorldObjects(1, 0f, defPath + "\\src\\assets\\World\\creatures\\player.png", true, true, 320, SizeY * 8 + 16);
     }
 }

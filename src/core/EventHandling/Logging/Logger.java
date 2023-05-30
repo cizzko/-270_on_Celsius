@@ -5,11 +5,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
-import static core.EventHandling.Logging.config.jetFromConfig;
+import static core.EventHandling.Logging.Config.jetFromConfig;
 import static core.Window.*;
 import static org.lwjgl.glfw.GLFW.*;
 
-public class logger {
+public class Logger {
     public static boolean err = false, cleanup = false, debug = Boolean.parseBoolean(jetFromConfig("Debug"));
 
     public static void log(String message, boolean forcibly) {
@@ -37,7 +37,7 @@ public class logger {
             }
         } else if (!err) {
             err = true;
-            log("See config. Access denied, because debug false or null.", true);
+            log("See Config. Access denied, because debug false or null.", true);
         }
     }
 
@@ -59,13 +59,13 @@ public class logger {
         }
 
         glfwDestroyWindow(glfwWindow);
-        logger.log("\nProgram exit at: " + LocalDateTime.now() + "\nExit code: " + status + exit + "\nTotal frames: " + totalFrames + "\n-------- Log ended --------");
+        Logger.log("\nProgram exit at: " + LocalDateTime.now() + "\nExit code: " + status + exit + "\nTotal frames: " + totalFrames + "\n-------- Log ended --------");
         System.exit(status);
     }
 
     public static void logStart() {
-        logger.log("-------- Log started --------" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\nStart time: " + LocalDateTime.now() + "\n");
-        logger.log("Screen width: " + width + "\nScreen height: " + height + "\nFull screen: " + jetFromConfig("FullScreen"));
-        logger.log("Vertical sync: " + config.jetFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\n\nCurrent language: " + jetFromConfig("Language"));
+        Logger.log("-------- Log started --------" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\nStart time: " + LocalDateTime.now() + "\n");
+        Logger.log("Screen width: " + width + "\nScreen height: " + height + "\nFull screen: " + jetFromConfig("FullScreen"));
+        Logger.log("Vertical sync: " + Config.jetFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\n\nCurrent language: " + jetFromConfig("Language"));
     }
 }

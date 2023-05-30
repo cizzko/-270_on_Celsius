@@ -1,4 +1,4 @@
-package core.UI.GUI.objects;
+package core.UI.GUI.Objects;
 
 import java.awt.*;
 import java.util.Arrays;

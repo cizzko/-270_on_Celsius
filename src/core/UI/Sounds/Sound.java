@@ -1,14 +1,14 @@
 package core.UI.Sounds;
 
-import core.EventHandling.Logging.config;
-import core.EventHandling.Logging.logger;
+import core.EventHandling.Logging.Config;
+import core.EventHandling.Logging.Logger;
 import javax.sound.sampled.*;
 import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Sound {
-    private static final int effectVolume = Integer.parseInt(config.jetFromConfig("EffectsVolume"));
-    private static final int musicVolume = Integer.parseInt(config.jetFromConfig("SoundsVolume"));
+    private static final int effectVolume = Integer.parseInt(Config.jetFromConfig("EffectsVolume"));
+    private static final int musicVolume = Integer.parseInt(Config.jetFromConfig("SoundsVolume"));
     private static int volume;
     private static boolean suppVolumeLevel = true;
     public static ConcurrentHashMap<String, Boolean> sounds = new ConcurrentHashMap<>();
@@ -17,7 +17,7 @@ public class Sound {
     public static void SoundPlay(String path, String type) {
         if (sounds.get(path) == null || !sounds.get(path)) {
             if (!suppVolumeLevel) {
-                logger.log("this device not supported volume level");
+                Logger.log("this device not supported volume level");
             }
 
             new Thread(() -> {
@@ -43,7 +43,7 @@ public class Sound {
                         FloatControl gainControl = (FloatControl) sourceDataLine.getControl(FloatControl.Type.MASTER_GAIN);
                         gainControl.setValue(20f * (float) Math.log10(volume));
                     } catch (Exception e) {
-                        logger.log(e.toString());
+                        Logger.log(e.toString());
                     }
 
                     sourceDataLine.open(format);
@@ -61,7 +61,7 @@ public class Sound {
                     sourceDataLine.close();
 
                 } catch (Exception e) {
-                    logger.log("Error during sound playback: " + e + ", file: " + path);
+                    Logger.log("Error during sound playback: " + e + ", file: " + path);
                 } finally {
                     sounds.put(path, false);
                 }

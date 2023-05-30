@@ -1,12 +1,13 @@
 package core.World.Textures;
 
+import core.EventHandling.Logging.Config;
 import core.EventHandling.MouseScrollCallback;
 import core.UI.GUI.Fonts;
-import core.UI.GUI.objects.ButtonObject;
-import core.UI.GUI.objects.PanelObject;
-import core.UI.GUI.objects.SliderObject;
+import core.UI.GUI.Objects.ButtonObject;
+import core.UI.GUI.Objects.PanelObject;
+import core.UI.GUI.Objects.SliderObject;
+import core.UI.GUI.Objects.TextObject;
 import core.UI.GUI.Video;
-import core.EventHandling.Logging.config;
 import core.Window;
 import core.World.WorldGenerator;
 import java.awt.*;
@@ -18,15 +19,13 @@ import java.util.List;
 import static core.UI.GUI.CreateElement.*;
 import static core.UI.GUI.Video.*;
 import static core.Window.defPath;
-import static core.Window.glfwWindow;
 import static core.World.Textures.TextureLoader.BufferedImageEncoder;
 import static core.World.Textures.TextureLoader.ByteBufferEncoder;
-import static core.World.WorldGenerator.SizeY;
 import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
     private static int accumulator = 0;
-    private static final int spacingBetweenLetters = Integer.parseInt(config.jetFromConfig("SpacingBetweenLetters"));
+    private static final int spacingBetweenLetters = Integer.parseInt(Config.jetFromConfig("SpacingBetweenLetters"));
     private static HashMap<Integer, TextureData> textures = new HashMap<>();
     public static StaticWorldObjects[][] StaticObjects;
     public static DynamicWorldObjects[] DynamicObjects;
@@ -143,7 +142,7 @@ public class TextureDrawing {
         glPopMatrix();
     }
 
-    public static void drawText(int x, int y, String text) {
+    public static void drawText(int x, int y, String text, Color color) {
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
             if (ch == ' ') {
@@ -151,9 +150,13 @@ public class TextureDrawing {
                 x += Fonts.letterSize.get('A').width;
                 continue;
             }
-            TextureDrawing.drawTexture(x, y, Fonts.letterSize.get(ch).width, Fonts.letterSize.get(ch).height, Fonts.chars.get(ch), new Color(210, 210, 210, 255), 1);
+            TextureDrawing.drawTexture(x, y, Fonts.letterSize.get(ch).width, Fonts.letterSize.get(ch).height, Fonts.chars.get(ch), color, 1);
             x += Fonts.letterSize.get(ch).width * (spacingBetweenLetters / 10);
         }
+    }
+
+    public static void drawText(int x, int y, String text) {
+        drawText(x, y, text, new Color(210, 210, 210, 255));
     }
 
     public static void drawRectangleBorder(int x, int y, int width, int height, int thickness, Color color) {
@@ -297,8 +300,8 @@ public class TextureDrawing {
     public static void updateStaticObj() {
         float left = DynamicObjects[0].x - 1920 / 5.5f;
         float right = DynamicObjects[0].x + 1920 / 5.5f;
-        float top = DynamicObjects[0].y - 1080 / 2f;
-        float bottom = DynamicObjects[0].x + 1080 / 2f;
+        float top = DynamicObjects[0].y - 1080 / 8f;
+        float bottom = DynamicObjects[0].x + 1080 / 8f;
 
         for (int x = 0; x < StaticObjects.length - 1; x++) {
             for (int y = 0; y < StaticObjects[x].length - 1; y++) {
@@ -338,6 +341,7 @@ public class TextureDrawing {
         updateButtons();
         updateDropMenu();
         updateSliders();
+        updateTexts();
     }
 
     private static void updatePanels() {
@@ -450,7 +454,6 @@ public class TextureDrawing {
         }
     }
 
-
     private static void updateSliders() {
         for (SliderObject slider : sliders.values()) {
             if (!slider.visible) {
@@ -458,6 +461,15 @@ public class TextureDrawing {
             }
             drawRectangle(slider.x, slider.y, slider.width, slider.height, slider.sliderColor);
             drawCircle(slider.sliderPos, slider.y + slider.height / 2, slider.height / 1.1f, slider.dotColor);
+        }
+    }
+
+    private static void updateTexts() {
+        for (TextObject text : texts.values()) {
+            if (!text.visible) {
+                continue;
+            }
+            drawText(text.x, text.y, text.text, text.color);
         }
     }
 }

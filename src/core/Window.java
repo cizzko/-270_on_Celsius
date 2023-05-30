@@ -1,12 +1,12 @@
 package core;
 
 import core.EventHandling.EventHandler;
-import core.EventHandling.Logging.json;
+import core.EventHandling.Logging.Config;
+import core.EventHandling.Logging.Json;
 import core.EventHandling.MouseScrollCallback;
 import core.UI.GUI.Fonts;
 import core.UI.GUI.Video;
-import core.EventHandling.Logging.config;
-import core.EventHandling.Logging.logger;
+import core.EventHandling.Logging.Logger;
 import core.UI.GUI.Menu.Main;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -19,9 +19,9 @@ import static org.lwjgl.opengl.GL13.*;
 public class Window {
     public static String defPath = Paths.get("").toAbsolutePath().toString();
 
-    public static int width = Integer.parseInt(config.jetFromConfig("ScreenWidth")), height = Integer.parseInt(config.jetFromConfig("ScreenHeight")), deltaTime, verticalSync;
+    public static int width = Integer.parseInt(Config.jetFromConfig("ScreenWidth")), height = Integer.parseInt(Config.jetFromConfig("ScreenHeight")), deltaTime, verticalSync;
     public static final String title = "-270 on Celsius", version = "dev 0.0.0.5";
-    public static boolean start = false, fullScreen = Boolean.parseBoolean(config.jetFromConfig("FullScreen"));
+    public static boolean start = false, fullScreen = Boolean.parseBoolean(Config.jetFromConfig("FullScreen"));
     public static long glfwWindow, lastFrameTime = System.currentTimeMillis(), totalFrames;
 
     public void run() {
@@ -30,10 +30,10 @@ public class Window {
     }
 
     public void init() {
-        logger.logStart();
-        json.getAllLanguages();
+        Logger.logStart();
+        Json.getAllLanguages();
 
-        if (config.jetFromConfig("VerticalSync").equals("true")) {
+        if (Config.jetFromConfig("VerticalSync").equals("true")) {
             verticalSync = 1;
         } else {
             verticalSync = 0;
@@ -68,11 +68,11 @@ public class Window {
         Video.drawVideo(defPath + "\\src\\assets\\World\\kaif.mp4", 1, 30, 0, 0, 1920, 1080);
 
         Main.create();
-        logger.log("Init status: true");
+        Logger.log("Init status: true");
     }
 
     public void draw() {
-        logger.log("Thread: Main thread started drawing");
+        Logger.log("Thread: Main thread started drawing");
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
         new Thread(new EventHandler()).start();
