@@ -45,7 +45,6 @@ public class Saves {
             InflaterInputStream iis = new InflaterInputStream(fis);
             ObjectInputStream ois = new ObjectInputStream(iis);
 
-            // Десериализация объекта из файла и сохранение его в HashMap<String, Object>
             data = (HashMap<String, Object>) ois.readObject();
 
             ois.close();

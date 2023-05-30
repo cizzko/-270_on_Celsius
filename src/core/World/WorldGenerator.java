@@ -32,9 +32,6 @@ public class WorldGenerator {
             fillHollows();
         }
 
-        Saves.createWorldSave();
-
-
         log("World generator: generating done!\n");
         createText(42, 50, "generatingDone", "Done! Starting world", new Color(147, 51, 0, 255));
 
