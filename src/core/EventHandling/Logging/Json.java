@@ -3,29 +3,33 @@ package core.EventHandling.Logging;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import java.io.FileReader;
+import java.util.HashMap;
 import static core.Window.defPath;
 
 public class Json {
+    private static HashMap<String, String> words = new HashMap<>();
     public static String lang = Config.jetFromConfig("Language");
     public static String allLanguages;
 
     public static String getName(String key) {
-        try (FileReader reader = new FileReader(defPath + "\\src\\assets\\Translate.json")) {
-            Gson gson = new Gson();
-            JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
-            key = jsonObject.getAsJsonObject(lang).get(key).getAsString();
+        if (words.get(key) == null) {
+            try (FileReader reader = new FileReader(defPath + "\\src\\assets\\Translate.json")) {
+                Gson gson = new Gson();
+                JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
+                words.put(key, jsonObject.getAsJsonObject(lang).get(key).getAsString());
 
-        } catch (Exception e) {
-            if (lang.equals("eng")) {
-                Logger.log("Some key (" + key + ") at language '" + lang + "' not found, see '" + defPath + "\\src\\assets\\Translate.json'");
-                Logger.logExit(1);
+            } catch (Exception e) {
+                if (lang.equals("eng")) {
+                    Logger.log("Some key (" + key + ") at language '" + lang + "' not found, see '" + defPath + "\\src\\assets\\Translate.json'");
+                    Logger.logExit(1);
+                }
+
+                Logger.log("Some key (" + key + ") at language '" + lang + "' not found, language set to 'eng'");
+                Config.updateConfig("Language", "eng");
+                lang = "eng";
             }
-
-            Logger.log("Some key (" + key + ") at language '" + lang + "' not found, language set to 'eng'");
-            Config.updateConfig("Language", "eng");
-            lang = "eng";
         }
-        return key;
+        return words.get(key);
     }
 
     public static String getAllLanguages() {
