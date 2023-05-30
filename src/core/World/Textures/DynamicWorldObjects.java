@@ -1,7 +1,9 @@
 package core.World.Textures;
 
+import java.io.Serializable;
+
 //динамические объекты, могут иметь любые координаты внутри мира и быть перемещены когда угодно
-public class DynamicWorldObjects {
+public class DynamicWorldObjects implements Serializable {
     public int framesCount, currentFrame;
     public float x, y, animSpeed;
     public String path;
