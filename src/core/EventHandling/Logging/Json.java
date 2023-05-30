@@ -10,14 +10,14 @@ public class Json {
     public static String allLanguages;
 
     public static String getName(String key) {
-        try (FileReader reader = new FileReader(defPath + "\\src\\assets\\Translate.Json")) {
+        try (FileReader reader = new FileReader(defPath + "\\src\\assets\\Translate.json")) {
             Gson gson = new Gson();
             JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
             key = jsonObject.getAsJsonObject(lang).get(key).getAsString();
 
         } catch (Exception e) {
             if (lang.equals("eng")) {
-                Logger.log("Some key (" + key + ") at language '" + lang + "' not found, see '" + defPath + "\\src\\assets\\Translate.Json'");
+                Logger.log("Some key (" + key + ") at language '" + lang + "' not found, see '" + defPath + "\\src\\assets\\Translate.json'");
                 Logger.logExit(1);
             }
 
@@ -30,7 +30,7 @@ public class Json {
 
     public static String getAllLanguages() {
         if (allLanguages == null) {
-            try (FileReader reader = new FileReader(defPath + "\\src\\assets\\Translate.Json")) {
+            try (FileReader reader = new FileReader(defPath + "\\src\\assets\\Translate.json")) {
                 Gson gson = new Gson();
                 JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
 
