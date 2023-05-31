@@ -20,7 +20,7 @@ public class ButteflyLogic {
                     if (randX + DynamicObjects[x].x < SizeX * 16 && randY + DynamicObjects[x].y < SizeY * 16 && randX + DynamicObjects[x].x > 0 && randY + DynamicObjects[x].y > SizeY / 2f * 16 && DynamicObjects[x].currentFrame != thisFrame) {
                         DynamicObjects[x].x += randX;
                         DynamicObjects[x].y += randY;
-                        thisFrame = DynamicObjects[x].currentFrame = 1;
+                        thisFrame = DynamicObjects[x].currentFrame;
                     }
                 }
             }
