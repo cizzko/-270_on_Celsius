@@ -16,6 +16,8 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+
+import static core.EventHandling.Logging.Logger.log;
 import static core.UI.GUI.CreateElement.*;
 import static core.UI.GUI.Video.*;
 import static core.Window.defPath;
@@ -143,11 +145,18 @@ public class TextureDrawing {
     }
 
     public static void drawText(int x, int y, String text, Color color) {
+        int startX = x;
+
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
             if (ch == ' ') {
-                // ширина 'A' (eng, caps) принята за ширину пробела
+                // ширина 'A' (eng, caps) принята за ширину пробела, дабы можно было легко настраивать размеры текста
                 x += Fonts.letterSize.get('A').width;
+                continue;
+            } else if (ch == '\\' && text.charAt(i + 1) == 'n') { // если текст содерджит \\n - перенос на новую строку
+                y -= 30;
+                i++;
+                x = startX;
                 continue;
             }
             TextureDrawing.drawTexture(x, y, Fonts.letterSize.get(ch).width, Fonts.letterSize.get(ch).height, Fonts.chars.get(ch), color, 1);

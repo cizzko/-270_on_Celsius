@@ -1,14 +1,11 @@
 package core.World;
 
-import core.EventHandling.Logging.Logger;
-import core.UI.GUI.CreateElement;
 import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.StaticWorldObjects;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
 import static core.EventHandling.Logging.Logger.log;
 import static core.UI.GUI.CreateElement.createText;
 import static core.Window.defPath;

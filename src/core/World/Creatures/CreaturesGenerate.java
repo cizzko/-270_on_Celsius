@@ -52,7 +52,7 @@ public class CreaturesGenerate extends Thread {
 
         for (int x = 0; x < DynamicObjects.length; x++) {
             if (DynamicObjects[x] == null) {
-                DynamicObjects[x] = new DynamicWorldObjects(2, 0.1f, path, true, false, 0, 260);
+                DynamicObjects[x] = new DynamicWorldObjects(2, 0.1f, path, true, false, 0, SizeY / 2f + 520);
                 count++;
                 break;
             }
