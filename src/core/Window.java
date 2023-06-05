@@ -4,14 +4,19 @@ import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
 import core.EventHandling.MouseScrollCallback;
+import core.UI.GUI.CreateElement;
 import core.UI.GUI.Fonts;
 import core.UI.GUI.Menu.Main;
 import core.UI.GUI.Video;
 import core.EventHandling.Logging.Logger;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
+
+import java.awt.*;
 import java.nio.file.Paths;
+import static core.EventHandling.Logging.Logger.log;
 import static core.World.Textures.TextureDrawing.*;
+import static core.World.Weather.Sun.updateSun;
 import static java.sql.Types.NULL;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL13.*;
@@ -65,17 +70,20 @@ public class Window {
         glMatrixMode(GL_MODELVIEW);
 
         Fonts.generateFont(defPath + "\\src\\assets\\UI\\arial.ttf");
-        Video.drawVideo(defPath + "\\src\\assets\\World\\kaif.mp4", 1, 30, 0, 0, 1920, 1080);
+        Video.drawVideo(defPath + "\\src\\assets\\World\\other\\kaif.mp4", 1, 30, 0, 0, 1920, 1080);
 
         Main.create();
-        Logger.log("Init status: true");
+        log("Init status: true");
     }
 
     public void draw() {
-        Logger.log("Thread: Main thread started drawing");
+        log("Thread: Main thread started drawing");
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
         new Thread(new EventHandler()).start();
+
+        long lastSecondTime = System.currentTimeMillis();
+        int framesThisSecond = 0;
 
         while (!glfwWindowShouldClose(glfwWindow)) {
             long currentTime = System.currentTimeMillis();
@@ -84,16 +92,23 @@ public class Window {
 
             updateVideo();
             if (start) {
+                updateSun();
                 updateStaticObj();
                 updateDynamicObj();
             }
             updateGUI();
 
+            if (Logger.debug && currentTime - lastSecondTime >= 1000) {
+                CreateElement.createText(5, 1055, "FPS", "FPS: " + framesThisSecond, new Color(0, 0, 0, 255));
+                framesThisSecond = 0;
+                lastSecondTime = currentTime;
+            }
+
             glfwSwapBuffers(glfwWindow);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             glfwPollEvents();
 
-            totalFrames++;
+            framesThisSecond++;
         }
     }
 }

@@ -1,7 +1,6 @@
 package core.World.Textures;
 
 import core.EventHandling.Logging.Config;
-import core.EventHandling.MouseScrollCallback;
 import core.UI.GUI.Fonts;
 import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.PanelObject;
@@ -16,8 +15,6 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
-
-import static core.EventHandling.Logging.Logger.log;
 import static core.UI.GUI.CreateElement.*;
 import static core.UI.GUI.Video.*;
 import static core.Window.defPath;
@@ -38,7 +35,7 @@ public class TextureDrawing {
     }
 
     //for textures (world)
-    private static void drawTexture(String path, int x, int y, float zoom) {
+    public static void drawTexture(String path, int x, int y, float zoom, Color color) {
         int textureId = path.hashCode();
         TextureData textureData = textures.get(textureId);
 
@@ -57,7 +54,6 @@ public class TextureDrawing {
             int id = glGenTextures();
             glBindTexture(GL_TEXTURE_2D, id);
 
-            glColor4f(1f, 1f, 1f, 1f);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -79,11 +75,13 @@ public class TextureDrawing {
         glEnable(GL_BLEND);
         glLoadIdentity();
 
+        glColor4f(color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f, color.getAlpha() / 255.0f);
+
         if (Window.start) {
             glTranslatef(-DynamicObjects[0].x * zoom + Window.width / 2f - 32, -DynamicObjects[0].y * zoom + Window.height / 2f - 200, 0);
         }
 
-        glMultMatrixf(new float[]{(float) (zoom + MouseScrollCallback.getScroll() / 10), 0, 0, 0, 0, (float) (zoom + MouseScrollCallback.getScroll() / 10), 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
+        glMultMatrixf(new float[]{zoom, 0, 0, 0, 0, zoom, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
 
         // нижний левый угол
         glBegin(GL_QUADS);
@@ -107,6 +105,10 @@ public class TextureDrawing {
         glPopMatrix();
 
         glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    public static void drawTexture(String path, int x, int y, float zoom) {
+        drawTexture(path, x, y, zoom, new Color(255, 255, 255, 255));
     }
 
     //for video, text, etc
@@ -139,6 +141,7 @@ public class TextureDrawing {
         glTexCoord2f(0, 0);
         glVertex2f(x, y + height);
 
+        glColor4f(1f, 1f, 1f, 1f);
         glEnd();
         glDisable(GL_TEXTURE_2D);
         glPopMatrix();

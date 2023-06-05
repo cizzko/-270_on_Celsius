@@ -17,7 +17,6 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import java.awt.*;
 import java.util.Arrays;
-
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -118,7 +117,7 @@ public class EventHandler extends Thread {
                     WorldGenerator.generateDynamicsObjects();
                     TextureDrawing.loadObjects();
 
-                    Video.video.get(defPath + "\\src\\assets\\World\\kaif.mp4").isPlaying = false;
+                    Video.video.get(defPath + "\\src\\assets\\World\\other\\kaif.mp4").isPlaying = false;
                     CreatePlanet.delete();
 
                     new Thread(new Physics()).start();
@@ -140,7 +139,7 @@ public class EventHandler extends Thread {
                 if (getSliderPos("worldSize") >= worldSize / 1.5f) {
                     pic = "planetBig.png";
                 }
-                createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\" + pic);
+                createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\other\\" + pic);
             }
         }
     }

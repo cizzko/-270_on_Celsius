@@ -1,19 +1,19 @@
 package core.UI.GUI.Menu;
 
 import java.awt.*;
-
 import static core.EventHandling.Logging.Json.getName;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.defPath;
 
 public class CreatePlanet {
+
     public static void create() {
         createPanel(20, 20, 1880, 200, "downPanel", false);
         createPanel(20, 240, 1400, 820, "leftPanel", false);
         createPanel(1440, 240, 460, 820, "rightPanel", false);
 
-        createPicture(1460, 620, 1, "planetBackground", defPath + "\\src\\assets\\World\\neboLol.png");
-        createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\planetMini.png");
+        createPicture(1460, 620, 1, "planetBackground", defPath + "\\src\\assets\\World\\other\\neboLol.png");
+        createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\other\\planetMini.png");
 
         createButton(1460, 260, 420, 67, getName("GenerateWorld"), true, new Color(255, 80, 0, 55));
         createSwapButton(70, 980, 32, 32, getName("GenerateSimpleWorld"), false, new Color(236, 236, 236, 55));
