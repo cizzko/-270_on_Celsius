@@ -109,6 +109,7 @@ public class Window {
             glfwPollEvents();
 
             framesThisSecond++;
+            totalFrames++;
         }
     }
 }

@@ -17,9 +17,7 @@ public class Sun {
         visible = true;
     }
 
-    public static void updateSun() {
-        currentTime += MouseScrollCallback.getScroll() / 20;
-
+    public static void updateSun() {;
         if (currentTime > 2359 || currentTime < 0) { // 2359 - 23:59
             currentTime = 0;
         }
