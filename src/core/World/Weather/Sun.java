@@ -45,7 +45,7 @@ public class Sun {
 
     private static void drawGradient(int green, int maxGreen) {
         int segments;
-        int startSunset = 950;
+        int startSunset = 1000;
         int endSunset = 1300;
         int maxSegments = 1000;
 
