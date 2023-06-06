@@ -113,7 +113,7 @@ public class EventHandler extends Thread {
                 }
 
                 if (button.name.equals(Json.getName("GenerateWorld")) && !Window.start) {
-                    WorldGenerator.generateWorld(getSliderPos("worldSize"), 40, buttons.get(Json.getName("GenerateSimpleWorld")).isClicked);
+                    WorldGenerator.generateWorld(getSliderPos("worldSize") + 20, 60, buttons.get(Json.getName("GenerateSimpleWorld")).isClicked);
                     WorldGenerator.generateDynamicsObjects();
                     TextureDrawing.loadObjects();
 

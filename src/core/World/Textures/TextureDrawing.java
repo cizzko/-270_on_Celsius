@@ -310,17 +310,20 @@ public class TextureDrawing {
 
 
     public static void updateStaticObj() {
-        float left = DynamicObjects[0].x - 1920 / 5.5f;
-        float right = DynamicObjects[0].x + 1920 / 5.5f;
-        float top = DynamicObjects[0].y - 1080 / 8f;
-        float bottom = DynamicObjects[0].x + 1080 / 8f;
+        float left = DynamicObjects[0].x - (1920 / 5.5f) - (48);
+        float right = DynamicObjects[0].x + (1920 / 5.5f) + (48);
+        float top = DynamicObjects[0].y - (1080 / 8f) - (48);
+        float bottom = DynamicObjects[0].y + (1080 / 8f) + (48);
 
         for (int x = 0; x < StaticObjects.length - 1; x++) {
             for (int y = 0; y < StaticObjects[x].length - 1; y++) {
-                StaticObjects[x][y].onCamera = !(StaticObjects[x][y].x < left) && !(StaticObjects[x][y].x > right) && !(StaticObjects[x][y].y < top) && !(StaticObjects[x][y].y > bottom);
+                float xBlock = StaticObjects[x][y].x;
+                float yBlock = StaticObjects[x][y].y;
+                boolean onCamera = !(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < top) && !(yBlock > bottom);
+                StaticObjects[x][y].onCamera = onCamera;
 
-                if (StaticObjects[x][y].onCamera && !StaticObjects[x][y].notForDrawing) {
-                    drawTexture(StaticObjects[x][y].path, (int) StaticObjects[x][y].x, (int) StaticObjects[x][y].y, 3);
+                if (onCamera && !StaticObjects[x][y].notForDrawing) {
+                    drawTexture(StaticObjects[x][y].path, (int) xBlock, (int) yBlock, 3);
                 }
             }
         }

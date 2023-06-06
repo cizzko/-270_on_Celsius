@@ -1,8 +1,6 @@
 package core.World.Weather;
 
-import core.EventHandling.MouseScrollCallback;
 import java.awt.*;
-
 import static core.Window.*;
 import static core.World.Textures.TextureDrawing.*;
 import static core.World.WorldGenerator.*;
@@ -11,13 +9,18 @@ import static core.World.WorldGenerator.DynamicObjects;
 public class Sun {
     public static float currentTime = (float) (Math.random() * 2359), x, y = SizeY / 2f;
     public static boolean visible = true;
-    private static int startPlayerX = 320;
+    private static long lastTime = System.currentTimeMillis();
 
     public static void createSun() {
         visible = true;
     }
 
-    public static void updateSun() {;
+    public static void updateSun() {
+        if (System.currentTimeMillis() - lastTime >= 3000) {
+            lastTime = System.currentTimeMillis();
+            currentTime++;
+        }
+
         if (currentTime > 2359 || currentTime < 0) { // 2359 - 23:59
             currentTime = 0;
         }
@@ -40,7 +43,7 @@ public class Sun {
         int green = (int) (maxGreen - (currentTime * ratio));
 
         drawGradient(green, maxGreen);
-        drawTexture(defPath + "\\src\\assets\\World\\other\\sun.png", (int) ((DynamicObjects[0].x / 3 + width / 2f - 32) - (DynamicObjects[0].x - startPlayerX)), (int) y, 1, new Color(255, green, 40, 220));
+        drawTexture(defPath + "\\src\\assets\\World\\other\\sun.png", (int) DynamicObjects[0].x - 330, (int) y, 1, new Color(255, green, 40, 220));
     }
 
     private static void drawGradient(int green, int maxGreen) {
@@ -65,7 +68,7 @@ public class Sun {
         }
 
         for (int i = 0; i < segments; i++) {
-            drawRectangle((int) (-DynamicObjects[0].x * 3 + width / 2f - 32), (int) (SizeY / 2f * 16 + (SizeY / 2f * 16 - DynamicObjects[0].y) + i) - 305, SizeX * 16, height / segments, segmentColors[i]);
+            drawRectangle((int) (-DynamicObjects[0].x * 3 + width / 2f - 32), (int) (DynamicObjects[0].y + i - (SizeY / 2f * 16)), SizeX * 16, height / segments, segmentColors[i]);
         }
     }
 }

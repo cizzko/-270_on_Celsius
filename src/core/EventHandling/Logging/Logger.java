@@ -1,6 +1,8 @@
 package core.EventHandling.Logging;
 
 import core.Window;
+import core.World.Weather.Sun;
+
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -59,7 +61,7 @@ public class Logger {
         }
 
         glfwDestroyWindow(glfwWindow);
-        Logger.log("\nProgram exit at: " + LocalDateTime.now() + "\nExit code: " + status + exit + "\nTotal frames: " + totalFrames + "\n-------- Log ended --------");
+        Logger.log("\nProgram exit at: " + LocalDateTime.now() + "\nExit code: " + status + exit + "\nTotal frames: " + totalFrames + "\nGame time: " + Sun.currentTime +  "\n-------- Log ended --------");
         System.exit(status);
     }
 
