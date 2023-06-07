@@ -2,6 +2,7 @@ package core.EventHandling.Logging;
 
 import java.io.*;
 import java.util.Properties;
+import static core.EventHandling.Logging.Logger.logExit;
 import static core.Window.defPath;
 
 public class Config {
@@ -11,8 +12,8 @@ public class Config {
         if (prop.isEmpty()) {
             try (FileInputStream fis = new FileInputStream(defPath + "\\src\\assets\\Config.properties")) {
                 prop.load(fis);
-            } catch (IOException e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                logExit(1, "Error at reading config: '" + e + "' at path: " + defPath + "\\src\\assets\\Config.properties");
             }
         }
         return prop.getProperty(key);
@@ -27,8 +28,8 @@ public class Config {
             prop.setProperty(key, value);
             prop.store(fos, null);
 
-        } catch (IOException e) {
-            Logger.log(e.toString());
+        } catch (Exception e) {
+            logExit(1, "Error at update config: '" + e + "' at path: '" + defPath + "\\src\\assets\\Config.properties', key: '" + key + "' value: '" + value + "'");
         }
     }
 }

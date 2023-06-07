@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentHashMap;
 
-
 public class Fonts {
     private static final int fontSize = Integer.parseInt(Config.jetFromConfig("FontSize"));
     public static ConcurrentHashMap<Character, ByteBuffer> chars = new ConcurrentHashMap<>();
@@ -25,7 +24,7 @@ public class Fonts {
             //default 12
             font = font.deriveFont(Font.PLAIN, (float) (fontSize * Toolkit.getDefaultToolkit().getScreenResolution() / 72.0));
         } catch (IOException | FontFormatException e) {
-            e.printStackTrace();
+            Logger.logExit(1, "Error at generate font: " + e);
         }
         FontRenderContext fontRenderContext = new FontRenderContext(null, true, true);
 
@@ -57,7 +56,7 @@ public class Fonts {
                 letterSize.put(c, new Dimension(charWidth, charHeight));
                 chars.put(c, TextureLoader.ByteBufferEncoder(charImage));
             } else {
-                Logger.log("charter '" + c + "' cannot displayed, file: " + pathTTF);
+                Logger.log("Charter '" + c + "' cannot displayed, file: '" + pathTTF + "'");
             }
         }
     }

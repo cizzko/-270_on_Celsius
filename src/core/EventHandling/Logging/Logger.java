@@ -47,8 +47,12 @@ public class Logger {
         log(message, false);
     }
 
-    public static void logExit(int status) {
+    public static void logExit(int status, String reason) {
         String exit;
+
+        if (reason != null) {
+            log("\nExit reason: " + reason);
+        }
 
         if (status == 0) {
             exit = " (normal)";
@@ -61,13 +65,17 @@ public class Logger {
         }
 
         glfwDestroyWindow(glfwWindow);
-        Logger.log("\nProgram exit at: " + LocalDateTime.now() + "\nExit code: " + status + exit + "\nTotal frames: " + totalFrames + "\nGame time: " + Sun.currentTime +  "\n-------- Log ended --------");
+        log("\nProgram exit at: " + LocalDateTime.now() + "\nExit code: " + status + exit + "\nTotal frames: " + totalFrames + "\nGame time: " + Sun.currentTime +  "\n-------- Log ended --------");
         System.exit(status);
     }
 
+    public static void logExit(int status) {
+        logExit(status, null);
+    }
+
     public static void logStart() {
-        Logger.log("-------- Log started --------" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\nStart time: " + LocalDateTime.now() + "\n");
-        Logger.log("Screen width: " + width + "\nScreen height: " + height + "\nFull screen: " + jetFromConfig("FullScreen"));
-        Logger.log("Vertical sync: " + Config.jetFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\n\nCurrent language: " + jetFromConfig("Language"));
+        log("-------- Log started --------" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\nStart time: " + LocalDateTime.now() + "\n");
+        log("Screen width: " + width + "\nScreen height: " + height + "\nFull screen: " + jetFromConfig("FullScreen"));
+        log("Vertical sync: " + Config.jetFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\n\nCurrent language: " + jetFromConfig("Language"));
     }
 }

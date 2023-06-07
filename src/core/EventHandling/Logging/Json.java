@@ -20,8 +20,7 @@ public class Json {
 
             } catch (Exception e) {
                 if (lang.equals("eng")) {
-                    Logger.log("Some key (" + key + ") at language '" + lang + "' not found, see '" + defPath + "\\src\\assets\\Translate.json'");
-                    Logger.logExit(1);
+                    Logger.logExit(1, "Some key (" + key + ") at language '" + lang + "' not found, see '" + defPath + "\\src\\assets\\Translate.json'");
                 }
 
                 Logger.log("Some key (" + key + ") at language '" + lang + "' not found, language set to 'eng'");

@@ -1,19 +1,17 @@
 package core.World.Textures;
 
-import core.EventHandling.Logging.Logger;
-import org.jetbrains.annotations.NotNull;
 import org.lwjgl.BufferUtils;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentHashMap;
+import static core.EventHandling.Logging.Logger.logExit;
 
 public class TextureLoader extends Thread {
     public static ConcurrentHashMap<String, BufferedImage> bufferedImages = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, ByteBuffer> byteBuffers = new ConcurrentHashMap<>();
 
-    @NotNull
     public static BufferedImage BufferedImageEncoder(String path) {
         /* если картинка не создана - пытается создать, иначе выдаст ошибку
         намеренно сделана сначала проверка через if, содержится ли значение, поскольку
@@ -23,7 +21,7 @@ public class TextureLoader extends Thread {
             try {
                 bufferedImages.put(path, ImageIO.read(new File(path)));
             } catch (Exception e) {
-                Logger.log("Critical err at BufferedImageEncoder'" + e + "', Path '" + path + "'");
+                logExit(1, "Critical err at BufferedImageEncoder: '" + e + "', Path: '" + path + "'");
                 //команда выхода из программы
                 System.exit(0);
             }
@@ -32,7 +30,6 @@ public class TextureLoader extends Thread {
         return bufferedImages.get(path);
     }
 
-    @NotNull
     public static ByteBuffer ByteBufferEncoder(String path) {
         ByteBuffer buffer;
         BufferedImage image = BufferedImageEncoder(path);
@@ -62,7 +59,6 @@ public class TextureLoader extends Thread {
         return byteBuffers.get(path);
     }
 
-    @NotNull
     public static ByteBuffer ByteBufferEncoder(BufferedImage image) {
         ByteBuffer buffer;
 
