@@ -1,5 +1,6 @@
 package core.World.Weather;
 
+import core.EventHandling.MouseScrollCallback;
 import java.awt.*;
 import static core.Window.*;
 import static core.World.Textures.TextureDrawing.*;
@@ -9,6 +10,7 @@ import static core.World.WorldGenerator.DynamicObjects;
 public class Sun {
     public static float currentTime = (float) (Math.random() * 2359), x, y = -500 * (1 -  (currentTime - 2359) / (1 - 2359)) + 1500 * (currentTime - 2359) / (1 - 2359) + (SizeY / 2f * 16 - 700);
     public static boolean visible = true, newGradient = true;
+    private static final int startSunset = 1000, endSunset = 1300, nightLong = 4000;
     private static long lastTime = System.currentTimeMillis();
     private static Color[] segmentColors;
 
@@ -43,15 +45,13 @@ public class Sun {
         double ratio = (double) (maxGreen - minGreen) / (2359 - minGreen);
         int green = (int) (maxGreen - (currentTime * ratio));
 
-        drawGradient(green, maxGreen);
+        updateGradient(green, maxGreen);
         drawTexture(defPath + "\\src\\assets\\World\\other\\sun.png", (int) DynamicObjects[0].x - 330, (int) y, 1, new Color(255, green, 40, 220));
     }
 
-    private static void drawGradient(int green, int maxGreen) {
+    private static void updateGradient(int green, int maxGreen) {
         if (newGradient) {
             int segments;
-            int startSunset = 1000;
-            int endSunset = 1300;
             int maxSegments = 1000;
 
             newGradient = false;

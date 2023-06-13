@@ -10,10 +10,10 @@ public class Settings {
         createPanel(20, 20, 1880, 1040, "defaultPanSettings", false);
         createPanel(40, 40, 240, 1000, "leftPanSettings", true);
 
-        createButton(40, 915, 240, 65, getName("SettingsExit"), true, new Color(255, 80, 0, 55));
-        createButton(40, 300, 240, 65, getName("SettingsGraphics"), true, new Color(0, 0, 0, 50));
-        createButton(40, 203, 240, 65, getName("SettingsSound"), true, new Color(0, 0, 0, 50));
-        createButton(40, 105, 240, 65, getName("SettingsOther"), true, new Color(0, 0, 0, 50));
+        createButton(40, 915, 240, 65, getName("SettingsExit"), null, true, new Color(255, 80, 0, 55));
+        createButton(40, 300, 240, 65, getName("SettingsGraphics"), null, true, new Color(0, 0, 0, 50));
+        createButton(40, 203, 240, 65, getName("SettingsSound"), null, true, new Color(0, 0, 0, 50));
+        createButton(40, 105, 240, 65, getName("SettingsOther"), null, true, new Color(0, 0, 0, 50));
     }
 
     public static void delete() {

@@ -9,9 +9,9 @@ import core.UI.GUI.Fonts;
 import core.UI.GUI.Menu.Main;
 import core.UI.GUI.Video;
 import core.EventHandling.Logging.Logger;
+import core.World.Textures.TextureLoader;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
-
 import java.awt.*;
 import java.nio.file.Paths;
 import static core.EventHandling.Logging.Logger.log;
@@ -24,9 +24,9 @@ import static org.lwjgl.opengl.GL13.*;
 public class Window {
     public static String defPath = Paths.get("").toAbsolutePath().toString();
 
-    public static int width = Integer.parseInt(Config.jetFromConfig("ScreenWidth")), height = Integer.parseInt(Config.jetFromConfig("ScreenHeight")), deltaTime, verticalSync;
-    public static final String title = "-270 on Celsius", version = "dev 0.0.0.5";
-    public static boolean start = false, fullScreen = Boolean.parseBoolean(Config.jetFromConfig("FullScreen"));
+    public static int width = 1920, height = 1080, deltaTime, verticalSync;
+    public static final String title = "-270 on Celsius", version = "dev 0.0.0.6";
+    public static boolean start = false;
     public static long glfwWindow, lastFrameTime = System.currentTimeMillis(), totalFrames;
 
     public void run() {
@@ -49,11 +49,7 @@ public class Window {
         glfwGetCurrentContext();
         GLFWErrorCallback.createPrint(System.err).set();
 
-        if (fullScreen) {
-            glfwWindow = glfwCreateWindow(width, height, title, glfwGetPrimaryMonitor(), NULL);
-        } else {
-            glfwWindow = glfwCreateWindow(width, height, title, NULL, NULL);
-        }
+        glfwWindow = glfwCreateWindow(width, height, title, glfwGetPrimaryMonitor(), NULL);
 
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         glfwMakeContextCurrent(glfwWindow);
@@ -72,7 +68,9 @@ public class Window {
         Fonts.generateFont(defPath + "\\src\\assets\\UI\\arial.ttf");
         Video.drawVideo(defPath + "\\src\\assets\\World\\other\\kaif.mp4", 1, 30, 0, 0, 1920, 1080);
 
+        TextureLoader.preLoadTextures();
         Main.create();
+
         log("Init status: true");
     }
 

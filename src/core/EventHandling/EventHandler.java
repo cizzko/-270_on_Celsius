@@ -22,6 +22,10 @@ import static core.Window.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class EventHandler extends Thread {
+    private static long lastMouseMovedTime = System.currentTimeMillis();
+    private static Point lastMousePos;
+    public static boolean mouseNotMoved = false;
+
     public EventHandler() {
         Logger.log("Thread: Event handling started");
         GLFWKeyCallback keyCallback = new GLFWKeyCallback() {
@@ -177,6 +181,18 @@ public class EventHandler extends Thread {
         }
     }
 
+    public static void updateMouseMoveTimer() {
+        Point currentMousePos = getMousePos();
+
+        if (!currentMousePos.equals(lastMousePos)) {
+            lastMouseMovedTime = System.currentTimeMillis();
+            lastMousePos = currentMousePos;
+            mouseNotMoved = false;
+        } else if (System.currentTimeMillis() - lastMouseMovedTime > 1000) {
+            mouseNotMoved = true;
+        }
+    }
+
     @Override
     public void run() {
         while (!glfwWindowShouldClose(glfwWindow)) {
@@ -184,6 +200,7 @@ public class EventHandler extends Thread {
             updateClicks();
             updateDropMenu();
             updateSliders();
+            updateMouseMoveTimer();
         }
     }
 }

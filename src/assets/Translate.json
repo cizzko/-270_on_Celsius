@@ -7,6 +7,7 @@
 
     "GenerateWorld": "Generate world",
     "GenerateSimpleWorld": "Simplified generation",
+    "GenerateSimpleWorldPrompt": "Generation without any relief",
 
     "SettingsExit": "Cancel",
     "SettingsGraphics": "Graphics",
@@ -21,6 +22,7 @@
 
     "GenerateWorld": "Создать мир",
     "GenerateSimpleWorld": "Упрощенная генерация",
+    "GenerateSimpleWorldPrompt": "Генерация без какого либо рельефа",
 
     "SettingsExit": "Назад",
     "SettingsGraphics": "Графика",

@@ -1,6 +1,5 @@
 package core.World.Textures;
 
-import core.EventHandling.Logging.Config;
 import core.UI.GUI.Fonts;
 import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.PanelObject;
@@ -15,6 +14,8 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
+import static core.EventHandling.EventHandler.getMousePos;
+import static core.EventHandling.EventHandler.mouseNotMoved;
 import static core.UI.GUI.CreateElement.*;
 import static core.UI.GUI.Video.*;
 import static core.Window.defPath;
@@ -24,7 +25,6 @@ import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
     private static int accumulator = 0;
-    private static final int spacingBetweenLetters = Integer.parseInt(Config.jetFromConfig("SpacingBetweenLetters"));
     private static HashMap<Integer, TextureData> textures = new HashMap<>();
     public static StaticWorldObjects[][] StaticObjects;
     public static DynamicWorldObjects[] DynamicObjects;
@@ -37,32 +37,12 @@ public class TextureDrawing {
     //for textures (world)
     public static void drawTexture(String path, int x, int y, float zoom, Color color) {
         int textureId = path.hashCode();
-        TextureData textureData = textures.get(textureId);
 
-        if (textureData == null) {
-            ByteBuffer buffer = ByteBufferEncoder(path);
-            BufferedImage image = BufferedImageEncoder(path);
-
-            int width = (int) (image.getWidth() * (double) Window.width / 1920);
-            int height = (int) (image.getHeight() * (double) Window.height / 1080);
-
-            if (width < height) {
-                width = image.getHeight();
-                height = image.getWidth();
-            }
-
-            int id = glGenTextures();
-            glBindTexture(GL_TEXTURE_2D, id);
-
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getHeight(), image.getWidth(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-
-            textureData = new TextureData(id, width, height);
-            textures.put(textureId, textureData);
+        if (textures.get(textureId) == null) {
+            bindTexture(path);
         }
+
+        TextureData textureData = textures.get(textureId);
 
         int width = textureData.width;
         int height = textureData.height;
@@ -163,7 +143,7 @@ public class TextureDrawing {
                 continue;
             }
             TextureDrawing.drawTexture(x, y, Fonts.letterSize.get(ch).width, Fonts.letterSize.get(ch).height, Fonts.chars.get(ch), color, 1);
-            x += Fonts.letterSize.get(ch).width * (spacingBetweenLetters / 10);
+            x += Fonts.letterSize.get(ch).width;
         }
     }
 
@@ -290,6 +270,32 @@ public class TextureDrawing {
         glPopMatrix();
     }
 
+    public static void drawButtonPrompt(ButtonObject button) {
+        if (new Rectangle(button.x, button.y, button.width, button.height).contains(getMousePos()) && mouseNotMoved && button.prompt != null) {
+            int height = (button.prompt.split("\\\\n").length) * 20 + 20;
+
+            String longestLine = "";
+            for (String line : button.prompt.split("\\\\n")) {
+                if (line.length() >= longestLine.replaceAll("\\s+", "").length()) {
+                    longestLine = line;
+                }
+            }
+
+            int width = 6;
+            for (int i = 0; i < longestLine.length(); i++) {
+                char c = longestLine.charAt(i);
+
+                if (longestLine.charAt(i) == ' ') {
+                    width += Fonts.letterSize.get('A').width;
+                }
+                width += Fonts.letterSize.get(c).width;
+            }
+
+            drawRectangle(getMousePos().x + 30, getMousePos().y - height / 2, width, height, new Color(40, 40, 40, 240));
+            drawText(getMousePos().x + 36, getMousePos().y + height - 27 - height / 2, button.prompt);
+        }
+    }
+
     public static void updateVideo() {
         ByteBuffer buff = null;
         for (Map.Entry<String, Video> entry : video.entrySet()) {
@@ -395,15 +401,14 @@ public class TextureDrawing {
             if (!button.visible || dropMenu.get(button.name) == null) {
                 continue;
             }
+
             drawRectangle(button.x, button.y, button.width, button.height, button.color);
             drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
 
             if (button.isClicked) {
                 ButtonObject[] dropButtons = dropMenu.get(button.name);
 
-                for (int i = 0; i < dropButtons.length; i++) {
-                    ButtonObject dropButton = dropButtons[i];
-
+                for (ButtonObject dropButton : dropButtons) {
                     if (dropButton.simple && dropButton.swapButton && dropButton.isClicked) {
                         drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
                         drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", (int) (dropButton.x + dropButton.width / 1.3f), dropButton.y + dropButton.height / 3, 1);
@@ -420,52 +425,51 @@ public class TextureDrawing {
     private static void updateSwapButtons() {
         for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
             ButtonObject button = entry.getValue();
-            if (!button.visible) {
+            if (!button.visible || !button.swapButton) {
                 continue;
             }
 
-            if (button.simple && button.swapButton && button.isClicked) {
+            if (button.simple && button.isClicked) {
                 drawRectangle(button.x, button.y, button.width, button.height, button.color);
                 drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", (int) (button.x + button.width / 1.3f), button.y + button.height / 3, 1);
                 drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
-            } else if (button.simple && button.swapButton) {
+            } else if (button.simple) {
                 drawRectangle(button.x, button.y, button.width, button.height, button.color);
                 drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
             } else {
-
                 //if swap and not simple
-                if (button.swapButton && button.isClicked) {
+                if (button.isClicked) {
                     drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
                     drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", button.x, button.y, 1);
                     drawText(button.width + button.x + 24, button.y, button.name);
-                } else if (button.swapButton) {
+                } else {
                     drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
                     drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkFalse.png", button.x, button.y, 1);
                     drawText(button.width + button.x + 24, button.y, button.name);
                 }
             }
+            drawButtonPrompt(button);
         }
     }
 
     private static void updateButtons() {
         for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
             ButtonObject button = entry.getValue();
-            if (!button.visible) {
+            if (!button.visible || button.swapButton) {
                 continue;
             }
 
-            if (button.simple && !button.swapButton) {
+            if (button.simple) {
                 drawRectangle(button.x, button.y, button.width, button.height, button.color);
                 drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
-            } else if (!button.swapButton) {
+            } else {
                 drawRectangleBorder(button.x, button.y, button.width, button.height, 6, button.color);
                 drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
             }
-            if (!button.isClickable && !button.swapButton) {
+            if (!button.isClickable) {
                 drawRectangle(button.x, button.y, button.width, button.height, new Color(0, 0, 0, 123));
-            } else if (!button.isClickable) {
-                drawRectangle(button.x - 6, button.y - 6, button.width, button.height, new Color(0, 0, 0, 123));
             }
+            drawButtonPrompt(button);
         }
     }
 
@@ -486,5 +490,30 @@ public class TextureDrawing {
             }
             drawText(text.x, text.y, text.text, text.color);
         }
+    }
+
+    public static void bindTexture(String path) {
+        ByteBuffer buffer = ByteBufferEncoder(path);
+        BufferedImage image = BufferedImageEncoder(path);
+
+        int width = image.getWidth();
+        int height = image.getHeight();
+
+        if (width < height) {
+            width = image.getHeight();
+            height = image.getWidth();
+        }
+
+        int id = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, id);
+
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+        textures.put(path.hashCode(), new TextureData(id, width, height));
+
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 }

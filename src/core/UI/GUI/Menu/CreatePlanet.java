@@ -12,11 +12,11 @@ public class CreatePlanet {
         createPanel(20, 240, 1400, 820, "leftPanel", false);
         createPanel(1440, 240, 460, 820, "rightPanel", false);
 
-        createPicture(1460, 620, 1, "planetBackground", defPath + "\\src\\assets\\World\\other\\neboLol.png");
+        createPicture(1460, 620, 1, "planetBackground", defPath + "\\src\\assets\\World\\other\\sky\\skyBackgroundPlanet.png");
         createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\other\\planetMini.png");
 
-        createButton(1460, 260, 420, 67, getName("GenerateWorld"), true, new Color(255, 80, 0, 55));
-        createSwapButton(70, 980, 32, 32, getName("GenerateSimpleWorld"), false, new Color(236, 236, 236, 55));
+        createButton(1460, 260, 420, 67, getName("GenerateWorld"), null, true, new Color(255, 80, 0, 55));
+        createSwapButton(70, 980, 32, 32, getName("GenerateSimpleWorld"), getName("GenerateSimpleWorldPrompt"), false, new Color(236, 236, 236, 55));
 
         createSlider(1460, 340, 420, 20, 2500, "worldSize", new Color(40, 40, 40, 240), new Color(255, 80, 0, 119));
     }

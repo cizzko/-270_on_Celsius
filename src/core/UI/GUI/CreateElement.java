@@ -17,13 +17,13 @@ public class CreateElement {
     public static ConcurrentHashMap<String, ButtonObject[]> dropMenu = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, TextObject> texts = new ConcurrentHashMap<>();
 
-    public static void createButton(int x, int y, int btnWidth, int btnHeight, String name, boolean simple, Color color) {
+    public static void createButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, Color color) {
         int newX = (int) Math.round((double) x / 1920 * width);
         int newY = (int) Math.round((double) y / 1080 * height);
         int newWidth = (int) Math.round((double) btnWidth / 1920 * width);
         int newHeight = (int) Math.round((double) btnHeight / 1080 * height);
 
-        buttons.put(name, new ButtonObject(simple, false, newX, newY, newHeight, newWidth, name, color));
+        buttons.put(name, new ButtonObject(simple, false, newX, newY, newHeight, newWidth, name, prompt, color));
     }
 
     public static void createDropMenu(int x, int y, int menuWidth, int menuHeight, String[] btnNames, String menuName, Color color) {
@@ -33,29 +33,29 @@ public class CreateElement {
         int newHeight = (int) Math.round((double) menuHeight / 1080 * height);
 
         ButtonObject[] dropButtons = new ButtonObject[btnNames.length];
-        buttons.put(menuName, new ButtonObject(true, false, newX, newY, newHeight, newWidth, menuName, color));
+        buttons.put(menuName, new ButtonObject(true, false, newX, newY, newHeight, newWidth, menuName, null, color));
 
         for (int i = 0; i < btnNames.length; i++) {
             if (i == 0) {
-                dropButtons[i] = new ButtonObject(true, true, newX, newY - newHeight, newHeight, newWidth, btnNames[i], color);
+                dropButtons[i] = new ButtonObject(true, true, newX, newY - newHeight, newHeight, newWidth, btnNames[i], null, color);
             } else {
-                dropButtons[i] = new ButtonObject(true, true, newX, dropButtons[i - 1].y - newHeight, newHeight, newWidth, btnNames[i], color);
+                dropButtons[i] = new ButtonObject(true, true, newX, dropButtons[i - 1].y - newHeight, newHeight, newWidth, btnNames[i], null, color);
             }
             dropButtons[i].visible = false;
         }
         dropMenu.put(menuName, dropButtons);
     }
 
-    public static void createSwapButton(int x, int y, int btnWidth, int btnHeight, String name, boolean simple, Color color) {
+    public static void createSwapButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, Color color) {
         int newX = (int) Math.round((double) x / 1920 * width);
         int newY = (int) Math.round((double) y / 1080 * height);
         int newWidth = (int) Math.round((double) btnWidth / 1920 * width);
         int newHeight = (int) Math.round((double) btnHeight / 1080 * height);
 
         if (simple) {
-            buttons.put(name, new ButtonObject(simple, true, newX, newY, newHeight, newWidth, name, color));
+            buttons.put(name, new ButtonObject(simple, true, newX, newY, newHeight, newWidth, name, prompt, color));
         } else {
-            buttons.put(name, new ButtonObject(simple, true, newX, newY, 44, 44, name, color));
+            buttons.put(name, new ButtonObject(simple, true, newX, newY, 44, 44, name, prompt, color));
         }
     }
 

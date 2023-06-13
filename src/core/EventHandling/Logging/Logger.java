@@ -74,8 +74,8 @@ public class Logger {
     }
 
     public static void logStart() {
-        log("-------- Log started --------" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\nStart time: " + LocalDateTime.now() + "\n");
-        log("Screen width: " + width + "\nScreen height: " + height + "\nFull screen: " + jetFromConfig("FullScreen"));
+        log("-------- Log started --------" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version);
+        log("Start time: " + LocalDateTime.now() + "\nPreload textures: " + jetFromConfig("PreLoadTextures"));
         log("Vertical sync: " + Config.jetFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\n\nCurrent language: " + jetFromConfig("Language"));
     }
 }

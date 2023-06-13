@@ -1,6 +1,4 @@
 package core.UI.GUI;
-
-import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
 import core.World.Textures.TextureLoader;
 import java.awt.*;
@@ -13,7 +11,7 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Fonts {
-    private static final int fontSize = Integer.parseInt(Config.jetFromConfig("FontSize"));
+    private static final int fontSize = 18;
     public static ConcurrentHashMap<Character, ByteBuffer> chars = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<Character, Dimension> letterSize = new ConcurrentHashMap<>();
 
