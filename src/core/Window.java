@@ -38,7 +38,7 @@ public class Window {
         Logger.logStart();
         Json.getAllLanguages();
 
-        if (Config.jetFromConfig("VerticalSync").equals("true")) {
+        if (Config.getFromConfig("VerticalSync").equals("true")) {
             verticalSync = 1;
         } else {
             verticalSync = 0;

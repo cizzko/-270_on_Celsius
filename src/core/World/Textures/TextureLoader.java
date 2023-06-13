@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Stack;
-
 import static core.EventHandling.Logging.Logger.log;
 import static core.EventHandling.Logging.Logger.logExit;
 import static core.Window.defPath;
@@ -76,7 +75,7 @@ public class TextureLoader extends Thread {
     public static void preLoadTextures() {
         int texturesCount = 0;
 
-        if (Config.jetFromConfig("PreLoadTextures").equals("true")) {
+        if (Config.getFromConfig("PreLoadTextures").equals("true")) {
             Stack<File> stack = new Stack<>();
             stack.push(new File(defPath + "\\src\\assets"));
 

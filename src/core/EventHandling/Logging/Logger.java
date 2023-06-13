@@ -7,12 +7,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
-import static core.EventHandling.Logging.Config.jetFromConfig;
+import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Window.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Logger {
-    public static boolean err = false, cleanup = false, debug = Boolean.parseBoolean(jetFromConfig("Debug"));
+    public static boolean err = false, cleanup = false, debug = Boolean.parseBoolean(getFromConfig("Debug"));
 
     public static void log(String message, boolean forcibly) {
         if (debug || forcibly) {
@@ -75,7 +75,7 @@ public class Logger {
 
     public static void logStart() {
         log("-------- Log started --------" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\n");
-        log("Start time: " + LocalDateTime.now() + "\nPreload textures: " + jetFromConfig("PreLoadTextures"));
-        log("Vertical sync: " + Config.jetFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\n\nCurrent language: " + jetFromConfig("Language"));
+        log("Start time: " + LocalDateTime.now() + "\nPreload textures: " + getFromConfig("PreLoadTextures"));
+        log("Vertical sync: " + Config.getFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\n\nCurrent language: " + getFromConfig("Language"));
     }
 }

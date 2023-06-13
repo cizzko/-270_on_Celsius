@@ -7,8 +7,8 @@ import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Sound {
-    private static final int effectVolume = Integer.parseInt(Config.jetFromConfig("EffectsVolume"));
-    private static final int musicVolume = Integer.parseInt(Config.jetFromConfig("SoundsVolume"));
+    private static final int effectVolume = Integer.parseInt(Config.getFromConfig("EffectsVolume"));
+    private static final int musicVolume = Integer.parseInt(Config.getFromConfig("SoundsVolume"));
     private static int volume;
     private static boolean suppVolumeLevel = true;
     public static ConcurrentHashMap<String, Boolean> sounds = new ConcurrentHashMap<>();
@@ -51,7 +51,7 @@ public class Sound {
                     sourceDataLine.start();
 
                     byte[] bytesBuffer = new byte[4096];
-                    int bytesRead = -1;
+                    int bytesRead;
 
                     while ((bytesRead = inputStream.read(bytesBuffer)) != -1) {
                         sourceDataLine.write(bytesBuffer, 0, bytesRead);

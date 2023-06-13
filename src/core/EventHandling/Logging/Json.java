@@ -7,8 +7,8 @@ import java.util.HashMap;
 import static core.Window.defPath;
 
 public class Json {
-    private static HashMap<String, String> words = new HashMap<>();
-    public static String lang = Config.jetFromConfig("Language");
+    private static final HashMap<String, String> words = new HashMap<>();
+    public static String lang = Config.getFromConfig("Language");
     public static String allLanguages;
 
     public static String getName(String key) {

@@ -8,7 +8,7 @@ import static core.Window.defPath;
 public class Config {
     private static final Properties prop = new Properties();
 
-    public static String jetFromConfig(String key) {
+    public static String getFromConfig(String key) {
         if (prop.isEmpty()) {
             try (FileInputStream fis = new FileInputStream(defPath + "\\src\\assets\\Config.properties")) {
                 prop.load(fis);

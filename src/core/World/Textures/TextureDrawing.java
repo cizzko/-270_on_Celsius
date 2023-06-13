@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.List;
 import static core.EventHandling.EventHandler.getMousePos;
 import static core.EventHandling.EventHandler.mouseNotMoved;
+import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.UI.GUI.CreateElement.*;
 import static core.UI.GUI.Video.*;
 import static core.Window.defPath;
@@ -25,7 +26,8 @@ import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
     private static int accumulator = 0;
-    private static HashMap<Integer, TextureData> textures = new HashMap<>();
+    private static final boolean buttonPrompts = Boolean.parseBoolean(getFromConfig("ButtonPrompts"));
+    private static final HashMap<Integer, TextureData> textures = new HashMap<>();
     public static StaticWorldObjects[][] StaticObjects;
     public static DynamicWorldObjects[] DynamicObjects;
 
@@ -271,8 +273,9 @@ public class TextureDrawing {
     }
 
     public static void drawButtonPrompt(ButtonObject button) {
-        if (new Rectangle(button.x, button.y, button.width, button.height).contains(getMousePos()) && mouseNotMoved && button.prompt != null) {
+        if (buttonPrompts && new Rectangle(button.x, button.y, button.width, button.height).contains(getMousePos()) && mouseNotMoved && button.prompt != null) {
             int height = (button.prompt.split("\\\\n").length) * 20 + 20;
+            int width = 12;
 
             String longestLine = "";
             for (String line : button.prompt.split("\\\\n")) {
@@ -281,12 +284,12 @@ public class TextureDrawing {
                 }
             }
 
-            int width = 6;
             for (int i = 0; i < longestLine.length(); i++) {
                 char c = longestLine.charAt(i);
 
-                if (longestLine.charAt(i) == ' ') {
+                if (c == ' ') {
                     width += Fonts.letterSize.get('A').width;
+                    continue;
                 }
                 width += Fonts.letterSize.get(c).width;
             }
