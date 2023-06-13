@@ -74,7 +74,7 @@ public class Logger {
     }
 
     public static void logStart() {
-        log("-------- Log started --------" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version);
+        log("-------- Log started --------" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\n");
         log("Start time: " + LocalDateTime.now() + "\nPreload textures: " + jetFromConfig("PreLoadTextures"));
         log("Vertical sync: " + Config.jetFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\n\nCurrent language: " + jetFromConfig("Language"));
     }

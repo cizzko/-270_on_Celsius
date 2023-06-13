@@ -96,8 +96,6 @@ public class TextureLoader extends Thread {
                 }
             }
             log("Texture loader: load '" + texturesCount + "' textures");
-        } else {
-            log("Texture loader: preload 'false'");
         }
     }
 }
