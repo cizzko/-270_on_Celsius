@@ -19,13 +19,8 @@ public class Json {
                 words.put(key, jsonObject.getAsJsonObject(lang).get(key).getAsString());
 
             } catch (Exception e) {
-                if (lang.equals("eng")) {
-                    Logger.logExit(1, "Some key (" + key + ") at language '" + lang + "' not found, see '" + defPath + "\\src\\assets\\Translate.json'");
-                }
-
-                Logger.log("Some key (" + key + ") at language '" + lang + "' not found, language set to 'eng'");
-                Config.updateConfig("Language", "eng");
-                lang = "eng";
+                Logger.log("Key '" + key + "' at language '" + lang + "' not found, see file at " + defPath + "\\src\\assets\\Translate.json");
+                return key;
             }
         }
         return words.get(key);

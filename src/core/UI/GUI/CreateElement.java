@@ -34,12 +34,19 @@ public class CreateElement {
         dropMenu.put(menuName, dropButtons);
     }
 
-    public static void createSwapButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, Color color) {
+    public static void createSwapButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, Color color, boolean isClicked) {
         if (simple) {
             buttons.put(name, new ButtonObject(simple, true, x, y, btnHeight, btnWidth, name, prompt, color));
         } else {
             buttons.put(name, new ButtonObject(simple, true, x, y, 44, 44, name, prompt, color));
         }
+        if (isClicked) {
+            buttons.get(name).isClicked = true;
+        }
+    }
+
+    public static void createSwapButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, Color color) {
+        createSwapButton(x, y, btnWidth, btnHeight, name, prompt, simple, color, false);
     }
 
     public static void createSlider(int x, int y, int sliderWidth, int sliderHeight, int max, String name, Color sliderColor, Color dotColor) {

@@ -1,5 +1,6 @@
 package core.EventHandling;
 
+import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.Menu.CreatePlanet;
@@ -17,6 +18,9 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import java.awt.*;
 import java.util.Arrays;
+import java.util.Map;
+
+import static core.EventHandling.Logging.Json.getName;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -100,23 +104,37 @@ public class EventHandler extends Thread {
                 if (button.name.equals(Json.getName("Play")) && !Window.start) {
                     Main.delete();
                     CreatePlanet.create();
-                }
-                if (button.name.equals(Json.getName("Exit"))) {
-                    Logger.logExit(0);
-                }
 
-                if (button.name.equals(Json.getName("Settings"))) {
+                } else if (button.name.equals(Json.getName("Exit"))) {
+                    Logger.logExit(0);
+
+                } else if (button.name.equals(Json.getName("Settings"))) {
                     Main.delete();
                     Settings.create();
-                }
-                if (button.name.equals(Json.getName("SettingsExit"))) {
+
+                } else if (button.name.equals(Json.getName("SettingsGraphics"))) {
+                    Settings.deleteBasicSett();
+                    Settings.deleteOtherSett();
+                    Settings.createGraphicsSett();
+
+                } else if (button.name.equals(Json.getName("SettingsBasic"))) {
+                    Settings.createBasicSett();
+                    Settings.deleteOtherSett();
+                    Settings.deleteGraphicsSett();
+
+                } else if (button.name.equals(Json.getName("SettingsOther"))) {
+                    Settings.deleteBasicSett();
+                    Settings.createOtherSett();
+                    Settings.deleteGraphicsSett();
+
+                } else if (button.name.equals(Json.getName("SettingsExit"))) {
                     Settings.delete();
+                    Settings.updateConfigAll();
                     if (!start) {
                         Main.create();
                     }
-                }
 
-                if (button.name.equals(Json.getName("GenerateWorld")) && !Window.start) {
+                } else if (button.name.equals(Json.getName("GenerateWorld")) && !Window.start) {
                     WorldGenerator.generateWorld(getSliderPos("worldSize") + 20, 60, buttons.get(Json.getName("GenerateSimpleWorld")).isClicked);
                     WorldGenerator.generateDynamicsObjects();
                     TextureDrawing.loadObjects();

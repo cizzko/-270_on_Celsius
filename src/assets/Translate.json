@@ -9,9 +9,20 @@
     "GenerateSimpleWorld": "Simplified generation",
     "GenerateSimpleWorldPrompt": "Generation without any relief",
 
-    "SettingsExit": "Cancel",
+    "SettingsExit": "Return",
+
     "SettingsGraphics": "Graphics",
-    "SettingsSound": "Sound",
+    "InterpolateSunset": "Interpolate sunset",
+    "InterpolateSunsetPrompt": "Smoothing the sunset gradient, it becomes softer and smoother\\nIts may slightly affect performance",
+    "PreloadTextures": "Preload textures",
+    "PreloadTexturesPrompt": "May slightly improve performance and remove micro-lags\\nbut taking longer to load and using more memory",
+    "VerticalSync": "Vertical sync",
+    "VerticalSyncPrompt": "Synchronizes FPS with screen refresh rate, helps eliminate visual tearing image",
+
+    "SettingsBasic": "Basic",
+    "ShowPrompts": "Show prompts",
+    "ShowPromptsPrompt": "Show prompts (if any) when hovering over buttons",
+
     "SettingsOther": "Other"
   },
 
@@ -22,12 +33,49 @@
 
     "GenerateWorld": "Создать мир",
     "GenerateSimpleWorld": "Упрощенная генерация",
-    "GenerateSimpleWorldPrompt": "Генерация без какого либо рельефа",
+    "GenerateSimpleWorldPrompt": "Генерация без рельефа",
 
-    "SettingsExit": "Назад",
+    "SettingsExit": "Вернуться",
+
     "SettingsGraphics": "Графика",
-    "SettingsSound": "Звук",
+    "InterpolateSunset": "Интерполяция заката",
+    "InterpolateSunsetPrompt": "Сглаживание градиента заката, он становится мягче и плавнее\\nЭто может незначительно влиять на производительность",
+    "PreloadTextures": "Предзагрузка текстур",
+    "PreloadTexturesPrompt": "Может незначительно повысить производительность и убрать микролаги\\nоднако возрастет потребление памяти и время загрузки",
+    "VerticalSync": "Вертикальная синхронизация",
+    "VerticalSyncPrompt": "Синхронизирует фпс с частотой обновления экрана, позволяет устранить визуальные разрывы изображения",
+
+    "SettingsBasic": "Основное",
+    "ShowPrompts": "Всплывающие одсказки",
+    "ShowPromptsPrompt": "Показывать всплывающие подсказки (если есть) при наведении на кнопки",
+
     "SettingsOther": "Другое"
+  },
+
+  "uk": {
+    "Play": "Начати",
+    "Settings": "Налаштування",
+    "Exit": "Выхід",
+
+    "GenerateWorld": "Создати мир ",
+    "GenerateSimpleWorld": "спрощенна генерація",
+    "GenerateSimpleWorldPrompt": "генерація без рельефу",
+
+    "SettingsExit": "Повернутися",
+
+    "SettingsGraphics": "Графіка",
+    "InterpolateSunset": "Интерполяція заходу сонця",
+    "InterpolateSunsetPrompt": "Згладжування градієнта заходу сонця, він стає м'якшим і плавнішим\\nЦе може незначно впливати на продуктивність.",
+    "PreloadTextures": "Передзавантаження текстур",
+    "PreloadTexturesPrompt": "Може незначно підвищити продуктивність та прибрати мікролаги\\nоднак зросте споживання пам'яті та час завантаження",
+    "VerticalSync": "Вертикальная синхронизация",
+    "VerticalSyncPrompt": "Синхронізує фпс із частотою оновлення екрана, дозволяє уникнути візуальних розрививів зображення",
+
+    "SettingsBasic": "Основне",
+    "ShowPrompts": "Вспливаючі підказки",
+    "ShowPromptsPrompt": "Показувати вспливаючі підказки (якщо є) при наведенні на кнопки",
+
+    "SettingsOther": "Друге"
   }
 
 }
