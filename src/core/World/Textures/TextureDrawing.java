@@ -26,7 +26,7 @@ import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
     private static int accumulator = 0;
-    private static final boolean buttonPrompts = Boolean.parseBoolean(getFromConfig("ButtonPrompts"));
+    private static final boolean showPrompts = Boolean.parseBoolean(getFromConfig("ShowPrompts"));
     private static final HashMap<Integer, TextureData> textures = new HashMap<>();
     public static StaticWorldObjects[][] StaticObjects;
     public static DynamicWorldObjects[] DynamicObjects;
@@ -272,8 +272,8 @@ public class TextureDrawing {
         glPopMatrix();
     }
 
-    public static void drawButtonPrompt(ButtonObject button) {
-        if (buttonPrompts && new Rectangle(button.x, button.y, button.width, button.height).contains(getMousePos()) && mouseNotMoved && button.prompt != null) {
+    public static void drawPrompt(ButtonObject button) {
+        if (showPrompts && new Rectangle(button.x, button.y, button.width, button.height).contains(getMousePos()) && mouseNotMoved && button.prompt != null) {
             int height = (button.prompt.split("\\\\n").length) * 20 + 20;
             int width = 12;
 
@@ -451,7 +451,7 @@ public class TextureDrawing {
                     drawText(button.width + button.x + 24, button.y, button.name);
                 }
             }
-            drawButtonPrompt(button);
+            drawPrompt(button);
         }
     }
 
@@ -472,7 +472,7 @@ public class TextureDrawing {
             if (!button.isClickable) {
                 drawRectangle(button.x, button.y, button.width, button.height, new Color(0, 0, 0, 123));
             }
-            drawButtonPrompt(button);
+            drawPrompt(button);
         }
     }
 

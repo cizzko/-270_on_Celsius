@@ -1,6 +1,5 @@
 package core.EventHandling;
 
-import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.Menu.CreatePlanet;
@@ -18,9 +17,6 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import java.awt.*;
 import java.util.Arrays;
-import java.util.Map;
-
-import static core.EventHandling.Logging.Json.getName;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -100,6 +96,18 @@ public class EventHandler extends Thread {
                 continue;
             }
 
+            if (Settings.createdSettings && !buttons.get(Json.getName("SettingsSave")).isClicked) {
+                int count = (int) buttons.values().stream().filter(currentButton -> currentButton.isClicked && currentButton.visible).count();
+
+                if (Settings.needUpdateCount) {
+                    Settings.pressedCount = count;
+                    Settings.needUpdateCount = false;
+                }
+                if (count != Settings.pressedCount) {
+                    buttons.get(Json.getName("SettingsSave")).isClickable = true;
+                }
+            }
+
             if (button.isClicked) {
                 if (button.name.equals(Json.getName("Play")) && !Window.start) {
                     Main.delete();
@@ -117,22 +125,38 @@ public class EventHandler extends Thread {
                     Settings.deleteOtherSett();
                     Settings.createGraphicsSett();
 
+                    button.isClickable = false;
+                    buttons.get(Json.getName("SettingsBasic")).isClickable = true;
+                    buttons.get(Json.getName("SettingsOther")).isClickable = true;
+
                 } else if (button.name.equals(Json.getName("SettingsBasic"))) {
                     Settings.createBasicSett();
                     Settings.deleteOtherSett();
                     Settings.deleteGraphicsSett();
+
+                    button.isClickable = false;
+                    buttons.get(Json.getName("SettingsGraphics")).isClickable = true;
+                    buttons.get(Json.getName("SettingsOther")).isClickable = true;
 
                 } else if (button.name.equals(Json.getName("SettingsOther"))) {
                     Settings.deleteBasicSett();
                     Settings.createOtherSett();
                     Settings.deleteGraphicsSett();
 
+                    button.isClickable = false;
+                    buttons.get(Json.getName("SettingsGraphics")).isClickable = true;
+                    buttons.get(Json.getName("SettingsBasic")).isClickable = true;
+
                 } else if (button.name.equals(Json.getName("SettingsExit"))) {
                     Settings.delete();
-                    Settings.updateConfigAll();
                     if (!start) {
                         Main.create();
                     }
+
+                } else if (button.name.equals(Json.getName("SettingsSave"))) {
+                    buttons.get(Json.getName("SettingsSave")).isClickable = false;
+                    Settings.updateConfigAll();
+                    Settings.needUpdateCount = true;
 
                 } else if (button.name.equals(Json.getName("GenerateWorld")) && !Window.start) {
                     WorldGenerator.generateWorld(getSliderPos("worldSize") + 20, 60, buttons.get(Json.getName("GenerateSimpleWorld")).isClicked);

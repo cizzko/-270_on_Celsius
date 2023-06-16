@@ -10,6 +10,7 @@
     "GenerateSimpleWorldPrompt": "Generation without any relief",
 
     "SettingsExit": "Return",
+    "SettingsSave": "Save",
 
     "SettingsGraphics": "Graphics",
     "InterpolateSunset": "Interpolate sunset",
@@ -36,6 +37,7 @@
     "GenerateSimpleWorldPrompt": "Генерация без рельефа",
 
     "SettingsExit": "Вернуться",
+    "SettingsSave": "Сохранить",
 
     "SettingsGraphics": "Графика",
     "InterpolateSunset": "Интерполяция заката",
@@ -62,6 +64,7 @@
     "GenerateSimpleWorldPrompt": "генерація без рельефу",
 
     "SettingsExit": "Повернутися",
+    "SettingsSave": "Сохранити",
 
     "SettingsGraphics": "Графіка",
     "InterpolateSunset": "Интерполяція заходу сонця",
