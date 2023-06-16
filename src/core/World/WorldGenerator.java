@@ -30,7 +30,7 @@ public class WorldGenerator {
         }
 
         log("World generator: generating done!\n");
-        createText(42, 50, "generatingDone", "Done! Starting world", new Color(147, 51, 0, 255));
+        createText(42, 50, "generatingDone", "Done! Starting world", new Color(147, 51, 0, 255), "WorldGeneratorState");
 
         try {
             Thread.sleep(500);
@@ -41,7 +41,7 @@ public class WorldGenerator {
 
     private static void generateFlatWorld() {
         log("World generator: generating flat world");
-        createText(42, 170, "generateFlatWorldText", "Generating flat world", new Color(210, 210, 210, 255));
+        createText(42, 170, "WorldGeneratorState", "Generating flat world", new Color(210, 210, 210, 255), "WorldGeneratorState");
 
         int rand;
 
@@ -62,7 +62,7 @@ public class WorldGenerator {
 
     private static void generateMountains() {
         log("World generator: generating mountains");
-        createText(42, 140, "generateMountainsText", "Generating mountains", new Color(210, 210, 210, 255));
+        createText(42, 140, "generateMountainsText", "Generating mountains", new Color(210, 210, 210, 255), "WorldGeneratorState");
 
         float randGrass = 1.4f;
         float randAir = 7f;
@@ -87,7 +87,7 @@ public class WorldGenerator {
 
     private static void fillHollows() {
         log("World generator: filling hollows");
-        createText(42, 80, "fillHollowsText", "Filling hollows", new Color(210, 210, 210, 255));
+        createText(42, 80, "fillHollowsText", "Filling hollows", new Color(210, 210, 210, 255), "WorldGeneratorState");
 
         boolean[][] visited = new boolean[SizeX][SizeY];
 
@@ -106,7 +106,7 @@ public class WorldGenerator {
 
     private static void smoothWorld() {
         log("World generator: smoothing world");
-        createText(42, 110, "smoothWorldText", "Smoothing world", new Color(210, 210, 210, 255));
+        createText(42, 110, "smoothWorldText", "Smoothing world", new Color(210, 210, 210, 255), "WorldGeneratorState");
 
         for (int x = 1; x < SizeX - 1; x++) {
             for (int y = 1; y < SizeY - 1; y++) {

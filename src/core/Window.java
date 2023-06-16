@@ -97,7 +97,7 @@ public class Window {
             updateGUI();
 
             if (Logger.debug && currentTime - lastSecondTime >= 1000) {
-                CreateElement.createText(5, 1055, "FPS", "FPS: " + framesThisSecond, new Color(0, 0, 0, 255));
+                CreateElement.createText(5, 1055, "FPS", "FPS: " + framesThisSecond, new Color(0, 0, 0, 255), null);
                 framesThisSecond = 0;
                 lastSecondTime = currentTime;
             }

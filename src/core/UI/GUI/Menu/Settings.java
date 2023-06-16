@@ -12,15 +12,15 @@ public class Settings {
     public static int pressedCount = 0;
 
     public static void create() {
-        createPanel(20, 20, 1880, 1040, "defaultPanSettings", false);
-        createPanel(40, 40, 240, 1000, "leftPanSettings", true);
+        createPanel(20, 20, 1880, 1040, "defaultPanSettings", false, "Settings");
+        createPanel(40, 40, 240, 1000, "leftPanSettings", true, "Settings");
 
-        createButton(40, 900, 240, 65, getName("SettingsExit"), null, true, new Color(255, 80, 0, 55));
-        createButton(40, 800, 240, 65, getName("SettingsSave"), null, true, new Color(255, 80, 0, 55));
+        createButton(40, 900, 240, 65, getName("SettingsExit"), null, true, new Color(255, 80, 0, 55), "Settings");
+        createButton(40, 800, 240, 65, getName("SettingsSave"), null, true, new Color(255, 80, 0, 55), "Settings");
 
-        createButton(40, 300, 240, 65, getName("SettingsGraphics"), null, true, new Color(0, 0, 0, 50));
-        createButton(40, 200, 240, 65, getName("SettingsBasic"), null, true, new Color(0, 0, 0, 50));
-        createButton(40, 100, 240, 65, getName("SettingsOther"), null, true, new Color(0, 0, 0, 50));
+        createButton(40, 300, 240, 65, getName("SettingsGraphics"), null, true, new Color(0, 0, 0, 50), "Settings");
+        createButton(40, 200, 240, 65, getName("SettingsBasic"), null, true, new Color(0, 0, 0, 50), "Settings");
+        createButton(40, 100, 240, 65, getName("SettingsOther"), null, true, new Color(0, 0, 0, 50), "Settings");
         buttons.get(Json.getName("SettingsSave")).isClickable = false;
 
         createdSettings = true;
@@ -28,14 +28,14 @@ public class Settings {
     }
 
     public static void createGraphicsSett() {
-        createSwapButton(310, 980, 32, 32, getName("InterpolateSunset"), getName("InterpolateSunsetPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("InterpolateSunset")));
-        createSwapButton(310, 910, 32, 32, getName("PreloadTextures"), getName("PreloadTexturesPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("PreloadTextures")));
-        createSwapButton(310, 840, 32, 32, getName("VerticalSync"), getName("VerticalSyncPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("VerticalSync")));
+        createSwapButton(310, 980, 32, 32, getName("InterpolateSunset"), getName("InterpolateSunsetPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("InterpolateSunset")), "SettingsGraphics");
+        createSwapButton(310, 910, 32, 32, getName("PreloadTextures"), getName("PreloadTexturesPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("PreloadTextures")), "SettingsGraphics");
+        createSwapButton(310, 840, 32, 32, getName("VerticalSync"), getName("VerticalSyncPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("VerticalSync")), "SettingsGraphics");
     }
 
 
     public static void createBasicSett() {
-        createSwapButton(310, 980, 32, 32, getName("ShowPrompts"), getName("ShowPromptsPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("InterpolateSunset")));
+        createSwapButton(310, 980, 32, 32, getName("ShowPrompts"), getName("ShowPromptsPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("InterpolateSunset")), "SettingsBasic");
     }
 
     public static void createOtherSett() {
@@ -43,28 +43,20 @@ public class Settings {
     }
 
     public static void deleteGraphicsSett() {
-        buttons.get(getName("InterpolateSunset")).visible = false;
-        buttons.get(getName("PreloadTextures")).visible = false;
-        buttons.get(getName("VerticalSync")).visible = false;
+        buttons.values().stream().filter(button -> button.group.equals("SettingsGraphics")).forEach(button -> button.visible = false);
     }
 
     public static void deleteBasicSett() {
-        buttons.get(getName("ShowPrompts")).visible = false;
+        buttons.values().stream().filter(button -> button.group.equals("SettingsBasic")).forEach(button -> button.visible = false);
     }
 
     public static void deleteOtherSett() {
-
+        buttons.values().stream().filter(button -> button.group.equals("SettingsOther")).forEach(button -> button.visible = false);
     }
 
     public static void delete() {
-        panels.get("defaultPanSettings").visible = false;
-        panels.get("leftPanSettings").visible = false;
-
-        buttons.get(getName("SettingsExit")).visible = false;
-        buttons.get(getName("SettingsSave")).visible = false;
-        buttons.get(getName("SettingsGraphics")).visible = false;
-        buttons.get(getName("SettingsBasic")).visible = false;
-        buttons.get(getName("SettingsOther")).visible = false;
+        panels.values().stream().filter(button -> button.group.equals("Settings")).forEach(button -> button.visible = false);
+        buttons.values().stream().filter(button -> button.group.equals("Settings")).forEach(button -> button.visible = false);
 
         deleteGraphicsSett();
         deleteBasicSett();

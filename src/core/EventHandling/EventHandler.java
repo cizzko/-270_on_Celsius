@@ -185,7 +185,7 @@ public class EventHandler extends Thread {
                 if (getSliderPos("worldSize") >= worldSize / 1.5f) {
                     pic = "planetBig.png";
                 }
-                createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\other\\" + pic);
+                createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\other\\" + pic, "WorldGenerator");
             }
         }
     }
