@@ -1,28 +1,20 @@
 -------- Log started --------
 GLFW version: 3.4.0 Win32 WGL Null EGL OSMesa VisualC DLL
 Game version: dev 0.0.0.6
-Start time: 2023-06-13T16:20:18.529782600
+
+Start time: 2023-06-16T23:30:49.867783600
 Preload textures: false
 Vertical sync: false (0)
 
 Current language: eng
-Available languages: eng, ru
+Available languages: eng, ru, uk
 
-Texture loader: preload 'false'
 Init status: true
 Thread: Main thread started drawing
 Thread: Event handling started
 
-World generator: version: 1.0, written at dev 0.0.0.5
-World generator: starting generating world at size: x - 1222, y - 60; with arguments 'simple: true' 
-World generator: generating flat world
-World generator: generating done!
-
-Thread: Physics started
-Thread: Creatures logic started
-
-Program exit at: 2023-06-13T16:20:31.317783
-Exit code: 1863 (sudden closure)
-Total frames: 1755
-Game time: 1052.1313
+Program exit at: 2023-06-16T23:31:14.456305200
+Exit code: 0 (normal)
+Total frames: 4443
+Game time: 744.38947
 -------- Log ended --------

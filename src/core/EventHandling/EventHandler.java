@@ -97,13 +97,12 @@ public class EventHandler extends Thread {
             }
 
             if (Settings.createdSettings && !buttons.get(Json.getName("SettingsSave")).isClicked) {
-                int count = (int) buttons.values().stream().filter(currentButton -> currentButton.isClicked && currentButton.visible).count();
+                int count = (int) buttons.values().stream().filter(currentButton -> currentButton.isClicked && currentButton.visible && currentButton.swapButton).count();
 
                 if (Settings.needUpdateCount) {
                     Settings.pressedCount = count;
                     Settings.needUpdateCount = false;
-                }
-                if (count != Settings.pressedCount) {
+                } else if (count != Settings.pressedCount) {
                     buttons.get(Json.getName("SettingsSave")).isClickable = true;
                 }
             }
@@ -128,6 +127,8 @@ public class EventHandler extends Thread {
                     button.isClickable = false;
                     buttons.get(Json.getName("SettingsBasic")).isClickable = true;
                     buttons.get(Json.getName("SettingsOther")).isClickable = true;
+                    buttons.get(Json.getName("SettingsSave")).isClickable = false;
+                    Settings.needUpdateCount = true;
 
                 } else if (button.name.equals(Json.getName("SettingsBasic"))) {
                     Settings.createBasicSett();
@@ -137,6 +138,8 @@ public class EventHandler extends Thread {
                     button.isClickable = false;
                     buttons.get(Json.getName("SettingsGraphics")).isClickable = true;
                     buttons.get(Json.getName("SettingsOther")).isClickable = true;
+                    buttons.get(Json.getName("SettingsSave")).isClickable = false;
+                    Settings.needUpdateCount = true;
 
                 } else if (button.name.equals(Json.getName("SettingsOther"))) {
                     Settings.deleteBasicSett();
@@ -146,6 +149,8 @@ public class EventHandler extends Thread {
                     button.isClickable = false;
                     buttons.get(Json.getName("SettingsGraphics")).isClickable = true;
                     buttons.get(Json.getName("SettingsBasic")).isClickable = true;
+                    buttons.get(Json.getName("SettingsSave")).isClickable = false;
+                    Settings.needUpdateCount = true;
 
                 } else if (button.name.equals(Json.getName("SettingsExit"))) {
                     Settings.delete();
@@ -189,6 +194,7 @@ public class EventHandler extends Thread {
             }
         }
     }
+
 
     private static void updateDropMenu() {
         for (ButtonObject button : buttons.values()) {
