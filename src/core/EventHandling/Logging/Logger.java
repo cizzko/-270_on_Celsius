@@ -1,11 +1,13 @@
 package core.EventHandling.Logging;
 
+import core.AnonymousStatistics;
 import core.Window;
 import core.World.Weather.Sun;
 
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Window.*;
@@ -52,6 +54,8 @@ public class Logger {
 
         if (reason != null) {
             log("\nExit reason: " + reason);
+        } else {
+            reason = "none";
         }
 
         if (status == 0) {
@@ -65,7 +69,10 @@ public class Logger {
         }
 
         glfwDestroyWindow(glfwWindow);
+
+        AnonymousStatistics.sendStateMessage("Session '" + sessionId + "' exit, time: '" + LocalDateTime.now() + "', reason: '" + reason + "', status: " + status + exit);
         log("\nProgram exit at: " + LocalDateTime.now() + "\nExit code: " + status + exit + "\nTotal frames: " + totalFrames + "\nGame time: " + Sun.currentTime +  "\n-------- Log ended --------");
+
         System.exit(status);
     }
 
@@ -74,6 +81,8 @@ public class Logger {
     }
 
     public static void logStart() {
+        AnonymousStatistics.sendStateMessage("Session '" + sessionId + "' started, time: " + LocalDateTime.now());
+
         log("-------- Log started --------" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\n");
         log("Start time: " + LocalDateTime.now() + "\nPreload textures: " + getFromConfig("PreLoadTextures"));
         log("Vertical sync: " + Config.getFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\n\nCurrent language: " + getFromConfig("Language"));

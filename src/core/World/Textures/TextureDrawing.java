@@ -274,7 +274,7 @@ public class TextureDrawing {
 
     public static void drawPrompt(ButtonObject button) {
         if (showPrompts && new Rectangle(button.x, button.y, button.width, button.height).contains(getMousePos()) && mouseNotMoved && button.prompt != null) {
-            int height = (button.prompt.split("\\\\n").length) * 20 + 20;
+            int height = (button.prompt.split("\\\\n").length) * 28 + 16;
             int width = 12;
 
             String longestLine = "";
@@ -295,7 +295,7 @@ public class TextureDrawing {
             }
 
             drawRectangle(getMousePos().x + 30, getMousePos().y - height / 2, width, height, new Color(40, 40, 40, 240));
-            drawText(getMousePos().x + 36, getMousePos().y + height - 27 - height / 2, button.prompt);
+            drawText(getMousePos().x + 36, getMousePos().y + height - 32 - height / 2, button.prompt);
         }
     }
 
