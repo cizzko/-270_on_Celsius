@@ -1,13 +1,18 @@
 package core;
 
 import core.EventHandling.EventHandler;
+import core.EventHandling.Logging.Config;
 import core.UI.GUI.CreateElement;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import static core.EventHandling.EventHandler.getKey;
 import static core.EventHandling.EventHandler.getKeyClick;
 import static core.EventHandling.Logging.Logger.logExit;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER;
+import static org.lwjgl.glfw.GLFW.*;
 
 public class Commandline {
     public static boolean created = false;
@@ -15,6 +20,10 @@ public class Commandline {
     public static void startMethod(String targetMethod, Object[] args) {
         if (targetMethod.equals("Exit") || targetMethod.equals("exit") && args != null) {
             logExit(Integer.parseInt((String) args[0]), "Exit from console");
+        }
+        if (targetMethod.contains("sendStateMessage")) {
+            EventHandler.keyLoggingText = "No access to send state message";
+            return;
         }
 
         //package.class.method
@@ -81,24 +90,35 @@ public class Commandline {
     }
 
     public static void createLine(String text) {
-        if (text != null) {
-            EventHandler.keyLoggingText = text;
-        }
+        if (Config.getFromConfig("Debug").equals("true") && !created) {
+            if (text != null) {
+                EventHandler.keyLoggingText = text;
+            }
 
-        EventHandler.startKeyLogging();
-        CreateElement.createPanel(20, 800, 650, 260, "commandLine", null, new Color(0, 0, 0, 220));
-        CreateElement.createText(20, 800, "commandLineCommand", EventHandler.keyLoggingText, new Color(10, 10, 10, 255), null);
-        created = true;
+            EventHandler.startKeyLogging();
+            CreateElement.createPanel(20, 800, 650, 260, "commandLine", null, new Color(0, 0, 0, 220));
+            CreateElement.createText(20, 800, "commandLineCommand", EventHandler.keyLoggingText, new Color(10, 10, 10, 255), null);
+            created = true;
+        }
     }
 
     public static void deleteLine() {
-        CreateElement.panels.get("commandLine").visible = false;
-        CreateElement.texts.get("commandLineCommand").visible = false;
-        EventHandler.endKeyLogging();
-        created = false;
+        if (created) {
+            CreateElement.panels.get("commandLine").visible = false;
+            CreateElement.texts.get("commandLineCommand").visible = false;
+            EventHandler.endKeyLogging();
+            created = false;
+        }
     }
 
     public static void updateLine() {
+        if (Commandline.created && getKeyClick(294)) {
+            Commandline.deleteLine();
+        }
+        if (getKeyClick(294) && !Commandline.created) {
+            Commandline.createLine();
+        }
+
         if (created) {
             CreateElement.createText(20, 800, "commandLineCommand", EventHandler.keyLoggingText, new Color(210, 210, 210, 255), null);
 
@@ -118,6 +138,19 @@ public class Commandline {
                     startMethod(method, args);
                 } catch (Exception e) {
                     EventHandler.keyLoggingText = e.toString();
+                }
+            }
+
+            if (getKey(GLFW_KEY_LEFT_CONTROL) && getKey(GLFW_KEY_V)) {
+                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+                Transferable transferable = clipboard.getContents(null);
+
+                if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
+                    try {
+                        EventHandler.keyLoggingText = (String) transferable.getTransferData(DataFlavor.stringFlavor);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }

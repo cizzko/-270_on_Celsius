@@ -144,13 +144,6 @@ public class EventHandler extends Thread {
     }
 
     private static void updateClicks() {
-        if (Commandline.created && getKeyClick(294)) {
-            Commandline.deleteLine();
-        }
-        if (getKeyClick(294) && !Commandline.created) {
-            Commandline.createLine();
-        }
-
         for (ButtonObject button : buttons.values()) {
             if (!button.visible || !button.isClickable) {
                 button.isClicked = false;
@@ -308,10 +301,10 @@ public class EventHandler extends Thread {
             updateButtons();
             updateClicks();
             updateKeyLogging();
-            updateLine();
             updateDropMenu();
             updateSliders();
             updateMouseMoveTimer();
+            updateLine();
         }
     }
 }
