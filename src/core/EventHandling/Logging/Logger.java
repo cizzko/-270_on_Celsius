@@ -3,11 +3,9 @@ package core.EventHandling.Logging;
 import core.AnonymousStatistics;
 import core.Window;
 import core.World.Weather.Sun;
-
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Window.*;

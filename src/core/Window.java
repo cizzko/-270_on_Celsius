@@ -14,10 +14,7 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import java.awt.*;
 import java.nio.file.Paths;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.Random;
-
 import static core.EventHandling.Logging.Logger.log;
 import static core.World.Textures.TextureDrawing.*;
 import static core.World.Weather.Sun.updateSun;
@@ -114,4 +111,6 @@ public class Window {
             totalFrames++;
         }
     }
+
+
 }

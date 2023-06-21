@@ -61,7 +61,11 @@ public class CreateElement {
     }
 
     public static void createPanel(int x, int y, int panWidth, int panHeight, String name, boolean simple, String group) {
-        panels.put(name, new PanelObject(x, y, panWidth, panHeight, 1, name, simple, null, group));
+        panels.put(name, new PanelObject(x, y, panWidth, panHeight, 1, name, simple, null, group, new Color(40, 40, 40, 240)));
+    }
+
+    public static void createPanel(int x, int y, int panWidth, int panHeight, String name, String group, Color color) {
+        panels.put(name, new PanelObject(x, y, panWidth, panHeight, 1, name, true, null, group, color));
     }
 
     public static void createText(int x, int y, String name, String text, Color color, String group) {
@@ -69,6 +73,6 @@ public class CreateElement {
     }
 
     public static void createPicture(int x, int y, int layer, String name, String path, String group) {
-        panels.put(name, new PanelObject(x, y, BufferedImageEncoder(path).getWidth(), BufferedImageEncoder(path).getHeight(), layer, name, true, path, group));
+        panels.put(name, new PanelObject(x, y, BufferedImageEncoder(path).getWidth(), BufferedImageEncoder(path).getHeight(), layer, name, true, path, group, new Color(255, 255, 255, 255)));
     }
 }

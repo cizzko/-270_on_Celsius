@@ -169,9 +169,11 @@ public class TextureDrawing {
         glPopMatrix();
     }
 
-    public static void drawRectangle(int x, int y, int width, int height, Color color) {
+    public static void drawRectangle(int x, int y, int width, int height, Color color, float zoom) {
         glPushMatrix();
         glBegin(GL_QUADS);
+
+        glMultMatrixf(new float[]{zoom, 0, 0, 0, 0, zoom, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
 
         glColor4f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
         glVertex2f(x, y);
@@ -182,6 +184,10 @@ public class TextureDrawing {
 
         glEnd();
         glPopMatrix();
+    }
+
+    public static void drawRectangle(int x, int y, int width, int height, Color color) {
+        drawRectangle(x, y, width, height, color, 1);
     }
 
     public static void drawRoundedRectangle(int x, int y, int width, int height, Color color) {
@@ -321,7 +327,7 @@ public class TextureDrawing {
     public static void updateStaticObj() {
         float left = DynamicObjects[0].x - (1920 / 5.5f) - (48);
         float right = DynamicObjects[0].x + (1920 / 5.5f) + (48);
-        float top = DynamicObjects[0].y - (1080 / 8f) - (48);
+        float top = DynamicObjects[0].y - (1080 / 6f) - (48);
         float bottom = DynamicObjects[0].y + (1080 / 8f) + (48);
 
         for (int x = 0; x < StaticObjects.length - 1; x++) {
@@ -332,7 +338,7 @@ public class TextureDrawing {
                 StaticObjects[x][y].onCamera = onCamera;
 
                 if (onCamera && !StaticObjects[x][y].notForDrawing) {
-                    drawTexture(StaticObjects[x][y].path, (int) xBlock, (int) yBlock, 3);
+                    drawTexture(StaticObjects[x][y].path, (int) xBlock, (int) yBlock, 3f, ShadowMap.getColor(x, y));
                 }
             }
         }
@@ -390,10 +396,10 @@ public class TextureDrawing {
             }
 
             if (!panel.simple) {
-                drawRectangle(panel.x, panel.y, panel.width, panel.height, new Color(40, 40, 40, 240));
-                drawRectangleBorder(panel.x, panel.y, panel.width, panel.height, 20, new Color(20, 20, 20, 40));
+                drawRectangle(panel.x, panel.y, panel.width, panel.height, panel.color);
+                drawRectangleBorder(panel.x, panel.y, panel.width, panel.height, 20, panel.color);
             } else {
-                drawRectangle(panel.x, panel.y, panel.width, panel.height, new Color(40, 40, 40, 240));
+                drawRectangle(panel.x, panel.y, panel.width, panel.height, panel.color);
             }
         }
     }
@@ -510,7 +516,6 @@ public class TextureDrawing {
         int id = glGenTextures();
         glBindTexture(GL_TEXTURE_2D, id);
 
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 

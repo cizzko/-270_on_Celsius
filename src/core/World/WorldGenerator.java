@@ -1,6 +1,7 @@
 package core.World;
 
 import core.World.Textures.DynamicWorldObjects;
+import core.World.Textures.ShadowMap;
 import core.World.Textures.StaticWorldObjects;
 import java.awt.*;
 import java.util.ArrayList;
@@ -28,6 +29,8 @@ public class WorldGenerator {
             smoothWorld();
             fillHollows();
         }
+        ShadowMap.generate();
+        ShadowMap.update();
 
         log("World generator: generating done!\n");
         createText(42, 50, "generatingDone", "Done! Starting world", new Color(147, 51, 0, 255), "WorldGeneratorState");
@@ -179,6 +182,6 @@ public class WorldGenerator {
             DynamicObjects = new DynamicWorldObjects[4096];
         }
 
-        DynamicObjects[0] = new DynamicWorldObjects(1, 0f, defPath + "\\src\\assets\\World\\creatures\\player.png", true, true, 320, SizeY * 8 + 16);
+        DynamicObjects[0] = new DynamicWorldObjects(1, 0f, defPath + "\\src\\assets\\World\\creatures\\player.png", true, true, 320, SizeY * 8 + 16 + 80);
     }
 }

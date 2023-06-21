@@ -1,5 +1,6 @@
 package core.EventHandling;
 
+import core.Commandline;
 import core.EventHandling.Logging.Json;
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.Menu.CreatePlanet;
@@ -17,6 +18,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import java.awt.*;
 import java.util.Arrays;
+import static core.Commandline.updateLine;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -24,7 +26,9 @@ import static org.lwjgl.glfw.GLFW.*;
 public class EventHandler extends Thread {
     private static long lastMouseMovedTime = System.currentTimeMillis();
     private static Point lastMousePos;
-    public static boolean mouseNotMoved = false;
+    public static boolean mouseNotMoved = false, keyLogging = false;
+    public static String keyLoggingText = "";
+    private static final boolean[] pressedButtons = new boolean[349];
 
     public EventHandler() {
         Logger.log("Thread: Event handling started");
@@ -39,6 +43,15 @@ public class EventHandler extends Thread {
         GLFW.glfwSetKeyCallback(glfwWindow, keyCallback);
     }
 
+    public static void startKeyLogging() {
+        keyLogging = true;
+    }
+
+    public static void endKeyLogging() {
+        keyLoggingText = "";
+        keyLogging = false;
+    }
+
     public static Point getMousePos() {
         double mouseX = MouseInfo.getPointerInfo().getLocation().getX();
         double mouseY = MouseInfo.getPointerInfo().getLocation().getY();
@@ -49,6 +62,18 @@ public class EventHandler extends Thread {
 
     public static boolean getKey(int key) {
         return glfwGetKey(glfwWindow, key) == 1;
+    }
+
+    public static boolean getKeyClick(int key) {
+        if (pressedButtons[key] && glfwGetKey(glfwWindow, key) == 0) {
+            pressedButtons[key] = false;
+            return true;
+        } else if (getKey(key)) {
+            pressedButtons[key] = true;
+            return false;
+        }
+
+        return false;
     }
 
     public static boolean getRectanglePress(int x, int y, int x1, int y1) {
@@ -89,7 +114,43 @@ public class EventHandler extends Thread {
         }
     }
 
+    private static void updateKeyLogging() {
+        if (keyLogging) {
+            for (int i = 48; i <= 90; i++) {
+                if (getKeyClick(GLFW_KEY_SPACE)) {
+                    keyLoggingText += " ";
+                }
+                if (getKeyClick(GLFW_KEY_BACKSPACE)) {
+                    if (keyLoggingText.length() > 0) {
+                        keyLoggingText = keyLoggingText.substring(0, keyLoggingText.length() - 1);
+                    }
+                }
+                if (getKeyClick(GLFW_KEY_PERIOD)) {
+                    keyLoggingText += ".";
+                }
+
+                //a - z, 0 - 9
+                if (i <= 57 || i >= 65) {
+                    if (pressedButtons[i] && glfwGetKey(glfwWindow, i) == 0) {
+                        keyLoggingText += !getKey(GLFW_KEY_LEFT_SHIFT) ? glfwGetKeyName(i, 0) : glfwGetKeyName(i, 0).toUpperCase();
+                        pressedButtons[i] = false;
+
+                    } else if (!pressedButtons[i] && getKey(i)) {
+                        pressedButtons[i] = true;
+                    }
+                }
+            }
+        }
+    }
+
     private static void updateClicks() {
+        if (Commandline.created && getKeyClick(294)) {
+            Commandline.deleteLine();
+        }
+        if (getKeyClick(294) && !Commandline.created) {
+            Commandline.createLine();
+        }
+
         for (ButtonObject button : buttons.values()) {
             if (!button.visible || !button.isClickable) {
                 button.isClicked = false;
@@ -246,6 +307,8 @@ public class EventHandler extends Thread {
         while (!glfwWindowShouldClose(glfwWindow)) {
             updateButtons();
             updateClicks();
+            updateKeyLogging();
+            updateLine();
             updateDropMenu();
             updateSliders();
             updateMouseMoveTimer();
