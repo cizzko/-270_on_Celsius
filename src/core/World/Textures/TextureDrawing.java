@@ -169,11 +169,9 @@ public class TextureDrawing {
         glPopMatrix();
     }
 
-    public static void drawRectangle(int x, int y, int width, int height, Color color, float zoom) {
+    public static void drawRectangle(int x, int y, int width, int height, Color color) {
         glPushMatrix();
         glBegin(GL_QUADS);
-
-        glMultMatrixf(new float[]{zoom, 0, 0, 0, 0, zoom, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
 
         glColor4f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
         glVertex2f(x, y);
@@ -184,10 +182,6 @@ public class TextureDrawing {
 
         glEnd();
         glPopMatrix();
-    }
-
-    public static void drawRectangle(int x, int y, int width, int height, Color color) {
-        drawRectangle(x, y, width, height, color, 1);
     }
 
     public static void drawRoundedRectangle(int x, int y, int width, int height, Color color) {
