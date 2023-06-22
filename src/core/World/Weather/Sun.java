@@ -1,6 +1,8 @@
 package core.World.Weather;
 
 import core.EventHandling.MouseScrollCallback;
+import core.World.Textures.DynamicWorldObjects;
+
 import java.awt.*;
 import static core.Window.*;
 import static core.World.Textures.TextureDrawing.*;
@@ -8,13 +10,14 @@ import static core.World.WorldGenerator.*;
 import static core.World.WorldGenerator.DynamicObjects;
 
 public class Sun {
-    public static float currentTime = (float) (Math.random() * 2359), x, y = -500 * (1 -  (currentTime - 2359) / (1 - 2359)) + 1500 * (currentTime - 2359) / (1 - 2359) + (SizeY / 2f * 16 - 700);
-    public static boolean visible = true, newGradient = true;
+    public static float currentTime = (float) (Math.random() * 2359), x, y = -500 * (1 -  (currentTime - 2359) / (1 - 2359)) + 1500 * (currentTime - 2359) / (1 - 2359) + (SizeY / 2f * 16 - 700), startPlayerPos;
+    public static boolean visible = false, newGradient = true;
     private static final int startSunset = 1000, endSunset = 1300, nightLong = 4000;
     private static long lastTime = System.currentTimeMillis();
     private static Color[] segmentColors;
 
     public static void createSun() {
+        startPlayerPos = DynamicObjects[0].y;
         visible = true;
     }
 
@@ -46,7 +49,7 @@ public class Sun {
         int green = (int) (maxGreen - (currentTime * ratio));
 
         updateGradient(green, maxGreen);
-        drawTexture(defPath + "\\src\\assets\\World\\other\\sun.png", (int) DynamicObjects[0].x - 330, (int) y, 1, new Color(255, green, 40, 220));
+        drawTexture(defPath + "\\src\\assets\\World\\other\\sun.png", (int) DynamicObjects[0].x - 330, (int) (y), 1, new Color(255, green, 40, 220), false);
     }
 
     private static void updateGradient(int green, int maxGreen) {
@@ -73,7 +76,7 @@ public class Sun {
         }
 
         for (int i = 0; i < segmentColors.length; i++) {
-            drawRectangle((int) (-DynamicObjects[0].x * 3 + width / 2f - 32), (int) (DynamicObjects[0].y + i - (SizeY / 2f * 16)), SizeX * 16, height / segmentColors.length, segmentColors[i]);
+            drawRectangle((int) (-DynamicObjects[0].x * 3 + width / 2f - 32), (int) (DynamicObjects[0].y + i - (SizeY / 2f * 16) + (startPlayerPos - DynamicObjects[0].y) - 96), SizeX * 16, height / segmentColors.length, segmentColors[i]);
         }
     }
 }

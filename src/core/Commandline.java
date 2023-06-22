@@ -2,7 +2,6 @@ package core;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
-import core.UI.GUI.CreateElement;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
@@ -96,32 +95,24 @@ public class Commandline {
             }
 
             EventHandler.startKeyLogging();
-            CreateElement.createPanel(20, 800, 650, 260, "commandLine", null, new Color(0, 0, 0, 220));
-            CreateElement.createText(20, 800, "commandLineCommand", EventHandler.keyLoggingText, new Color(10, 10, 10, 255), null);
             created = true;
         }
     }
 
     public static void deleteLine() {
-        if (created) {
-            CreateElement.panels.get("commandLine").visible = false;
-            CreateElement.texts.get("commandLineCommand").visible = false;
-            EventHandler.endKeyLogging();
-            created = false;
-        }
+        EventHandler.endKeyLogging();
+        created = false;
     }
 
     public static void updateLine() {
-        if (Commandline.created && getKeyClick(294)) {
+        if (Commandline.created && getKeyClick(GLFW_KEY_F5)) {
             Commandline.deleteLine();
         }
-        if (getKeyClick(294) && !Commandline.created) {
+        if (getKeyClick(GLFW_KEY_F5) && !Commandline.created) {
             Commandline.createLine();
         }
 
         if (created) {
-            CreateElement.createText(20, 800, "commandLineCommand", EventHandler.keyLoggingText, new Color(210, 210, 210, 255), null);
-
             if (getKeyClick(GLFW_KEY_ENTER)) {
                 try {
                     String[] parts = EventHandler.keyLoggingText.split("\\s+");
@@ -148,6 +139,7 @@ public class Commandline {
                 if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                     try {
                         EventHandler.keyLoggingText = (String) transferable.getTransferData(DataFlavor.stringFlavor);
+                        Thread.sleep(100);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }

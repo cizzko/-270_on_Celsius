@@ -3,6 +3,8 @@ package core.World;
 import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.StaticWorldObjects;
+import core.World.Weather.Sun;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -31,6 +33,7 @@ public class WorldGenerator {
         }
         ShadowMap.generate();
         ShadowMap.update();
+        WorldGenerator.generateDynamicsObjects();
 
         log("World generator: generating done!\n");
         createText(42, 50, "generatingDone", "Done! Starting world", new Color(147, 51, 0, 255), "WorldGeneratorState");
@@ -40,6 +43,8 @@ public class WorldGenerator {
         } catch (InterruptedException e) {
             log(e.toString());
         }
+
+        Sun.createSun();
     }
 
     private static void generateFlatWorld() {

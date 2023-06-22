@@ -2,7 +2,6 @@ package core.World;
 
 import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.StaticWorldObjects;
-
 import java.io.*;
 import java.util.HashMap;
 import java.util.zip.DeflaterOutputStream;
@@ -56,5 +55,19 @@ public class Saves {
 
         WorldGenerator.StaticObjects = (StaticWorldObjects[][]) data.get("StaticWorldObjects");
         WorldGenerator.DynamicObjects = (DynamicWorldObjects[]) data.get("DynamicWorldObjects");
+    }
+
+    public static String[] loadWorldSaves() {
+        File directory = new File(defPath + "\\src\\assets\\World\\Saves");
+        File[] files = directory.listFiles();
+
+        if (files != null) {
+            String[] fileNames = new String[files.length];
+            for (int i = 0; i < files.length; i++) {
+                fileNames[i] = files[i].getName();
+            }
+            return fileNames;
+        }
+        return new String[0];
     }
 }

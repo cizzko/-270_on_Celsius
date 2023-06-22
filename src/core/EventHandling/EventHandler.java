@@ -5,6 +5,7 @@ import core.EventHandling.Logging.Json;
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.Menu.CreatePlanet;
 import core.UI.GUI.Menu.Main;
+import core.UI.GUI.Menu.Pause;
 import core.UI.GUI.Menu.Settings;
 import core.UI.GUI.Video;
 import core.UI.GUI.Objects.ButtonObject;
@@ -83,7 +84,7 @@ public class EventHandler extends Thread {
         return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 && state == GLFW_PRESS;
     }
 
-    public static void updateSliders() {
+    private static void updateSliders() {
         for (SliderObject slider : sliders.values()) {
             if (!slider.visible) {
                 slider.isClicked = false;
@@ -96,7 +97,7 @@ public class EventHandler extends Thread {
         }
     }
 
-    public static void updateButtons() {
+    private static void updateButtons() {
         for (ButtonObject button : buttons.values()) {
             if (!button.visible || !button.isClickable) {
                 button.isClicked = false;
@@ -170,8 +171,13 @@ public class EventHandler extends Thread {
                     Logger.logExit(0);
 
                 } else if (button.name.equals(Json.getName("Settings"))) {
-                    Main.delete();
                     Settings.create();
+
+                    if (!start) {
+                        Main.delete();
+                    } else {
+                        Pause.delete();
+                    }
 
                 } else if (button.name.equals(Json.getName("SettingsGraphics"))) {
                     Settings.deleteBasicSett();
@@ -219,7 +225,6 @@ public class EventHandler extends Thread {
 
                 } else if (button.name.equals(Json.getName("GenerateWorld")) && !Window.start) {
                     WorldGenerator.generateWorld(getSliderPos("worldSize") + 20, 60, buttons.get(Json.getName("GenerateSimpleWorld")).isClicked);
-                    WorldGenerator.generateDynamicsObjects();
                     TextureDrawing.loadObjects();
 
                     Video.video.get(defPath + "\\src\\assets\\World\\other\\kaif.mp4").isPlaying = false;
@@ -228,6 +233,10 @@ public class EventHandler extends Thread {
                     new Thread(new Physics()).start();
                     new Thread(new CreaturesGenerate()).start();
                     Window.start = true;
+
+                } else if (button.name.equals(Json.getName("Continue"))) {
+                    Pause.delete();
+                    Settings.delete();
                 }
             }
 
@@ -283,7 +292,7 @@ public class EventHandler extends Thread {
         }
     }
 
-    public static void updateMouseMoveTimer() {
+    private static void updateMouseMoveTimer() {
         Point currentMousePos = getMousePos();
 
         if (!currentMousePos.equals(lastMousePos)) {
@@ -292,6 +301,18 @@ public class EventHandler extends Thread {
             mouseNotMoved = false;
         } else if (System.currentTimeMillis() - lastMouseMovedTime > 1000) {
             mouseNotMoved = true;
+        }
+    }
+
+    private static void updateHotkeys() {
+        if (getKeyClick(GLFW_KEY_ESCAPE) && start) {
+            if (!Pause.created) {
+                Pause.create();
+                Settings.delete();
+            } else {
+                Pause.delete();
+                Settings.delete();
+            }
         }
     }
 
@@ -304,6 +325,7 @@ public class EventHandler extends Thread {
             updateDropMenu();
             updateSliders();
             updateMouseMoveTimer();
+            updateHotkeys();
             updateLine();
         }
     }

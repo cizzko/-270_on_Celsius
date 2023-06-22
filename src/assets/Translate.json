@@ -3,6 +3,7 @@
     "Play": "Play",
     "Settings": "Settings",
     "Exit": "Exit",
+    "Continue": "Continue",
 
     "GenerateWorld": "Generate world",
     "GenerateSimpleWorld": "Simplified generation",
@@ -27,10 +28,12 @@
     "AnonState": "Send statistic",
     "AnonStatePrompt": "We will collect anonymous data to improve the product:\\ndevice components, game settings, current time.\\nThe author has the right to change the list of data.\\nBy agreeing to this message, you give the right to collect and use your data.\\nA also helps to improve the game :)"
   },
+
   "ru": {
     "Play": "Начать",
     "Settings": "Настройки",
     "Exit": "Выход",
+    "Continue": "Продолжить",
 
     "GenerateWorld": "Создать мир",
     "GenerateSimpleWorld": "Упрощенная генерация",
@@ -55,10 +58,12 @@
     "AnonState": "Отправлять статистику",
     "AnonStatePrompt": "Мы (автор) будем собирать анонимные данные для улучшения продукта:\\nкомплектующие устройства, игровые параметры, текущее время.\\nАвтор вправе изменить перечень данных.\\nСоглашаясь с этим сообщением, вы даете право на сбор и использование ваших данных.\\nА так же помогаете улучшать игру :)"
   },
+
   "uk": {
     "Play": "Начати",
     "Settings": "Налаштування",
     "Exit": "Выхід",
+    "Continue": "Продовжити",
 
     "GenerateWorld": "Создати мир ",
     "GenerateSimpleWorld": "спрощенна генерація",

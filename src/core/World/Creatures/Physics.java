@@ -30,13 +30,19 @@ public class Physics extends Thread {
             new Thread(() -> {
 
                 float y0 = DynamicObjects[0].y;
-                float yMax = y0 + 50; // максимальная высота прыжка 16 пикселей
-                double g = 800.81; // скорость падения
+                float yMax = y0 + 160; // максимальная высота прыжка 16 пикселей
+                double g = 900.81; // скорость падения
                 double timeToMax = Math.sqrt((2 * (yMax - y0)) / g); // время, необходимое для достижения максимальной высоты
                 double totalTime = 2 * timeToMax; // общее время прыжка
                 LocalDateTime startTime = LocalDateTime.now();
 
                 while (true) {
+                    StaticWorldObjects staticObject = StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16)];
+
+                    if (DynamicObjects[0].isPlayer && !DynamicObjects[0].isJumping && staticObject.solid) {
+                        break;
+                    }
+
                     LocalDateTime currentTime = LocalDateTime.now();
                     double elapsedTime = Duration.between(startTime, currentTime).toMillis() / 1000.0;
 
@@ -64,7 +70,7 @@ public class Physics extends Thread {
     }
 
     private static void updateDrop() {
-        StaticWorldObjects staticObject = StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16) - 1];
+        StaticWorldObjects staticObject = StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16)];
 
         if (DynamicObjects[0].isPlayer && !DynamicObjects[0].isJumping && !staticObject.solid) {
             isDropping = true;

@@ -1,5 +1,7 @@
 package core.World.Textures;
 
+import core.Commandline;
+import core.EventHandling.EventHandler;
 import core.UI.GUI.Fonts;
 import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.PanelObject;
@@ -37,7 +39,7 @@ public class TextureDrawing {
     }
 
     //for textures (world)
-    public static void drawTexture(String path, int x, int y, float zoom, Color color) {
+    public static void drawTexture(String path, int x, int y, float zoom, Color color, boolean isStatic) {
         int textureId = path.hashCode();
 
         if (textures.get(textureId) == null) {
@@ -59,7 +61,7 @@ public class TextureDrawing {
 
         glColor4f(color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f, color.getAlpha() / 255.0f);
 
-        if (Window.start) {
+        if (Window.start && !isStatic) {
             glTranslatef(-DynamicObjects[0].x * zoom + Window.width / 2f - 32, -DynamicObjects[0].y * zoom + Window.height / 2f - 200, 0);
         }
 
@@ -89,8 +91,8 @@ public class TextureDrawing {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    public static void drawTexture(String path, int x, int y, float zoom) {
-        drawTexture(path, x, y, zoom, new Color(255, 255, 255, 255));
+    public static void drawTexture(String path, int x, int y, float zoom, boolean isStatic) {
+        drawTexture(path, x, y, zoom, new Color(255, 255, 255, 255), isStatic);
     }
 
     //for video, text, etc
@@ -274,29 +276,33 @@ public class TextureDrawing {
 
     public static void drawPrompt(ButtonObject button) {
         if (showPrompts && new Rectangle(button.x, button.y, button.width, button.height).contains(getMousePos()) && mouseNotMoved && button.prompt != null) {
-            int height = (button.prompt.split("\\\\n").length) * 28 + 16;
-            int width = 12;
-
-            String longestLine = "";
-            for (String line : button.prompt.split("\\\\n")) {
-                if (line.length() >= longestLine.replaceAll("\\s+", "").length()) {
-                    longestLine = line;
-                }
-            }
-
-            for (int i = 0; i < longestLine.length(); i++) {
-                char c = longestLine.charAt(i);
-
-                if (c == ' ') {
-                    width += Fonts.letterSize.get('A').width;
-                    continue;
-                }
-                width += Fonts.letterSize.get(c).width;
-            }
-
-            drawRectangle(getMousePos().x + 30, getMousePos().y - height / 2, width, height, new Color(40, 40, 40, 240));
-            drawText(getMousePos().x + 36, getMousePos().y + height - 32 - height / 2, button.prompt);
+            drawRectangleText(button.x, button.y, button.prompt);
         }
+    }
+
+    public static void drawRectangleText(int x, int y, String text) {
+        int height = (text.split("\\\\n").length) * 28 + 16;
+        int width = 12;
+
+        String longestLine = "";
+        for (String line : text.split("\\\\n")) {
+            if (line.length() >= longestLine.replaceAll("\\s+", "").length()) {
+                longestLine = line;
+            }
+        }
+
+        for (int i = 0; i < longestLine.length(); i++) {
+            char c = longestLine.charAt(i);
+
+            if (c == ' ') {
+                width += Fonts.letterSize.get('A').width;
+                continue;
+            }
+            width += Fonts.letterSize.get(c).width;
+        }
+
+        drawRectangle(x + 30, y - height / 2, width, height, new Color(40, 40, 40, 240));
+        drawText(x + 36, y + height - 32 - height / 2, text);
     }
 
     public static void updateVideo() {
@@ -332,7 +338,7 @@ public class TextureDrawing {
                 StaticObjects[x][y].onCamera = onCamera;
 
                 if (onCamera && !StaticObjects[x][y].notForDrawing) {
-                    drawTexture(StaticObjects[x][y].path, (int) xBlock, (int) yBlock, 3f, ShadowMap.getColor(x, y));
+                    drawTexture(StaticObjects[x][y].path, (int) xBlock, (int) yBlock, 3f, ShadowMap.getColor(x, y), false);
                 }
             }
         }
@@ -343,7 +349,7 @@ public class TextureDrawing {
 
         for (DynamicWorldObjects dynamicObject : DynamicObjects) {
             if (dynamicObject != null && dynamicObject.onCamera && dynamicObject.framesCount == 1) {
-                drawTexture(dynamicObject.path, (int) dynamicObject.x, (int) dynamicObject.y, 3);
+                drawTexture(dynamicObject.path, (int) dynamicObject.x, (int) dynamicObject.y, 3, false);
             }
             if (dynamicObject != null && dynamicObject.onCamera && dynamicObject.framesCount != 1 && dynamicObject.animSpeed != 0) {
                 int animTime = (int) (dynamicObject.animSpeed * 1000); // время на анимацию одного кадра
@@ -352,9 +358,9 @@ public class TextureDrawing {
                 int frameIndex = ((accumulator % loopTime) / animTime) + 1; // индекс текущего кадра
 
                 dynamicObject.currentFrame = frameIndex;
-                drawTexture(dynamicObject.path + frameIndex + ".png", (int) dynamicObject.x, (int) dynamicObject.y, 3);
+                drawTexture(dynamicObject.path + frameIndex + ".png", (int) dynamicObject.x, (int) dynamicObject.y, 3, false);
             } else if (dynamicObject != null && dynamicObject.onCamera && dynamicObject.framesCount != 1) {
-                drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", (int) dynamicObject.x, (int) dynamicObject.y, 3);
+                drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", (int) dynamicObject.x, (int) dynamicObject.y, 3, false);
             }
         }
     }
@@ -381,7 +387,7 @@ public class TextureDrawing {
                     for (PanelObject panelObj : panels.values()) {
                         if (panelObj.layer == layer) {
                             if (panelObj.options != null) {
-                                drawTexture(panelObj.options, panelObj.x, panelObj.y, 1);
+                                drawTexture(panelObj.options, panelObj.x, panelObj.y, 1, true);
                             }
                         }
                     }
@@ -414,7 +420,7 @@ public class TextureDrawing {
                 for (ButtonObject dropButton : dropButtons) {
                     if (dropButton.simple && dropButton.swapButton && dropButton.isClicked) {
                         drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
-                        drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", (int) (dropButton.x + dropButton.width / 1.3f), dropButton.y + dropButton.height / 3, 1);
+                        drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", (int) (dropButton.x + dropButton.width / 1.3f), dropButton.y + dropButton.height / 3, 1, true);
                         drawText((int) (dropButton.x * 1.1f), dropButton.y + dropButton.height / 3, dropButton.name);
                     } else if (dropButton.simple && dropButton.swapButton) {
                         drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
@@ -434,7 +440,7 @@ public class TextureDrawing {
 
             if (button.simple && button.isClicked) {
                 drawRectangle(button.x, button.y, button.width, button.height, button.color);
-                drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", (int) (button.x + button.width / 1.3f), button.y + button.height / 3, 1);
+                drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", (int) (button.x + button.width / 1.3f), button.y + button.height / 3, 1, true);
                 drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
             } else if (button.simple) {
                 drawRectangle(button.x, button.y, button.width, button.height, button.color);
@@ -443,11 +449,11 @@ public class TextureDrawing {
                 //if swap and not simple
                 if (button.isClicked) {
                     drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
-                    drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", button.x, button.y, 1);
+                    drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", button.x, button.y, 1, true);
                     drawText(button.width + button.x + 24, button.y, button.name);
                 } else {
                     drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
-                    drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkFalse.png", button.x, button.y, 1);
+                    drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkFalse.png", button.x, button.y, 1, true);
                     drawText(button.width + button.x + 24, button.y, button.name);
                 }
             }
@@ -492,6 +498,11 @@ public class TextureDrawing {
                 continue;
             }
             drawText(text.x, text.y, text.text, text.color);
+        }
+
+        if (Commandline.created) {
+            drawRectangle(20, 800, 650, 260, new Color(0, 0, 0, 220));
+            drawText(20, 800, EventHandler.keyLoggingText);
         }
     }
 
