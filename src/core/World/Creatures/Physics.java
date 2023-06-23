@@ -11,13 +11,14 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class Physics extends Thread {
     private static boolean isDropping = false;
-    private static long currentTime = System.currentTimeMillis();
+    private static final int physicsSpeed = 1;
+    //min and default 1, max 4
 
     public void run() {
         Logger.log("Thread: Physics started");
 
         while (!glfwWindowShouldClose(glfwWindow)) {
-            try { Thread.sleep(16); } catch (InterruptedException e) { throw new RuntimeException(e); }
+            try { Thread.sleep(physicsSpeed); } catch (InterruptedException e) { throw new RuntimeException(e); }
             updateDrop();
             updateMove();
             updateJump();
@@ -30,10 +31,10 @@ public class Physics extends Thread {
             new Thread(() -> {
 
                 float y0 = DynamicObjects[0].y;
-                float yMax = y0 + 160; // максимальная высота прыжка 16 пикселей
-                double g = 900.81; // скорость падения
-                double timeToMax = Math.sqrt((2 * (yMax - y0)) / g); // время, необходимое для достижения максимальной высоты
-                double totalTime = 2 * timeToMax; // общее время прыжка
+                float yMax = y0 + 24;
+                double g = 900 - (physicsSpeed * 200);
+                double timeToMax = Math.sqrt((2 * (yMax - y0)) / g);
+                double totalTime = 2 * timeToMax;
                 LocalDateTime startTime = LocalDateTime.now();
 
                 while (true) {
@@ -61,11 +62,13 @@ public class Physics extends Thread {
     }
 
     public static void updateMove() {
-        if (System.currentTimeMillis() >= currentTime + 16 && DynamicObjects[0].isPlayer && EventHandler.getKey(GLFW_KEY_D) || EventHandler.getKey(GLFW_KEY_A)) {
-            if (EventHandler.getKey(GLFW_KEY_D) && DynamicObjects[0].x < SizeX * 16 - 24) DynamicObjects[0].x++;
-            if (EventHandler.getKey(GLFW_KEY_A) && DynamicObjects[0].x > 0) DynamicObjects[0].x--;
-
-            currentTime = System.currentTimeMillis();
+        if (DynamicObjects[0].isPlayer && EventHandler.getKey(GLFW_KEY_D) || EventHandler.getKey(GLFW_KEY_A)) {
+            if (EventHandler.getKey(GLFW_KEY_D) && DynamicObjects[0].x < SizeX * 16 - 24) {
+                DynamicObjects[0].x += 0.1f;
+            }
+            if (EventHandler.getKey(GLFW_KEY_A) && DynamicObjects[0].x > 0) {
+                DynamicObjects[0].x -= 0.1f;
+            }
         }
     }
 
@@ -74,7 +77,7 @@ public class Physics extends Thread {
 
         if (DynamicObjects[0].isPlayer && !DynamicObjects[0].isJumping && !staticObject.solid) {
             isDropping = true;
-            DynamicObjects[0].y--;
+            DynamicObjects[0].y -= 0.1f;
         } else {
             isDropping = false;
         }

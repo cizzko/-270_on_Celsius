@@ -49,7 +49,7 @@ public class Sun {
         int green = (int) (maxGreen - (currentTime * ratio));
 
         updateGradient(green, maxGreen);
-        drawTexture(defPath + "\\src\\assets\\World\\other\\sun.png", (int) DynamicObjects[0].x - 330, (int) (y), 1, new Color(255, green, 40, 220), false);
+        drawTexture(defPath + "\\src\\assets\\World\\other\\sun.png", DynamicObjects[0].x - 330, y, 1, new Color(255, green, 40, 220), false);
     }
 
     private static void updateGradient(int green, int maxGreen) {

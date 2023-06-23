@@ -28,6 +28,7 @@ import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
     private static int accumulator = 0;
+    private static float playerX, playerY;
     private static final boolean showPrompts = Boolean.parseBoolean(getFromConfig("ShowPrompts"));
     private static final HashMap<Integer, TextureData> textures = new HashMap<>();
     public static StaticWorldObjects[][] StaticObjects;
@@ -39,7 +40,7 @@ public class TextureDrawing {
     }
 
     //for textures (world)
-    public static void drawTexture(String path, int x, int y, float zoom, Color color, boolean isStatic) {
+    public static void drawTexture(String path, float x, float y, float zoom, Color color, boolean isStatic) {
         int textureId = path.hashCode();
 
         if (textures.get(textureId) == null) {
@@ -62,7 +63,7 @@ public class TextureDrawing {
         glColor4f(color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f, color.getAlpha() / 255.0f);
 
         if (Window.start && !isStatic) {
-            glTranslatef(-DynamicObjects[0].x * zoom + Window.width / 2f - 32, -DynamicObjects[0].y * zoom + Window.height / 2f - 200, 0);
+            glTranslatef(-playerX * zoom + Window.width / 2f - 32, -playerY * zoom + Window.height / 2f - 200, 0);
         }
 
         glMultMatrixf(new float[]{zoom, 0, 0, 0, 0, zoom, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
@@ -91,12 +92,12 @@ public class TextureDrawing {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    public static void drawTexture(String path, int x, int y, float zoom, boolean isStatic) {
+    public static void drawTexture(String path, float x, float y, float zoom, boolean isStatic) {
         drawTexture(path, x, y, zoom, new Color(255, 255, 255, 255), isStatic);
     }
 
     //for video, text, etc
-    public static void drawTexture(int x, int y, int width, int height, ByteBuffer buffer, Color color, float zoom) {
+    public static void drawTexture(float x, float y, int width, int height, ByteBuffer buffer, Color color, float zoom) {
         glPushMatrix();
         glEnable(GL_TEXTURE_2D);
 
@@ -323,8 +324,14 @@ public class TextureDrawing {
         }
     }
 
+    public static void updatePlayerPos() {
+        playerX = DynamicObjects[0].x;
+        playerY = DynamicObjects[0].y;
+    }
 
     public static void updateStaticObj() {
+        updatePlayerPos();
+
         float left = DynamicObjects[0].x - (1920 / 5.5f) - (48);
         float right = DynamicObjects[0].x + (1920 / 5.5f) + (48);
         float top = DynamicObjects[0].y - (1080 / 6f) - (48);
@@ -338,7 +345,7 @@ public class TextureDrawing {
                 StaticObjects[x][y].onCamera = onCamera;
 
                 if (onCamera && !StaticObjects[x][y].notForDrawing) {
-                    drawTexture(StaticObjects[x][y].path, (int) xBlock, (int) yBlock, 3f, ShadowMap.getColor(x, y), false);
+                    drawTexture(StaticObjects[x][y].path, xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false);
                 }
             }
         }
@@ -348,19 +355,22 @@ public class TextureDrawing {
         accumulator += Window.deltaTime;
 
         for (DynamicWorldObjects dynamicObject : DynamicObjects) {
-            if (dynamicObject != null && dynamicObject.onCamera && dynamicObject.framesCount == 1) {
-                drawTexture(dynamicObject.path, (int) dynamicObject.x, (int) dynamicObject.y, 3, false);
-            }
-            if (dynamicObject != null && dynamicObject.onCamera && dynamicObject.framesCount != 1 && dynamicObject.animSpeed != 0) {
-                int animTime = (int) (dynamicObject.animSpeed * 1000); // время на анимацию одного кадра
-                int framesTime = (dynamicObject.framesCount - 1) * animTime; // время на все кадры анимации (исключая последний)
-                int loopTime = framesTime + animTime; // время на один полный цикл анимации
-                int frameIndex = ((accumulator % loopTime) / animTime) + 1; // индекс текущего кадра
+            if (dynamicObject != null) {
 
-                dynamicObject.currentFrame = frameIndex;
-                drawTexture(dynamicObject.path + frameIndex + ".png", (int) dynamicObject.x, (int) dynamicObject.y, 3, false);
-            } else if (dynamicObject != null && dynamicObject.onCamera && dynamicObject.framesCount != 1) {
-                drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", (int) dynamicObject.x, (int) dynamicObject.y, 3, false);
+                if (dynamicObject.onCamera && dynamicObject.framesCount == 1) {
+                    drawTexture(dynamicObject.path, dynamicObject.x, dynamicObject.y, 3, false);
+                }
+                if (dynamicObject.onCamera && dynamicObject.framesCount != 1 && dynamicObject.animSpeed != 0) {
+                    int animTime = (int) (dynamicObject.animSpeed * 1000); // время на анимацию одного кадра
+                    int framesTime = (dynamicObject.framesCount - 1) * animTime; // время на все кадры анимации (исключая последний)
+                    int loopTime = framesTime + animTime; // время на один полный цикл анимации
+                    int frameIndex = ((accumulator % loopTime) / animTime) + 1; // индекс текущего кадра
+
+                    dynamicObject.currentFrame = frameIndex;
+                    drawTexture(dynamicObject.path + frameIndex + ".png", dynamicObject.x, dynamicObject.y, 3, false);
+                } else if (dynamicObject.onCamera && dynamicObject.framesCount != 1) {
+                    drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, false);
+                }
             }
         }
     }
@@ -420,7 +430,7 @@ public class TextureDrawing {
                 for (ButtonObject dropButton : dropButtons) {
                     if (dropButton.simple && dropButton.swapButton && dropButton.isClicked) {
                         drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
-                        drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", (int) (dropButton.x + dropButton.width / 1.3f), dropButton.y + dropButton.height / 3, 1, true);
+                        drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", dropButton.x + dropButton.width / 1.3f, dropButton.y + dropButton.height / 3f, 1, true);
                         drawText((int) (dropButton.x * 1.1f), dropButton.y + dropButton.height / 3, dropButton.name);
                     } else if (dropButton.simple && dropButton.swapButton) {
                         drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
@@ -440,7 +450,7 @@ public class TextureDrawing {
 
             if (button.simple && button.isClicked) {
                 drawRectangle(button.x, button.y, button.width, button.height, button.color);
-                drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", (int) (button.x + button.width / 1.3f), button.y + button.height / 3, 1, true);
+                drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", (int) (button.x + button.width / 1.3f), button.y + button.height / 3f, 1, true);
                 drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
             } else if (button.simple) {
                 drawRectangle(button.x, button.y, button.width, button.height, button.color);
