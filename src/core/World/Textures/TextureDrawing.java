@@ -450,7 +450,7 @@ public class TextureDrawing {
 
             if (button.simple && button.isClicked) {
                 drawRectangle(button.x, button.y, button.width, button.height, button.color);
-                drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", (int) (button.x + button.width / 1.3f), button.y + button.height / 3f, 1, true);
+                drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", button.x + button.width / 1.3f, button.y + button.height / 3f, 1, true);
                 drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
             } else if (button.simple) {
                 drawRectangle(button.x, button.y, button.width, button.height, button.color);
