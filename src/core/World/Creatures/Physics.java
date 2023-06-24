@@ -25,6 +25,15 @@ public class Physics extends Thread {
         }
     }
 
+    public static void setPlayerPos(int x, int y) {
+        if (x != 0) {
+            DynamicObjects[0].x = x;
+        }
+        if (y != 0) {
+            DynamicObjects[0].y = y;
+        }
+    }
+
     public static void updateJump() {
         if (!DynamicObjects[0].isJumping && DynamicObjects[0].isPlayer && !isDropping && EventHandler.getKey(GLFW_KEY_SPACE)) {
             DynamicObjects[0].isJumping = true;

@@ -33,7 +33,7 @@ public class Saves {
             fos.write(compressedBytes);
             fos.close();
         } catch (Exception e) {
-            log("Error at serialization world: " + e);
+            log("Error at serialization (saving) world: " + e);
         }
     }
 

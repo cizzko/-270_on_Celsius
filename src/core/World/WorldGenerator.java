@@ -4,7 +4,6 @@ import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.StaticWorldObjects;
 import core.World.Weather.Sun;
-
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.LinkedList;

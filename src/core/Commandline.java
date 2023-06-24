@@ -25,23 +25,17 @@ public class Commandline {
             return;
         }
 
-        //package.class.method
+        //package.class.method argumentX
+        //X - data type
         try {
             String[] strings = targetMethod.split("\\.");
             String className = String.join(".", Arrays.copyOfRange(strings, 0, strings.length - 1));
             String methodName = strings[strings.length - 1];
 
-            Class<?>[] argTypes = new Class<?>[args == null ? 0 : args.length];
-            if (args != null) {
-                for (int i = 0; i < args.length; i++) {
-                    argTypes[i] = args[i].getClass();
-                }
-            }
-
             Object[] convertedArgs = new Object[args == null ? 0 : args.length];
             if (args != null) {
                 for (int i = 0; i < args.length; i++) {
-                    convertedArgs[i] = convertToType(args[i], argTypes[i]);
+                    convertedArgs[i] = convertToType((String) args[i]);
                 }
             }
             Class<?> targetClass = Class.forName(className);
@@ -49,7 +43,7 @@ public class Commandline {
             Method[] methods = targetClass.getMethods();
             Method method = null;
             for (Method m : methods) {
-                if (m.getName().equals(methodName) && Arrays.equals(m.getParameterTypes(), argTypes)) {
+                if (m.getName().equals(methodName)) {
                     method = m;
                     break;
                 }
@@ -66,23 +60,26 @@ public class Commandline {
         }
     }
 
-    private static Object convertToType(Object arg, Class<?> type) {
-        if (type.equals(int.class) || type.equals(Integer.class)) {
-            return Integer.parseInt(arg.toString());
-        } else if (type.equals(double.class) || type.equals(Double.class)) {
-            return Double.parseDouble(arg.toString());
-        } else if (type.equals(float.class) || type.equals(Float.class)) {
-            return Float.parseFloat(arg.toString());
-        } else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
-            return Boolean.parseBoolean(arg.toString());
-        } else if (type.equals(char.class) || type.equals(Character.class)) {
-            return arg.toString().charAt(0);
-        } else if (type.equals(long.class) || type.equals(Long.class)) {
-            return Long.parseLong(arg.toString());
-        } else if (type.equals(short.class) || type.equals(Short.class)) {
-            return Short.parseShort(arg.toString());
-        } else if (type.equals(byte.class) || type.equals(Byte.class)) {
-            return Byte.parseByte(arg.toString());
+    private static Object convertToType(String arg) {
+        if (arg.endsWith("l")) {
+            arg = arg.substring(0, arg.length() - 1);
+            return Long.parseLong(arg.substring(0, arg.length() - 1));
+
+        } else if (arg.endsWith("d")) {
+            arg = arg.substring(0, arg.length() - 1);
+            return Double.parseDouble(arg.substring(0, arg.length() - 1));
+
+        } else if (arg.endsWith("f")) {
+            arg = arg.substring(0, arg.length() - 1);
+            return Float.parseFloat(arg.substring(0, arg.length() - 1));
+
+        } else if (arg.equals("true") || arg.equals("false")) {
+            return Boolean.parseBoolean(arg);
+
+        } else if (arg.endsWith("i")) {
+            arg = arg.substring(0, arg.length() - 1);
+            return Integer.parseInt(arg);
+
         } else {
             return arg;
         }
@@ -139,7 +136,7 @@ public class Commandline {
                 if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                     try {
                         EventHandler.keyLoggingText = (String) transferable.getTransferData(DataFlavor.stringFlavor);
-                        Thread.sleep(100);
+                        Thread.sleep(200);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
