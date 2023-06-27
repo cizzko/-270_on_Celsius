@@ -7,11 +7,14 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.time.LocalDateTime;
+import java.util.Random;
+
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Window.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Logger {
+    private static final long sessionId = (long) (new Random().nextDouble() * Long.MAX_VALUE);
     public static boolean cleanup = false, debug = Boolean.parseBoolean(getFromConfig("Debug"));
 
     public static void log(String message, boolean forcibly) {
@@ -66,7 +69,7 @@ public class Logger {
         glfwDestroyWindow(glfwWindow);
 
         AnonymousStatistics.sendStateMessage("Session '" + sessionId + "' exit, time: '" + LocalDateTime.now() + "', reason: '" + reason + "', status: " + status + exit);
-        log("\nProgram exit at: " + LocalDateTime.now() + "\nExit code: " + status + exit + "\nTotal frames: " + totalFrames + "\nGame time: " + Sun.currentTime +  "\n-------- Log ended --------");
+        log("\nProgram exit at: " + LocalDateTime.now() + "\nExit code: " + status + exit + "\nGame time: " + Sun.currentTime +  "\n-------- Log ended --------");
 
         System.exit(status);
     }

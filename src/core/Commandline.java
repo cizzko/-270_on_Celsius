@@ -3,9 +3,9 @@ package core;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import java.awt.*;
-import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import static core.EventHandling.EventHandler.getKey;
@@ -16,19 +16,57 @@ import static org.lwjgl.glfw.GLFW.*;
 public class Commandline {
     public static boolean created = false;
 
-    public static void startMethod(String targetMethod, Object[] args) {
-        if (targetMethod.equals("Exit") || targetMethod.equals("exit") && args != null) {
-            logExit(Integer.parseInt((String) args[0]), "Exit from console");
-        }
-        if (targetMethod.contains("sendStateMessage")) {
+    private static void startReflection(String target) {
+        if (target.equals("ExitGame") || target.equals("exitGame")) {
+            logExit(1863, "Exit from console");
+
+        } else if (target.contains("sendStateMessage")) {
             EventHandler.keyLoggingText = "No access to send state message";
-            return;
+
+        } else if (target.contains("modify")) {
+            target = target.substring(7);
+            modifyField(target);
+
+        } else if (target.contains("start")) {
+            target = target.substring(6);
+            startMethod(target);
+        }
+    }
+
+    private static void modifyField(String target) {
+        try {
+            String[] parts = target.split("\\s+");
+            target = parts[0];
+
+            String[] strings = target.split("\\.");
+            String className = String.join(".", Arrays.copyOfRange(strings, 0, strings.length - 1));
+            String fieldName = strings[strings.length - 1];
+
+            Class<?> clazz = Class.forName(className);
+            Field field = clazz.getDeclaredField(fieldName);
+            field.set(null, convertToType(parts[parts.length - 1]));
+
+            EventHandler.keyLoggingText = fieldName + " modified to " + convertToType(parts[parts.length - 1]);
+        } catch (Exception e) {
+            EventHandler.keyLoggingText = e.toString();
+            System.out.println(e);
+        }
+    }
+
+    private static void startMethod(String target) {
+        String[] parts = target.split("\\s+");
+        target = parts[0];
+
+        Object[] args;
+        if (parts.length > 1) {
+            String[] argStrings = Arrays.copyOfRange(parts, 1, parts.length);
+            args = Arrays.stream(argStrings).map(s -> (Object) s).toArray();
+        } else {
+            args = null;
         }
 
-        //package.class.method argumentX
-        //X - data type
         try {
-            String[] strings = targetMethod.split("\\.");
+            String[] strings = target.split("\\.");
             String className = String.join(".", Arrays.copyOfRange(strings, 0, strings.length - 1));
             String methodName = strings[strings.length - 1];
 
@@ -111,22 +149,7 @@ public class Commandline {
 
         if (created) {
             if (getKeyClick(GLFW_KEY_ENTER)) {
-                try {
-                    String[] parts = EventHandler.keyLoggingText.split("\\s+");
-                    String method = parts[0];
-
-                    Object[] args;
-                    if (parts.length > 1) {
-                        String[] argStrings = Arrays.copyOfRange(parts, 1, parts.length);
-                        args = Arrays.stream(argStrings).map(s -> (Object) s).toArray();
-                    } else {
-                        args = null;
-                    }
-
-                    startMethod(method, args);
-                } catch (Exception e) {
-                    EventHandler.keyLoggingText = e.toString();
-                }
+                startReflection(EventHandler.keyLoggingText);
             }
 
             if (getKey(GLFW_KEY_LEFT_CONTROL) && getKey(GLFW_KEY_V)) {

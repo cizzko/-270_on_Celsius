@@ -2,16 +2,16 @@ package core.World.Creatures;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Logger;
-import core.World.Textures.StaticWorldObjects;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import static core.Window.glfwWindow;
+import static core.Window.*;
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Physics extends Thread {
     private static boolean isDropping = false;
     private static final int physicsSpeed = 1;
+    private static float dropSpeed = 0;
     //min and default 1, max 4
 
     public void run() {
@@ -25,34 +25,34 @@ public class Physics extends Thread {
         }
     }
 
+    private static boolean getLDownBlockPl() {
+        //todo: rewrite
+        return StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16)].path.equals(defPath + "\\src\\assets\\World\\blocks\\grass1.png") || StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16)].path.equals(defPath + "\\src\\assets\\World\\blocks\\grass2.png") || StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16)].path.equals(defPath + "\\src\\assets\\World\\blocks\\grass3.png");
+    }
+
+    private static boolean getRDownBlockPl() {
+        //todo: rewrite
+        return StaticObjects[(int) (DynamicObjects[0].x / 16) + 1][(int) (DynamicObjects[0].y / 16)].path.equals(defPath + "\\src\\assets\\World\\blocks\\grass1.png") || StaticObjects[(int) (DynamicObjects[0].x / 16) + 1][(int) (DynamicObjects[0].y / 16)].path.equals(defPath + "\\src\\assets\\World\\blocks\\grass2.png") || StaticObjects[(int) (DynamicObjects[0].x / 16) + 1][(int) (DynamicObjects[0].y / 16)].path.equals(defPath + "\\src\\assets\\World\\blocks\\grass3.png");
+    }
+
     public static void setPlayerPos(int x, int y) {
-        if (x != 0) {
-            DynamicObjects[0].x = x;
-        }
-        if (y != 0) {
-            DynamicObjects[0].y = y;
-        }
+        DynamicObjects[0].x = x == 0 ? DynamicObjects[0].x : x;
+        DynamicObjects[0].y = y == 0 ? DynamicObjects[0].y : y;
     }
 
     public static void updateJump() {
-        if (!DynamicObjects[0].isJumping && DynamicObjects[0].isPlayer && !isDropping && EventHandler.getKey(GLFW_KEY_SPACE)) {
+        if (!DynamicObjects[0].isJumping && !isDropping && EventHandler.getKey(GLFW_KEY_SPACE)) {
             DynamicObjects[0].isJumping = true;
             new Thread(() -> {
 
                 float y0 = DynamicObjects[0].y;
-                float yMax = y0 + 24;
+                float yMax = y0 + 64;
                 double g = 900 - (physicsSpeed * 200);
                 double timeToMax = Math.sqrt((2 * (yMax - y0)) / g);
                 double totalTime = 2 * timeToMax;
                 LocalDateTime startTime = LocalDateTime.now();
 
                 while (true) {
-                    StaticWorldObjects staticObject = StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16)];
-
-                    if (DynamicObjects[0].isPlayer && !DynamicObjects[0].isJumping && staticObject.solid) {
-                        break;
-                    }
-
                     LocalDateTime currentTime = LocalDateTime.now();
                     double elapsedTime = Duration.between(startTime, currentTime).toMillis() / 1000.0;
 
@@ -65,13 +65,17 @@ public class Physics extends Thread {
                     } else {
                         DynamicObjects[0].y = (float) (y0 + 0.5 * g * Math.pow(elapsedTime, 2));
                     }
+                    if ((getLDownBlockPl() || getRDownBlockPl()) && elapsedTime >= totalTime / 2) {
+                        DynamicObjects[0].isJumping = false;
+                        break;
+                    }
                 }
             }).start();
         }
     }
 
     public static void updateMove() {
-        if (DynamicObjects[0].isPlayer && EventHandler.getKey(GLFW_KEY_D) || EventHandler.getKey(GLFW_KEY_A)) {
+        if (EventHandler.getKey(GLFW_KEY_D) || EventHandler.getKey(GLFW_KEY_A)) {
             if (EventHandler.getKey(GLFW_KEY_D) && DynamicObjects[0].x < SizeX * 16 - 24) {
                 DynamicObjects[0].x += 0.1f;
             }
@@ -82,12 +86,12 @@ public class Physics extends Thread {
     }
 
     private static void updateDrop() {
-        StaticWorldObjects staticObject = StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16)];
-
-        if (DynamicObjects[0].isPlayer && !DynamicObjects[0].isJumping && !staticObject.solid) {
+        if (!getLDownBlockPl() && !getRDownBlockPl()) {
             isDropping = true;
-            DynamicObjects[0].y -= 0.1f;
+            dropSpeed += 0.001f;
+            DynamicObjects[0].y -= dropSpeed;
         } else {
+            dropSpeed = 0;
             isDropping = false;
         }
     }

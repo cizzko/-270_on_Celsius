@@ -227,7 +227,7 @@ public class EventHandler extends Thread {
                     WorldGenerator.generateWorld(getSliderPos("worldSize") + 20, 60, buttons.get(Json.getName("GenerateSimpleWorld")).isClicked);
                     TextureDrawing.loadObjects();
 
-                    Video.video.get(defPath + "\\src\\assets\\World\\other\\kaif.mp4").isPlaying = false;
+                    Video.deleteVideo(defPath + "\\src\\assets\\World\\other\\kaif.mp4");
                     CreatePlanet.delete();
 
                     new Thread(new Physics()).start();

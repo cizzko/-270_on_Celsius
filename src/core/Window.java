@@ -14,7 +14,6 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import java.awt.*;
 import java.nio.file.Paths;
-import java.util.Random;
 import static core.EventHandling.Logging.Logger.log;
 import static core.World.Textures.TextureDrawing.*;
 import static core.World.Weather.Sun.updateSun;
@@ -28,7 +27,7 @@ public class Window {
     public static int width = 1920, height = 1080, deltaTime, verticalSync;
     public static final String title = "-270 on Celsius", version = "dev 0.0.0.6";
     public static boolean start = false;
-    public static long glfwWindow, lastFrameTime = System.currentTimeMillis(), totalFrames, sessionId = (long) (new Random().nextDouble() * Long.MAX_VALUE);
+    public static long glfwWindow, lastFrameTime = System.currentTimeMillis();
 
     public void run() {
         init();
@@ -108,7 +107,6 @@ public class Window {
             glfwPollEvents();
 
             framesThisSecond++;
-            totalFrames++;
         }
     }
 }

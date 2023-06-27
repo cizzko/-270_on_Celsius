@@ -44,6 +44,10 @@ public class Video {
                     video.get(path).isPlaying = true;
 
                     for (int i = 0; i < framesCount;) {
+                        if (!video.get(path).isPlaying) {
+                            break;
+                        }
+
                         long currentTime = System.currentTimeMillis();
                         long elapsedTime = currentTime - video.get(path).lastFrameTime;
 
@@ -60,6 +64,10 @@ public class Video {
                 }
             }).start();
         }
+    }
+
+    public static void deleteVideo(String path) {
+        video.get(path).isPlaying = false;
     }
 }
 
