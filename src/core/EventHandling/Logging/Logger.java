@@ -1,11 +1,15 @@
 package core.EventHandling.Logging;
 
+import com.sun.management.OperatingSystemMXBean;
 import core.AnonymousStatistics;
 import core.Window;
 import core.World.Weather.Sun;
+
+import java.awt.*;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.management.ManagementFactory;
 import java.time.LocalDateTime;
 import java.util.Random;
 
@@ -79,8 +83,10 @@ public class Logger {
     }
 
     public static void logStart() {
+        String computerInfo = String.format(" | Разрешение экрана: %d x %d | Процессор: %s | Количество потоков: %s | Количество ОЗУ: %d MB", Toolkit.getDefaultToolkit().getScreenSize().width, Toolkit.getDefaultToolkit().getScreenSize().height, System.getenv("PROCESSOR_IDENTIFIER"), Runtime.getRuntime().availableProcessors(), ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getTotalMemorySize() / (1024 * 1024));
         String system = System.getProperty("os.name").toLowerCase();
-        AnonymousStatistics.sendStateMessage("Session '" + sessionId + "' started, time: '" + LocalDateTime.now() + "', system: " + system);
+
+        AnonymousStatistics.sendStateMessageThread("Session '" + sessionId + "' started, time: '" + LocalDateTime.now() + "', system info: " + system + computerInfo);
 
         log(!system.contains("windows 10") ? "Warning: " + System.getProperty("os.name") + " not supported!\n" : "" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\n");
         log("Start time: " + LocalDateTime.now() + "\nPreload textures: " + getFromConfig("PreLoadTextures"));
