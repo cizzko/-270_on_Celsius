@@ -130,12 +130,11 @@ public class Commandline {
             }
 
             if (getKey(GLFW_KEY_LEFT_CONTROL) && getKey(GLFW_KEY_V)) {
-                Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
-                Transferable transferable = clipboard.getContents(null);
+                Transferable transferable = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
 
                 if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                     try {
-                        EventHandler.keyLoggingText = (String) transferable.getTransferData(DataFlavor.stringFlavor);
+                        EventHandler.keyLoggingText += (String) transferable.getTransferData(DataFlavor.stringFlavor);
                         Thread.sleep(200);
                     } catch (Exception e) {
                         e.printStackTrace();

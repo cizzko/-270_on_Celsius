@@ -12,7 +12,7 @@ import static core.Window.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Logger {
-    public static boolean err = false, cleanup = false, debug = Boolean.parseBoolean(getFromConfig("Debug"));
+    public static boolean cleanup = false, debug = Boolean.parseBoolean(getFromConfig("Debug"));
 
     public static void log(String message, boolean forcibly) {
         if (debug || forcibly) {
@@ -37,9 +37,6 @@ public class Logger {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-        } else if (!err) {
-            err = true;
-            log("See Config. Access denied, because debug false or null.", true);
         }
     }
 
@@ -79,9 +76,10 @@ public class Logger {
     }
 
     public static void logStart() {
-        AnonymousStatistics.sendStateMessage("Session '" + sessionId + "' started, time: " + LocalDateTime.now());
+        String system = System.getProperty("os.name").toLowerCase();
+        AnonymousStatistics.sendStateMessage("Session '" + sessionId + "' started, time: '" + LocalDateTime.now() + "', system: " + system);
 
-        log("-------- Log started --------" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\n");
+        log(!system.contains("windows 10") ? "Warning: " + System.getProperty("os.name") + " not supported!\n" : "" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\n");
         log("Start time: " + LocalDateTime.now() + "\nPreload textures: " + getFromConfig("PreLoadTextures"));
         log("Vertical sync: " + Config.getFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\n\nCurrent language: " + getFromConfig("Language"));
     }
