@@ -11,10 +11,9 @@ public class AnonymousStatistics extends Thread {
 
     public static void sendStateMessageThread(String message) {
         if (sendStatic) {
-            System.out.println(message);
             new Thread(() -> {
                 try {
-                    URL url = new URL("/////");
+                    URL url = new URL("/");
                     HttpURLConnection con = (HttpURLConnection) url.openConnection();
                     con.setRequestMethod("POST");
                     con.setRequestProperty("Content-Type", "application/json");
@@ -36,9 +35,8 @@ public class AnonymousStatistics extends Thread {
 
     public static void sendStateMessage(String message) {
         if (sendStatic) {
-            System.out.println(message);
             try {
-                URL url = new URL("//////");
+                URL url = new URL("/");
                 HttpURLConnection con = (HttpURLConnection) url.openConnection();
                 con.setRequestMethod("POST");
                 con.setRequestProperty("Content-Type", "application/json");
