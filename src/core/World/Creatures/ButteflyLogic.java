@@ -2,7 +2,6 @@ package core.World.Creatures;
 
 import static core.World.WorldGenerator.*;
 import static core.World.WorldGenerator.DynamicObjects;
-import static core.World.Creatures.CreaturesGenerate.getEntityName;
 
 public class ButteflyLogic {
     private static long deltaTime = System.currentTimeMillis();
@@ -13,7 +12,7 @@ public class ButteflyLogic {
             deltaTime = System.currentTimeMillis();
 
             for (int x = 0; x < DynamicObjects.length; x++) {
-                if (DynamicObjects[x] != null && !DynamicObjects[x].isPlayer && getEntityName(DynamicObjects[x].path).equals("butterfly") && DynamicObjects[x].animSpeed != 0) {
+                if (DynamicObjects[x] != null && !DynamicObjects[x].isPlayer && DynamicObjects[x].path.contains("butterfly") && DynamicObjects[x].animSpeed != 0) {
                     int randX = (int) (Math.random() * 60) - 30;
                     int randY = (int) (Math.random() * 50) - 25;
 

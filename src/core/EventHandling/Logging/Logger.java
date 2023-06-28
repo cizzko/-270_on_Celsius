@@ -70,11 +70,10 @@ public class Logger {
             exit = " (unknown state)";
         }
 
-        glfwDestroyWindow(glfwWindow);
-
         AnonymousStatistics.sendStateMessage("Session '" + sessionId + "' exit, time: '" + LocalDateTime.now() + "', reason: '" + reason + "', status: " + status + exit);
         log("\nProgram exit at: " + LocalDateTime.now() + "\nExit code: " + status + exit + "\nGame time: " + Sun.currentTime +  "\n-------- Log ended --------");
 
+        glfwDestroyWindow(glfwWindow);
         System.exit(status);
     }
 

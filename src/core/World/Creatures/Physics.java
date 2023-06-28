@@ -27,12 +27,12 @@ public class Physics extends Thread {
 
     private static boolean getLDownBlockPl() {
         //todo: rewrite
-        return StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16)].path.equals(defPath + "\\src\\assets\\World\\blocks\\grass1.png") || StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16)].path.equals(defPath + "\\src\\assets\\World\\blocks\\grass2.png") || StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16)].path.equals(defPath + "\\src\\assets\\World\\blocks\\grass3.png");
+        return StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16)].solid;
     }
 
     private static boolean getRDownBlockPl() {
         //todo: rewrite
-        return StaticObjects[(int) (DynamicObjects[0].x / 16) + 1][(int) (DynamicObjects[0].y / 16)].path.equals(defPath + "\\src\\assets\\World\\blocks\\grass1.png") || StaticObjects[(int) (DynamicObjects[0].x / 16) + 1][(int) (DynamicObjects[0].y / 16)].path.equals(defPath + "\\src\\assets\\World\\blocks\\grass2.png") || StaticObjects[(int) (DynamicObjects[0].x / 16) + 1][(int) (DynamicObjects[0].y / 16)].path.equals(defPath + "\\src\\assets\\World\\blocks\\grass3.png");
+        return StaticObjects[(int) (DynamicObjects[0].x / 16) + 1][(int) (DynamicObjects[0].y / 16)].solid;
     }
 
     public static void setPlayerPos(int x, int y) {

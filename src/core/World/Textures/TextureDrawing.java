@@ -344,7 +344,7 @@ public class TextureDrawing {
                 boolean onCamera = !(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < top) && !(yBlock > bottom);
                 StaticObjects[x][y].onCamera = onCamera;
 
-                if (onCamera && !StaticObjects[x][y].notForDrawing) {
+                if (onCamera && StaticObjects[x][y].path != null) {
                     drawTexture(StaticObjects[x][y].path, xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false);
                 }
             }

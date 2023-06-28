@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 //статичные объекты, ставятся в строго заданных координатах и не могут произвольно быть пермещены
 public class StaticWorldObjects implements Serializable {
-    public boolean gas, liquid, solid, plasma, notForDrawing, onCamera;
+    public boolean gas, liquid, solid, plasma, onCamera;
     public String options, path;
     public float y, x;
 
@@ -14,7 +14,6 @@ public class StaticWorldObjects implements Serializable {
         this.liquid = false;           //является ли жидкостью
         this.solid = false;            //является ли твердым
         this.plasma = false;           //является ли плазмой
-        this.notForDrawing = false;         //для прозрачных газов типа воздуха
         this.options = options;        //описание и прочее
         this.path = path;              //путь до текстуры
         this.x = x;                    //мировая координата x
@@ -22,6 +21,7 @@ public class StaticWorldObjects implements Serializable {
     }
 
     public void destroyObject() {
+        this.path = null;
         this.solid = false;
         this.liquid = false;
         this.plasma = false;

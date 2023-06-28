@@ -1,7 +1,6 @@
 package core.World.Creatures;
 
 import static core.World.WorldGenerator.DynamicObjects;
-import static core.World.Creatures.CreaturesGenerate.getEntityName;
 
 public class BirdLogic {
     //длительность парения
@@ -12,7 +11,7 @@ public class BirdLogic {
     public static void update() {
         if (System.currentTimeMillis() - deltaTime > 10) {
             for (int x = 0; x < DynamicObjects.length; x++) {
-                if (DynamicObjects[x] != null && !DynamicObjects[x].isPlayer && getEntityName(DynamicObjects[x].path).equals("bird")) {
+                if (DynamicObjects[x] != null && !DynamicObjects[x].isPlayer && DynamicObjects[x].path.contains("bird")) {
                     DynamicObjects[x].x++;
 
                     if (birdFlying[x] == 0 && Math.random() * 500 < 1) {

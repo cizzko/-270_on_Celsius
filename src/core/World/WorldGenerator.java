@@ -55,9 +55,8 @@ public class WorldGenerator {
         for (int x = 0; x < SizeX; x++) {
             for (int y = 0; y < SizeY; y++) {
                 if (y > SizeY / 2) {
-                    StaticObjects[x][y] = new StaticWorldObjects(null, defPath + "\\src\\assets\\World\\blocks\\air.png", x * 16, y * 16);
+                    StaticObjects[x][y] = new StaticWorldObjects(null, null, x * 16, y * 16);
                     StaticObjects[x][y].gas = true;
-                    StaticObjects[x][y].notForDrawing = true;
                 } else {
                     rand = 1 + (int) (Math.random() * 3);
                     StaticObjects[x][y] = new StaticWorldObjects(null, defPath + "\\src\\assets\\World\\blocks\\grass" + rand + ".png", x * 16, y * 16);
@@ -71,14 +70,15 @@ public class WorldGenerator {
         log("World generator: generating mountains");
         createText(42, 140, "generateMountainsText", "Generating mountains", new Color(210, 210, 210, 255), "WorldGeneratorState");
 
-        float randGrass = 1.4f;
-        float randAir = 7f;
+        float randGrass = 1.4f;         //шанс появления неровности, выше число - ниже шанс
+        float randAir = 7f;             //шанс появления воздуха вместо блока, выше число - ниже шанс
+        float iterations = 2f;          //количество итераций генерации
+        float mountainHeight = 400000f; //шанс появления высоких гор, выше число - выше шанс
 
-        for (int i = 0; i != 2; i++) {
+        for (int i = 0; i != iterations; i++) {
             for (int x = 1; x < SizeX - 1; x++) {
                 for (int y = SizeY / 3; y < SizeY - 1; y++) {
-                    // меньше число - меньше шанс генерации высоких гор
-                    randGrass += y / 400000f;
+                    randGrass += y / mountainHeight;
 
                     if ((StaticObjects[x + 1][y].solid || StaticObjects[x - 1][y].solid || StaticObjects[x][y + 1].solid || StaticObjects[x][y - 1].solid) && Math.random() * randGrass < 1) {
                         StaticObjects[x][y] = new StaticWorldObjects(null, defPath + "\\src\\assets\\World\\blocks\\grass1.png", x * 16, y * 16);
@@ -115,12 +115,14 @@ public class WorldGenerator {
         log("World generator: smoothing world");
         createText(42, 110, "smoothWorldText", "Smoothing world", new Color(210, 210, 210, 255), "WorldGeneratorState");
 
+        float smoothingChance = 3f; //шанс сглаживания, выше число - меньше шанс
+
         for (int x = 1; x < SizeX - 1; x++) {
             for (int y = 1; y < SizeY - 1; y++) {
-                if (StaticObjects[x][y].gas && (StaticObjects[x + 1][y].solid && StaticObjects[x - 1][y].solid && StaticObjects[x][y - 1].solid) || (StaticObjects[x + 1][y + 1].solid && StaticObjects[x - 1][y - 1].solid) || (StaticObjects[x - 1][y + 1].solid && StaticObjects[x + 1][y - 1].solid) && Math.random() * 3 < 1) {
+                if (StaticObjects[x][y].gas && (StaticObjects[x + 1][y].solid && StaticObjects[x - 1][y].solid && StaticObjects[x][y - 1].solid) || (StaticObjects[x + 1][y + 1].solid && StaticObjects[x - 1][y - 1].solid) || (StaticObjects[x - 1][y + 1].solid && StaticObjects[x + 1][y - 1].solid) && Math.random() * smoothingChance < 1) {
                     StaticObjects[x][y] = new StaticWorldObjects(null, defPath + "\\src\\assets\\World\\blocks\\grass1.png", x * 16, y * 16);
                     StaticObjects[x][y].solid = true;
-                } else if ((StaticObjects[x][y + 1].solid && StaticObjects[x][y - 1].solid) || (StaticObjects[x + 1][y].solid && StaticObjects[x - 1][y].solid) && Math.random() * 3 < 1) {
+                } else if ((StaticObjects[x][y + 1].solid && StaticObjects[x][y - 1].solid) || (StaticObjects[x + 1][y].solid && StaticObjects[x - 1][y].solid) && Math.random() * smoothingChance < 1) {
                     StaticObjects[x][y] = new StaticWorldObjects(null, defPath + "\\src\\assets\\World\\blocks\\grass1.png", x * 16, y * 16);
                     StaticObjects[x][y].solid = true;
                 }
@@ -186,6 +188,6 @@ public class WorldGenerator {
             DynamicObjects = new DynamicWorldObjects[4096];
         }
 
-        DynamicObjects[0] = new DynamicWorldObjects(1, 0f, defPath + "\\src\\assets\\World\\creatures\\player.png", true, true, 320, SizeY * 8 + 16 + 80);
+        DynamicObjects[0] = new DynamicWorldObjects(1, 0f, defPath + "\\src\\assets\\World\\creatures\\player.png", true, 320, SizeY * 8 + 16 + 80);
     }
 }

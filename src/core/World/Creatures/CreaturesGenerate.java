@@ -2,8 +2,6 @@ package core.World.Creatures;
 
 import core.EventHandling.Logging.Logger;
 import core.World.Textures.DynamicWorldObjects;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import static core.Window.defPath;
 import static core.Window.glfwWindow;
 import static core.World.WorldGenerator.*;
@@ -14,26 +12,11 @@ public class CreaturesGenerate extends Thread {
     private static long deltaTime = System.currentTimeMillis();
     private static String path;
 
-
-    public static String getEntityName(String pathString) {
-        Path path = Paths.get(pathString);
-        String fileName = path.getFileName().toString();
-        String nameWithoutExtension = fileName;
-        int dotIndex = fileName.lastIndexOf('.');
-
-        if (dotIndex >= 0) {
-            nameWithoutExtension = fileName.substring(0, dotIndex);
-        }
-
-        String[] nameParts = nameWithoutExtension.split("\\d+");
-        return nameParts[0];
-    }
-
     public void run() {
         Logger.log("Thread: Creatures logic started");
 
         while (!glfwWindowShouldClose(glfwWindow)) {
-            if (System.currentTimeMillis() - deltaTime > 1000 && (int) (Math.random() * 10000000) == 1 && count < 3) {
+            if (System.currentTimeMillis() - deltaTime > 1000 && count < 3 && Math.random() * 100 < 1) {
                 generate();
                 deltaTime = System.currentTimeMillis();
             }
@@ -52,7 +35,7 @@ public class CreaturesGenerate extends Thread {
 
         for (int x = 0; x < DynamicObjects.length; x++) {
             if (DynamicObjects[x] == null) {
-                DynamicObjects[x] = new DynamicWorldObjects(2, 0.1f, path, true, false, 0, SizeY / 2f + 520);
+                DynamicObjects[x] = new DynamicWorldObjects(2, 0.1f, path, false, 0, SizeY / 2f + 520);
                 count++;
                 break;
             }
