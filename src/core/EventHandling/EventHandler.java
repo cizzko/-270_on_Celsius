@@ -1,6 +1,5 @@
 package core.EventHandling;
 
-import core.Commandline;
 import core.EventHandling.Logging.Json;
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.Menu.CreatePlanet;

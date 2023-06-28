@@ -1,7 +1,6 @@
 package core.World.Weather;
 
 import java.awt.*;
-
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Window.*;
 import static core.World.Textures.TextureDrawing.*;
