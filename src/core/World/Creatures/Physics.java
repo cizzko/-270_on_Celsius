@@ -2,9 +2,13 @@ package core.World.Creatures;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Logger;
+import core.World.Textures.ShadowMap;
+
+import java.awt.*;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import static core.Window.*;
+import static core.World.HitboxMap.*;
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -25,30 +29,6 @@ public class Physics extends Thread {
         }
     }
 
-    private static boolean getLDownBlockPl() {
-        return StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16)].solid;
-    }
-
-    private static boolean getRDownBlockPl() {
-        return StaticObjects[(int) (DynamicObjects[0].x / 16) + 1][(int) (DynamicObjects[0].y / 16)].solid;
-    }
-
-    private static boolean getLBlockPl() {
-        return StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16) + 1].solid || StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16) + 2].solid;
-    }
-
-    private static boolean getRBlockPl() {
-        return StaticObjects[(int) (DynamicObjects[0].x / 16) + 2][(int) (DynamicObjects[0].y / 16) + 1].solid || StaticObjects[(int) (DynamicObjects[0].x / 16) + 2][(int) (DynamicObjects[0].y / 16) + 2].solid;
-    }
-
-    private static boolean getUpLBlockPL() {
-        return StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16) + 2].solid;
-    }
-
-    private static boolean getUpRBlockPL() {
-        return StaticObjects[(int) (DynamicObjects[0].x / 16) + 1][(int) (DynamicObjects[0].y / 16) + 2].solid;
-    }
-
     public static void setPlayerPos(int x, int y) {
         DynamicObjects[0].x = x == 0 ? DynamicObjects[0].x : x;
         DynamicObjects[0].y = y == 0 ? DynamicObjects[0].y : y;
@@ -60,8 +40,8 @@ public class Physics extends Thread {
             new Thread(() -> {
 
                 float y0 = DynamicObjects[0].y;
-                float yMax = y0 + 64;
-                double g = 900 - (physicsSpeed * 200);
+                float yMax = y0 + 34; //высота прыжка
+                double g = 900 - (physicsSpeed * 200); //гравитация
                 double timeToMax = Math.sqrt((2 * (yMax - y0)) / g);
                 double totalTime = 2 * timeToMax;
                 LocalDateTime startTime = LocalDateTime.now();
@@ -80,10 +60,7 @@ public class Physics extends Thread {
                         DynamicObjects[0].y = (float) (y0 + 0.5 * g * Math.pow(elapsedTime, 2));
                     }
 
-                    float rightY = (getUpRBlockPL() ? StaticObjects[(int) (DynamicObjects[0].x / 16) + 1][(int) (DynamicObjects[0].y / 16) + 2].y : SizeY * 16) - 24;
-                    float leftY = (getUpLBlockPL() ? StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16) + 2].y : SizeY * 16) - 24;
-
-                    if (DynamicObjects[0].y > rightY || DynamicObjects[0].y > leftY || ((getLDownBlockPl() || getRDownBlockPl()) && elapsedTime >= totalTime / 2)) {
+                    if ((!checkIntersStaticD(DynamicObjects[0].x, DynamicObjects[0].y, 24) && elapsedTime >= totalTime / 2) || checkIntersStaticU(DynamicObjects[0].x, DynamicObjects[0].y, 24, 24)) {
                         DynamicObjects[0].isJumping = false;
                         break;
                     }
@@ -94,21 +71,17 @@ public class Physics extends Thread {
 
     public static void updateMove() {
         if (EventHandler.getKey(GLFW_KEY_D) || EventHandler.getKey(GLFW_KEY_A)) {
-
-            //TODO: i think, need add hitbox map
-            float rightX = getRBlockPl() ? StaticObjects[(int) (DynamicObjects[0].x / 16) + 2][(int) (DynamicObjects[0].y / 16) + 1].x : SizeX * 16;
-
-            if (EventHandler.getKey(GLFW_KEY_D) && DynamicObjects[0].x < SizeX * 16 - 24 && DynamicObjects[0].x + 24 < rightX) {
+            if (EventHandler.getKey(GLFW_KEY_D) && DynamicObjects[0].x < SizeX * 16 - 24 && !checkIntersStaticR(DynamicObjects[0].x, DynamicObjects[0].y, 24, 24)) {
                 DynamicObjects[0].x += 0.1f;
             }
-            if (EventHandler.getKey(GLFW_KEY_A) && DynamicObjects[0].x > 0 && !getLBlockPl()) {
+            if (EventHandler.getKey(GLFW_KEY_A) && DynamicObjects[0].x > 0 && !checkIntersStaticL(DynamicObjects[0].x, DynamicObjects[0].y, 24)) {
                 DynamicObjects[0].x -= 0.1f;
             }
         }
     }
 
     private static void updateDrop() {
-        if (!getLDownBlockPl() && !getRDownBlockPl()) {
+        if (!checkIntersStaticD(DynamicObjects[0].x, DynamicObjects[0].y, 24)) {
             isDropping = true;
             dropSpeed += 0.001f;
             DynamicObjects[0].y -= dropSpeed;
