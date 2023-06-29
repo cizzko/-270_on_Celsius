@@ -34,11 +34,19 @@ public class Physics extends Thread {
     }
 
     private static boolean getLBlockPl() {
-        return StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16) + 1].solid;
+        return StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16) + 1].solid || StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16) + 2].solid;
     }
 
     private static boolean getRBlockPl() {
-        return StaticObjects[(int) (DynamicObjects[0].x / 16) + 2][(int) (DynamicObjects[0].y / 16) + 1].solid;
+        return StaticObjects[(int) (DynamicObjects[0].x / 16) + 2][(int) (DynamicObjects[0].y / 16) + 1].solid || StaticObjects[(int) (DynamicObjects[0].x / 16) + 2][(int) (DynamicObjects[0].y / 16) + 2].solid;
+    }
+
+    private static boolean getUpLBlockPL() {
+        return StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16) + 2].solid;
+    }
+
+    private static boolean getUpRBlockPL() {
+        return StaticObjects[(int) (DynamicObjects[0].x / 16) + 1][(int) (DynamicObjects[0].y / 16) + 2].solid;
     }
 
     public static void setPlayerPos(int x, int y) {
@@ -71,7 +79,11 @@ public class Physics extends Thread {
                     } else {
                         DynamicObjects[0].y = (float) (y0 + 0.5 * g * Math.pow(elapsedTime, 2));
                     }
-                    if ((getLDownBlockPl() || getRDownBlockPl()) && elapsedTime >= totalTime / 2) {
+
+                    float rightY = (getUpRBlockPL() ? StaticObjects[(int) (DynamicObjects[0].x / 16) + 1][(int) (DynamicObjects[0].y / 16) + 2].y : SizeY * 16) - 24;
+                    float leftY = (getUpLBlockPL() ? StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16) + 2].y : SizeY * 16) - 24;
+
+                    if (DynamicObjects[0].y > rightY || DynamicObjects[0].y > leftY || ((getLDownBlockPl() || getRDownBlockPl()) && elapsedTime >= totalTime / 2)) {
                         DynamicObjects[0].isJumping = false;
                         break;
                     }
@@ -83,7 +95,7 @@ public class Physics extends Thread {
     public static void updateMove() {
         if (EventHandler.getKey(GLFW_KEY_D) || EventHandler.getKey(GLFW_KEY_A)) {
 
-            //TODO: i think, need add hitboxes map
+            //TODO: i think, need add hitbox map
             float rightX = getRBlockPl() ? StaticObjects[(int) (DynamicObjects[0].x / 16) + 2][(int) (DynamicObjects[0].y / 16) + 1].x : SizeX * 16;
 
             if (EventHandler.getKey(GLFW_KEY_D) && DynamicObjects[0].x < SizeX * 16 - 24 && DynamicObjects[0].x + 24 < rightX) {

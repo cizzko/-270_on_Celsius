@@ -334,14 +334,14 @@ public class TextureDrawing {
 
         float left = DynamicObjects[0].x - (1920 / 5.5f) - (48);
         float right = DynamicObjects[0].x + (1920 / 5.5f) + (48);
-        float top = DynamicObjects[0].y - (1080 / 6f) - (48);
-        float bottom = DynamicObjects[0].y + (1080 / 8f) + (48);
+        float bottom = DynamicObjects[0].y - (1080 / 16f) - (48); //меньше число деления - выше прорисовка
+        float top = DynamicObjects[0].y + (1080 / 5f) + (48);
 
         for (int x = 0; x < StaticObjects.length - 1; x++) {
             for (int y = 0; y < StaticObjects[x].length - 1; y++) {
                 float xBlock = StaticObjects[x][y].x;
                 float yBlock = StaticObjects[x][y].y;
-                boolean onCamera = !(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < top) && !(yBlock > bottom);
+                boolean onCamera = !(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top);
                 StaticObjects[x][y].onCamera = onCamera;
 
                 if (onCamera && StaticObjects[x][y].path != null) {
