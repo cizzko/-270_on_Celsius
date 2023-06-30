@@ -27,7 +27,6 @@ import static core.World.Textures.TextureLoader.ByteBufferEncoder;
 import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
-    private static int accumulator = 0;
     private static float playerX, playerY;
     private static final boolean showPrompts = Boolean.parseBoolean(getFromConfig("ShowPrompts"));
     private static final HashMap<Integer, TextureData> textures = new HashMap<>();
@@ -352,8 +351,6 @@ public class TextureDrawing {
     }
 
     public static void updateDynamicObj() {
-        accumulator += Window.deltaTime;
-
         for (DynamicWorldObjects dynamicObject : DynamicObjects) {
             if (dynamicObject != null) {
 
@@ -361,13 +358,15 @@ public class TextureDrawing {
                     drawTexture(dynamicObject.path, dynamicObject.x, dynamicObject.y, 3, false);
                 }
                 if (dynamicObject.onCamera && dynamicObject.framesCount != 1 && dynamicObject.animSpeed != 0) {
-                    int animTime = (int) (dynamicObject.animSpeed * 1000); // время на анимацию одного кадра
-                    int framesTime = (dynamicObject.framesCount - 1) * animTime; // время на все кадры анимации (исключая последний)
-                    int loopTime = framesTime + animTime; // время на один полный цикл анимации
-                    int frameIndex = ((accumulator % loopTime) / animTime) + 1; // индекс текущего кадра
+                    if (dynamicObject.currentFrame != dynamicObject.framesCount && System.currentTimeMillis() - dynamicObject.lastFrameTime >= dynamicObject.animSpeed * 1000) {
+                        dynamicObject.currentFrame++;
+                        dynamicObject.lastFrameTime = System.currentTimeMillis();
+                    } else if (dynamicObject.currentFrame == dynamicObject.framesCount && System.currentTimeMillis() - dynamicObject.lastFrameTime >= dynamicObject.animSpeed * 1000) {
+                        dynamicObject.currentFrame = 1;
+                        dynamicObject.lastFrameTime = System.currentTimeMillis();
+                    }
 
-                    dynamicObject.currentFrame = frameIndex;
-                    drawTexture(dynamicObject.path + frameIndex + ".png", dynamicObject.x, dynamicObject.y, 3, false);
+                    drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, false);
                 } else if (dynamicObject.onCamera && dynamicObject.framesCount != 1) {
                     drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, false);
                 }
@@ -478,16 +477,19 @@ public class TextureDrawing {
                 continue;
             }
 
+            if (button.path != null) {
+                drawTexture(button.path, button.x, button.y, 1, true);
+                continue;
+            }
             if (button.simple) {
                 drawRectangle(button.x, button.y, button.width, button.height, button.color);
-                drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
             } else {
                 drawRectangleBorder(button.x, button.y, button.width, button.height, 6, button.color);
-                drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
             }
             if (!button.isClickable) {
                 drawRectangle(button.x, button.y, button.width, button.height, new Color(0, 0, 0, 123));
             }
+            drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
             drawPrompt(button);
         }
     }

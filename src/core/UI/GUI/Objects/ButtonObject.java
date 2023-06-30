@@ -7,7 +7,7 @@ public class ButtonObject {
     public int x, y, width, height;
     public long lastClickTime;
     public Color color;
-    public String name, prompt, group;
+    public String name, prompt, group, path;
 
     public ButtonObject(boolean simple, boolean swapButton, int x, int y, int height, int width, String name, String prompt, Color color, String group) {
         if (group == null) {
@@ -23,6 +23,7 @@ public class ButtonObject {
         this.width = width;
         this.x = x;
         this.y = y;
+        this.path = null;
         this.name = name;
         this.group = group;
         this.prompt = prompt;

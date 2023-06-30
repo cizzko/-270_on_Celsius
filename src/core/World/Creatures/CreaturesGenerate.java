@@ -10,13 +10,12 @@ import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 public class CreaturesGenerate extends Thread {
     private static int count = 0;
     private static long deltaTime = System.currentTimeMillis();
-    private static String path;
 
     public void run() {
         Logger.log("Thread: Creatures logic started");
 
         while (!glfwWindowShouldClose(glfwWindow)) {
-            if (System.currentTimeMillis() - deltaTime > 1000 && count < 3 && Math.random() * 100 < 1) {
+            if (System.currentTimeMillis() - deltaTime >= 10000 && count < 3 && Math.random() * 10000 < 0.01) {
                 generate();
                 deltaTime = System.currentTimeMillis();
             }
@@ -25,7 +24,8 @@ public class CreaturesGenerate extends Thread {
         }
     }
 
-    private static void generate() {
+    public static void generate() {
+        String path = "";
         //кто сделал этот костыль?
         //я
         //больше так не делай
@@ -35,7 +35,7 @@ public class CreaturesGenerate extends Thread {
 
         for (int x = 0; x < DynamicObjects.length; x++) {
             if (DynamicObjects[x] == null) {
-                DynamicObjects[x] = new DynamicWorldObjects(2, 0.1f, path, false, 0, SizeY / 2f + 520);
+                DynamicObjects[x] = new DynamicWorldObjects(2, path.contains("bird") || path.contains("butterfly"), .1f, path, 60, SizeY / 2f + 520);
                 count++;
                 break;
             }

@@ -29,7 +29,7 @@ public class Physics extends Thread {
     }
 
     public static void updateJump() {
-        if (!DynamicObjects[0].isJumping && !DynamicObjects[0].isDropping && EventHandler.getKey(GLFW_KEY_SPACE)) {
+        if (EventHandler.getKey(GLFW_KEY_SPACE)) {
             DynamicObjects[0].jump(64, 900);
         }
     }
@@ -46,13 +46,18 @@ public class Physics extends Thread {
     }
 
     private static void updateDrop() {
-        if (!checkIntersStaticD(DynamicObjects[0].x, DynamicObjects[0].y, 24, 24)) {
-            DynamicObjects[0].isDropping = true;
-            dropSpeed += 0.001f;
-            DynamicObjects[0].y -= dropSpeed;
-        } else {
-            dropSpeed = 0;
-            DynamicObjects[0].isDropping = false;
+        for (core.World.Textures.DynamicWorldObjects dynamicObject : DynamicObjects) {
+            if (dynamicObject == null || dynamicObject.isFlying) {
+                continue;
+            }
+            if (!checkIntersStaticD(dynamicObject.x, dynamicObject.y, 24, 24)) {
+                dynamicObject.isDropping = true;
+                dynamicObject.dropSpeed += 0.001f;
+                dynamicObject.y -= dynamicObject.dropSpeed;
+            } else {
+                dynamicObject.dropSpeed = 0;
+                dynamicObject.isDropping = false;
+            }
         }
     }
 }

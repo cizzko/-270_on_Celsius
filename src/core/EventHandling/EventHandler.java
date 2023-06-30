@@ -17,8 +17,10 @@ import core.World.Creatures.Physics;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import java.awt.*;
+import java.net.URI;
 import java.util.Arrays;
 import static core.Commandline.updateLine;
+import static core.EventHandling.Logging.Logger.log;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -31,7 +33,7 @@ public class EventHandler extends Thread {
     private static final boolean[] pressedButtons = new boolean[349];
 
     public EventHandler() {
-        Logger.log("Thread: Event handling started");
+        log("Thread: Event handling started");
         GLFWKeyCallback keyCallback = new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
@@ -176,6 +178,14 @@ public class EventHandler extends Thread {
                         Main.delete();
                     } else {
                         Pause.delete();
+                    }
+
+                } else if (button.name.equals("DiscordButton")) {
+                    try {
+                        Desktop desktop = Desktop.getDesktop();
+                        desktop.browse(new URI("https://discord.gg/CgVmJhmk"));
+                    } catch (Exception e) {
+                        log(e.toString());
                     }
 
                 } else if (button.name.equals(Json.getName("SettingsGraphics"))) {

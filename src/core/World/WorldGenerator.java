@@ -188,6 +188,6 @@ public class WorldGenerator {
             DynamicObjects = new DynamicWorldObjects[4096];
         }
 
-        DynamicObjects[0] = new DynamicWorldObjects(1, 0f, defPath + "\\src\\assets\\World\\creatures\\player.png", true, 320, SizeY * 16 - 20);
+        DynamicObjects[0] = new DynamicWorldObjects(1, false, 0f, defPath + "\\src\\assets\\World\\creatures\\player.png", 320, SizeY * 16 - 20);
     }
 }

@@ -11,7 +11,7 @@ public class BirdLogic {
     public static void update() {
         if (System.currentTimeMillis() - deltaTime > 10) {
             for (int x = 0; x < DynamicObjects.length; x++) {
-                if (DynamicObjects[x] != null && !DynamicObjects[x].isPlayer && DynamicObjects[x].path.contains("bird")) {
+                if (DynamicObjects[x] != null && DynamicObjects[x].path.contains("bird")) {
                     DynamicObjects[x].x++;
 
                     if (birdFlying[x] == 0 && Math.random() * 500 < 1) {

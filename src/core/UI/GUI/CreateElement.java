@@ -4,6 +4,8 @@ import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.PanelObject;
 import core.UI.GUI.Objects.SliderObject;
 import core.UI.GUI.Objects.TextObject;
+import core.World.Textures.TextureLoader;
+
 import java.awt.*;
 import java.util.concurrent.ConcurrentHashMap;
 import static core.World.Textures.TextureLoader.BufferedImageEncoder;
@@ -32,6 +34,11 @@ public class CreateElement {
             dropButtons[i].visible = false;
         }
         dropMenu.put(menuName, dropButtons);
+    }
+
+    public static void createPictureButton(int x, int y, String path, String name, String group) {
+        buttons.put(name, new ButtonObject(true, false, x, y, TextureLoader.BufferedImageEncoder(path).getHeight(), TextureLoader.BufferedImageEncoder(path).getWidth(), name, null, new Color(255, 255, 255, 255), group));
+        buttons.get(name).path = path;
     }
 
     public static void createSwapButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, Color color, boolean isClicked, String group) {

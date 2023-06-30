@@ -27,15 +27,13 @@ public class Sun {
                 if (currentTime > 2400 || currentTime < 0) { // 2400 - 23:59
                     currentTime = 0;
                 }
-                if (DynamicObjects[0].isPlayer) {
-                    x = DynamicObjects[0].x;
+                x = DynamicObjects[0].x;
 
-                    if (currentTime >= 2400 || currentTime < 1) {
-                        y = -800;
-                    } else {
-                        double t = (currentTime - 2400) / (1 - 2400);
-                        y = (float) (-800 * (1 - t) + 1500 * t) + (SizeY / 2f * 16 - 700);
-                    }
+                if (currentTime >= 2400 || currentTime < 1) {
+                    y = -800;
+                } else {
+                    double t = (currentTime - 2400) / (1 - 2400);
+                    y = (float) (-800 * (1 - t) + 1500 * t) + (SizeY / 2f * 16 - 700);
                 }
             }
             final int minGreen = 85;
