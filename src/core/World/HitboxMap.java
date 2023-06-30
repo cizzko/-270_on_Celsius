@@ -7,7 +7,7 @@ public class HitboxMap {
 
     public static boolean checkIntersStaticR(float x, float y, int sizeX, int sizeY) {
         int tarX = (int) (x / 16);
-        int tarY = (int) (y / 16);
+        int tarY = y % 16 > 15.4 ? (int) (y / 16) : (int) (y / 16 - 1);
         int tarXSize = (int) Math.ceil(sizeX / 16f);
         int tarYSize = (int) Math.ceil(sizeY / 16f);
 
@@ -21,7 +21,7 @@ public class HitboxMap {
 
     public static boolean checkIntersStaticL(float x, float y, int sizeY) {
         int tarX = (int) (x / 16);
-        int tarY = (int) (y / 16);
+        int tarY = y % 16 > 15.4 ? (int) (y / 16) : (int) (y / 16 - 1);
         int tarYSize = (int) Math.ceil(sizeY / 16f);
 
         for (int i = 0; i < tarYSize; i++) {
@@ -32,13 +32,13 @@ public class HitboxMap {
         return false;
     }
 
-    public static boolean checkIntersStaticD(float x, float y, int sizeX) {
+    public static boolean checkIntersStaticD(float x, float y, int sizeX, int sizeY) {
         int tarX = (int) (x / 16);
-        int tarY = (int) (y / 16);
+        int tarY = (int) Math.floor(y / 16);
         int tarXSize = (int) Math.ceil(sizeX / 16f);
 
         for (int i = 0; i < tarXSize; i++) {
-            if (StaticObjects[tarX + i][tarY].solid) {
+            if ((y - sizeY <= (StaticObjects[tarX + i][tarY].solid ? StaticObjects[tarX + i][tarY].y : 0)) || x + sizeX >= (StaticObjects[tarX + tarXSize][tarY].solid ? StaticObjects[tarX + tarXSize][tarY].x : SizeX * 16)) {
                 return true;
             }
         }
