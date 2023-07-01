@@ -7,7 +7,6 @@ import core.EventHandling.MouseScrollCallback;
 import core.UI.GUI.CreateElement;
 import core.UI.GUI.Fonts;
 import core.UI.GUI.Menu.Main;
-import core.UI.GUI.Video;
 import core.EventHandling.Logging.Logger;
 import core.World.Textures.TextureLoader;
 import org.lwjgl.glfw.GLFWErrorCallback;
@@ -25,7 +24,7 @@ public class Window {
     public static String defPath = Paths.get("").toAbsolutePath().toString();
 
     public static int width = 1920, height = 1080, deltaTime, verticalSync;
-    public static final String title = "-270 on Celsius", version = "dev 0.0.0.6";
+    public static final String title = "-270 on Celsius", version = "dev 0.0.0.7";
     public static boolean start = false;
     public static long glfwWindow, lastFrameTime = System.currentTimeMillis();
 
@@ -66,9 +65,6 @@ public class Window {
         glMatrixMode(GL_MODELVIEW);
 
         Fonts.generateFont(defPath + "\\src\\assets\\UI\\arial.ttf");
-        if (Config.getFromConfig("AnimatedBackground").equals("true")) {
-            Video.drawVideo(defPath + "\\src\\assets\\World\\other\\kaif.mp4", 1, 30, 0, 0, 1920, 1080);
-        }
 
         TextureLoader.preLoadTextures();
         Main.create();
@@ -95,6 +91,8 @@ public class Window {
                 updateSun();
                 updateStaticObj();
                 updateDynamicObj();
+            } else {
+                drawTexture(defPath + "\\src\\assets\\World\\other\\background.png", 0, 0, 1, true);
             }
             updateGUI();
 

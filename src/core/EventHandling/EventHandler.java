@@ -235,14 +235,14 @@ public class EventHandler extends Thread {
                 } else if (button.name.equals(Json.getName("GenerateWorld")) && !Window.start) {
                     WorldGenerator.generateWorld(getSliderPos("worldSize") + 20, 60, buttons.get(Json.getName("GenerateSimpleWorld")).isClicked);
                     TextureDrawing.loadObjects();
-
-                    Video.deleteVideo(defPath + "\\src\\assets\\World\\other\\kaif.mp4");
                     CreatePlanet.delete();
 
                     new Thread(new Physics()).start();
-                    new Thread(new CreaturesGenerate()).start();
-                    Window.start = true;
+                    if (buttons.get(Json.getName("GenerateCreatures")).isClicked) {
+                        new Thread(new CreaturesGenerate()).start();
+                    }
 
+                    Window.start = true;
                 } else if (button.name.equals(Json.getName("Continue"))) {
                     Pause.delete();
                     Settings.delete();

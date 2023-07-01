@@ -8,6 +8,8 @@
     "GenerateWorld": "Generate world",
     "GenerateSimpleWorld": "Simplified generation",
     "GenerateSimpleWorldPrompt": "Generation without any relief",
+    "GenerateCreatures": "Generate creatures",
+    "GenerateCreaturesPrompt": "Generation and calculation of butterflies, birds, etc. May affect performance",
 
     "SettingsExit": "Return",
     "SettingsSave": "Save",
@@ -38,6 +40,8 @@
     "GenerateWorld": "Создать мир",
     "GenerateSimpleWorld": "Упрощенная генерация",
     "GenerateSimpleWorldPrompt": "Генерация без рельефа",
+    "GenerateCreatures": "Генерация сущностей",
+    "GenerateCreaturesPrompt": "Генерация и просчет бабочек, птиц, и т.д. Может влиять на производительность",
 
     "SettingsExit": "Вернуться",
     "SettingsSave": "Сохранить",
@@ -66,8 +70,10 @@
     "Continue": "Продовжити",
 
     "GenerateWorld": "Создати мир ",
-    "GenerateSimpleWorld": "спрощенна генерація",
-    "GenerateSimpleWorldPrompt": "генерація без рельефу",
+    "GenerateSimpleWorld": "Спрощенна генерація",
+    "GenerateSimpleWorldPrompt": "Генерація без рельефу",
+    "GenerateCreatures": "Генерация сущностей",
+    "GenerateCreaturesPrompt": "Генерация и просчет бабочек, птиц, и т.д. Может влиять на производительность",
 
     "SettingsExit": "Повернутися",
     "SettingsSave": "Сохранити",

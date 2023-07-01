@@ -67,7 +67,9 @@ public class Video {
     }
 
     public static void deleteVideo(String path) {
-        video.get(path).isPlaying = false;
+        if (video.get(path) != null) {
+            video.get(path).isPlaying = false;
+        }
     }
 }
 

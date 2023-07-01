@@ -378,10 +378,9 @@ public class TextureDrawing {
             for (int y = 0; y < StaticObjects[x].length - 1; y++) {
                 float xBlock = StaticObjects[x][y].x;
                 float yBlock = StaticObjects[x][y].y;
-                boolean onCamera = !(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top);
-                StaticObjects[x][y].onCamera = onCamera;
+                StaticObjects[x][y].onCamera = !(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top);
 
-                if (onCamera && StaticObjects[x][y].path != null) {
+                if (StaticObjects[x][y].onCamera && StaticObjects[x][y].path != null) {
                     drawTexture(StaticObjects[x][y].path, xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false);
                 }
             }
@@ -391,6 +390,15 @@ public class TextureDrawing {
     public static void updateDynamicObj() {
         for (DynamicWorldObjects dynamicObject : DynamicObjects) {
             if (dynamicObject != null) {
+                float left = DynamicObjects[0].x - (1920 / 5.5f) - (48);
+                float right = DynamicObjects[0].x + (1920 / 5.5f) + (48);
+                float bottom = DynamicObjects[0].y - (1080 / 16f) - (48); //меньше число деления - выше прорисовка
+                float top = DynamicObjects[0].y + (1080 / 5f) + (48);
+
+                float xBlock = dynamicObject.x;
+                float yBlock = dynamicObject.y;
+
+                dynamicObject.onCamera = !(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top);
 
                 if (dynamicObject.onCamera && dynamicObject.framesCount == 1) {
                     drawTexture(dynamicObject.path, dynamicObject.x, dynamicObject.y, 3, false);
