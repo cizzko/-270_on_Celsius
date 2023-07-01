@@ -96,7 +96,17 @@ public class TextureDrawing {
     }
 
     //for video, text, etc
-    public static void drawTexture(float x, float y, int width, int height, ByteBuffer buffer, Color color, float zoom) {
+    public static void drawTexture(float x, float y, int width, int height, String name, ByteBuffer buffer, Color color, float zoom) {
+        if (name != null) {
+            int textureId = name.hashCode();
+
+            if (textures.get(textureId) == null) {
+                bindTexture(width, height, buffer, name);
+            }
+            TextureData textureData = textures.get(textureId);
+            glBindTexture(GL_TEXTURE_2D, textureData.id);
+        }
+
         glPushMatrix();
         glEnable(GL_TEXTURE_2D);
 
@@ -146,7 +156,7 @@ public class TextureDrawing {
                 x = startX;
                 continue;
             }
-            TextureDrawing.drawTexture(x, y, Fonts.letterSize.get(ch).width, Fonts.letterSize.get(ch).height, Fonts.chars.get(ch), color, 1);
+            TextureDrawing.drawTexture(x, y, Fonts.letterSize.get(ch).width, Fonts.letterSize.get(ch).height, String.valueOf(ch), Fonts.chars.get(ch), color, 1);
             x += Fonts.letterSize.get(ch).width;
         }
     }
@@ -276,31 +286,32 @@ public class TextureDrawing {
 
     public static void drawPrompt(ButtonObject button) {
         if (showPrompts && new Rectangle(button.x, button.y, button.width, button.height).contains(getMousePos()) && mouseNotMoved && button.prompt != null) {
-            drawRectangleText(button.x, button.y, 0, button.prompt, new Color(40, 40, 40, 240));
+            drawRectangleText(button.x, button.y, 0, button.prompt, false, new Color(40, 40, 40, 240));
         }
     }
 
-    public static void drawRectangleText(int x, int y, int maxWidth, String text, Color panColor) {
-        if (maxWidth != 0) {
-            StringBuilder modifiedText = new StringBuilder();
-            int currentWidth = 0;
+    public static void drawRectangleText(int x, int y, int maxWidth, String text, boolean staticTransfer, Color panColor) {
+        maxWidth = (maxWidth > 0 ? maxWidth : 1920 - x);
+        y = staticTransfer ? y + getTextSize(text).width / maxWidth * 16 : y;
 
-            for (int i = 0; i < text.length(); i++) {
-                char c = text.charAt(i);
+        StringBuilder modifiedText = new StringBuilder();
+        int currentWidth = 0;
 
-                if (c == ' ') {
-                    currentWidth += Fonts.letterSize.get('A').width;
-                } else {
-                    currentWidth += Fonts.letterSize.get(c).width;
-                }
-                if (currentWidth > maxWidth) {
-                    modifiedText.append("\\n");
-                    currentWidth = 0;
-                }
-                modifiedText.append(c);
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+
+            if (c == ' ') {
+                currentWidth += Fonts.letterSize.get('A').width;
+            } else {
+                currentWidth += Fonts.letterSize.get(c).width;
             }
-            text = modifiedText.toString();
+            if (currentWidth > maxWidth) {
+                modifiedText.append("\\n");
+                currentWidth = 0;
+            }
+            modifiedText.append(c);
         }
+        text = modifiedText.toString();
 
         Dimension textSize = getTextSize(text);
         int width = textSize.width;
@@ -343,7 +354,7 @@ public class TextureDrawing {
                     video.frame = 1;
                 }
                 if (byteBuffer.get(name) != null && !byteBuffer.get(name).equals(buff)) {
-                    drawTexture(video.x, video.y, video.width, video.height, byteBuffer.get(name), new Color(255, 255, 255, 255), 1);
+                    drawTexture(video.x, video.y, video.width, video.height, null, byteBuffer.get(name), new Color(255, 255, 255, 255), 1);
                     buff = byteBuffer.get(name);
                 }
             }
@@ -541,7 +552,7 @@ public class TextureDrawing {
 
         if (Commandline.created) {
             drawRectangle(20, 800, 650, 260, new Color(0, 0, 0, 220));
-            drawRectangleText(-10, 810 + getTextSize(EventHandler.keyLoggingText).width / 630 * 16, 630, EventHandler.keyLoggingText, new Color(0, 0, 0, 0));
+            drawRectangleText(-10, 810, 630, EventHandler.keyLoggingText, true, new Color(0, 0, 0, 0));
         }
     }
 
@@ -565,6 +576,19 @@ public class TextureDrawing {
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
         textures.put(path.hashCode(), new TextureData(id, width, height));
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    public static void bindTexture(int width, int height, ByteBuffer buffer, String name) {
+        int id = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, id);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+        textures.put(name.hashCode(), new TextureData(id, width, height));
 
         glBindTexture(GL_TEXTURE_2D, 0);
     }

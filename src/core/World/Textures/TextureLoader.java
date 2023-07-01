@@ -1,12 +1,15 @@
 package core.World.Textures;
 
 import core.EventHandling.Logging.Config;
+import core.UI.GUI.Fonts;
 import org.lwjgl.BufferUtils;
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Map;
 import java.util.Stack;
 import static core.EventHandling.Logging.Logger.log;
 import static core.EventHandling.Logging.Logger.logExit;
@@ -95,6 +98,10 @@ public class TextureLoader extends Thread {
                 }
             }
             log("Texture loader: load '" + texturesCount + "' textures");
+        }
+
+        for (Map.Entry<Character, Dimension> entry : Fonts.letterSize.entrySet()) {
+            TextureDrawing.bindTexture(entry.getValue().width, entry.getValue().height, Fonts.chars.get(entry.getKey()), String.valueOf(entry.getKey()));
         }
     }
 }

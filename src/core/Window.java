@@ -66,7 +66,9 @@ public class Window {
         glMatrixMode(GL_MODELVIEW);
 
         Fonts.generateFont(defPath + "\\src\\assets\\UI\\arial.ttf");
-        Video.drawVideo(defPath + "\\src\\assets\\World\\other\\kaif.mp4", 1, 30, 0, 0, 1920, 1080);
+        if (Config.getFromConfig("AnimatedBackground").equals("true")) {
+            Video.drawVideo(defPath + "\\src\\assets\\World\\other\\kaif.mp4", 1, 30, 0, 0, 1920, 1080);
+        }
 
         TextureLoader.preLoadTextures();
         Main.create();
