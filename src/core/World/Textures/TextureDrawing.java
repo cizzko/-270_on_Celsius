@@ -136,11 +136,11 @@ public class TextureDrawing {
 
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
+
             if (ch == ' ') {
-                // ширина 'A' (eng, caps) принята за ширину пробела, дабы можно было легко настраивать размеры текста
                 x += Fonts.letterSize.get('A').width;
                 continue;
-            } else if (ch == '\\' && text.charAt(i + 1) == 'n') { // если текст содерджит \\n - перенос на новую строку
+            } else if (ch == '\\' && text.charAt(i + 1) == 'n') {
                 y -= 30;
                 i++;
                 x = startX;
@@ -276,15 +276,44 @@ public class TextureDrawing {
 
     public static void drawPrompt(ButtonObject button) {
         if (showPrompts && new Rectangle(button.x, button.y, button.width, button.height).contains(getMousePos()) && mouseNotMoved && button.prompt != null) {
-            drawRectangleText(button.x, button.y, button.prompt);
+            drawRectangleText(button.x, button.y, 0, button.prompt, new Color(40, 40, 40, 240));
         }
     }
 
-    public static void drawRectangleText(int x, int y, String text) {
-        int height = (text.split("\\\\n").length) * 28 + 16;
+    public static void drawRectangleText(int x, int y, int maxWidth, String text, Color panColor) {
+        if (maxWidth != 0) {
+            StringBuilder modifiedText = new StringBuilder();
+            int currentWidth = 0;
+
+            for (int i = 0; i < text.length(); i++) {
+                char c = text.charAt(i);
+
+                if (c == ' ') {
+                    currentWidth += Fonts.letterSize.get('A').width;
+                } else {
+                    currentWidth += Fonts.letterSize.get(c).width;
+                }
+                if (currentWidth > maxWidth) {
+                    modifiedText.append("\\n");
+                    currentWidth = 0;
+                }
+                modifiedText.append(c);
+            }
+            text = modifiedText.toString();
+        }
+
+        Dimension textSize = getTextSize(text);
+        int width = textSize.width;
+        int height = textSize.height;
+
+        drawRectangle(x + 30, y - height / 2, width, height, panColor);
+        drawText(x + 36, y + height - 32 - height / 2, text);
+    }
+
+    private static Dimension getTextSize(String text) {
+        String longestLine = "";
         int width = 12;
 
-        String longestLine = "";
         for (String line : text.split("\\\\n")) {
             if (line.length() >= longestLine.replaceAll("\\s+", "").length()) {
                 longestLine = line;
@@ -300,9 +329,7 @@ public class TextureDrawing {
             }
             width += Fonts.letterSize.get(c).width;
         }
-
-        drawRectangle(x + 30, y - height / 2, width, height, new Color(40, 40, 40, 240));
-        drawText(x + 36, y + height - 32 - height / 2, text);
+        return new Dimension(width, (text.split("\\\\n").length) * 28 + 16);
     }
 
     public static void updateVideo() {
@@ -514,7 +541,7 @@ public class TextureDrawing {
 
         if (Commandline.created) {
             drawRectangle(20, 800, 650, 260, new Color(0, 0, 0, 220));
-            drawText(20, 800, EventHandler.keyLoggingText);
+            drawRectangleText(-10, 810 + getTextSize(EventHandler.keyLoggingText).width / 630 * 16, 630, EventHandler.keyLoggingText, new Color(0, 0, 0, 0));
         }
     }
 

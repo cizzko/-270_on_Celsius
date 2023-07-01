@@ -4,16 +4,13 @@ import com.sun.management.OperatingSystemMXBean;
 import core.AnonymousStatistics;
 import core.Window;
 import core.World.Weather.Sun;
-
 import java.awt.*;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.time.LocalDateTime;
 import java.util.Random;
-
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Window.*;
 import static org.lwjgl.glfw.GLFW.*;
