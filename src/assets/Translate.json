@@ -72,8 +72,8 @@
     "GenerateWorld": "Создати мир ",
     "GenerateSimpleWorld": "Спрощенна генерація",
     "GenerateSimpleWorldPrompt": "Генерація без рельефу",
-    "GenerateCreatures": "Генерация сущностей",
-    "GenerateCreaturesPrompt": "Генерация и просчет бабочек, птиц, и т.д. Может влиять на производительность",
+    "GenerateCreatures": "Генерація сутностей",
+    "GenerateCreaturesPrompt": "Генерація та прорахунок метеликів, птахів тощо. Може впливати на продуктивність",
 
     "SettingsExit": "Повернутися",
     "SettingsSave": "Сохранити",
