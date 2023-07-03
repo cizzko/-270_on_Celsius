@@ -2,7 +2,6 @@ package core;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
-import core.EventHandling.Logging.Json;
 import core.EventHandling.MouseScrollCallback;
 import core.UI.GUI.CreateElement;
 import core.UI.GUI.Fonts;
@@ -13,7 +12,6 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import java.awt.*;
 import java.nio.file.Paths;
-
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.EventHandling.Logging.Logger.log;
 import static core.World.Textures.TextureDrawing.*;
@@ -38,11 +36,7 @@ public class Window {
     public void init() {
         Logger.logStart();
 
-        if (Config.getFromConfig("VerticalSync").equals("true")) {
-            verticalSync = 1;
-        } else {
-            verticalSync = 0;
-        }
+        verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0;
 
         //инициализирует библиотеку
         glfwInit();
@@ -83,9 +77,6 @@ public class Window {
         int framesThisSecond = 0;
 
         while (!glfwWindowShouldClose(glfwWindow)) {
-            long currentTime = System.currentTimeMillis();
-            deltaTime = (int) (currentTime - lastFrameTime);
-            lastFrameTime = currentTime;
 
             updateVideo();
             if (start) {
@@ -97,10 +88,10 @@ public class Window {
             }
             updateGUI();
 
-            if (getFromConfig("Debug").equals("true") && currentTime - lastSecondTime >= 1000) {
+            if (getFromConfig("Debug").equals("true") && System.currentTimeMillis() - lastSecondTime >= 1000) {
                 CreateElement.createText(5, 1055, "FPS", "FPS: " + framesThisSecond, new Color(0, 0, 0, 255), null);
                 framesThisSecond = 0;
-                lastSecondTime = currentTime;
+                lastSecondTime = System.currentTimeMillis();
             }
 
             glfwSwapBuffers(glfwWindow);

@@ -1,24 +1,43 @@
 package core.World.Creatures;
 
 import core.EventHandling.EventHandler;
+import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
+import core.UI.GUI.CreateElement;
+import java.awt.*;
 import static core.Window.*;
 import static core.World.HitboxMap.*;
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Physics extends Thread {
-    public static int physicsSpeed = 1;
-    //min and default 1, max 4
+    public static int physicsSpeed = 400;
+    //default 400
 
     public void run() {
+        long updates = 0;
+        long lastSecond = System.currentTimeMillis();
+
+        long lastUpdateTime = System.nanoTime();
+        double targetFps = 1.0 / physicsSpeed * 1000000000;
+
         Logger.log("Thread: Physics started");
 
         while (!glfwWindowShouldClose(glfwWindow)) {
-            try { Thread.sleep(physicsSpeed); } catch (InterruptedException e) { throw new RuntimeException(e); }
-            updateDrop();
-            updateMove();
-            updateJump();
+            if (System.nanoTime() - lastUpdateTime >= targetFps) {
+                if (Config.getFromConfig("Debug").equals("true") && System.currentTimeMillis() - lastSecond >= 1000) {
+                    CreateElement.createText(5, 1020, "PhysicsUpdate", "Physics FPS: " + updates, new Color(0, 0, 0, 255), null);
+                    lastSecond = System.currentTimeMillis();
+                    updates = 0;
+                }
+
+                updateDrop();
+                updateMove();
+                updateJump();
+
+                updates++;
+                lastUpdateTime = System.nanoTime();
+            }
         }
     }
 
@@ -29,7 +48,7 @@ public class Physics extends Thread {
 
     public static void updateJump() {
         if (EventHandler.getKey(GLFW_KEY_SPACE)) {
-            DynamicObjects[0].jump(52, 900);
+            DynamicObjects[0].jump(52, 600);
         }
     }
 

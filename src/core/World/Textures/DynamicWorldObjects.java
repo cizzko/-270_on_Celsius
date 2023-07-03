@@ -35,7 +35,7 @@ public class DynamicWorldObjects implements Serializable {
 
                 float y0 = y;
                 float yMax = y0 + maxHeight; //высота прыжка
-                double g = gravitation - (physicsSpeed * 200); //гравитация
+                double g = gravitation + (physicsSpeed / 2f); //гравитация
                 double timeToMax = Math.sqrt((2 * (yMax - y0)) / g);
                 double totalTime = 2 * timeToMax;
                 LocalDateTime startTime = LocalDateTime.now();

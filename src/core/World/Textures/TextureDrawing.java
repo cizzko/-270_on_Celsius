@@ -54,7 +54,6 @@ public class TextureDrawing {
 
         glPushMatrix();
         glEnable(GL_TEXTURE_2D);
-
         glEnable(GL_BLEND);
         glLoadIdentity();
 
@@ -108,7 +107,6 @@ public class TextureDrawing {
 
         glPushMatrix();
         glEnable(GL_TEXTURE_2D);
-
         glEnable(GL_BLEND);
         glLoadIdentity();
 
