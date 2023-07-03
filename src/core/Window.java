@@ -13,6 +13,8 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
 import java.awt.*;
 import java.nio.file.Paths;
+
+import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.EventHandling.Logging.Logger.log;
 import static core.World.Textures.TextureDrawing.*;
 import static core.World.Weather.Sun.updateSun;
@@ -35,7 +37,6 @@ public class Window {
 
     public void init() {
         Logger.logStart();
-        Json.getAllLanguages();
 
         if (Config.getFromConfig("VerticalSync").equals("true")) {
             verticalSync = 1;
@@ -96,7 +97,7 @@ public class Window {
             }
             updateGUI();
 
-            if (Logger.debug && currentTime - lastSecondTime >= 1000) {
+            if (getFromConfig("Debug").equals("true") && currentTime - lastSecondTime >= 1000) {
                 CreateElement.createText(5, 1055, "FPS", "FPS: " + framesThisSecond, new Color(0, 0, 0, 255), null);
                 framesThisSecond = 0;
                 lastSecondTime = currentTime;

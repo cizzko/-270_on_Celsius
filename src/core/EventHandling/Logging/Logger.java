@@ -17,10 +17,10 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class Logger {
     private static final long sessionId = (long) (new Random().nextDouble() * Long.MAX_VALUE);
-    public static boolean cleanup = false, debug = Boolean.parseBoolean(getFromConfig("Debug"));
+    public static boolean cleanup = false;
 
     public static void log(String message, boolean forcibly) {
-        if (debug || forcibly) {
+        if (getFromConfig("Debug").equals("true") || forcibly) {
             System.out.println(message);
 
             if (!cleanup) {
@@ -80,13 +80,15 @@ public class Logger {
     }
 
     public static void logStart() {
+        String langs = Json.getAllLanguages();
         String computerInfo = String.format(" | Разрешение экрана: %d x %d | Процессор: %s | Количество потоков: %s | Количество ОЗУ: %d MB", Toolkit.getDefaultToolkit().getScreenSize().width, Toolkit.getDefaultToolkit().getScreenSize().height, System.getenv("PROCESSOR_IDENTIFIER"), Runtime.getRuntime().availableProcessors(), ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getTotalMemorySize() / (1024 * 1024));
         String system = System.getProperty("os.name").toLowerCase();
 
+        Json.detectLanguage();
         AnonymousStatistics.sendStateMessageThread("Session '" + sessionId + "' started, time: '" + LocalDateTime.now() + "', system info: " + system + computerInfo);
 
         log(!system.contains("windows 10") ? "Warning: " + System.getProperty("os.name") + " not supported!\n" : "" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\n");
         log("Start time: " + LocalDateTime.now() + "\nPreload textures: " + getFromConfig("PreLoadTextures"));
-        log("Vertical sync: " + Config.getFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\n\nCurrent language: " + getFromConfig("Language"));
+        log("Vertical sync: " + Config.getFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\n\nCurrent language: " + getFromConfig("Language") + "\nAvailable languages: " + langs.replace(" ", ", ") + "\n");
     }
 }

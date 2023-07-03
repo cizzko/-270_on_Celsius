@@ -18,7 +18,7 @@ public class WorldGenerator {
     public static DynamicWorldObjects[] DynamicObjects;
 
     public static void generateWorld(int SizeX, int SizeY, boolean simple) {
-        log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world at size: x - " + SizeX + ", y - " + SizeY + "; with arguments 'simple: " + simple + "' ");
+        log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world at size: x - " + SizeX + ", y - " + SizeY + " (" + SizeX * SizeY + "); with arguments 'simple: " + simple + "' ");
 
         StaticObjects = new StaticWorldObjects[SizeX + 1][SizeY + 1];
         WorldGenerator.SizeX = SizeX;
@@ -54,7 +54,7 @@ public class WorldGenerator {
 
         for (int x = 0; x < SizeX; x++) {
             for (int y = 0; y < SizeY; y++) {
-                if (y > SizeY / 2) {
+                if (y > SizeY / 1.5f) {
                     StaticObjects[x][y] = new StaticWorldObjects(null, null, x * 16, y * 16);
                     StaticObjects[x][y].gas = true;
                 } else {
@@ -73,12 +73,12 @@ public class WorldGenerator {
         float randGrass = 1.4f;         //шанс появления неровности, выше число - ниже шанс
         float randAir = 7f;             //шанс появления воздуха вместо блока, выше число - ниже шанс
         float iterations = 2f;          //количество итераций генерации
-        float mountainHeight = 400000f; //шанс появления высоких гор, выше число - выше шанс
+        float mountainHeight = 12000f;  //шанс появления высоких гор, выше число - выше шанс
 
-        for (int i = 0; i != iterations; i++) {
+        for (int i = 0; i < iterations; i++) {
             for (int x = 1; x < SizeX - 1; x++) {
                 for (int y = SizeY / 3; y < SizeY - 1; y++) {
-                    randGrass += y / mountainHeight;
+                    randGrass += y / (mountainHeight * SizeY);
 
                     if ((StaticObjects[x + 1][y].solid || StaticObjects[x - 1][y].solid || StaticObjects[x][y + 1].solid || StaticObjects[x][y - 1].solid) && Math.random() * randGrass < 1) {
                         StaticObjects[x][y] = new StaticWorldObjects(null, defPath + "\\src\\assets\\World\\blocks\\grass1.png", x * 16, y * 16);

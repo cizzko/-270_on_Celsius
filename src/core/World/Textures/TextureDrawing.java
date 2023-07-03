@@ -28,7 +28,6 @@ import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
     private static float playerX, playerY;
-    private static final boolean showPrompts = Boolean.parseBoolean(getFromConfig("ShowPrompts"));
     private static final HashMap<Integer, TextureData> textures = new HashMap<>();
     public static StaticWorldObjects[][] StaticObjects;
     public static DynamicWorldObjects[] DynamicObjects;
@@ -285,7 +284,7 @@ public class TextureDrawing {
     }
 
     public static void drawPrompt(ButtonObject button) {
-        if (showPrompts && new Rectangle(button.x, button.y, button.width, button.height).contains(getMousePos()) && mouseNotMoved && button.prompt != null) {
+        if (getFromConfig("ShowPrompts").equals("true") && new Rectangle(button.x, button.y, button.width, button.height).contains(getMousePos()) && mouseNotMoved && button.prompt != null) {
             drawRectangleText(button.x, button.y, 0, button.prompt, false, new Color(40, 40, 40, 240));
         }
     }

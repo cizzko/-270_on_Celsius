@@ -4,11 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import java.io.FileReader;
 import java.util.HashMap;
+import java.util.Locale;
+import static core.EventHandling.Logging.Logger.log;
 import static core.Window.defPath;
 
 public class Json {
     private static final HashMap<String, String> words = new HashMap<>();
-    public static String lang = Config.getFromConfig("Language");
+    public static String lang;
     public static String allLanguages;
 
     public static String getName(String key) {
@@ -19,7 +21,7 @@ public class Json {
                 words.put(key, jsonObject.getAsJsonObject(lang).get(key).getAsString());
 
             } catch (Exception e) {
-                Logger.log("Key '" + key + "' at language '" + lang + "' not found, see file at " + defPath + "\\src\\assets\\Translate.json");
+                log("Key '" + key + "' at language '" + lang + "' not found, see file at " + defPath + "\\src\\assets\\Translate.json");
                 return key;
             }
         }
@@ -34,12 +36,24 @@ public class Json {
 
                 String[] availableLanguages = jsonObject.keySet().stream().filter(key -> !key.equalsIgnoreCase("Languages")).toArray(String[]::new);
                 allLanguages = String.join(" ", availableLanguages);
-
-                Logger.log("Available languages: " + String.join(", ", availableLanguages) + "\n");
             } catch (Exception e) {
-                Logger.log("Error while reading languages from JSON file: " + e);
+                log("Error while reading languages from JSON file: " + e);
             }
         }
         return allLanguages;
+    }
+
+    public static void detectLanguage() {
+        try {
+            if (Config.getFromConfig("DetectLanguage").equals("true") && allLanguages.contains(lang = Locale.getDefault().getLanguage())) {
+                Config.updateConfig("Language", Locale.getDefault().getLanguage());
+                lang = Locale.getDefault().getLanguage();
+            } else {
+                lang = Config.getFromConfig("Language");
+            }
+        } catch (Exception e) {
+            Config.updateConfig("DetectLanguage", "false");
+            log("Some error at detecting language '" + e + "', path: '" + defPath + "\\src\\assets\\Translate.json" + "', auto - detect deactivated, language set to " + Config.getFromConfig("Language"));
+        }
     }
 }

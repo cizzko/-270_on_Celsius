@@ -11,7 +11,6 @@ public class Sun {
     public static float currentTime = (float) (Math.random() * 2400), x, y = -800 * (1 -  (currentTime - 2400) / (1 - 2400)) + 1500 * (currentTime - 2400) / (1 - 2400) + (SizeY / 2f * 16 - 700);
     public static boolean visible = false;
     private static final int startSunset = 800, endSunset = 1600;
-    private static int aGradient = 0;
     private static long lastTime = System.currentTimeMillis();
 
     public static void createSun() {
@@ -55,7 +54,7 @@ public class Sun {
         } else if (currentTime > endSunset) {
             alpha = Lerp(1, 0, (currentTime - endSunset) / (endSunset - startSunset));
         }
-        aGradient = (int) (255 * alpha);
+        int aGradient = (int) (255 * alpha);
         aGradient = Math.max(0, Math.min(255, aGradient));
 
         drawTexture(defPath + "\\src\\assets\\World\\other\\" + (getFromConfig("InterpolateSunset").equals("true") ? "" : "non") + "InterpolatedSunset.png", 0, 0, 1, new Color(aGradient, 0, 20, aGradient), true);
