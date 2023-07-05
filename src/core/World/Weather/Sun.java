@@ -21,7 +21,7 @@ public class Sun {
 
     public static void updateSun() {
         if (visible) {
-            if (System.currentTimeMillis() - lastTime >= 50) {
+            if (System.currentTimeMillis() - lastTime >= 750) {
                 lastTime = System.currentTimeMillis();
                 currentTime++;
 

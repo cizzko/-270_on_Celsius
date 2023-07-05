@@ -134,6 +134,10 @@ public class TextureDrawing {
         glPopMatrix();
     }
 
+    public static void drawCursor() {
+        drawTexture(defPath + "\\src\\assets\\World\\other\\cursorDefault.png", EventHandler.getMousePos().x, getMousePos().y - 24, 1, true);
+    }
+
     public static void drawText(int x, int y, String text, Color color) {
         int startX = x;
 

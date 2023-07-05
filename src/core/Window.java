@@ -44,6 +44,7 @@ public class Window {
         GLFWErrorCallback.createPrint(System.err).set();
 
         glfwWindow = glfwCreateWindow(width, height, title, glfwGetPrimaryMonitor(), NULL);
+        glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         glfwMakeContextCurrent(glfwWindow);
@@ -87,6 +88,7 @@ public class Window {
                 drawTexture(defPath + "\\src\\assets\\World\\other\\background.png", 0, 0, 1, true);
             }
             updateGUI();
+            drawCursor();
 
             if (getFromConfig("Debug").equals("true") && System.currentTimeMillis() - lastSecondTime >= 1000) {
                 CreateElement.createText(5, 1055, "FPS", "FPS: " + framesThisSecond, new Color(0, 0, 0, 255), null);
