@@ -23,10 +23,10 @@ import static org.lwjgl.opengl.GL13.*;
 public class Window {
     public static String defPath = Paths.get("").toAbsolutePath().toString();
 
-    public static int width = 1920, height = 1080, deltaTime, verticalSync;
+    public static int width = 1920, height = 1080, verticalSync;
     public static final String title = "-270 on Celsius", version = "dev 0.0.0.7";
     public static boolean start = false;
-    public static long glfwWindow, lastFrameTime = System.currentTimeMillis();
+    public static long glfwWindow;
 
     public void run() {
         init();

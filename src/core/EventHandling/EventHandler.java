@@ -1,11 +1,9 @@
 package core.EventHandling;
 
+import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
 import core.EventHandling.Logging.Logger;
-import core.UI.GUI.Menu.CreatePlanet;
-import core.UI.GUI.Menu.Main;
-import core.UI.GUI.Menu.Pause;
-import core.UI.GUI.Menu.Settings;
+import core.UI.GUI.Menu.*;
 import core.UI.GUI.Video;
 import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.SliderObject;
@@ -55,8 +53,8 @@ public class EventHandler extends Thread {
     }
 
     public static Point getMousePos() {
-        double mouseX = MouseInfo.getPointerInfo().getLocation().getX();
-        double mouseY = MouseInfo.getPointerInfo().getLocation().getY();
+        double mouseX = MouseInfo.getPointerInfo().getLocation().getX() * MouseCalibration.xMultiplier;
+        double mouseY = MouseInfo.getPointerInfo().getLocation().getY() / MouseCalibration.yMultiplier;
         int invertedY = Window.height - (int) mouseY;
 
         return new Point((int) mouseX, invertedY);

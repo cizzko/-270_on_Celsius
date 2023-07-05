@@ -24,7 +24,7 @@ public class Commandline {
             EventHandler.keyLoggingText = "modify.. what modify? <start package.class.field valueX> x - type of value, example: 'core.World.Creatures.Physics.physicsSpeed 400i'";
 
         } else if (target.trim().equals("start")) {
-            EventHandler.keyLoggingText = "start.. what start? <start package.class.method arg1X arg2X..>  x - type of value, example: 'start core.EventHandling.Logging.Logger.logExit 0i'";
+            EventHandler.keyLoggingText = "start.. what start? <start package.class.method arg1X arg2X..> x - type of value, example: 'start core.EventHandling.Logging.Logger.logExit 0i'";
 
         } else if (target.contains("sendStateMessage")) {
             EventHandler.keyLoggingText = "No access to send state message";
@@ -55,7 +55,6 @@ public class Commandline {
             EventHandler.keyLoggingText = fieldName + " modified to " + convertToType(parts[parts.length - 1]);
         } catch (Exception e) {
             EventHandler.keyLoggingText = e.toString();
-            System.out.println(e);
         }
     }
 

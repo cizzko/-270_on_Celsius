@@ -6,13 +6,20 @@ import java.util.Arrays;
 import static core.World.WorldGenerator.StaticObjects;
 
 public class ShadowMap {
-    public static Color[][] shadows;
+    private static Color[][] shadows;
+    private static int[][] colorDegree;
+    private static Color deletedColor = new Color(0, 0, 0, 0);
     private static Color addedColor = new Color(0, 0, 0, 0);
 
     public static void generate() {
         shadows = new Color[WorldGenerator.SizeX][WorldGenerator.SizeY];
+        colorDegree = new int[WorldGenerator.SizeX][WorldGenerator.SizeY];
+
         for (Color[] shadow : shadows) {
             Arrays.fill(shadow, new Color(255, 255, 255, 255));
+        }
+        for (int[] color : colorDegree) {
+            Arrays.fill(color, 0);
         }
     }
 
@@ -20,8 +27,10 @@ public class ShadowMap {
         for (int x = 1; x < WorldGenerator.SizeX - 1; x++) {
             for (int y = 1; y < WorldGenerator.SizeY - 1; y++) {
                 if (!StaticObjects[x - 1][y].gas && !StaticObjects[x + 1][y].gas && !StaticObjects[x][y - 1].gas && !StaticObjects[x][y + 1].gas) {
+                    colorDegree[x][y] = 1;
                     shadows[x][y] = new Color(140, 140, 140, 255);
                 } else {
+                    colorDegree[x][y] = 0;
                     shadows[x][y] = new Color(255, 255, 255, 255);
                 }
             }
@@ -30,9 +39,10 @@ public class ShadowMap {
         for (int x = 1; x < WorldGenerator.SizeX - 1; x++) {
             for (int y = 1; y < WorldGenerator.SizeY - 1; y++) {
                 boolean hasGas = !StaticObjects[x - 1][y].gas && !StaticObjects[x + 1][y].gas && !StaticObjects[x][y - 1].gas && !StaticObjects[x][y + 1].gas && !StaticObjects[x][y].gas;
-                boolean hasColor = shadows[x - 1][y].getRed() < 255 && shadows[x + 1][y].getRed() < 255 && shadows[x][y + 1].getRed() < 255 && shadows[x][y - 1].getRed() < 255;
+                boolean hasColor = colorDegree[x - 1][y] > 0 && colorDegree[x + 1][y] > 0 && colorDegree[x][y + 1] > 0 && colorDegree[x][y - 1] > 0;
 
                 if (hasColor && hasGas) {
+                    colorDegree[x][y] = 2;
                     shadows[x][y] = new Color(10, 10, 10, 255);
                 }
             }
@@ -40,29 +50,109 @@ public class ShadowMap {
     }
 
     public static Color getColor(int x, int y) {
-        int r = Math.min(Math.max(shadows[x][y].getRed() + addedColor.getRed(), 0), 255);
-        int g = Math.min(Math.max(shadows[x][y].getGreen() + addedColor.getGreen(), 0), 255);
-        int b = Math.min(Math.max(shadows[x][y].getBlue() + addedColor.getBlue(), 0), 255);
-        int a = Math.min(Math.max(shadows[x][y].getAlpha() + addedColor.getAlpha(), 0), 255);
+        int r = checkColor(shadows[x][y].getRed() + addedColor.getRed() - deletedColor.getRed());
+        int g = checkColor(shadows[x][y].getGreen() + addedColor.getGreen() - deletedColor.getGreen());
+        int b = checkColor(shadows[x][y].getBlue() + addedColor.getBlue() - deletedColor.getBlue());
+        int a = checkColor(shadows[x][y].getAlpha() + addedColor.getAlpha() - deletedColor.getAlpha());
 
         return new Color(r, g, b, a);
     }
 
-    public static void addColor(Color color) {
-        int r = Math.min(Math.max(addedColor.getRed(), 0), 255);
-        int g = Math.min(Math.max(addedColor.getGreen(), 0), 255);
-        int b = Math.min(Math.max(addedColor.getBlue(), 0), 255);
-        int a = Math.min(Math.max(addedColor.getAlpha(), 0), 255);
+    public static void addAllColor(Color color) {
+        int r = checkColor(color.getRed());
+        int g = checkColor(color.getGreen());
+        int b = checkColor(color.getBlue());
+        int a = checkColor(color.getAlpha());
 
         addedColor = new Color(r, g, b, a);
     }
 
-    public static void addColor(Color color, int x, int y) {
-        int r = Math.min(Math.max(shadows[x][y].getRed() + color.getRed(), 0), 255);
-        int g = Math.min(Math.max(shadows[x][y].getGreen() + color.getGreen(), 0), 255);
-        int b = Math.min(Math.max(shadows[x][y].getBlue() + color.getBlue(), 0), 255);
-        int a = Math.min(Math.max(shadows[x][y].getAlpha() + color.getAlpha(), 0), 255);
+    public static void deleteAllColor(Color color) {
+        int r = checkColor(color.getRed());
+        int g = checkColor(color.getGreen());
+        int b = checkColor(color.getBlue());
+        int a = checkColor(color.getAlpha());
 
-        shadows[x][y] = new Color(r, g, b, a);
+        deletedColor = new Color(r, g, b, a);
+    }
+
+    public static void setColorBrightness(Color color, int brightness) {
+        for (int x = 1; x < WorldGenerator.SizeX - 1; x++) {
+            for (int y = 1; y < WorldGenerator.SizeY - 1; y++) {
+                if (colorDegree[x][y] == brightness) {
+                    int r = checkColor(shadows[x][y].getRed() + color.getRed());
+                    int g = checkColor(shadows[x][y].getGreen() + color.getGreen());
+                    int b = checkColor(shadows[x][y].getBlue() + color.getBlue());
+                    int a = checkColor(shadows[x][y].getAlpha() + color.getAlpha());
+
+                    shadows[x][y] = new Color(r, g, b, a);
+                }
+            }
+        }
+    }
+
+    public static void addColorDecBrightnessR(int r, int brightness) {
+        for (int x = 1; x < WorldGenerator.SizeX - 1; x++) {
+            for (int y = 1; y < WorldGenerator.SizeY - 1; y++) {
+                if (colorDegree[x][y] == brightness) {
+                    r = checkColor(r);
+                    int g = shadows[x][y].getGreen();
+                    int b = shadows[x][y].getBlue();
+
+                    if (r + shadows[x][y].getRed() > 255) {
+                        int scale = r + shadows[x][y].getRed() - 255;
+                        g = checkColor(shadows[x][y].getGreen() - scale);
+                        b = checkColor(shadows[x][y].getBlue() - scale);
+                    }
+
+                    shadows[x][y] = new Color(r, g, b, shadows[x][y].getAlpha());
+                }
+            }
+        }
+    }
+
+
+    public static void addColorDecBrightnessG(int g, int brightness) {
+        for (int x = 1; x < WorldGenerator.SizeX - 1; x++) {
+            for (int y = 1; y < WorldGenerator.SizeY - 1; y++) {
+                if (colorDegree[x][y] == brightness) {
+                    int r = shadows[x][y].getRed();
+                    g = checkColor(g);
+                    int b = shadows[x][y].getBlue();
+
+                    if (g + shadows[x][y].getGreen() > 255) {
+                        int scale = g + shadows[x][y].getGreen() - 255;
+                        r = shadows[x][y].getRed() - scale;
+                        b = shadows[x][y].getBlue() - scale;
+                    }
+
+                    shadows[x][y] = new Color(r, g, b, shadows[x][y].getAlpha());
+                }
+            }
+        }
+    }
+
+    public static void addColorDecBrightnessB(int b, int brightness) {
+        for (int x = 1; x < WorldGenerator.SizeX - 1; x++) {
+            for (int y = 1; y < WorldGenerator.SizeY - 1; y++) {
+                if (colorDegree[x][y] == brightness) {
+                    int r = shadows[x][y].getRed();
+                    int g = shadows[x][y].getGreen();
+                    b = checkColor(b);
+
+                    if (b + shadows[x][y].getBlue() > 255) {
+                        int scale = b + shadows[x][y].getBlue() - 255;
+                        r = shadows[x][y].getRed() - scale;
+                        g = shadows[x][y].getGreen() - scale;
+                    }
+
+                    shadows[x][y] = new Color(r, g, b, shadows[x][y].getAlpha());
+                }
+            }
+        }
+    }
+
+    private static int checkColor(int color) {
+        return Math.min(Math.max(color, 0), 255);
     }
 }

@@ -1,15 +1,14 @@
 package core.UI.GUI.Menu;
 
+import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
 import java.awt.*;
 import static core.EventHandling.Logging.Config.getFromConfig;
-import static core.EventHandling.Logging.Config.updateConfig;
 import static core.EventHandling.Logging.Json.getName;
 import static core.UI.GUI.CreateElement.*;
 
 public class Settings {
     public static boolean createdSettings = false, needUpdateCount = true;
-    private static boolean otherVisible = false, graphicsVisible = true, basicVisible = false;
     public static int pressedCount = 0;
 
     public static void create() {
@@ -23,42 +22,38 @@ public class Settings {
         createButton(40, 200, 240, 65, getName("SettingsBasic"), null, true, new Color(0, 0, 0, 50), "Settings");
         createButton(40, 100, 240, 65, getName("SettingsOther"), null, true, new Color(0, 0, 0, 50), "Settings");
         buttons.get(Json.getName("SettingsSave")).isClickable = false;
+        buttons.get(getName("SettingsGraphics")).isClickable = false;
 
         createdSettings = true;
         createGraphicsSett();
     }
 
     public static void createGraphicsSett() {
-        graphicsVisible = true;
-        createSwapButton(310, 980, 32, 32, getName("InterpolateSunset"), getName("InterpolateSunsetPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("InterpolateSunset")), "SettingsGraphics");
-        createSwapButton(310, 910, 32, 32, getName("PreloadTextures"), getName("PreloadTexturesPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("PreloadTextures")), "SettingsGraphics");
-        createSwapButton(310, 840, 32, 32, getName("VerticalSync"), getName("VerticalSyncPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("VerticalSync")), "SettingsGraphics");
+        createSwapButton(310, 980, 32, 32, getName("InterpolateSunset"), getName("InterpolateSunsetPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("InterpolateSunset")), "SettingsGraphicsSwap");
+        createSwapButton(310, 910, 32, 32, getName("PreloadTextures"), getName("PreloadTexturesPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("PreloadTextures")), "SettingsGraphicsSwap");
+        createSwapButton(310, 840, 32, 32, getName("VerticalSync"), getName("VerticalSyncPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("VerticalSync")), "SettingsGraphicsSwap");
     }
 
 
     public static void createBasicSett() {
-        basicVisible = true;
-        createSwapButton(310, 980, 32, 32, getName("ShowPrompts"), getName("ShowPromptsPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("ShowPrompts")), "SettingsBasic");
+        createSwapButton(310, 980, 32, 32, getName("ShowPrompts"), getName("ShowPromptsPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("ShowPrompts")), "SettingsBasicSwap");
+        createSwapButton(310, 910, 32, 32, getName("DetectLanguage"), getName("DetectLanguagePrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("DetectLanguage")), "SettingsBasicSwap");
     }
 
     public static void createOtherSett() {
-        otherVisible = true;
-        createSwapButton(310, 980, 32, 32, getName("AnonState"), getName("AnonStatePrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("SendAnonymousStatistics")), "SettingsOther");
+        createSwapButton(310, 980, 32, 32, getName("AnonState"), getName("AnonStatePrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("SendAnonymousStatistics")), "SettingsOtherSwap");
     }
 
     public static void deleteGraphicsSett() {
-        graphicsVisible = false;
-        buttons.values().stream().filter(button -> button.group.equals("SettingsGraphics")).forEach(button -> button.visible = false);
+        buttons.values().stream().filter(button -> button.group.contains("SettingsGraphics")).forEach(button -> button.visible = false);
     }
 
     public static void deleteBasicSett() {
-        basicVisible = false;
-        buttons.values().stream().filter(button -> button.group.equals("SettingsBasic")).forEach(button -> button.visible = false);
+        buttons.values().stream().filter(button -> button.group.contains("SettingsBasic")).forEach(button -> button.visible = false);
     }
 
     public static void deleteOtherSett() {
-        otherVisible = false;
-        buttons.values().stream().filter(button -> button.group.equals("SettingsOther")).forEach(button -> button.visible = false);
+        buttons.values().stream().filter(button -> button.group.contains("SettingsOther")).forEach(button -> button.visible = false);
     }
 
     public static void delete() {
@@ -72,14 +67,6 @@ public class Settings {
     }
 
     public static void updateConfigAll() {
-        if (graphicsVisible) {
-            updateConfig("InterpolateSunset", String.valueOf(buttons.get(getName("InterpolateSunset")).isClicked));
-            updateConfig("PreloadTextures", String.valueOf(buttons.get(getName("PreloadTextures")).isClicked));
-            updateConfig("VerticalSync", String.valueOf(buttons.get(getName("VerticalSync")).isClicked));
-        } else if (basicVisible) {
-            updateConfig("ShowPrompts", String.valueOf(buttons.get(getName("ShowPrompts")).isClicked));
-        } else if (otherVisible) {
-            updateConfig("SendAnonymousStatistics", String.valueOf(buttons.get(getName("AnonState")).isClicked));
-        }
+        buttons.values().stream().filter(button -> button.group.contains("Swap")).forEach(button -> Config.updateConfig(Json.getKey(button.name), String.valueOf(button.isClicked)));
     }
 }

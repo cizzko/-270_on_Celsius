@@ -10,6 +10,7 @@ import static core.Window.defPath;
 
 public class Json {
     private static final HashMap<String, String> words = new HashMap<>();
+    private static final HashMap<String, String> keys = new HashMap<>();
     public static String lang;
     public static String allLanguages;
 
@@ -19,6 +20,7 @@ public class Json {
                 Gson gson = new Gson();
                 JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
                 words.put(key, jsonObject.getAsJsonObject(lang).get(key).getAsString());
+                keys.put(jsonObject.getAsJsonObject(lang).get(key).getAsString(), key);
 
             } catch (Exception e) {
                 log("Key '" + key + "' at language '" + lang + "' not found, see file at " + defPath + "\\src\\assets\\Translate.json");
@@ -26,6 +28,10 @@ public class Json {
             }
         }
         return words.get(key);
+    }
+
+    public static String getKey(String value) {
+        return keys.get(value);
     }
 
     public static String getAllLanguages() {

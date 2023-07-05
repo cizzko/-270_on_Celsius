@@ -65,22 +65,18 @@ public class TextureDrawing {
 
         glMultMatrixf(new float[]{zoom, 0, 0, 0, 0, zoom, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
 
-        // нижний левый угол
         glBegin(GL_QUADS);
         glTexCoord2f(0, 1);
         glVertex2f(x, y);
-        // нижний правый угол
+
         glTexCoord2f(1, 1);
         glVertex2f(x + width, y);
-        // верхний правый угол
+
         glTexCoord2f(1, 0);
         glVertex2f(x + width, y + height);
-        // верхний левый угол
+
         glTexCoord2f(0, 0);
         glVertex2f(x, y + height);
-
-        //glVertex2i Задает вершины
-        //glTexCoord2i Задает текущие координаты текстуры
 
         glEnd();
         glDisable(GL_TEXTURE_2D);
@@ -144,6 +140,9 @@ public class TextureDrawing {
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
 
+            if (Fonts.letterSize.get(ch).width == 0 || Fonts.letterSize.get(ch).height == 0) {
+                ch = '?';
+            }
             if (ch == ' ') {
                 x += Fonts.letterSize.get('A').width;
                 continue;

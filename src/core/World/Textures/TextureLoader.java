@@ -78,7 +78,7 @@ public class TextureLoader extends Thread {
     public static void preLoadTextures() {
         int texturesCount = 0;
 
-        if (Config.getFromConfig("PreLoadTextures").equals("true")) {
+        if (Config.getFromConfig("PreloadTextures").equals("true")) {
             Stack<File> stack = new Stack<>();
             stack.push(new File(defPath + "\\src\\assets"));
 

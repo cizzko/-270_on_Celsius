@@ -1,5 +1,7 @@
 package core.World.Weather;
 
+import core.World.Textures.ShadowMap;
+
 import java.awt.*;
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Window.*;
@@ -10,7 +12,7 @@ import static core.World.WorldGenerator.DynamicObjects;
 public class Sun {
     public static float currentTime = (float) (Math.random() * 2400), x, y = -800 * (1 -  (currentTime - 2400) / (1 - 2400)) + 1500 * (currentTime - 2400) / (1 - 2400) + (SizeY / 2f * 16 - 700);
     public static boolean visible = false;
-    private static final int startSunset = 800, endSunset = 1600;
+    private static final int startSunset = 800, endSunset = 1600, startDay = 2150, endDay = 1900;
     private static long lastTime = System.currentTimeMillis();
 
     public static void createSun() {
@@ -19,7 +21,7 @@ public class Sun {
 
     public static void updateSun() {
         if (visible) {
-            if (System.currentTimeMillis() - lastTime >= 750) {
+            if (System.currentTimeMillis() - lastTime >= 50) {
                 lastTime = System.currentTimeMillis();
                 currentTime++;
 
@@ -58,6 +60,20 @@ public class Sun {
         aGradient = Math.max(0, Math.min(255, aGradient));
 
         drawTexture(defPath + "\\src\\assets\\World\\other\\" + (getFromConfig("InterpolateSunset").equals("true") ? "" : "non") + "InterpolatedSunset.png", 0, 0, 1, new Color(aGradient, 0, 20, aGradient), true);
+    }
+
+    private static void updateNightBackground() {
+        double alpha = 0;
+
+        if (currentTime >= endDay && currentTime <= startDay) {
+            alpha = Lerp(0, 1, (currentTime - endDay) / (startDay - endDay));
+        } else if (currentTime > startDay) {
+            alpha = Lerp(1, 0, (currentTime - startDay) / (startDay - endDay));
+        }
+        int aGradient = (int) (255 * alpha);
+        aGradient = Math.max(0, Math.min(255, aGradient));
+
+        ShadowMap.deleteAllColor(new Color(aGradient, aGradient, aGradient, 0));
     }
 
     private static double Lerp(double a, double b, double t) {

@@ -23,6 +23,10 @@
     "VerticalSyncPrompt": "Synchronizes FPS with screen refresh rate, helps eliminate visual tearing image",
 
     "SettingsBasic": "Basic",
+    "CalibrateMouseText": "Calibrate the mouse. Use wasd or the arrows to move it \\nuntil the lower left corner of the red square is exactly under the cursor",
+    "CalibrateMouseContinue": "Finish",
+    "DetectLanguage": "Detecting language",
+    "DetectLanguagePrompt": "Automatic language detection based on system language",
     "ShowPrompts": "Show prompts",
     "ShowPromptsPrompt": "Show prompts (if any) when hovering over buttons",
 
@@ -55,6 +59,10 @@
     "VerticalSyncPrompt": "Синхронизирует фпс с частотой обновления экрана, позволяет устранить визуальные разрывы изображения",
 
     "SettingsBasic": "Основное",
+    "CalibrateMouseText": "Калибровка положения мыши. Используйте wasd или стрелочки для передвижения,\\nпока нижний левый угол красного квадратика не окажется ровно под курсором",
+    "CalibrateMouseContinue": "Завершить",
+    "DetectLanguage": "Автоопределение языка",
+    "DetectLanguagePrompt": "Автоматическое определение языка на основе языка системы",
     "ShowPrompts": "Всплывающие подсказки",
     "ShowPromptsPrompt": "Показывать всплывающие подсказки (если есть) при наведении на кнопки",
 
@@ -87,6 +95,8 @@
     "VerticalSyncPrompt": "Синхронізує фпс із частотою оновлення екрана, дозволяє уникнути візуальних розрививів зображення",
 
     "SettingsBasic": "Основне",
+    "CalibrateMouseText": "Калибровка положения мыши. Используйте wasd или стрелочки для передвижения,\\nпока нижний левый угол красного квадратика не окажется ровно под курсором",
+    "CalibrateMouseContinue": "Завершить",
     "ShowPrompts": "Вспливаючі підказки",
     "ShowPromptsPrompt": "Показувати вспливаючі підказки (якщо є) при наведенні на кнопки",
 
