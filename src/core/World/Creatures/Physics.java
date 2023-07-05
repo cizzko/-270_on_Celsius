@@ -4,6 +4,9 @@ import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.CreateElement;
+import core.UI.GUI.Menu.Pause;
+import core.UI.GUI.Menu.Settings;
+
 import java.awt.*;
 import static core.Window.*;
 import static core.World.HitboxMap.*;
@@ -12,18 +15,20 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class Physics extends Thread {
     public static int physicsSpeed = 400;
+    private static boolean stop = false;
+    private static int lastSpeed = 400;
     //default 400
 
     public void run() {
-        long updates = 0;
-        long lastSecond = System.currentTimeMillis();
-
-        long lastUpdateTime = System.nanoTime();
-        double targetFps = 1.0 / physicsSpeed * 1000000000;
-
         Logger.log("Thread: Physics started");
 
+        long updates = 0;
+        long lastSecond = System.currentTimeMillis();
+        long lastUpdateTime = System.nanoTime();
+
         while (!glfwWindowShouldClose(glfwWindow)) {
+            double targetFps = 1.0 / physicsSpeed * 1000000000;
+
             if (System.nanoTime() - lastUpdateTime >= targetFps) {
                 if (Config.getFromConfig("Debug").equals("true") && System.currentTimeMillis() - lastSecond >= 1000) {
                     CreateElement.createText(5, 1020, "PhysicsUpdate", "Physics FPS: " + updates, new Color(0, 0, 0, 255), null);
@@ -37,6 +42,14 @@ public class Physics extends Thread {
 
                 updates++;
                 lastUpdateTime = System.nanoTime();
+            }
+            if ((Settings.createdSettings || Pause.created) && !stop) {
+                lastSpeed = physicsSpeed;
+                physicsSpeed = 1;
+                stop = true;
+            } else if (!Settings.createdSettings && !Pause.created && stop) {
+                physicsSpeed = lastSpeed;
+                stop = false;
             }
         }
     }

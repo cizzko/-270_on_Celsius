@@ -1,7 +1,6 @@
 package core.World.Weather;
 
 import core.World.Textures.ShadowMap;
-
 import java.awt.*;
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Window.*;
@@ -10,9 +9,9 @@ import static core.World.WorldGenerator.*;
 import static core.World.WorldGenerator.DynamicObjects;
 
 public class Sun {
-    public static float currentTime = (float) (Math.random() * 2400), x, y = -800 * (1 -  (currentTime - 2400) / (1 - 2400)) + 1500 * (currentTime - 2400) / (1 - 2400) + (SizeY / 2f * 16 - 700);
+    private static final int startSunset = 600, endSunset = 1400, startDay = 2000, endDay = 1700, startYSun = 1400, endYSun = -1000;
+    public static float currentTime = (float) (Math.random() * 2400), x, y = endYSun * (1 -  (currentTime - 2400) / (1 - 2400)) + startYSun * (currentTime - 2400) / (1 - 2400) + (SizeY / 2f * 16 - 700);
     public static boolean visible = false;
-    private static final int startSunset = 800, endSunset = 1600, startDay = 2150, endDay = 1900;
     private static long lastTime = System.currentTimeMillis();
 
     public static void createSun() {
@@ -31,10 +30,10 @@ public class Sun {
                 x = DynamicObjects[0].x;
 
                 if (currentTime >= 2400 || currentTime < 1) {
-                    y = -800;
+                    y = endYSun;
                 } else {
                     double t = (currentTime - 2400) / (1 - 2400);
-                    y = (float) (-800 * (1 - t) + 1500 * t) + (SizeY / 2f * 16 - 700);
+                    y = (float) (endYSun * (1 - t) + startYSun * t) + (SizeY / 2f * 16 - 700);
                 }
             }
             final int minGreen = 85;
@@ -44,6 +43,7 @@ public class Sun {
             int green = (int) (maxGreen - (currentTime * ratio));
 
             updateGradient();
+            updateNightBackground();
             drawTexture(defPath + "\\src\\assets\\World\\other\\sun.png", 580, y, 1, new Color(255, green, 40, 220), true);
         }
     }
@@ -56,8 +56,8 @@ public class Sun {
         } else if (currentTime > endSunset) {
             alpha = Lerp(1, 0, (currentTime - endSunset) / (endSunset - startSunset));
         }
-        int aGradient = (int) (255 * alpha);
-        aGradient = Math.max(0, Math.min(255, aGradient));
+        int aGradient = (int) (250 * alpha);
+        aGradient = Math.max(0, Math.min(250, aGradient));
 
         drawTexture(defPath + "\\src\\assets\\World\\other\\" + (getFromConfig("InterpolateSunset").equals("true") ? "" : "non") + "InterpolatedSunset.png", 0, 0, 1, new Color(aGradient, 0, 20, aGradient), true);
     }
@@ -70,8 +70,8 @@ public class Sun {
         } else if (currentTime > startDay) {
             alpha = Lerp(1, 0, (currentTime - startDay) / (startDay - endDay));
         }
-        int aGradient = (int) (255 * alpha);
-        aGradient = Math.max(0, Math.min(255, aGradient));
+        int aGradient = (int) (100 * alpha);
+        aGradient = Math.max(0, Math.min(100, aGradient));
 
         ShadowMap.deleteAllColor(new Color(aGradient, aGradient, aGradient, 0));
     }

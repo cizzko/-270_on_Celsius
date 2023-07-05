@@ -41,7 +41,7 @@ public class Settings {
     }
 
     public static void createOtherSett() {
-        createSwapButton(310, 980, 32, 32, getName("AnonState"), getName("AnonStatePrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("SendAnonymousStatistics")), "SettingsOtherSwap");
+        createSwapButton(310, 980, 32, 32, getName("SendAnonymousStatistics"), getName("SendAnonymousStatisticsPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("SendAnonymousStatistics")), "SettingsOtherSwap");
     }
 
     public static void deleteGraphicsSett() {

@@ -23,7 +23,7 @@
     "VerticalSyncPrompt": "Synchronizes FPS with screen refresh rate, helps eliminate visual tearing image",
 
     "SettingsBasic": "Basic",
-    "CalibrateMouseText": "Calibrate the mouse. Use wasd or the arrows to move it \\nuntil the lower left corner of the red square is exactly under the cursor",
+    "CalibrateMouseText": "Mouse position calibration. Use wasd or arrows to move,\\nuntil the real cursor is exactly exactly under the game (orange) cursor",
     "CalibrateMouseContinue": "Finish",
     "DetectLanguage": "Detecting language",
     "DetectLanguagePrompt": "Automatic language detection based on system language",
@@ -31,8 +31,8 @@
     "ShowPromptsPrompt": "Show prompts (if any) when hovering over buttons",
 
     "SettingsOther": "Other",
-    "AnonState": "Send statistic",
-    "AnonStatePrompt": "We will collect anonymous data to improve the product:\\ndevice components, game settings, current time.\\nThe author has the right to change the list of data.\\nBy agreeing to this message, you give the right to collect and use your data.\\nA also helps to improve the game :)"
+    "SendAnonymousStatistics": "Send statistic",
+    "SendAnonymousStatisticsPrompt": "We will collect anonymous data to improve the product:\\ndevice components, game settings, current time.\\nThe author has the right to change the list of data.\\nBy agreeing to this message, you give the right to collect and use your data.\\nA also helps to improve the game :)"
   },
 
   "ru": {
@@ -59,7 +59,7 @@
     "VerticalSyncPrompt": "Синхронизирует фпс с частотой обновления экрана, позволяет устранить визуальные разрывы изображения",
 
     "SettingsBasic": "Основное",
-    "CalibrateMouseText": "Калибровка положения мыши. Используйте wasd или стрелочки для передвижения,\\nпока нижний левый угол красного квадратика не окажется ровно под курсором",
+    "CalibrateMouseText": "Калибровка положения мыши. Используйте wasd или стрелочки для передвижения,\\nпока реальный курсор не окажется ровно под игровым (орандевым) курсором",
     "CalibrateMouseContinue": "Завершить",
     "DetectLanguage": "Автоопределение языка",
     "DetectLanguagePrompt": "Автоматическое определение языка на основе языка системы",
@@ -67,8 +67,8 @@
     "ShowPromptsPrompt": "Показывать всплывающие подсказки (если есть) при наведении на кнопки",
 
     "SettingsOther": "Другое",
-    "AnonState": "Отправлять статистику",
-    "AnonStatePrompt": "Мы (автор) будем собирать анонимные данные для улучшения продукта:\\nкомплектующие устройства, игровые параметры, текущее время.\\nАвтор вправе изменить перечень данных.\\nСоглашаясь с этим сообщением, вы даете право на сбор и использование ваших данных.\\nА так же помогаете улучшать игру :)"
+    "SendAnonymousStatistics": "Отправлять статистику",
+    "SendAnonymousStatisticsPrompt": "Мы (автор) будем собирать анонимные данные для улучшения продукта:\\nкомплектующие устройства, игровые параметры, текущее время.\\nАвтор вправе изменить перечень данных.\\nСоглашаясь с этим сообщением, вы даете право на сбор и использование ваших данных.\\nА так же помогаете улучшать игру :)"
   },
 
   "uk": {
@@ -95,13 +95,13 @@
     "VerticalSyncPrompt": "Синхронізує фпс із частотою оновлення екрана, дозволяє уникнути візуальних розрививів зображення",
 
     "SettingsBasic": "Основне",
-    "CalibrateMouseText": "Калибровка положения мыши. Используйте wasd или стрелочки для передвижения,\\nпока нижний левый угол красного квадратика не окажется ровно под курсором",
+    "CalibrateMouseText": "Калибровка положения мыши. Используйте wasd или стрелочки для передвижения,\\nпока реальный курсор не окажется ровно под игровым (орандевым) курсором",
     "CalibrateMouseContinue": "Завершить",
     "ShowPrompts": "Вспливаючі підказки",
     "ShowPromptsPrompt": "Показувати вспливаючі підказки (якщо є) при наведенні на кнопки",
 
     "SettingsOther": "Друге",
-    "AnonState": "Відправляти статистику",
-    "AnonStatePrompt": "Ми (автор) будемо збирати анонімні дані для покращення продукту:\\nкомплектуючі пристрою, ігрові параметри, поточний час. \nАвтор має право змінити список даних.\\nПогоджуючись із цим повідомленням, ви даєте право на збір та використовування ваших даних.\\nА також ви допомагаєте покращувати гру :)"
+    "SendAnonymousStatistics": "Відправляти статистику",
+    "SendAnonymousStatisticsPrompt": "Ми (автор) будемо збирати анонімні дані для покращення продукту:\\nкомплектуючі пристрою, ігрові параметри, поточний час. \nАвтор має право змінити список даних.\\nПогоджуючись із цим повідомленням, ви даєте право на збір та використовування ваших даних.\\nА також ви допомагаєте покращувати гру :)"
   }
 }
