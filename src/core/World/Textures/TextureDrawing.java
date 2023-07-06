@@ -24,6 +24,8 @@ import static core.UI.GUI.Video.*;
 import static core.Window.defPath;
 import static core.World.Textures.TextureLoader.BufferedImageEncoder;
 import static core.World.Textures.TextureLoader.ByteBufferEncoder;
+import static core.World.WorldGenerator.SizeX;
+import static core.World.WorldGenerator.SizeY;
 import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
@@ -374,8 +376,12 @@ public class TextureDrawing {
         float bottom = DynamicObjects[0].y - (1080 / 16f) - (48); //меньше число деления - выше прорисовка
         float top = DynamicObjects[0].y + (1080 / 5f) + (48);
 
-        for (int x = 0; x < StaticObjects.length - 1; x++) {
-            for (int y = 0; y < StaticObjects[x].length - 1; y++) {
+        for (int x = (int) (playerX / 16) - 20; x < playerX / 16 + 21; x++) {
+            for (int y = (int) (playerY / 16) - 8; y < playerY / 16 + 16; y++) {
+                if (x < 0 || y < 0 || x > SizeX || y > SizeY || StaticObjects[x][y] == null) {
+                    continue;
+                }
+
                 float xBlock = StaticObjects[x][y].x;
                 float yBlock = StaticObjects[x][y].y;
                 StaticObjects[x][y].onCamera = !(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top);
@@ -388,8 +394,12 @@ public class TextureDrawing {
     }
 
     public static void updateDynamicObj() {
+        int fieldObjects = 0;
+
         for (DynamicWorldObjects dynamicObject : DynamicObjects) {
             if (dynamicObject != null) {
+                fieldObjects++;
+
                 float left = DynamicObjects[0].x - (1920 / 5.5f) - (48);
                 float right = DynamicObjects[0].x + (1920 / 5.5f) + (48);
                 float bottom = DynamicObjects[0].y - (1080 / 16f) - (48); //меньше число деления - выше прорисовка
@@ -417,6 +427,11 @@ public class TextureDrawing {
                     drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, false);
                 }
             }
+        }
+        if (fieldObjects >= DynamicObjects.length - 1) {
+            DynamicWorldObjects[] newObjects = new DynamicWorldObjects[DynamicObjects.length];
+            System.arraycopy(DynamicObjects, 0, newObjects, 0, DynamicObjects.length);
+            DynamicObjects = newObjects;
         }
     }
 

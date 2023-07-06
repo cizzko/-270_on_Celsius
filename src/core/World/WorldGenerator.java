@@ -181,13 +181,7 @@ public class WorldGenerator {
     }
 
     public static void generateDynamicsObjects() {
-        try {
-            DynamicObjects = new DynamicWorldObjects[SizeX * SizeY / 2 + 1];
-        } catch (OutOfMemoryError e) {
-            log("Failed to allocate memory for DynamicObjects: " + "DynamicObjects size < 2147483647: DynamicObject created as size 4096");
-            DynamicObjects = new DynamicWorldObjects[4096];
-        }
-
+        DynamicObjects = new DynamicWorldObjects[20];
         DynamicObjects[0] = new DynamicWorldObjects(1, false, 0f, defPath + "\\src\\assets\\World\\creatures\\player.png", 320, SizeY * 16 - 20);
     }
 }
