@@ -10,6 +10,8 @@
     "GenerateSimpleWorldPrompt": "Generation without any relief",
     "GenerateCreatures": "Generate creatures",
     "GenerateCreaturesPrompt": "Generation and calculation of butterflies, birds, etc. May affect performance",
+    "RandomSpawn": "Random spawn",
+    "RandomSpawnPrompt": "If enabled, player will spawn in a random location, otherwise in the middle of the world",
 
     "SettingsExit": "Return",
     "SettingsSave": "Save",
@@ -46,6 +48,8 @@
     "GenerateSimpleWorldPrompt": "Генерация без рельефа",
     "GenerateCreatures": "Генерация сущностей",
     "GenerateCreaturesPrompt": "Генерация и просчет бабочек, птиц, и т.д. Может влиять на производительность",
+    "RandomSpawn": "Случайное положение",
+    "RandomSpawnPrompt": "Если включено, персонаж появится в случайном месте, иначе - посередине мира",
 
     "SettingsExit": "Вернуться",
     "SettingsSave": "Сохранить",

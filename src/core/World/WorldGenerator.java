@@ -1,5 +1,6 @@
 package core.World;
 
+import core.EventHandling.Logging.Json;
 import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.StaticWorldObjects;
@@ -9,16 +10,21 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import static core.EventHandling.Logging.Logger.log;
-import static core.UI.GUI.CreateElement.createText;
+import static core.UI.GUI.CreateElement.*;
 import static core.Window.defPath;
 
 public class WorldGenerator {
     public static int SizeX, SizeY;
     public static StaticWorldObjects[][] StaticObjects;
-    public static DynamicWorldObjects[] DynamicObjects;
+    public static DynamicWorldObjects[] DynamicObjects = new DynamicWorldObjects[20];
 
-    public static void generateWorld(int SizeX, int SizeY, boolean simple) {
-        log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world at size: x - " + SizeX + ", y - " + SizeY + " (" + SizeX * SizeY + "); with arguments 'simple: " + simple + "' ");
+    public static void generateWorld() {
+        int SizeX = getSliderPos("worldSize") + 20;
+        int SizeY = getSliderPos("worldSize") + 20;
+        boolean simple = buttons.get(Json.getName("GenerateSimpleWorld")).isClicked;
+        boolean randomSpawn = buttons.get(Json.getName("RandomSpawn")).isClicked;
+
+        log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world at size: x - " + SizeX + ", y - " + SizeY + " (" + SizeX * SizeY + "); with arguments 'simple: " + simple + ", random spawn: " + randomSpawn + "'");
 
         StaticObjects = new StaticWorldObjects[SizeX + 1][SizeY + 1];
         WorldGenerator.SizeX = SizeX;
@@ -32,10 +38,10 @@ public class WorldGenerator {
         }
         ShadowMap.generate();
         ShadowMap.update();
-        WorldGenerator.generateDynamicsObjects();
+        WorldGenerator.generateDynamicsObjects(randomSpawn);
 
         log("World generator: generating done!\n");
-        createText(42, 50, "generatingDone", "Done! Starting world", new Color(147, 51, 0, 255), "WorldGeneratorState");
+        createText(42, 50, "generatingDone", "Done! Starting world..", new Color(147, 51, 0, 255), "WorldGeneratorState");
 
         try {
             Thread.sleep(500);
@@ -180,8 +186,22 @@ public class WorldGenerator {
 
     }
 
-    public static void generateDynamicsObjects() {
-        DynamicObjects = new DynamicWorldObjects[20];
-        DynamicObjects[0] = new DynamicWorldObjects(1, false, 0f, defPath + "\\src\\assets\\World\\creatures\\player.png", 320, SizeY * 16 - 20);
+    public static void generateDynamicsObjects(boolean randomSpawn) {
+        int x = randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX / 2;
+        float y = 1;
+
+        for (int worldX = 0; worldX < 2; worldX++) {
+            for (int worldY = 1; worldY < SizeY - 1; worldY++) {
+                StaticWorldObjects objUp = StaticObjects[x / 16 + worldX][worldY + 1];
+                StaticWorldObjects obj = StaticObjects[x / 16 + worldX][worldY];
+
+                if (!objUp.solid && obj.solid && obj.y > y) {
+                    y = objUp.y;
+                }
+            }
+        }
+        System.out.println(y + " da " + SizeY * 16);
+
+        DynamicObjects[0] = new DynamicWorldObjects(1, false, 0f, defPath + "\\src\\assets\\World\\creatures\\player.png", x, y);
     }
 }

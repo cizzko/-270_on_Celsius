@@ -231,7 +231,7 @@ public class EventHandler extends Thread {
                     Settings.needUpdateCount = true;
 
                 } else if (button.name.equals(Json.getName("GenerateWorld")) && !Window.start) {
-                    WorldGenerator.generateWorld(getSliderPos("worldSize") + 20, getSliderPos("worldSize") + 20, buttons.get(Json.getName("GenerateSimpleWorld")).isClicked);
+                    WorldGenerator.generateWorld();
                     TextureDrawing.loadObjects();
                     CreatePlanet.delete();
 

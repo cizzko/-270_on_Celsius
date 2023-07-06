@@ -429,7 +429,7 @@ public class TextureDrawing {
             }
         }
         if (fieldObjects >= DynamicObjects.length - 1) {
-            DynamicWorldObjects[] newObjects = new DynamicWorldObjects[DynamicObjects.length];
+            DynamicWorldObjects[] newObjects = new DynamicWorldObjects[DynamicObjects.length * 2];
             System.arraycopy(DynamicObjects, 0, newObjects, 0, DynamicObjects.length);
             DynamicObjects = newObjects;
         }
