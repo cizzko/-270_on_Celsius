@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 import static core.World.Creatures.Physics.physicsSpeed;
 import static core.World.HitboxMap.checkIntersStaticD;
 import static core.World.HitboxMap.checkIntersStaticU;
+import static core.World.WorldGenerator.*;
 
 //динамические объекты, могут иметь любые координаты внутри мира и быть перемещены когда угодно
 public class DynamicWorldObjects implements Serializable {
@@ -15,7 +16,7 @@ public class DynamicWorldObjects implements Serializable {
     public long lastFrameTime = System.currentTimeMillis();
     public boolean onCamera, isJumping, isDropping, isFlying;
 
-    public DynamicWorldObjects(int framesCount, boolean isFlying, float animSpeed, String path, float x, float y) {
+    public DynamicWorldObjects(int framesCount, boolean isFlying, String path, float animSpeed, float x, float y) {
         this.framesCount = framesCount;
         this.animSpeed = animSpeed;
         this.path = path;
@@ -25,6 +26,34 @@ public class DynamicWorldObjects implements Serializable {
         this.isJumping = false;
         this.isDropping = false;
         this.x = x;
+        this.y = y;
+    }
+
+    public DynamicWorldObjects(int framesCount, boolean isFlying, String path, float animSpeed, float x) {
+        this.framesCount = framesCount;
+        this.animSpeed = animSpeed;
+        this.path = path;
+        this.currentFrame = 1;
+        this.isFlying = isFlying;
+        this.onCamera = true;
+        this.isJumping = false;
+        this.isDropping = false;
+        this.x = x;
+
+        float y = 1;
+        int sizeX = framesCount == 1 ? (int) Math.ceil(TextureLoader.BufferedImageEncoder(path).getWidth() / 16) : (int) Math.ceil(TextureLoader.BufferedImageEncoder(path + "1.png").getWidth() / 16);
+
+        for (int worldX = 0; worldX < sizeX; worldX++) {
+            for (int worldY = 1; worldY < SizeY - 1; worldY++) {
+                StaticWorldObjects objUp = StaticObjects[(int) (x / 16 + worldX)][worldY + 1];
+                StaticWorldObjects obj = StaticObjects[(int) (x / 16 + worldX)][worldY];
+
+                if (!objUp.solid && obj.solid && obj.y > y) {
+                    y = objUp.y;
+                }
+            }
+        }
+
         this.y = y;
     }
 

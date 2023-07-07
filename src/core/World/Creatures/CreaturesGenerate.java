@@ -15,8 +15,11 @@ public class CreaturesGenerate extends Thread {
         Logger.log("Thread: Creatures logic started");
 
         while (!glfwWindowShouldClose(glfwWindow)) {
-            if (System.currentTimeMillis() - deltaTime >= 10000 && count < 3 && Math.random() * 10000 < 0.01) {
+            if (System.currentTimeMillis() - deltaTime >= 10000 && count < 4 && Math.random() * 30 < 1) {
                 generate();
+                deltaTime = System.currentTimeMillis();
+            }
+            if (System.currentTimeMillis() - deltaTime >= 10000) {
                 deltaTime = System.currentTimeMillis();
             }
             ButteflyLogic.update();
@@ -25,17 +28,29 @@ public class CreaturesGenerate extends Thread {
     }
 
     public static void generate() {
-        String path = "";
-        //кто сделал этот костыль?
-        //я
-        //больше так не делай
-        int rand = (int) (Math.random() * 2);
-        if (rand == 1) path = defPath + "\\src\\assets\\World\\creatures\\bird";
-        if (rand == 0) path = defPath + "\\src\\assets\\World\\creatures\\butterfly";
+        switch ((int) (Math.random() * 2)) {
+            case 0 -> generateBird();
+            case 1 -> generateButterfly();
+        }
+    }
 
+    public static void generateButterfly() {
         for (int x = 0; x < DynamicObjects.length; x++) {
             if (DynamicObjects[x] == null) {
-                DynamicObjects[x] = new DynamicWorldObjects(2, path.contains("bird") || path.contains("butterfly"), .1f, path, 60, SizeY / 2f + 520);
+                DynamicObjects[x] = new DynamicWorldObjects(2, true, defPath + "\\src\\assets\\World\\creatures\\butterfly", 0.1f, (float) (Math.random() * (SizeX * 16)));
+                count++;
+                break;
+            }
+            if (DynamicObjects[x].x > SizeX * 16 || DynamicObjects[x].y > SizeY * 16) {
+                DynamicObjects[x] = null;
+            }
+        }
+    }
+
+    public static void generateBird() {
+        for (int x = 0; x < DynamicObjects.length; x++) {
+            if (DynamicObjects[x] == null) {
+                DynamicObjects[x] = new DynamicWorldObjects(2, true, defPath + "\\src\\assets\\World\\creatures\\bird", 0.1f, 24);
                 count++;
                 break;
             }

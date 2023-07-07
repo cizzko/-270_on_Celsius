@@ -187,21 +187,6 @@ public class WorldGenerator {
     }
 
     public static void generateDynamicsObjects(boolean randomSpawn) {
-        int x = randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX / 2;
-        float y = 1;
-
-        for (int worldX = 0; worldX < 2; worldX++) {
-            for (int worldY = 1; worldY < SizeY - 1; worldY++) {
-                StaticWorldObjects objUp = StaticObjects[x / 16 + worldX][worldY + 1];
-                StaticWorldObjects obj = StaticObjects[x / 16 + worldX][worldY];
-
-                if (!objUp.solid && obj.solid && obj.y > y) {
-                    y = objUp.y;
-                }
-            }
-        }
-        System.out.println(y + " da " + SizeY * 16);
-
-        DynamicObjects[0] = new DynamicWorldObjects(1, false, 0f, defPath + "\\src\\assets\\World\\creatures\\player.png", x, y);
+        DynamicObjects[0] = new DynamicWorldObjects(1, false, defPath + "\\src\\assets\\World\\creatures\\player.png", 0, randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f);
     }
 }

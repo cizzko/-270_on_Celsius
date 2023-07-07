@@ -63,6 +63,7 @@ public class Window {
         Fonts.generateFont(defPath + "\\src\\assets\\UI\\arial.ttf");
 
         TextureLoader.preLoadTextures();
+        TextureLoader.bindChars();
         Main.create();
 
         log("Init status: true");

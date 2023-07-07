@@ -20,6 +20,7 @@ import static core.EventHandling.EventHandler.getMousePos;
 import static core.EventHandling.EventHandler.mouseNotMoved;
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.UI.GUI.CreateElement.*;
+import static core.UI.GUI.Fonts.letterSize;
 import static core.UI.GUI.Video.*;
 import static core.Window.defPath;
 import static core.World.Textures.TextureLoader.BufferedImageEncoder;
@@ -30,7 +31,7 @@ import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
     private static float playerX, playerY;
-    private static final HashMap<Integer, TextureData> textures = new HashMap<>();
+    public static final HashMap<Integer, TextureData> textures = new HashMap<>();
     public static StaticWorldObjects[][] StaticObjects;
     public static DynamicWorldObjects[] DynamicObjects;
 
@@ -94,13 +95,10 @@ public class TextureDrawing {
     //for video, text, etc
     public static void drawTexture(float x, float y, int width, int height, String name, ByteBuffer buffer, Color color, float zoom) {
         if (name != null) {
-            int textureId = name.hashCode();
-
-            if (textures.get(textureId) == null) {
-                bindTexture(width, height, buffer, name);
-            }
-            TextureData textureData = textures.get(textureId);
+            TextureData textureData = textures.get(name.hashCode());
             glBindTexture(GL_TEXTURE_2D, textureData.id);
+        } else {
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
         }
 
         glPushMatrix();
@@ -114,7 +112,6 @@ public class TextureDrawing {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
         glColor4f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
 
         glBegin(GL_QUADS);
@@ -146,11 +143,11 @@ public class TextureDrawing {
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
 
-            if (Fonts.letterSize.get(ch).width == 0 || Fonts.letterSize.get(ch).height == 0) {
+            if (letterSize.get(ch).width == 0 || letterSize.get(ch).height == 0) {
                 ch = '?';
             }
             if (ch == ' ') {
-                x += Fonts.letterSize.get('A').width;
+                x += letterSize.get('A').width;
                 continue;
             } else if (ch == '\\' && text.charAt(i + 1) == 'n') {
                 y -= 30;
@@ -158,8 +155,8 @@ public class TextureDrawing {
                 x = startX;
                 continue;
             }
-            TextureDrawing.drawTexture(x, y, Fonts.letterSize.get(ch).width, Fonts.letterSize.get(ch).height, String.valueOf(ch), Fonts.chars.get(ch), color, 1);
-            x += Fonts.letterSize.get(ch).width;
+            TextureDrawing.drawTexture(x, y, letterSize.get(ch).width, letterSize.get(ch).height, String.valueOf(ch), Fonts.chars.get(ch), color, 1);
+            x += letterSize.get(ch).width;
         }
     }
 
@@ -303,9 +300,9 @@ public class TextureDrawing {
             char c = text.charAt(i);
 
             if (c == ' ') {
-                currentWidth += Fonts.letterSize.get('A').width;
+                currentWidth += letterSize.get('A').width;
             } else {
-                currentWidth += Fonts.letterSize.get(c).width;
+                currentWidth += letterSize.get(c).width;
             }
             if (currentWidth > maxWidth) {
                 modifiedText.append("\\n");
@@ -337,10 +334,10 @@ public class TextureDrawing {
             char c = longestLine.charAt(i);
 
             if (c == ' ') {
-                width += Fonts.letterSize.get('A').width;
+                width += letterSize.get('A').width;
                 continue;
             }
-            width += Fonts.letterSize.get(c).width;
+            width += letterSize.get(c).width;
         }
         return new Dimension(width, (text.split("\\\\n").length) * 28 + 16);
     }
@@ -599,19 +596,6 @@ public class TextureDrawing {
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
         textures.put(path.hashCode(), new TextureData(id, width, height));
-
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
-    public static void bindTexture(int width, int height, ByteBuffer buffer, String name) {
-        int id = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, id);
-
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-        textures.put(name.hashCode(), new TextureData(id, width, height));
 
         glBindTexture(GL_TEXTURE_2D, 0);
     }

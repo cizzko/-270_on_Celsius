@@ -88,7 +88,7 @@ public class Logger {
         AnonymousStatistics.sendStateMessageThread("Session '" + sessionId + "' started, time: '" + LocalDateTime.now() + "', system info: " + system + computerInfo);
 
         log(!system.contains("windows 10") ? "Warning: " + System.getProperty("os.name") + " not supported!\n" : "" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\n");
-        log("Start time: " + LocalDateTime.now() + "\nPreload textures: " + getFromConfig("PreLoadTextures"));
+        log("Start time: " + LocalDateTime.now() + "\nPreload textures: " + getFromConfig("PreloadTextures"));
         log("Vertical sync: " + Config.getFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\n\nCurrent language: " + getFromConfig("Language") + "\nAvailable languages: " + langs.replace(" ", ", ") + "\n");
     }
 }

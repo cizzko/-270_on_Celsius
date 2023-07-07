@@ -4,17 +4,17 @@ import core.EventHandling.Logging.Config;
 import core.UI.GUI.Fonts;
 import org.lwjgl.BufferUtils;
 import javax.imageio.ImageIO;
-import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.Map;
 import java.util.Stack;
 import static core.EventHandling.Logging.Logger.log;
 import static core.EventHandling.Logging.Logger.logExit;
+import static core.UI.GUI.Fonts.letterSize;
 import static core.Window.defPath;
 import static core.World.Textures.TextureDrawing.bindTexture;
+import static org.lwjgl.opengl.GL11.*;
 
 public class TextureLoader extends Thread {
 
@@ -99,9 +99,23 @@ public class TextureLoader extends Thread {
             }
             log("Texture loader: load '" + texturesCount + "' textures");
         }
+    }
 
-        for (Map.Entry<Character, Dimension> entry : Fonts.letterSize.entrySet()) {
-            TextureDrawing.bindTexture(entry.getValue().width, entry.getValue().height, Fonts.chars.get(entry.getKey()), String.valueOf(entry.getKey()));
-        }
+    public static void bindChars() {
+        letterSize.forEach((character, dimension) -> {
+            int width = dimension.width;
+            int height = dimension.height;
+
+            int id = glGenTextures();
+            glBindTexture(GL_TEXTURE_2D, id);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Fonts.chars.get(character));
+            TextureDrawing.textures.put(character.hashCode(), new TextureData(id, width, height));
+
+            glBindTexture(GL_TEXTURE_2D, 0);
+        });
     }
 }
