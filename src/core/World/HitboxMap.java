@@ -12,6 +12,9 @@ public class HitboxMap {
         int tarYSize = (int) Math.ceil(sizeY / 16f);
 
         for (int i = 0; i < tarYSize; i++) {
+            if (StaticObjects[tarX + tarXSize][tarY + i + 1] == null) {
+                return true;
+            }
             if (x + sizeX >= (StaticObjects[tarX + tarXSize][tarY + i + 1].solid ? StaticObjects[tarX + tarXSize][tarY + i + 1].x : SizeX * 16)) {
                 return true;
             }
@@ -25,6 +28,9 @@ public class HitboxMap {
         int tarYSize = (int) Math.ceil(sizeY / 16f);
 
         for (int i = 0; i < tarYSize; i++) {
+            if (StaticObjects[tarX][tarY + i + 1] == null) {
+                return true;
+            }
             if (StaticObjects[tarX][tarY + i + 1].solid) {
                 return true;
             }
@@ -38,6 +44,9 @@ public class HitboxMap {
         int tarXSize = (int) Math.ceil(sizeX / 16f);
 
         for (int i = 0; i < tarXSize; i++) {
+            if (StaticObjects[tarX + i][tarY] == null || StaticObjects[tarX + tarXSize][tarY] == null) {
+                return true;
+            }
             if ((y - sizeY <= (StaticObjects[tarX + i][tarY].solid ? StaticObjects[tarX + i][tarY].y : 0)) || x + sizeX >= (StaticObjects[tarX + tarXSize][tarY].solid ? StaticObjects[tarX + tarXSize][tarY].x : SizeX * 16)) {
                 return true;
             }
@@ -52,6 +61,9 @@ public class HitboxMap {
         int tarXSize = (int) Math.ceil(sizeX / 16f);
 
         for (int i = 0; i < tarXSize; i++) {
+            if (StaticObjects[tarX + i][tarY + tarYSize] == null) {
+                return true;
+            }
             if ((y + sizeY >= (StaticObjects[tarX + i][tarY + tarYSize].solid ? StaticObjects[tarX + i][tarY + tarYSize].y : SizeY * 16))) {
                 return true;
             }

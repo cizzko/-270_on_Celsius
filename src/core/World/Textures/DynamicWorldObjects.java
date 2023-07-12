@@ -14,7 +14,7 @@ public class DynamicWorldObjects implements Serializable {
     public float x, y, animSpeed, dropSpeed;
     public String path;
     public long lastFrameTime = System.currentTimeMillis();
-    public boolean onCamera, isJumping, isDropping, isFlying;
+    public boolean onCamera, isJumping, isDropping, isFlying, mirrored, notForDrawing;
 
     public DynamicWorldObjects(int framesCount, boolean isFlying, String path, float animSpeed, float x, float y) {
         this.framesCount = framesCount;
@@ -23,6 +23,7 @@ public class DynamicWorldObjects implements Serializable {
         this.currentFrame = 1;
         this.isFlying = isFlying;
         this.onCamera = true;
+        this.mirrored = false;
         this.isJumping = false;
         this.isDropping = false;
         this.x = x;
@@ -36,6 +37,7 @@ public class DynamicWorldObjects implements Serializable {
         this.currentFrame = 1;
         this.isFlying = isFlying;
         this.onCamera = true;
+        this.mirrored = false;
         this.isJumping = false;
         this.isDropping = false;
         this.x = x;

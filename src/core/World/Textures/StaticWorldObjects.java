@@ -6,7 +6,7 @@ import java.io.Serializable;
 public class StaticWorldObjects implements Serializable {
     public boolean gas, liquid, solid, plasma, onCamera;
     public String options, path;
-    public float y, x;
+    public float y, x, currentHp, totalHp;
 
     public StaticWorldObjects(String options, String path, float x, float y) {
         this.onCamera = true;          //находится ли в фокусе, для оптимизации
@@ -18,6 +18,8 @@ public class StaticWorldObjects implements Serializable {
         this.path = path;              //путь до текстуры
         this.x = x;                    //мировая координата x
         this.y = y;                    //мировая координата у
+        this.totalHp = 100;
+        this.currentHp = totalHp;
     }
 
     public void destroyObject() {
@@ -26,5 +28,6 @@ public class StaticWorldObjects implements Serializable {
         this.liquid = false;
         this.plasma = false;
         this.gas = true;
+        this.currentHp = 0;
     }
 }

@@ -22,7 +22,7 @@ public class Fonts {
             //default 12
             font = font.deriveFont(Font.PLAIN, (float) (fontSize * Toolkit.getDefaultToolkit().getScreenResolution() / 72.0));
         } catch (IOException | FontFormatException e) {
-            Logger.logExit(1, "Error at generate font: " + e);
+            Logger.logExit(1, "Error at generate font: " + e, true);
         }
         FontRenderContext fontRenderContext = new FontRenderContext(null, true, true);
 

@@ -12,8 +12,8 @@ public class CreatePlanet {
         createPanel(20, 240, 1400, 820, "leftPanel", false, "WorldGenerator");
         createPanel(1440, 240, 460, 820, "rightPanel", false, "WorldGenerator");
 
-        createPicture(1460, 620, 1, "planetBackground", defPath + "\\src\\assets\\World\\other\\sky\\skyBackgroundPlanet.png", "WorldGenerator");
-        createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\other\\planetMini.png", "WorldGenerator");
+        createPicture(1460, 620, 1, "planetBackground", defPath + "\\src\\assets\\World\\worldGenerator\\skyBackgroundPlanet.png", "WorldGenerator");
+        createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\worldGenerator\\planetMini.png", "WorldGenerator");
 
         createButton(1460, 260, 420, 67, getName("GenerateWorld"), null, true, new Color(255, 80, 0, 55), "WorldGenerator");
         createSwapButton(70, 980, 32, 32, getName("GenerateSimpleWorld"), getName("GenerateSimpleWorldPrompt"), false, new Color(236, 236, 236, 55), "WorldGenerator");

@@ -18,7 +18,7 @@ public class Commandline {
 
     private static void startReflection(String target) {
         if (target.equals("ExitGame") || target.equals("exitGame")) {
-            logExit(1863, "Exit from console");
+            logExit(1863, "Exit from console", true);
 
         } else if (target.trim().equals("modify")) {
             EventHandler.keyLoggingText = "modify.. what modify? <start package.class.field valueX> x - type of value, example: 'core.World.Creatures.Physics.physicsSpeed 400i'";
@@ -128,15 +128,9 @@ public class Commandline {
         }
     }
 
-    public static void createLine(String text) {
-        if (Config.getFromConfig("Debug").equals("true") && !created) {
-            if (text != null) {
-                EventHandler.keyLoggingText = text;
-            }
-
-            EventHandler.startKeyLogging();
-            created = true;
-        }
+    public static void createLine() {
+        EventHandler.startKeyLogging();
+        created = true;
     }
 
     public static void deleteLine() {
@@ -170,9 +164,5 @@ public class Commandline {
                 }
             }
         }
-    }
-
-    public static void createLine() {
-        createLine(null);
     }
 }

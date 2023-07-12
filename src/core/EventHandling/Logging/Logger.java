@@ -5,9 +5,7 @@ import core.AnonymousStatistics;
 import core.Window;
 import core.World.Weather.Sun;
 import java.awt.*;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.lang.management.ManagementFactory;
 import java.time.LocalDateTime;
 import java.util.Random;
@@ -18,6 +16,7 @@ import static org.lwjgl.glfw.GLFW.*;
 public class Logger {
     private static final long sessionId = (long) (new Random().nextDouble() * Long.MAX_VALUE);
     public static boolean cleanup = false;
+
 
     public static void log(String message, boolean forcibly) {
         if (getFromConfig("Debug").equals("true") || forcibly) {
@@ -49,7 +48,7 @@ public class Logger {
         log(message, false);
     }
 
-    public static void logExit(int status, String reason) {
+    public static void logExit(int status, String reason, boolean exitOnProgram) {
         String exit;
 
         if (reason != null) {
@@ -64,6 +63,8 @@ public class Logger {
             exit = " (sudden closure)";
         } else if (status == 1) {
             exit = " (critical error)";
+        } else if (status >= 6553) {
+            exit = " (glfw error)";
         } else {
             exit = " (unknown state)";
         }
@@ -71,12 +72,14 @@ public class Logger {
         AnonymousStatistics.sendStateMessage("Session '" + sessionId + "' exit, time: '" + LocalDateTime.now() + "', reason: '" + reason + "', status: " + status + exit);
         log("\nProgram exit at: " + LocalDateTime.now() + "\nExit code: " + status + exit + "\nGame time: " + Sun.currentTime +  "\n-------- Log ended --------");
 
-        glfwDestroyWindow(glfwWindow);
-        System.exit(status);
+        if (exitOnProgram) {
+            glfwDestroyWindow(glfwWindow);
+            System.exit(status);
+        }
     }
 
     public static void logExit(int status) {
-        logExit(status, null);
+        logExit(status, null, true);
     }
 
     public static void logStart() {

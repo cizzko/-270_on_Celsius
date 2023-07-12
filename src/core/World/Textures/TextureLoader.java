@@ -4,6 +4,7 @@ import core.EventHandling.Logging.Config;
 import core.UI.GUI.Fonts;
 import org.lwjgl.BufferUtils;
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -22,7 +23,7 @@ public class TextureLoader extends Thread {
         try {
             return ImageIO.read(new File(path));
         } catch (IOException e) {
-            logExit(1, "Critical error at buffered image encoder: '" + e + "', path: '" + path + "'");
+            logExit(1, "Critical error at buffered image encoder: '" + e + "', path: '" + path + "'", true);
         }
 
         return null;
@@ -73,6 +74,17 @@ public class TextureLoader extends Thread {
         }
 
         return buffer.flip();
+    }
+
+    public static ByteBuffer uniteTextures(String mainTexture, String secondTexture) {
+        BufferedImage mergedImage = BufferedImageEncoder(defPath + "\\src\\assets\\World\\other\\neutral16.png"); //because i dont found RGBA format, only ARGB
+        Graphics2D g2d = mergedImage.createGraphics();
+
+        g2d.drawImage(BufferedImageEncoder(mainTexture), 0, 0, null);
+        g2d.drawImage(BufferedImageEncoder(secondTexture), 0, 0, null);
+        g2d.dispose();
+
+        return ByteBufferEncoder(mergedImage).flip();
     }
 
     public static void preLoadTextures() {

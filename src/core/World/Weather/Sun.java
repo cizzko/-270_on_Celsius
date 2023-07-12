@@ -5,12 +5,11 @@ import java.awt.*;
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Window.*;
 import static core.World.Textures.TextureDrawing.*;
-import static core.World.WorldGenerator.*;
 import static core.World.WorldGenerator.DynamicObjects;
 
 public class Sun {
-    private static final int startSunset = 600, endSunset = 1400, startDay = 2000, endDay = 1700, startYSun = 1400, endYSun = -1000;
-    public static float currentTime = (float) (Math.random() * 2400), x, y = endYSun * (1 -  (currentTime - 2400) / (1 - 2400)) + startYSun * (currentTime - 2400) / (1 - 2400) + (SizeY / 2f * 16 - 700);
+    private static final int startSunset = 140, endSunset = 1200, startDay = 1900, endDay = 1350, startYSun = 1400, endYSun = -1670;
+    public static float currentTime = (float) (Math.random() * 2400), x, y = endYSun * (1 -  (currentTime - 2400) / (1 - 2400)) + startYSun * (currentTime - 2400) / (1 - 2400);
     public static boolean visible = false;
     private static long lastTime = System.currentTimeMillis();
 
@@ -20,7 +19,7 @@ public class Sun {
 
     public static void updateSun() {
         if (visible) {
-            if (System.currentTimeMillis() - lastTime >= 750) {
+            if (System.currentTimeMillis() - lastTime >= 900) {
                 lastTime = System.currentTimeMillis();
                 currentTime++;
 
@@ -33,7 +32,7 @@ public class Sun {
                     y = endYSun;
                 } else {
                     double t = (currentTime - 2400) / (1 - 2400);
-                    y = (float) (endYSun * (1 - t) + startYSun * t) + (SizeY / 2f * 16 - 700);
+                    y = (float) (endYSun * (1 - t) + startYSun * t);
                 }
             }
             final int minGreen = 85;
@@ -42,9 +41,9 @@ public class Sun {
             double ratio = (double) (maxGreen - minGreen) / (2400 - minGreen);
             int green = (int) (maxGreen - (currentTime * ratio));
 
-            updateGradient();
             updateNightBackground();
-            drawTexture(defPath + "\\src\\assets\\World\\other\\sun.png", 580, y, 1, new Color(255, green, 40, 220), true);
+            updateGradient();
+            drawTexture(defPath + "\\src\\assets\\World\\sun\\sun.png", 580, y, 1, new Color(255, green, 40, 220), true, false);
         }
     }
 
@@ -59,7 +58,7 @@ public class Sun {
         int aGradient = (int) (250 * alpha);
         aGradient = Math.max(0, Math.min(250, aGradient));
 
-        drawTexture(defPath + "\\src\\assets\\World\\other\\" + (getFromConfig("InterpolateSunset").equals("true") ? "" : "non") + "InterpolatedSunset.png", 0, 0, 1, new Color(aGradient, 0, 20, aGradient), true);
+        drawTexture(defPath + "\\src\\assets\\World\\sun\\" + (getFromConfig("InterpolateSunset").equals("true") ? "" : "non") + "InterpolatedSunset.png", 0, 0, 1, new Color(aGradient, 0, 20, aGradient), true, false);
     }
 
     private static void updateNightBackground() {
@@ -70,10 +69,13 @@ public class Sun {
         } else if (currentTime > startDay) {
             alpha = Lerp(1, 0, (currentTime - startDay) / (startDay - endDay));
         }
-        int aGradient = (int) (100 * alpha);
-        aGradient = Math.max(0, Math.min(100, aGradient));
+        int aGradient = (int) (255 * alpha);
+        int deleteGradient = Math.max(0, Math.min(150, aGradient));
+        int backGradient = Math.max(0, Math.min(255, aGradient));
 
-        ShadowMap.deleteAllColor(new Color(aGradient, aGradient, aGradient, 0));
+        ShadowMap.deleteAllColor(new Color(deleteGradient, deleteGradient, deleteGradient, 0));
+        ShadowMap.deleteAllColorDynamic(new Color(deleteGradient, deleteGradient, deleteGradient, 0));
+        drawTexture(defPath + "\\src\\assets\\World\\sky\\skyBackground0.png", 0, 0, 1, new Color(255, 255, 255, backGradient), true, false);
     }
 
     private static double Lerp(double a, double b, double t) {

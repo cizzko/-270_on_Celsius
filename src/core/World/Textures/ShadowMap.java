@@ -7,13 +7,15 @@ import static core.World.WorldGenerator.StaticObjects;
 
 public class ShadowMap {
     private static Color[][] shadows;
+    private static Color[] shadowsDynamic;
     private static int[][] colorDegree;
-    private static Color deletedColor = new Color(0, 0, 0, 0);
-    private static Color addedColor = new Color(0, 0, 0, 0);
+    private static Color deletedColor = new Color(0, 0, 0, 0), deletedColorDynamic = new Color(0, 0, 0, 0);
+    private static Color addedColor = new Color(0, 0, 0, 0), addedColorDynamic = new Color(0, 0, 0, 0);
 
     public static void generate() {
         shadows = new Color[WorldGenerator.SizeX][WorldGenerator.SizeY];
         colorDegree = new int[WorldGenerator.SizeX][WorldGenerator.SizeY];
+        shadowsDynamic = new Color[WorldGenerator.DynamicObjects.length];
 
         for (Color[] shadow : shadows) {
             Arrays.fill(shadow, new Color(255, 255, 255, 255));
@@ -21,6 +23,7 @@ public class ShadowMap {
         for (int[] color : colorDegree) {
             Arrays.fill(color, 0);
         }
+        Arrays.fill(shadowsDynamic, new Color(255, 255, 255, 255));
     }
 
     public static void update() {
@@ -58,6 +61,15 @@ public class ShadowMap {
         return new Color(r, g, b, a);
     }
 
+    public static Color getColorDynamic(int cell) {
+        int r = checkColor(shadowsDynamic[cell].getRed() + addedColorDynamic.getRed() - deletedColorDynamic.getRed());
+        int g = checkColor(shadowsDynamic[cell].getGreen() + addedColorDynamic.getGreen() - deletedColorDynamic.getGreen());
+        int b = checkColor(shadowsDynamic[cell].getBlue() + addedColorDynamic.getBlue() - deletedColorDynamic.getBlue());
+        int a = checkColor(shadowsDynamic[cell].getAlpha() + addedColorDynamic.getAlpha() - deletedColorDynamic.getAlpha());
+
+        return new Color(r, g, b, a);
+    }
+
     public static void addAllColor(Color color) {
         int r = checkColor(color.getRed());
         int g = checkColor(color.getGreen());
@@ -67,6 +79,15 @@ public class ShadowMap {
         addedColor = new Color(r, g, b, a);
     }
 
+    public static void addAllColorDynamic(Color color) {
+        int r = checkColor(color.getRed());
+        int g = checkColor(color.getGreen());
+        int b = checkColor(color.getBlue());
+        int a = checkColor(color.getAlpha());
+
+        addedColorDynamic = new Color(r, g, b, a);
+    }
+
     public static void deleteAllColor(Color color) {
         int r = checkColor(color.getRed());
         int g = checkColor(color.getGreen());
@@ -74,6 +95,15 @@ public class ShadowMap {
         int a = checkColor(color.getAlpha());
 
         deletedColor = new Color(r, g, b, a);
+    }
+
+    public static void deleteAllColorDynamic(Color color) {
+        int r = checkColor(color.getRed());
+        int g = checkColor(color.getGreen());
+        int b = checkColor(color.getBlue());
+        int a = checkColor(color.getAlpha());
+
+        deletedColorDynamic = new Color(r, g, b, a);
     }
 
     public static void setColorBrightness(Color color, int brightness) {

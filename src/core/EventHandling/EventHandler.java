@@ -3,8 +3,8 @@ package core.EventHandling;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
 import core.EventHandling.Logging.Logger;
+import core.UI.GUI.CreateElement;
 import core.UI.GUI.Menu.*;
-import core.UI.GUI.Video;
 import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.SliderObject;
 import core.Window;
@@ -21,10 +21,11 @@ import static core.Commandline.updateLine;
 import static core.EventHandling.Logging.Logger.log;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.*;
+import static core.World.Creatures.Physics.updates;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class EventHandler extends Thread {
-    private static long lastMouseMovedTime = System.currentTimeMillis();
+    private static long lastMouseMovedTime = System.currentTimeMillis(), lastSecond = System.currentTimeMillis();
     private static Point lastMousePos;
     public static boolean mouseNotMoved = false, keyLogging = false;
     public static String keyLoggingText = "";
@@ -32,15 +33,14 @@ public class EventHandler extends Thread {
 
     public EventHandler() {
         log("Thread: Event handling started");
-        GLFWKeyCallback keyCallback = new GLFWKeyCallback() {
+        glfwSetKeyCallback(glfwWindow, new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
                 if (key == GLFW.GLFW_KEY_F4 && mods == GLFW.GLFW_MOD_ALT) {
                     Logger.logExit(1863);
                 }
             }
-        };
-        GLFW.glfwSetKeyCallback(glfwWindow, keyCallback);
+        });
     }
 
     public static void startKeyLogging() {
@@ -251,16 +251,14 @@ public class EventHandler extends Thread {
                 float worldSize = sliders.get("worldSize").max;
                 String pic = null;
 
-                if (getSliderPos("worldSize") <= worldSize / 3) {
-                    pic = "planetMini.png";
-                }
-                if (getSliderPos("worldSize") >= worldSize / 3) {
-                    pic = "planetAverage.png";
-                }
                 if (getSliderPos("worldSize") >= worldSize / 1.5f) {
                     pic = "planetBig.png";
+                } else if (getSliderPos("worldSize") >= worldSize / 3) {
+                    pic = "planetAverage.png";
+                } else {
+                    pic = "planetMini.png";
                 }
-                createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\other\\" + pic, "WorldGenerator");
+                createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\worldGenerator\\" + pic, "WorldGenerator");
             }
         }
     }
@@ -323,6 +321,18 @@ public class EventHandler extends Thread {
         }
     }
 
+    private static void updateDebug() {
+        if (Config.getFromConfig("Debug").equals("true") && System.currentTimeMillis() - lastSecond >= 1000) {
+            lastSecond = System.currentTimeMillis();
+
+            CreateElement.createText(5, 1020, "PhysicsUpdate", "Physics FPS: " + updates, new Color(0, 0, 0, 255), null);
+            CreateElement.createText(5, 1055, "GameFPS", "Game FPS: " + fps, new Color(0, 0, 0, 255), null);
+
+            updates = 0;
+            fps = 0;
+        }
+    }
+
     @Override
     public void run() {
         while (!glfwWindowShouldClose(glfwWindow)) {
@@ -334,6 +344,7 @@ public class EventHandler extends Thread {
             updateMouseMoveTimer();
             updateHotkeys();
             updateLine();
+            updateDebug();
         }
     }
 }

@@ -19,7 +19,7 @@ public class Config {
             try (FileInputStream fis = new FileInputStream(defPath + "\\src\\assets\\Config.properties")) {
                 prop.load(fis);
             } catch (Exception e) {
-                logExit(1, "Error at reading config: '" + e + "' at path: " + defPath + "\\src\\assets\\Config.properties");
+                logExit(1, "Error at reading config: '" + e + "' at path: " + defPath + "\\src\\assets\\Config.properties", true);
             }
         }
         String value = prop.getProperty(key);
@@ -38,7 +38,7 @@ public class Config {
             prop.store(fos, null);
 
         } catch (Exception e) {
-            logExit(1, "Error at update config: '" + e + "' at path: '" + defPath + "\\src\\assets\\Config.properties', key: '" + key + "' value: '" + value + "'");
+            logExit(1, "Error at update config: '" + e + "' at path: '" + defPath + "\\src\\assets\\Config.properties', key: '" + key + "' value: '" + value + "'", true);
         }
     }
 }
