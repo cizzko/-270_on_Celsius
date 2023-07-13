@@ -8,7 +8,7 @@ import static core.World.WorldGenerator.StaticObjects;
 public class ShadowMap {
     private static Color[][] shadows;
     private static Color[] shadowsDynamic;
-    private static int[][] colorDegree;
+    public static int[][] colorDegree;
     private static Color deletedColor = new Color(0, 0, 0, 0), deletedColorDynamic = new Color(0, 0, 0, 0);
     private static Color addedColor = new Color(0, 0, 0, 0), addedColorDynamic = new Color(0, 0, 0, 0);
 
@@ -46,6 +46,18 @@ public class ShadowMap {
 
                 if (hasColor && hasGas) {
                     colorDegree[x][y] = 2;
+                    shadows[x][y] = new Color(10, 10, 10, 255);
+                }
+            }
+        }
+
+        for (int x = 2; x < WorldGenerator.SizeX - 2; x++) {
+            for (int y = 2; y < WorldGenerator.SizeY - 2; y++) {
+                boolean hasGas = !StaticObjects[x - 2][y].gas && !StaticObjects[x + 2][y].gas && !StaticObjects[x][y - 2].gas && !StaticObjects[x][y + 2].gas && !StaticObjects[x][y].gas;
+                boolean hasColor = colorDegree[x - 2][y] > 0 && colorDegree[x + 2][y] > 0 && colorDegree[x][y + 2] > 0 && colorDegree[x][y - 2] > 0;
+
+                if (hasColor && hasGas) {
+                    colorDegree[x][y] = 3;
                     shadows[x][y] = new Color(10, 10, 10, 255);
                 }
             }

@@ -2,24 +2,34 @@ package core.World.Textures;
 
 import java.io.Serializable;
 
-//статичные объекты, ставятся в строго заданных координатах и не могут произвольно быть пермещены
 public class StaticWorldObjects implements Serializable {
-    public boolean gas, liquid, solid, plasma, onCamera;
+    public boolean gas, liquid, solid, plasma, onCamera, mirrored;
     public String options, path;
     public float y, x, currentHp, totalHp;
+    public Types type;
 
-    public StaticWorldObjects(String options, String path, float x, float y) {
-        this.onCamera = true;          //находится ли в фокусе, для оптимизации
-        this.gas = false;              //является ли газом
-        this.liquid = false;           //является ли жидкостью
-        this.solid = false;            //является ли твердым
-        this.plasma = false;           //является ли плазмой
-        this.options = options;        //описание и прочее
-        this.path = path;              //путь до текстуры
-        this.x = x;                    //мировая координата x
-        this.y = y;                    //мировая координата у
+    public enum Types {
+        GAS,
+        GRASS,
+        STONE,
+        DIRT_STONE,
+        DIRT,
+        IRON_ORE
+    }
+
+    public StaticWorldObjects(String path, float x, float y, Types type) {
+        this.onCamera = true;
+        this.gas = false;
+        this.liquid = false;
+        this.solid = false;
+        this.plasma = false;
+        this.mirrored = false;
+        this.path = path;
+        this.x = x;
+        this.y = y;
         this.totalHp = 100;
         this.currentHp = totalHp;
+        this.type = type;
     }
 
     public void destroyObject() {

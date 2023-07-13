@@ -1,6 +1,8 @@
 package core.UI.GUI;
+
 import core.EventHandling.Logging.Logger;
 import core.World.Textures.TextureLoader;
+
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
@@ -51,8 +53,16 @@ public class Fonts {
                 graphics.drawString(str, 0, charHeight - (int) lm.getDescent());
 
                 graphics.dispose();
-                letterSize.put(c, new Dimension(charWidth, charHeight));
-                chars.put(c, TextureLoader.ByteBufferEncoder(charImage));
+
+                if (charWidth > 0 && charHeight > 0) {
+                    letterSize.put(c, new Dimension(charWidth, charHeight));
+                    chars.put(c, TextureLoader.ByteBufferEncoder(charImage));
+                } else {
+                    letterSize.put(c, new Dimension(27, 13));
+                    chars.put(c, chars.get('?'));
+                    Logger.log("Charter '" + c + "' cannot displayed, file: '" + pathTTF + "'");
+                }
+
             } else {
                 Logger.log("Charter '" + c + "' cannot displayed, file: '" + pathTTF + "'");
             }

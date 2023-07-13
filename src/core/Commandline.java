@@ -2,12 +2,18 @@ package core;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
+import core.UI.GUI.Menu.CreatePlanet;
+import core.UI.GUI.Menu.Main;
+import core.World.Creatures.Physics;
+import core.World.Creatures.Player;
+
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+
 import static core.EventHandling.EventHandler.getKey;
 import static core.EventHandling.EventHandler.getKeyClick;
 import static core.EventHandling.Logging.Logger.logExit;
@@ -19,6 +25,10 @@ public class Commandline {
     private static void startReflection(String target) {
         if (target.equals("ExitGame") || target.equals("exitGame")) {
             logExit(1863, "Exit from console", true);
+
+        } else if (target.trim().equals("noclip")) {
+            Player.noClip = true;
+            Physics.physicsSpeed = 5000;
 
         } else if (target.trim().equals("modify")) {
             EventHandler.keyLoggingText = "modify.. what modify? <start package.class.field valueX> x - type of value, example: 'core.World.Creatures.Physics.physicsSpeed 400i'";

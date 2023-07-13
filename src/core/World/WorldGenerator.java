@@ -5,10 +5,13 @@ import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.StaticWorldObjects;
 import core.World.Weather.Sun;
+import core.World.Textures.StaticWorldObjects.Types;
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+
 import static core.EventHandling.Logging.Logger.log;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.defPath;
@@ -38,6 +41,7 @@ public class WorldGenerator {
         }
         ShadowMap.generate();
         ShadowMap.update();
+        WorldGenerator.generateResources();
         WorldGenerator.generateDynamicsObjects(randomSpawn);
 
         log("World generator: generating done!\n");
@@ -61,11 +65,11 @@ public class WorldGenerator {
         for (int x = 0; x < SizeX; x++) {
             for (int y = 0; y < SizeY; y++) {
                 if (y > SizeY / 1.5f) {
-                    StaticObjects[x][y] = new StaticWorldObjects(null, null, x * 16, y * 16);
+                    StaticObjects[x][y] = new StaticWorldObjects(null, x * 16, y * 16, Types.GAS);
                     StaticObjects[x][y].gas = true;
                 } else {
                     rand = 1 + (int) (Math.random() * 3);
-                    StaticObjects[x][y] = new StaticWorldObjects(null, defPath + "\\src\\assets\\World\\blocks\\grass" + rand + ".png", x * 16, y * 16);
+                    StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\grass" + rand + ".png", x * 16, y * 16, Types.GRASS);
                     StaticObjects[x][y].solid = true;
                 }
             }
@@ -76,10 +80,10 @@ public class WorldGenerator {
         log("World generator: generating mountains");
         createText(42, 140, "generateMountainsText", "Generating mountains", new Color(210, 210, 210, 255), "WorldGeneratorState");
 
-        float randGrass = 1.4f;         //шанс появления неровности, выше число - ниже шанс
-        float randAir = 7f;             //шанс появления воздуха вместо блока, выше число - ниже шанс
-        float iterations = 2f;          //количество итераций генерации
-        float mountainHeight = 12000f;  //шанс появления высоких гор, выше число - выше шанс
+        float randGrass = 2f;           //шанс появления неровности, выше число - ниже шанс
+        float randAir = 3.5f;             //шанс появления воздуха вместо блока, выше число - ниже шанс
+        float iterations = 3f;          //количество итераций генерации
+        float mountainHeight = 24000f;  //шанс появления высоких гор, выше число - выше шанс
 
         for (int i = 0; i < iterations; i++) {
             for (int x = 1; x < SizeX - 1; x++) {
@@ -87,7 +91,7 @@ public class WorldGenerator {
                     randGrass += y / (mountainHeight * SizeY);
 
                     if ((StaticObjects[x + 1][y].solid || StaticObjects[x - 1][y].solid || StaticObjects[x][y + 1].solid || StaticObjects[x][y - 1].solid) && Math.random() * randGrass < 1) {
-                        StaticObjects[x][y] = new StaticWorldObjects(null, defPath + "\\src\\assets\\World\\blocks\\grass1.png", x * 16, y * 16);
+                        StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\grass1.png", x * 16, y * 16, Types.GRASS);
                         StaticObjects[x][y].solid = true;
                     }
                     if (Math.random() * randAir < 1) {
@@ -126,10 +130,10 @@ public class WorldGenerator {
         for (int x = 1; x < SizeX - 1; x++) {
             for (int y = 1; y < SizeY - 1; y++) {
                 if (StaticObjects[x][y].gas && (StaticObjects[x + 1][y].solid && StaticObjects[x - 1][y].solid && StaticObjects[x][y - 1].solid) || (StaticObjects[x + 1][y + 1].solid && StaticObjects[x - 1][y - 1].solid) || (StaticObjects[x - 1][y + 1].solid && StaticObjects[x + 1][y - 1].solid) && Math.random() * smoothingChance < 1) {
-                    StaticObjects[x][y] = new StaticWorldObjects(null, defPath + "\\src\\assets\\World\\blocks\\grass1.png", x * 16, y * 16);
+                    StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\grass1.png", x * 16, y * 16, Types.GRASS);
                     StaticObjects[x][y].solid = true;
                 } else if ((StaticObjects[x][y + 1].solid && StaticObjects[x][y - 1].solid) || (StaticObjects[x + 1][y].solid && StaticObjects[x - 1][y].solid) && Math.random() * smoothingChance < 1) {
-                    StaticObjects[x][y] = new StaticWorldObjects(null, defPath + "\\src\\assets\\World\\blocks\\grass1.png", x * 16, y * 16);
+                    StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\grass1.png", x * 16, y * 16, Types.GRASS);
                     StaticObjects[x][y].solid = true;
                 }
             }
@@ -177,13 +181,49 @@ public class WorldGenerator {
         for (int[] coord : area) {
             int x = coord[0];
             int y = coord[1];
-            StaticObjects[x][y] = new StaticWorldObjects(null, defPath + "\\src\\assets\\World\\blocks\\grass1.png", x * 16, y * 16);
+            StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\grass1.png", x * 16, y * 16, Types.GRASS);
             StaticObjects[x][y].solid = true;
         }
     }
 
     private static void generateCanyons() {
 
+    }
+
+    private static void generateResources() {
+        log("World generator: generating resources");
+
+        PerlinNoiseGenerator.main(SizeX, SizeY, 1, 15, 1, .8, 4);
+
+        for (int x = 0; x < SizeX; x++) {
+            for (int y = 0; y < SizeY; y++) {
+                int random = 1 + (int) (Math.random() * 3);
+                if (StaticObjects[x][y + 1] != null && !StaticObjects[x][y + 1].gas) { // Генерация земли под блоками травы
+                    StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\dirt" + random + ".png", x * 16, y * 16, Types.DIRT);
+                    StaticObjects[x][y].solid = true;
+                }
+
+                if (ShadowMap.colorDegree[x][y] >= 3) { // Генерация камня
+                    StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\stone" + random + ".png", x * 16, y * 16, Types.STONE);
+                    StaticObjects[x][y].solid = true;
+                }
+
+                if (PerlinNoiseGenerator.noise[x][y] && ShadowMap.colorDegree[x][y] >= 3) { // Генерация руды WIP
+                    StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\iron_ore.png", x * 16, y * 16, Types.IRON_ORE);
+                    StaticObjects[x][y].solid = true;
+                }
+
+                if (ShadowMap.colorDegree[x][y] == 2) { // Генерация перехода между землёй и камнем
+                    if (StaticObjects[x][y + 1] != null && StaticObjects[x][y + 1].type != Types.DIRT_STONE) {
+                        StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\dirt-stone" + random + ".png", x * 16, y * 16, Types.DIRT_STONE);
+                        StaticObjects[x][y].solid = true;
+                    } else {
+                        StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\flag.png", x * 16, y * 16, Types.DIRT_STONE);
+                        StaticObjects[x][y].solid = true;
+                    }
+                }
+            }
+        }
     }
 
     public static void generateDynamicsObjects(boolean randomSpawn) {
