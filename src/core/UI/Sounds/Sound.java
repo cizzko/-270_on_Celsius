@@ -21,8 +21,7 @@ public class Sound {
             }
 
             new Thread(() -> {
-                if (type.equals("effect")) volume = effectVolume;
-                if (type.equals("sound")) volume = musicVolume;
+                volume = type.equals("effect") ? effectVolume : musicVolume;
 
                 try {
                     sounds.put(path, true);
@@ -61,7 +60,7 @@ public class Sound {
                     sourceDataLine.close();
 
                 } catch (Exception e) {
-                    Logger.log("Error during sound playback: " + e + ", file: " + path);
+                    Logger.log("Error during sound playback: '" + e + "', file: " + path);
                 } finally {
                     sounds.put(path, false);
                 }

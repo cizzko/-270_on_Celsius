@@ -21,7 +21,7 @@ public class CreateElement {
         buttons.put(name, new ButtonObject(simple, false, x, y, btnHeight, btnWidth, name, prompt, color, group));
     }
 
-    public static void createDropMenu(int x, int y, int menuWidth, int menuHeight, String[] btnNames, String menuName, Color color, String group) {
+    public static void createDropMenu(int x, int y, int menuWidth, int menuHeight, String[] btnNames, String pressedButton, String menuName, Color color, String group) {
         ButtonObject[] dropButtons = new ButtonObject[btnNames.length];
         buttons.put(menuName, new ButtonObject(true, false, x, y, menuHeight, menuWidth, menuName, null, color, group));
 
@@ -32,6 +32,10 @@ public class CreateElement {
                 dropButtons[i] = new ButtonObject(true, true, x, dropButtons[i - 1].y - menuHeight, menuHeight, menuWidth, btnNames[i], null, color, group);
             }
             dropButtons[i].visible = false;
+
+            if (pressedButton != null && dropButtons[i].name.equals(pressedButton)) {
+                dropButtons[i].isClicked = true;
+            }
         }
         dropMenu.put(menuName, dropButtons);
     }
@@ -69,10 +73,6 @@ public class CreateElement {
 
     public static void createPanel(int x, int y, int panWidth, int panHeight, String name, boolean simple, String group) {
         panels.put(name, new PanelObject(x, y, panWidth, panHeight, 1, name, simple, null, group, new Color(40, 40, 40, 240)));
-    }
-
-    public static void createPanel(int x, int y, int panWidth, int panHeight, String name, String group, Color color) {
-        panels.put(name, new PanelObject(x, y, panWidth, panHeight, 1, name, true, null, group, color));
     }
 
     public static void createText(int x, int y, String name, String text, Color color, String group) {

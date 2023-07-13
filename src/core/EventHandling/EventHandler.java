@@ -14,18 +14,14 @@ import core.World.Creatures.CreaturesGenerate;
 import core.World.Creatures.Physics;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
-
 import java.awt.*;
 import java.net.URI;
 import java.util.Arrays;
-
 import static core.Commandline.updateLine;
 import static core.EventHandling.Logging.Logger.log;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.*;
 import static core.World.Creatures.Physics.updates;
-import static core.World.WorldGenerator.DynamicObjects;
-import static core.World.WorldGenerator.StaticObjects;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class EventHandler extends Thread {
@@ -85,6 +81,30 @@ public class EventHandler extends Thread {
         Point mousePos = getMousePos();
 
         return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 && state == GLFW_PRESS;
+    }
+
+    public static boolean getDropMenuClick(String menuName, String buttonName) {
+        for (int x = 0; x < dropMenu.get(menuName).length; x++) {
+            ButtonObject obj = dropMenu.get(menuName)[x];
+
+            if (obj.name.equals(buttonName) && obj.isClicked) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static String getDropMenuClicks(String menuName) {
+        if (dropMenu.get(menuName) != null) {
+            for (int x = 0; x < dropMenu.get(menuName).length; x++) {
+                ButtonObject obj = dropMenu.get(menuName)[x];
+
+                if (obj.isClicked) {
+                    return obj.name;
+                }
+            }
+        }
+        return null;
     }
 
     private static void updateSliders() {
@@ -155,7 +175,7 @@ public class EventHandler extends Thread {
             }
 
             if (Settings.createdSettings && !buttons.get(Json.getName("SettingsSave")).isClicked) {
-                int count = (int) buttons.values().stream().filter(currentButton -> currentButton.isClicked && currentButton.visible && currentButton.swapButton).count();
+                int count = (int) buttons.values().stream().filter(currentButton -> currentButton.isClicked && currentButton.visible && (currentButton.group.contains("Swap") || currentButton.group.contains("Drop"))).count();
 
                 if (Settings.needUpdateCount) {
                     Settings.pressedCount = count;
@@ -232,7 +252,6 @@ public class EventHandler extends Thread {
                 } else if (button.name.equals(Json.getName("SettingsSave"))) {
                     buttons.get(Json.getName("SettingsSave")).isClickable = false;
                     Settings.updateConfigAll();
-                    Settings.needUpdateCount = true;
 
                 } else if (button.name.equals(Json.getName("GenerateWorld")) && !Window.start) {
                     WorldGenerator.generateWorld();
@@ -253,7 +272,7 @@ public class EventHandler extends Thread {
 
             if (sliders.get("worldSize") != null && sliders.get("worldSize").visible) {
                 float worldSize = sliders.get("worldSize").max;
-                String pic = null;
+                String pic;
 
                 if (getSliderPos("worldSize") >= worldSize / 1.5f) {
                     pic = "planetBig.png";
@@ -266,7 +285,6 @@ public class EventHandler extends Thread {
             }
         }
     }
-
 
     private static void updateDropMenu() {
         for (ButtonObject button : buttons.values()) {
@@ -329,12 +347,8 @@ public class EventHandler extends Thread {
         if (Config.getFromConfig("Debug").equals("true") && System.currentTimeMillis() - lastSecond >= 1000) {
             lastSecond = System.currentTimeMillis();
 
-            float playerY = (DynamicObjects[0] != null ? StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16)].y : 0) / 16;
-            float playerX = (DynamicObjects[0] != null ? StaticObjects[(int) (DynamicObjects[0].x / 16)][(int) (DynamicObjects[0].y / 16)].x : 0) / 16;
-
             CreateElement.createText(5, 1020, "PhysicsUpdate", "Physics FPS: " + updates, new Color(0, 0, 0, 255), null);
             CreateElement.createText(5, 1055, "GameFPS", "Game FPS: " + fps, new Color(0, 0, 0, 255), null);
-            CreateElement.createText(5, 985, "Coordinates", "Coordinates: X:" + playerX + " Y:" + playerY, new Color(0, 0, 0, 255), null);
 
             updates = 0;
             fps = 0;

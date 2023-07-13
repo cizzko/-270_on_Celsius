@@ -8,11 +8,11 @@ import static core.Window.defPath;
 
 public class Config {
     private static final Properties prop = new Properties();
-    private static final HashMap<String, String> keys = new HashMap<>();
+    private static final HashMap<String, String> values = new HashMap<>();
 
     public static String getFromConfig(String key) {
-        if (keys.containsKey(key)) {
-            return keys.get(key);
+        if (values.containsKey(key)) {
+            return values.get(key);
         }
 
         if (prop.isEmpty()) {
@@ -23,7 +23,7 @@ public class Config {
             }
         }
         String value = prop.getProperty(key);
-        keys.put(key, value);
+        values.put(key, value);
 
         return value;
     }
@@ -36,6 +36,7 @@ public class Config {
             prop.load(fis);
             prop.setProperty(key, value);
             prop.store(fos, null);
+            values.put(key, value);
 
         } catch (Exception e) {
             logExit(1, "Error at update config: '" + e + "' at path: '" + defPath + "\\src\\assets\\Config.properties', key: '" + key + "' value: '" + value + "'", true);

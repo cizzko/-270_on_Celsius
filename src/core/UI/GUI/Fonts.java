@@ -1,8 +1,6 @@
 package core.UI.GUI;
-
 import core.EventHandling.Logging.Logger;
 import core.World.Textures.TextureLoader;
-
 import java.awt.*;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
@@ -39,9 +37,11 @@ public class Fonts {
             if (font.canDisplay(c)) {
                 String str = Character.toString(c);
                 LineMetrics lm = font.getLineMetrics(str, fontRenderContext);
+
                 if (font.getStringBounds(str, fontRenderContext).getWidth() == 0 || lm.getHeight() == 0) {
                     continue;
                 }
+
                 int charWidth = (int) font.getStringBounds(str, fontRenderContext).getWidth();
                 int charHeight = (int) lm.getHeight();
 
@@ -54,18 +54,20 @@ public class Fonts {
 
                 graphics.dispose();
 
-                if (charWidth > 0 && charHeight > 0) {
-                    letterSize.put(c, new Dimension(charWidth, charHeight));
-                    chars.put(c, TextureLoader.ByteBufferEncoder(charImage));
-                } else {
-                    letterSize.put(c, new Dimension(27, 13));
-                    chars.put(c, chars.get('?'));
-                    Logger.log("Charter '" + c + "' cannot displayed, file: '" + pathTTF + "'");
-                }
+                letterSize.put(c, new Dimension(charWidth, charHeight));
+                chars.put(c, TextureLoader.ByteBufferEncoder(charImage));
 
             } else {
                 Logger.log("Charter '" + c + "' cannot displayed, file: '" + pathTTF + "'");
             }
         }
+    }
+
+    public static Dimension getCharDimension(char c) {
+        return letterSize.get(c) != null && letterSize.get(c).width > 0 && letterSize.get(c).height > 0 ? letterSize.get(c) : letterSize.get('?');
+    }
+
+    public static ByteBuffer getCharBuffer(char c) {
+        return chars.get(c) != null ? chars.get(c) : chars.get('?');
     }
 }

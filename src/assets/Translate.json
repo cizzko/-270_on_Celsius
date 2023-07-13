@@ -1,10 +1,10 @@
 {
   "en": {
+    "Language": "Language",
     "Play": "Play",
     "Settings": "Settings",
     "Exit": "Exit",
     "Continue": "Continue",
-
     "GenerateWorld": "Generate world",
     "GenerateSimpleWorld": "Simplified generation",
     "GenerateSimpleWorldPrompt": "Generation without any relief",
@@ -38,11 +38,11 @@
   },
 
   "ru": {
+    "Language": "Язык",
     "Play": "Начать",
     "Settings": "Настройки",
     "Exit": "Выход",
     "Continue": "Продолжить",
-
     "GenerateWorld": "Создать мир",
     "GenerateSimpleWorld": "Упрощенная генерация",
     "GenerateSimpleWorldPrompt": "Генерация без рельефа",
@@ -76,20 +76,20 @@
   },
 
   "uk": {
+    "Language": "Язык",
     "Play": "Начати",
     "Settings": "Налаштування",
     "Exit": "Выхід",
     "Continue": "Продовжити",
-
     "GenerateWorld": "Создати мир ",
     "GenerateSimpleWorld": "Спрощенна генерація",
     "GenerateSimpleWorldPrompt": "Генерація без рельефу",
     "GenerateCreatures": "Генерація сутностей",
     "GenerateCreaturesPrompt": "Генерація та прорахунок метеликів, птахів тощо. Може впливати на продуктивність",
-
+    "RandomSpawn": "Случайное положение",
+    "RandomSpawnPrompt": "Если включено, персонаж появится в случайном месте, иначе - посередине мира",
     "SettingsExit": "Повернутися",
     "SettingsSave": "Сохранити",
-
     "SettingsGraphics": "Графіка",
     "InterpolateSunset": "Интерполяція заходу сонця",
     "InterpolateSunsetPrompt": "Згладжування градієнта заходу сонця, він стає м'якшим і плавнішим\\nЦе може незначно впливати на продуктивність.",
@@ -97,13 +97,13 @@
     "PreloadTexturesPrompt": "Може незначно підвищити продуктивність та прибрати мікролаги\\nоднак зросте споживання пам'яті та час завантаження",
     "VerticalSync": "Вертикальная синхронизация",
     "VerticalSyncPrompt": "Синхронізує фпс із частотою оновлення екрана, дозволяє уникнути візуальних розрививів зображення",
-
     "SettingsBasic": "Основне",
     "CalibrateMouseText": "Калибровка положения мыши. Используйте wasd или стрелочки для передвижения,\\nпока реальный курсор не окажется ровно под игровым (орандевым) курсором",
     "CalibrateMouseContinue": "Завершить",
+    "DetectLanguage": "Автоопределение языка",
+    "DetectLanguagePrompt": "Автоматическое определение языка на основе языка системы",
     "ShowPrompts": "Вспливаючі підказки",
     "ShowPromptsPrompt": "Показувати вспливаючі підказки (якщо є) при наведенні на кнопки",
-
     "SettingsOther": "Друге",
     "SendAnonymousStatistics": "Відправляти статистику",
     "SendAnonymousStatisticsPrompt": "Ми (автор) будемо збирати анонімні дані для покращення продукту:\\nкомплектуючі пристрою, ігрові параметри, поточний час. \nАвтор має право змінити список даних.\\nПогоджуючись із цим повідомленням, ви даєте право на збір та використовування ваших даних.\\nА також ви допомагаєте покращувати гру :)"

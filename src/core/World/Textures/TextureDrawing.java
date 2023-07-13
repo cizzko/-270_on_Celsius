@@ -2,7 +2,6 @@ package core.World.Textures;
 
 import core.Commandline;
 import core.EventHandling.EventHandler;
-import core.UI.GUI.Fonts;
 import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.PanelObject;
 import core.UI.GUI.Objects.SliderObject;
@@ -20,7 +19,7 @@ import static core.EventHandling.EventHandler.getMousePos;
 import static core.EventHandling.EventHandler.mouseNotMoved;
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.UI.GUI.CreateElement.*;
-import static core.UI.GUI.Fonts.letterSize;
+import static core.UI.GUI.Fonts.*;
 import static core.UI.GUI.Video.*;
 import static core.Window.defPath;
 import static core.World.Textures.TextureLoader.BufferedImageEncoder;
@@ -188,7 +187,7 @@ public class TextureDrawing {
 
     //for video, text, etc
     public static void drawTexture(float x, float y, int width, int height, String name, ByteBuffer buffer, Color color, float zoom) {
-        if (name != null) {
+        if (name != null && textures.get(name.hashCode()) != null) {
             glBindTexture(GL_TEXTURE_2D, textures.get(name.hashCode()).id);
         } else {
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
@@ -239,11 +238,8 @@ public class TextureDrawing {
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
 
-            if (letterSize.get(ch).width == 0 || letterSize.get(ch).height == 0) {
-                ch = '?';
-            }
             if (ch == ' ') {
-                x += letterSize.get('A').width;
+                x += getCharDimension('A').width;
                 continue;
             } else if (ch == '\\' && text.charAt(i + 1) == 'n') {
                 y -= 30;
@@ -251,8 +247,8 @@ public class TextureDrawing {
                 x = startX;
                 continue;
             }
-            TextureDrawing.drawTexture(x, y, letterSize.get(ch).width, letterSize.get(ch).height, String.valueOf(ch), Fonts.chars.get(ch), color, 1);
-            x += letterSize.get(ch).width;
+            TextureDrawing.drawTexture(x, y, getCharDimension(ch).width, getCharDimension(ch).height, String.valueOf(ch), getCharBuffer(ch), color, 1);
+            x += getCharDimension(ch).width;
         }
     }
 
@@ -396,9 +392,9 @@ public class TextureDrawing {
             char c = text.charAt(i);
 
             if (c == ' ') {
-                currentWidth += letterSize.get('A').width;
+                currentWidth += getCharDimension('A').width;
             } else {
-                currentWidth += letterSize.get(c).width;
+                currentWidth += getCharDimension(c).width;
             }
             if (currentWidth > maxWidth) {
                 modifiedText.append("\\n");
@@ -430,10 +426,10 @@ public class TextureDrawing {
             char c = longestLine.charAt(i);
 
             if (c == ' ') {
-                width += letterSize.get('A').width;
+                width += getCharDimension('A').width;
                 continue;
             }
-            width += letterSize.get(c).width;
+            width += getCharDimension(c).width;
         }
         return new Dimension(width, (text.split("\\\\n").length) * 28 + 16);
     }
@@ -478,16 +474,17 @@ public class TextureDrawing {
 
                 float xBlock = StaticObjects[x][y].x;
                 float yBlock = StaticObjects[x][y].y;
+                boolean mirrored = StaticObjects[x][y].mirrored;
 
                 if (!(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top)) {
                     if (StaticObjects[x][y].currentHp > StaticObjects[x][y].totalHp / 1.5f) {
-                        drawTexture(StaticObjects[x][y].path, xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
+                        drawTexture(StaticObjects[x][y].path, xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, mirrored);
 
                     } else if (StaticObjects[x][y].currentHp < StaticObjects[x][y].totalHp / 3) {
-                        drawMultiTexture(StaticObjects[x][y].path, defPath + "\\src\\assets\\World\\blocks\\damaged2.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
+                        drawMultiTexture(StaticObjects[x][y].path, defPath + "\\src\\assets\\World\\blocks\\damaged2.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, mirrored);
 
                     } else {
-                        drawMultiTexture(StaticObjects[x][y].path, defPath + "\\src\\assets\\World\\blocks\\damaged1.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
+                        drawMultiTexture(StaticObjects[x][y].path, defPath + "\\src\\assets\\World\\blocks\\damaged1.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, mirrored);
                     }
                 }
             }
@@ -585,21 +582,26 @@ public class TextureDrawing {
             }
 
             drawRectangle(button.x, button.y, button.width, button.height, button.color);
-            drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
+            drawText(button.x + 20, (int) (button.y + button.height / 2.8), button.name);
 
             if (button.isClicked) {
+                drawTexture(defPath + "\\src\\assets\\UI\\GUI\\openDrop.png", button.x + button.width - 42, button.y + button.height / 3.f, 1, true);
                 ButtonObject[] dropButtons = dropMenu.get(button.name);
 
                 for (ButtonObject dropButton : dropButtons) {
+                    drawRectangle(dropButton.x, dropButton.y, dropButton.width, 5, new Color(10, 10, 10, 255));
+
                     if (dropButton.simple && dropButton.swapButton && dropButton.isClicked) {
                         drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
                         drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", dropButton.x + dropButton.width / 1.3f, dropButton.y + dropButton.height / 3f, 1, true);
-                        drawText((int) (dropButton.x * 1.1f), dropButton.y + dropButton.height / 3, dropButton.name);
+                        drawText(dropButton.x + 20, dropButton.y + dropButton.height / 3, dropButton.name);
                     } else if (dropButton.simple && dropButton.swapButton) {
                         drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
-                        drawText((int) (dropButton.x * 1.1f), dropButton.y + dropButton.height / 3, dropButton.name);
+                        drawText(dropButton.x + 20, dropButton.y + dropButton.height / 3, dropButton.name);
                     }
                 }
+            } else {
+                drawTexture(defPath + "\\src\\assets\\UI\\GUI\\closedDrop.png", button.x + button.width - 42, button.y + button.height / 3.5f, 1, true);
             }
         }
     }

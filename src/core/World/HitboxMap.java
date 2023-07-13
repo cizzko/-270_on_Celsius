@@ -64,7 +64,7 @@ public class HitboxMap {
             if (StaticObjects[tarX + i][tarY + tarYSize] == null) {
                 return true;
             }
-            if ((y + sizeY >= (StaticObjects[tarX + i][tarY + tarYSize].solid ? StaticObjects[tarX + i][tarY + tarYSize].y : SizeY * 16))) {
+            if ((y + sizeY >= (StaticObjects[tarX + i][tarY + tarYSize].solid ? StaticObjects[tarX + i][tarY + tarYSize].y : SizeY * 16)) || x + sizeX >= (StaticObjects[tarX + tarXSize][tarY + tarYSize].solid ? StaticObjects[tarX + tarXSize][tarY + tarYSize].x : SizeX * 16)) {
                 return true;
             }
         }

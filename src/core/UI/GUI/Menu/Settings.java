@@ -1,11 +1,13 @@
 package core.UI.GUI.Menu;
 
+import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
 import java.awt.*;
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.EventHandling.Logging.Json.getName;
 import static core.UI.GUI.CreateElement.*;
+import static core.Window.defPath;
 
 public class Settings {
     public static boolean createdSettings = false, needUpdateCount = true;
@@ -36,8 +38,10 @@ public class Settings {
 
 
     public static void createBasicSett() {
+        createDropMenu(780, 950, 240, 65, Json.getAllLanguagesArray(), Json.lang, Json.getName("Language"), new Color(255, 80, 0, 55), "SettingsBasicDrop");
         createSwapButton(310, 980, 32, 32, getName("ShowPrompts"), getName("ShowPromptsPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("ShowPrompts")), "SettingsBasicSwap");
         createSwapButton(310, 910, 32, 32, getName("DetectLanguage"), getName("DetectLanguagePrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("DetectLanguage")), "SettingsBasicSwap");
+        createPicture(935, 965, 1, "da", defPath + "\\src\\assets\\UI\\GUI\\languageIcon.png", "Settings");
     }
 
     public static void createOtherSett() {
@@ -50,6 +54,7 @@ public class Settings {
 
     public static void deleteBasicSett() {
         buttons.values().stream().filter(button -> button.group.contains("SettingsBasic")).forEach(button -> button.visible = false);
+        panels.get("da").visible = false;
     }
 
     public static void deleteOtherSett() {
@@ -67,6 +72,8 @@ public class Settings {
     }
 
     public static void updateConfigAll() {
-        buttons.values().stream().filter(button -> button.group.contains("Swap")).forEach(button -> Config.updateConfig(Json.getKey(button.name), String.valueOf(button.isClicked)));
+        buttons.values().stream().filter(button -> button.group.contains("Swap") && button.visible).forEach(button -> Config.updateConfig(Json.getKey(button.name), String.valueOf(button.isClicked)));
+        buttons.values().stream().filter(button -> button.group.contains("Drop") && button.visible).forEach(button -> Config.updateConfig(Json.getKey(button.name), EventHandler.getDropMenuClicks(button.name)));
+        buttons.values().stream().filter(button -> button.group.contains("Drop") && button.visible).forEach(button -> button.isClicked = false);
     }
 }

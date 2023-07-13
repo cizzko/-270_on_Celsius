@@ -46,7 +46,7 @@ public class ShadowMap {
 
                 if (hasColor && hasGas) {
                     colorDegree[x][y] = 2;
-                    shadows[x][y] = new Color(10, 10, 10, 255);
+                    shadows[x][y] = new Color(80, 80, 80, 255);
                 }
             }
         }

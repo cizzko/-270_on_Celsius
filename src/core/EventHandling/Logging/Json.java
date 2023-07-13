@@ -9,10 +9,8 @@ import static core.EventHandling.Logging.Logger.log;
 import static core.Window.defPath;
 
 public class Json {
-    private static final HashMap<String, String> words = new HashMap<>();
-    private static final HashMap<String, String> keys = new HashMap<>();
-    public static String lang;
-    public static String allLanguages;
+    private static final HashMap<String, String> words = new HashMap<>(), keys = new HashMap<>();
+    public static String lang, allLanguages;
 
     public static String getName(String key) {
         if (words.get(key) == null) {
@@ -47,6 +45,20 @@ public class Json {
             }
         }
         return allLanguages;
+    }
+
+    public static String[] getAllLanguagesArray() {
+        String[] availableLanguages = null;
+
+        try (FileReader reader = new FileReader(defPath + "\\src\\assets\\Translate.json")) {
+            Gson gson = new Gson();
+            JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
+
+            availableLanguages = jsonObject.keySet().stream().filter(key -> !key.equalsIgnoreCase("Languages")).toArray(String[]::new);
+        } catch (Exception e) {
+            log("Error while reading languages from JSON file: " + e);
+        }
+        return availableLanguages;
     }
 
     public static void detectLanguage() {

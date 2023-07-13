@@ -1,7 +1,6 @@
 package core.World.Textures;
 
 import core.EventHandling.Logging.Config;
-import core.UI.GUI.Fonts;
 import org.lwjgl.BufferUtils;
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -12,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.util.Stack;
 import static core.EventHandling.Logging.Logger.log;
 import static core.EventHandling.Logging.Logger.logExit;
+import static core.UI.GUI.Fonts.getCharBuffer;
 import static core.UI.GUI.Fonts.letterSize;
 import static core.Window.defPath;
 import static core.World.Textures.TextureDrawing.bindTexture;
@@ -124,7 +124,7 @@ public class TextureLoader extends Thread {
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, Fonts.chars.get(character));
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, getCharBuffer(character));
             TextureDrawing.textures.put(character.hashCode(), new TextureData(id, width, height));
 
             glBindTexture(GL_TEXTURE_2D, 0);

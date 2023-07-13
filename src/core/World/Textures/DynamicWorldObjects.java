@@ -44,9 +44,10 @@ public class DynamicWorldObjects implements Serializable {
 
         float y = 1;
         int sizeX = framesCount == 1 ? (int) Math.ceil(TextureLoader.BufferedImageEncoder(path).getWidth() / 16) : (int) Math.ceil(TextureLoader.BufferedImageEncoder(path + "1.png").getWidth() / 16);
+        sizeX += 1;
 
         for (int worldX = 0; worldX < sizeX; worldX++) {
-            for (int worldY = 1; worldY < SizeY - 1; worldY++) {
+            for (int worldY = 1; worldY < SizeY - 2; worldY++) {
                 StaticWorldObjects objUp = StaticObjects[(int) (x / 16 + worldX)][worldY + 1];
                 StaticWorldObjects obj = StaticObjects[(int) (x / 16 + worldX)][worldY];
 

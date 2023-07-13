@@ -1,21 +1,15 @@
 package core;
 
 import core.EventHandling.EventHandler;
-import core.EventHandling.Logging.Config;
-import core.UI.GUI.Menu.CreatePlanet;
-import core.UI.GUI.Menu.Main;
-import core.World.Creatures.Physics;
-import core.World.Creatures.Player;
-
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-
 import static core.EventHandling.EventHandler.getKey;
 import static core.EventHandling.EventHandler.getKeyClick;
+import static core.EventHandling.EventHandler.keyLoggingText;
 import static core.EventHandling.Logging.Logger.logExit;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -26,18 +20,17 @@ public class Commandline {
         if (target.equals("ExitGame") || target.equals("exitGame")) {
             logExit(1863, "Exit from console", true);
 
-        } else if (target.trim().equals("noclip")) {
-            Player.noClip = true;
-            Physics.physicsSpeed = 5000;
+        } else if (target.trim().equals("help")) {
+            keyLoggingText = "Write 'help modify' or 'help start'";
 
-        } else if (target.trim().equals("modify")) {
-            EventHandler.keyLoggingText = "modify.. what modify? <start package.class.field valueX> x - type of value, example: 'core.World.Creatures.Physics.physicsSpeed 400i'";
+        } else if (target.equals("help modify") || target.trim().equals("modify")) {
+            keyLoggingText = "for modify some field: <start package.class.field valueX> x - type of value, example: 'core.World.Creatures.Physics.physicsSpeed 400i'";
 
-        } else if (target.trim().equals("start")) {
-            EventHandler.keyLoggingText = "start.. what start? <start package.class.method arg1X arg2X..> x - type of value, example: 'start core.EventHandling.Logging.Logger.logExit 0i'";
+        } else if (target.equals("help start") || target.trim().equals("start")) {
+            keyLoggingText = "for start some method: <start package.class.method arg1X arg2X..> x - type of value, example: 'start core.EventHandling.Logging.Logger.logExit 0i'";
 
         } else if (target.contains("sendStateMessage")) {
-            EventHandler.keyLoggingText = "No access to send state message";
+            keyLoggingText = "No access to send state message";
 
         } else if (target.contains("modify")) {
             target = target.substring(7);
@@ -62,9 +55,9 @@ public class Commandline {
             Field field = clazz.getDeclaredField(fieldName);
             field.set(null, convertToType(parts[parts.length - 1]));
 
-            EventHandler.keyLoggingText = fieldName + " modified to " + convertToType(parts[parts.length - 1]);
+            keyLoggingText = fieldName + " modified to " + convertToType(parts[parts.length - 1]);
         } catch (Exception e) {
-            EventHandler.keyLoggingText = e.toString();
+            keyLoggingText = e.toString();
         }
     }
 
@@ -107,9 +100,9 @@ public class Commandline {
             }
 
             Object result = method.invoke(null, convertedArgs);
-            EventHandler.keyLoggingText = result != null ? "Returned: " + result : "Successfully";
+            keyLoggingText = result != null ? "Returned: " + result : "Successfully";
         } catch (Exception e) {
-            EventHandler.keyLoggingText = e.toString();
+            keyLoggingText = e.toString();
         }
     }
 
@@ -140,6 +133,7 @@ public class Commandline {
 
     public static void createLine() {
         EventHandler.startKeyLogging();
+        EventHandler.keyLoggingText = "";
         created = true;
     }
 
@@ -158,7 +152,7 @@ public class Commandline {
 
         if (created) {
             if (getKeyClick(GLFW_KEY_ENTER)) {
-                startReflection(EventHandler.keyLoggingText);
+                startReflection(keyLoggingText);
             }
 
             if (getKey(GLFW_KEY_LEFT_CONTROL) && getKey(GLFW_KEY_V)) {
@@ -166,7 +160,7 @@ public class Commandline {
 
                 if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                     try {
-                        EventHandler.keyLoggingText += (String) transferable.getTransferData(DataFlavor.stringFlavor);
+                        keyLoggingText += (String) transferable.getTransferData(DataFlavor.stringFlavor);
                         Thread.sleep(200);
                     } catch (Exception e) {
                         e.printStackTrace();

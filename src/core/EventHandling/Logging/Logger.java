@@ -17,7 +17,6 @@ public class Logger {
     private static final long sessionId = (long) (new Random().nextDouble() * Long.MAX_VALUE);
     public static boolean cleanup = false;
 
-
     public static void log(String message, boolean forcibly) {
         if (getFromConfig("Debug").equals("true") || forcibly) {
             System.out.println(message);

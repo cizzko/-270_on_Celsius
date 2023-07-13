@@ -75,6 +75,7 @@ public class Sun {
 
         ShadowMap.deleteAllColor(new Color(deleteGradient, deleteGradient, deleteGradient, 0));
         ShadowMap.deleteAllColorDynamic(new Color(deleteGradient, deleteGradient, deleteGradient, 0));
+
         drawTexture(defPath + "\\src\\assets\\World\\sky\\skyBackground0.png", 0, 0, 1, new Color(255, 255, 255, backGradient), true, false);
     }
 
