@@ -6,12 +6,10 @@ import core.World.Textures.ShadowMap;
 import core.World.Textures.StaticWorldObjects;
 import core.World.Weather.Sun;
 import core.World.Textures.StaticWorldObjects.Types;
-
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
 import static core.EventHandling.Logging.Logger.log;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.defPath;
@@ -216,11 +214,10 @@ public class WorldGenerator {
                 if (ShadowMap.colorDegree[x][y] == 2) { // Генерация перехода между землёй и камнем
                     if (StaticObjects[x][y + 1] != null && StaticObjects[x][y + 1].type != Types.DIRT_STONE) {
                         StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\dirt-stone" + random + ".png", x * 16, y * 16, Types.DIRT_STONE);
-                        StaticObjects[x][y].solid = true;
                     } else {
                         StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\flag.png", x * 16, y * 16, Types.DIRT_STONE);
-                        StaticObjects[x][y].solid = true;
                     }
+                    StaticObjects[x][y].solid = true;
                 }
             }
         }
