@@ -1,12 +1,15 @@
 package core.World;
 
+import core.EventHandling.Logging.Json;
 import core.World.Textures.DynamicWorldObjects;
+import core.World.Textures.ShadowMap;
 import core.World.Textures.StaticWorldObjects;
 import java.io.*;
 import java.util.HashMap;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import static core.EventHandling.Logging.Logger.log;
+import static core.UI.GUI.CreateElement.buttons;
 import static core.Window.defPath;
 
 public class Saves {
@@ -16,6 +19,8 @@ public class Saves {
             HashMap<String, Object> objects = new HashMap<>();
             objects.put("StaticWorldObjects", WorldGenerator.StaticObjects);
             objects.put("DynamicWorldObjects", WorldGenerator.DynamicObjects);
+            objects.put("WorldGeneratorCreatures", buttons.get(Json.getName("GenerateCreatures")).isClicked);
+            objects.put("ShadowsData", ShadowMap.getAllData());
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -50,11 +55,18 @@ public class Saves {
             iis.close();
             fis.close();
         } catch (Exception e) {
-            log("Error at load world save: " + e + ". Path: " + path);
+            log("Error at load world save: '" + e + "', path: " + path);
         }
 
-        WorldGenerator.StaticObjects = (StaticWorldObjects[][]) data.get("StaticWorldObjects");
+        StaticWorldObjects[][] objects = (StaticWorldObjects[][]) data.get("StaticWorldObjects");
+
+        WorldGenerator.SizeY = objects.length;
+        WorldGenerator.SizeX = objects.length;
+        WorldGenerator.StaticObjects = objects;
         WorldGenerator.DynamicObjects = (DynamicWorldObjects[]) data.get("DynamicWorldObjects");
+
+        WorldGenerator.start((Boolean) data.get("WorldGeneratorCreatures"));
+        ShadowMap.setAllData((HashMap<String, Object>) data.get("ShadowsData"));
     }
 
     public static String[] loadWorldSaves() {

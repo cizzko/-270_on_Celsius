@@ -3,6 +3,7 @@ package core.World.Textures;
 import core.World.WorldGenerator;
 import java.awt.*;
 import java.util.Arrays;
+import java.util.HashMap;
 import static core.World.WorldGenerator.StaticObjects;
 
 public class ShadowMap {
@@ -24,6 +25,7 @@ public class ShadowMap {
             Arrays.fill(color, 0);
         }
         Arrays.fill(shadowsDynamic, new Color(255, 255, 255, 255));
+        update();
     }
 
     public static void update() {
@@ -196,5 +198,29 @@ public class ShadowMap {
 
     private static int checkColor(int color) {
         return Math.min(Math.max(color, 0), 255);
+    }
+
+    public static HashMap<String, Object> getAllData() {
+        HashMap<String, Object> data = new HashMap<>();
+
+        data.put("Shadows", shadows);
+        data.put("ShadowsDynamic", shadowsDynamic);
+        data.put("ColorDegree", colorDegree);
+        data.put("DeletedColor", deletedColor);
+        data.put("DeletedColorDynamic", deletedColorDynamic);
+        data.put("AddedColor", addedColor);
+        data.put("AddedColorDynamic", addedColorDynamic);
+
+        return data;
+    }
+
+    public static void setAllData(HashMap<String, Object> data) {
+        shadows = (Color[][]) data.get("Shadows");
+        shadowsDynamic = (Color[]) data.get("ShadowsDynamic");
+        colorDegree = (int[][]) data.get("ColorDegree");
+        deletedColor = (Color) data.get("DeletedColor");
+        deletedColorDynamic = (Color) data.get("DeletedColorDynamic");
+        addedColor = (Color) data.get("AddedColor");
+        addedColorDynamic = (Color) data.get("AddedColorDynamic");
     }
 }

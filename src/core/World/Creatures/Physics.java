@@ -12,7 +12,7 @@ import static org.lwjgl.glfw.GLFW.*;
 public class Physics extends Thread {
     public static int physicsSpeed = 400, updates = 0;
     private static boolean stop = false;
-    private static int lastSpeed = physicsSpeed;
+    public static int lastSpeed = physicsSpeed;
     //default 400
 
     public void run() {

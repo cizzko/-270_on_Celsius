@@ -1,9 +1,14 @@
 package core.World;
 
 import core.EventHandling.Logging.Json;
+import core.UI.GUI.Menu.CreatePlanet;
+import core.Window;
+import core.World.Creatures.CreaturesGenerate;
+import core.World.Creatures.Physics;
 import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.StaticWorldObjects;
+import core.World.Textures.TextureDrawing;
 import core.World.Weather.Sun;
 import core.World.Textures.StaticWorldObjects.Types;
 import java.awt.*;
@@ -24,6 +29,7 @@ public class WorldGenerator {
         int SizeY = getSliderPos("worldSize") + 20;
         boolean simple = buttons.get(Json.getName("GenerateSimpleWorld")).isClicked;
         boolean randomSpawn = buttons.get(Json.getName("RandomSpawn")).isClicked;
+        boolean creatures = buttons.get(Json.getName("GenerateCreatures")).isClicked;
 
         log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world at size: x - " + SizeX + ", y - " + SizeY + " (" + SizeX * SizeY + "); with arguments 'simple: " + simple + ", random spawn: " + randomSpawn + "'");
 
@@ -38,20 +44,15 @@ public class WorldGenerator {
             fillHollows();
         }
         ShadowMap.generate();
-        ShadowMap.update();
+
         WorldGenerator.generateResources();
         WorldGenerator.generateDynamicsObjects(randomSpawn);
+        Sun.createSun();
 
         log("World generator: generating done!\n");
         createText(42, 50, "generatingDone", "Done! Starting world..", new Color(147, 51, 0, 255), "WorldGeneratorState");
 
-        try {
-            Thread.sleep(500);
-        } catch (InterruptedException e) {
-            log(e.toString());
-        }
-
-        Sun.createSun();
+        start(creatures);
     }
 
     private static void generateFlatWorld() {
@@ -225,5 +226,16 @@ public class WorldGenerator {
 
     public static void generateDynamicsObjects(boolean randomSpawn) {
         DynamicObjects[0] = new DynamicWorldObjects(1, false, defPath + "\\src\\assets\\World\\creatures\\player.png", 0, randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f);
+    }
+
+    public static void start(boolean generateCreatures) {
+        TextureDrawing.loadObjects();
+        CreatePlanet.delete();
+
+        new Thread(new Physics()).start();
+        if (generateCreatures) {
+            new Thread(new CreaturesGenerate()).start();
+        }
+        Window.start = true;
     }
 }

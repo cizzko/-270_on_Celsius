@@ -255,15 +255,7 @@ public class EventHandler extends Thread {
 
                 } else if (button.name.equals(Json.getName("GenerateWorld")) && !Window.start) {
                     WorldGenerator.generateWorld();
-                    TextureDrawing.loadObjects();
-                    CreatePlanet.delete();
 
-                    new Thread(new Physics()).start();
-                    if (buttons.get(Json.getName("GenerateCreatures")).isClicked) {
-                        new Thread(new CreaturesGenerate()).start();
-                    }
-
-                    Window.start = true;
                 } else if (button.name.equals(Json.getName("Continue"))) {
                     Pause.delete();
                     Settings.delete();
