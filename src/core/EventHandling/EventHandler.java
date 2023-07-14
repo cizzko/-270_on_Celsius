@@ -335,11 +335,10 @@ public class EventHandler extends Thread {
         if (getKeyClick(GLFW_KEY_ESCAPE) && start) {
             if (!Pause.created) {
                 Pause.create();
-                Settings.delete();
             } else {
                 Pause.delete();
-                Settings.delete();
             }
+            Settings.delete();
         }
     }
 

@@ -41,7 +41,7 @@ public class Settings {
         createDropMenu(780, 950, 240, 65, Json.getAllLanguagesArray(), Json.lang, Json.getName("Language"), new Color(255, 80, 0, 55), "SettingsBasicDrop");
         createSwapButton(310, 980, 32, 32, getName("ShowPrompts"), getName("ShowPromptsPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("ShowPrompts")), "SettingsBasicSwap");
         createSwapButton(310, 910, 32, 32, getName("DetectLanguage"), getName("DetectLanguagePrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("DetectLanguage")), "SettingsBasicSwap");
-        createPicture(935, 965, 1, "da", defPath + "\\src\\assets\\UI\\GUI\\languageIcon.png", "Settings");
+        createPicture(745, 965, 1, "languageIcon", defPath + "\\src\\assets\\UI\\GUI\\languageIcon.png", "SettingsBasic");
     }
 
     public static void createOtherSett() {
@@ -54,7 +54,7 @@ public class Settings {
 
     public static void deleteBasicSett() {
         buttons.values().stream().filter(button -> button.group.contains("SettingsBasic")).forEach(button -> button.visible = false);
-        panels.get("da").visible = false;
+        panels.values().stream().filter(button -> button.group.contains("SettingsBasic")).forEach(button -> button.visible = false);
     }
 
     public static void deleteOtherSett() {

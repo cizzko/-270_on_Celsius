@@ -555,10 +555,8 @@ public class TextureDrawing {
 
                 for (int layer : layers) {
                     for (PanelObject panelObj : panels.values()) {
-                        if (panelObj.layer == layer) {
-                            if (panelObj.options != null) {
-                                drawTexture(panelObj.options, panelObj.x, panelObj.y, 1, true);
-                            }
+                        if (panelObj.options != null && panelObj.layer == layer && panelObj.visible) {
+                            drawTexture(panelObj.options, panelObj.x, panelObj.y, 1, true);
                         }
                     }
                 }
