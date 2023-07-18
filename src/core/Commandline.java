@@ -1,6 +1,7 @@
 package core;
 
 import core.EventHandling.EventHandler;
+import core.EventHandling.Logging.Config;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -10,29 +11,27 @@ import java.util.Arrays;
 import static core.EventHandling.EventHandler.getKey;
 import static core.EventHandling.EventHandler.getKeyClick;
 import static core.EventHandling.EventHandler.keyLoggingText;
-import static core.EventHandling.Logging.Logger.logExit;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Commandline {
+    private static final String prefix = Config.getFromFC("Prefix");
     public static boolean created = false;
 
     private static void startReflection(String target) {
-        if (target.equals("ExitGame") || target.equals("exitGame")) {
-            logExit(1863, "Exit from console", true);
+        if (target.startsWith(prefix)) {
+            target = Config.getFromFC(target.substring(prefix.length() + 1));
 
-        } else if (target.trim().equals("help")) {
-            keyLoggingText = "Write 'help modify' or 'help start'";
+            if (target == null || target.equals("null") || target.contains("sendStateMessage")) {
+                keyLoggingText = "No access or target is null";
+                return;
+            }
+            if (target.startsWith("output:")) {
+                keyLoggingText = target.substring(7);
+                return;
+            }
+        }
 
-        } else if (target.equals("help modify") || target.trim().equals("modify")) {
-            keyLoggingText = "for modify some field: <start package.class.field valueX> x - type of value, example: 'core.World.Creatures.Physics.physicsSpeed 400i'";
-
-        } else if (target.equals("help start") || target.trim().equals("start")) {
-            keyLoggingText = "for start some method: <start package.class.method arg1X arg2X..> x - type of value, example: 'start core.EventHandling.Logging.Logger.logExit 0i'";
-
-        } else if (target.contains("sendStateMessage")) {
-            keyLoggingText = "No access to send state message";
-
-        } else if (target.contains("modify")) {
+        if (target.contains("modify")) {
             target = target.substring(7);
             modifyField(target);
 

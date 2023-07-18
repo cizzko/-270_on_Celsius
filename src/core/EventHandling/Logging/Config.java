@@ -7,7 +7,7 @@ import static core.EventHandling.Logging.Logger.logExit;
 import static core.Window.defPath;
 
 public class Config {
-    private static final Properties prop = new Properties();
+    private static final Properties propConfig = new Properties(), propFC = new Properties();
     private static final HashMap<String, String> values = new HashMap<>();
 
     public static String getFromConfig(String key) {
@@ -15,14 +15,32 @@ public class Config {
             return values.get(key);
         }
 
-        if (prop.isEmpty()) {
+        if (propConfig.isEmpty()) {
             try (FileInputStream fis = new FileInputStream(defPath + "\\src\\assets\\Config.properties")) {
-                prop.load(fis);
+                propConfig.load(fis);
             } catch (Exception e) {
                 logExit(1, "Error at reading config: '" + e + "' at path: " + defPath + "\\src\\assets\\Config.properties", true);
             }
         }
-        String value = prop.getProperty(key);
+        String value = propConfig.getProperty(key);
+        values.put(key, value);
+
+        return value;
+    }
+
+    public static String getFromFC(String key) {
+        if (values.containsKey(key)) {
+            return values.get(key);
+        }
+
+        if (propFC.isEmpty()) {
+            try (FileInputStream fis = new FileInputStream(defPath + "\\src\\assets\\fastCommands.properties")) {
+                propFC.load(fis);
+            } catch (Exception e) {
+                logExit(1, "Error at reading fast commands: '" + e + "' at path: " + defPath + "\\src\\assets\\fastCommands.properties", false);
+            }
+        }
+        String value = propFC.getProperty(key);
         values.put(key, value);
 
         return value;
@@ -33,9 +51,9 @@ public class Config {
         try (FileInputStream fis = new FileInputStream(defPath + "\\src\\assets\\Config.properties");
              FileOutputStream fos = new FileOutputStream(defPath + "\\src\\assets\\Config.properties")) {
 
-            prop.load(fis);
-            prop.setProperty(key, value);
-            prop.store(fos, null);
+            propConfig.load(fis);
+            propConfig.setProperty(key, value);
+            propConfig.store(fos, null);
             values.put(key, value);
 
         } catch (Exception e) {

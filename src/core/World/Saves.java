@@ -5,13 +5,13 @@ import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.StaticWorldObjects;
 import java.io.*;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import static core.EventHandling.Logging.Logger.log;
 import static core.UI.GUI.CreateElement.buttons;
 import static core.Window.defPath;
-
 public class Saves {
 
     public static void createWorldSave() {
@@ -34,7 +34,7 @@ public class Saves {
             dos.close();
             byte[] compressedBytes = compressed.toByteArray();
 
-            FileOutputStream fos = new FileOutputStream(defPath + "\\src\\assets\\World\\Saves\\Save" + (int) (Math.random() * 100000) + ".ser");
+            FileOutputStream fos = new FileOutputStream(defPath + "\\src\\assets\\World\\Saves\\Save" + LocalDate.now() + ".ser");
             fos.write(compressedBytes);
             fos.close();
         } catch (Exception e) {
