@@ -471,20 +471,21 @@ public class TextureDrawing {
                 if (x < 0 || y < 0 || x > SizeX || y > SizeY || StaticObjects[x][y] == null || StaticObjects[x][y].path == null || StaticObjects[x][y].currentHp == 0) {
                     continue;
                 }
+                StaticWorldObjects obj = StaticObjects[x][y];
 
-                float xBlock = StaticObjects[x][y].x;
-                float yBlock = StaticObjects[x][y].y;
-                boolean mirrored = StaticObjects[x][y].mirrored;
+                float xBlock = obj.x;
+                float yBlock = obj.y;
+                boolean mirrored = obj.mirrored;
 
                 if (!(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top)) {
-                    if (StaticObjects[x][y].currentHp > StaticObjects[x][y].totalHp / 1.5f) {
-                        drawTexture(StaticObjects[x][y].path, xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, mirrored);
+                    if (obj.currentHp > obj.totalHp / 1.5f) {
+                        drawTexture(obj.path, xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, mirrored);
 
-                    } else if (StaticObjects[x][y].currentHp < StaticObjects[x][y].totalHp / 3) {
-                        drawMultiTexture(StaticObjects[x][y].path, defPath + "\\src\\assets\\World\\blocks\\damaged2.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, mirrored);
+                    } else if (obj.currentHp < obj.totalHp / 3) {
+                        drawMultiTexture(obj.path, defPath + "\\src\\assets\\World\\blocks\\damaged2.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, mirrored);
 
                     } else {
-                        drawMultiTexture(StaticObjects[x][y].path, defPath + "\\src\\assets\\World\\blocks\\damaged1.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, mirrored);
+                        drawMultiTexture(obj.path, defPath + "\\src\\assets\\World\\blocks\\damaged1.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, mirrored);
                     }
                 }
             }

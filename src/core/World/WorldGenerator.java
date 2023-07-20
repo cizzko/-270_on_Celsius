@@ -90,7 +90,7 @@ public class WorldGenerator {
                     randGrass += y / (mountainHeight * SizeY);
 
                     if ((StaticObjects[x + 1][y].solid || StaticObjects[x - 1][y].solid || StaticObjects[x][y + 1].solid || StaticObjects[x][y - 1].solid) && Math.random() * randGrass < 1) {
-                        StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\grass1.png", x * 16, y * 16, Types.GRASS);
+                        StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\grass" + (int) (Math.random() * 3 + 1) + ".png", x * 16, y * 16, Types.GRASS);
                         StaticObjects[x][y].solid = true;
                     }
                     if (Math.random() * randAir < 1) {
@@ -128,11 +128,13 @@ public class WorldGenerator {
 
         for (int x = 1; x < SizeX - 1; x++) {
             for (int y = 1; y < SizeY - 1; y++) {
+                int random = (int) (Math.random() * 3 + 1);
+
                 if (StaticObjects[x][y].gas && (StaticObjects[x + 1][y].solid && StaticObjects[x - 1][y].solid && StaticObjects[x][y - 1].solid) || (StaticObjects[x + 1][y + 1].solid && StaticObjects[x - 1][y - 1].solid) || (StaticObjects[x - 1][y + 1].solid && StaticObjects[x + 1][y - 1].solid) && Math.random() * smoothingChance < 1) {
-                    StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\grass1.png", x * 16, y * 16, Types.GRASS);
+                    StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\grass" + random + ".png", x * 16, y * 16, Types.GRASS);
                     StaticObjects[x][y].solid = true;
                 } else if ((StaticObjects[x][y + 1].solid && StaticObjects[x][y - 1].solid) || (StaticObjects[x + 1][y].solid && StaticObjects[x - 1][y].solid) && Math.random() * smoothingChance < 1) {
-                    StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\grass1.png", x * 16, y * 16, Types.GRASS);
+                    StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\grass" + random + ".png", x * 16, y * 16, Types.GRASS);
                     StaticObjects[x][y].solid = true;
                 }
             }
@@ -180,7 +182,7 @@ public class WorldGenerator {
         for (int[] coord : area) {
             int x = coord[0];
             int y = coord[1];
-            StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\grass1.png", x * 16, y * 16, Types.GRASS);
+            StaticObjects[x][y] = new StaticWorldObjects(defPath + "\\src\\assets\\World\\blocks\\grass" + (int) (Math.random() * 3 + 1) + ".png", x * 16, y * 16, Types.GRASS);
             StaticObjects[x][y].solid = true;
         }
     }

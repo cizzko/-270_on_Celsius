@@ -2,13 +2,16 @@ package core.World.Creatures;
 
 import core.EventHandling.EventHandler;
 import core.World.Textures.DynamicWorldObjects;
+import core.World.Textures.ShadowMap;
+import java.awt.*;
+import static core.EventHandling.EventHandler.getMousePos;
 import static core.World.HitboxMap.*;
-import static core.World.WorldGenerator.DynamicObjects;
-import static core.World.WorldGenerator.SizeX;
+import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Player {
-    public static boolean noClip = false;
+    public static boolean noClip = false, lastDestroySet = false;
+    private static int lastDestroyIndexX = 0, lastDestroyIndexY = 0;
 
     public static void setPlayerPos(float x, float y) {
         DynamicObjects[0].x = x == 0 ? DynamicObjects[0].x : x;
@@ -51,6 +54,32 @@ public class Player {
                 obj.dropSpeed = 0;
                 obj.isDropping = false;
             }
+        }
+    }
+
+    public static void updateDestroyBlocks() {
+        float mouseX = (getMousePos().x - 960) / 3f + 16;
+        float mouseY = (getMousePos().y - 540) / 3f + 64;
+
+        int blockX = (int) ((mouseX + DynamicObjects[0].x) / 16);
+        int blockY = (int) ((mouseY + DynamicObjects[0].y) / 16);
+
+        if (!lastDestroySet) {
+            int a = (ShadowMap.getColor(blockX, blockY).getRed() + ShadowMap.getColor(blockX, blockY).getGreen() + ShadowMap.getColor(blockX, blockY).getBlue()) / 3;
+
+            lastDestroySet = true;
+            lastDestroyIndexX = blockX;
+            lastDestroyIndexY = blockY;
+
+            if (ShadowMap.colorDegree[blockX][blockY] == 0) {
+                ShadowMap.setColor(blockX, blockY, new Color(Math.max(0, a - 150), Math.max(0, a - 150), a, 255));
+            } else {
+                ShadowMap.setColor(blockX, blockY, new Color(a, Math.max(0, a - 150), Math.max(0, a - 150), 255));
+            }
+        }
+        if (blockX != lastDestroyIndexX || blockY != lastDestroyIndexY) {
+            lastDestroySet = false;
+            ShadowMap.update();
         }
     }
 }

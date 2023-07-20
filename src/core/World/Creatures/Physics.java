@@ -59,6 +59,7 @@ public class Physics extends Thread {
         updatePlayerMove();
         updatePlayerJump();
         updatePlayerDrop();
+        //updateDestroyBlocks();
     }
 
     private static void updateCreaturesPhys() {

@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 public class StaticWorldObjects implements Serializable {
     public boolean gas, liquid, solid, plasma, onCamera, mirrored;
-    public String options, path;
+    public String path;
     public float y, x, currentHp, totalHp;
     public Types type;
 

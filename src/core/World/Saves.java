@@ -12,6 +12,7 @@ import java.util.zip.InflaterInputStream;
 import static core.EventHandling.Logging.Logger.log;
 import static core.UI.GUI.CreateElement.buttons;
 import static core.Window.defPath;
+
 public class Saves {
 
     public static void createWorldSave() {
