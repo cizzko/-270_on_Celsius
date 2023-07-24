@@ -3,8 +3,9 @@ package core.World.Creatures;
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.Menu.Pause;
 import core.UI.GUI.Menu.Settings;
+import core.World.Creatures.Player.Inventory.Inventory;
 import static core.Window.*;
-import static core.World.Creatures.Player.*;
+import static core.World.Creatures.Player.Player.*;
 import static core.World.HitboxMap.*;
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -17,6 +18,7 @@ public class Physics extends Thread {
 
     public void run() {
         Logger.log("Thread: Physics started");
+        Inventory.create();
 
         long lastUpdateTime = System.nanoTime();
 
@@ -59,7 +61,7 @@ public class Physics extends Thread {
         updatePlayerMove();
         updatePlayerJump();
         updatePlayerDrop();
-        //updateDestroyBlocks();
+        updateDestroyBlocks();
     }
 
     private static void updateCreaturesPhys() {

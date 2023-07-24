@@ -22,6 +22,7 @@ import static core.UI.GUI.CreateElement.*;
 import static core.UI.GUI.Fonts.*;
 import static core.UI.GUI.Video.*;
 import static core.Window.defPath;
+import static core.World.Creatures.Player.Player.updatePlayerGUI;
 import static core.World.Textures.TextureLoader.BufferedImageEncoder;
 import static core.World.Textures.TextureLoader.ByteBufferEncoder;
 import static core.World.Weather.Sun.updateSun;
@@ -537,6 +538,7 @@ public class TextureDrawing {
     }
 
     public static void updateGUI() {
+        updatePlayerGUI();
         updatePanels();
         updateSwapButtons();
         updateButtons();
@@ -689,15 +691,9 @@ public class TextureDrawing {
 
         int width = image.getWidth();
         int height = image.getHeight();
-
-        if (width < height) {
-            width = image.getHeight();
-            height = image.getWidth();
-        }
-
         int id = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, id);
 
+        glBindTexture(GL_TEXTURE_2D, id);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
@@ -709,8 +705,8 @@ public class TextureDrawing {
 
     public static void bindTexture(ByteBuffer buffer, int id, int width, int height) {
         int texId = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, texId);
 
+        glBindTexture(GL_TEXTURE_2D, texId);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
