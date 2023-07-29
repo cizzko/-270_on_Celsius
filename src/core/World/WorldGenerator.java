@@ -44,9 +44,10 @@ public class WorldGenerator {
             fillHollows();
         }
         ShadowMap.generate();
-
         WorldGenerator.generateResources();
         WorldGenerator.generateDynamicsObjects(randomSpawn);
+        ShadowMap.generate();
+
         Sun.createSun();
 
         log("World generator: generating done!\n");
@@ -80,7 +81,7 @@ public class WorldGenerator {
         createText(42, 140, "generateMountainsText", "Generating mountains", new Color(210, 210, 210, 255), "WorldGeneratorState");
 
         float randGrass = 2f;           //шанс появления неровности, выше число - ниже шанс
-        float randAir = 3.5f;             //шанс появления воздуха вместо блока, выше число - ниже шанс
+        float randAir = 3.5f;           //шанс появления воздуха вместо блока, выше число - ниже шанс
         float iterations = 3f;          //количество итераций генерации
         float mountainHeight = 24000f;  //шанс появления высоких гор, выше число - выше шанс
 

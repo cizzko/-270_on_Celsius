@@ -77,14 +77,13 @@ public class TextureLoader extends Thread {
     }
 
     public static ByteBuffer uniteTextures(String mainTexture, String secondTexture) {
-        BufferedImage mergedImage = BufferedImageEncoder(defPath + "\\src\\assets\\World\\other\\neutral16.png"); //because i dont found RGBA format, only ARGB
+        BufferedImage mergedImage = BufferedImageEncoder(mainTexture);
         Graphics2D g2d = mergedImage.createGraphics();
 
-        g2d.drawImage(BufferedImageEncoder(mainTexture), 0, 0, null);
         g2d.drawImage(BufferedImageEncoder(secondTexture), 0, 0, null);
         g2d.dispose();
 
-        return ByteBufferEncoder(mergedImage).flip();
+        return ByteBufferEncoder(mergedImage);
     }
 
     public static void preLoadTextures() {

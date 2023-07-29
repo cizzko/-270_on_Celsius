@@ -469,7 +469,7 @@ public class TextureDrawing {
 
         for (int x = (int) (playerX / 16) - 20; x < playerX / 16 + 21; x++) {
             for (int y = (int) (playerY / 16) - 8; y < playerY / 16 + 16; y++) {
-                if (x < 0 || y < 0 || x > SizeX || y > SizeY || StaticObjects[x][y] == null || StaticObjects[x][y].path == null || StaticObjects[x][y].currentHp == 0) {
+                if (x < 0 || y < 0 || x > SizeX || y > SizeY || StaticObjects[x][y] == null || StaticObjects[x][y].path == null || StaticObjects[x][y].currentHp <= 0) {
                     continue;
                 }
                 StaticWorldObjects obj = StaticObjects[x][y];
