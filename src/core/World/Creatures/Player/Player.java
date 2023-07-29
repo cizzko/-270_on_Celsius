@@ -2,11 +2,16 @@ package core.World.Creatures.Player;
 
 import core.EventHandling.EventHandler;
 import core.World.Creatures.Player.Inventory.Inventory;
+import core.World.Creatures.Player.Inventory.Placeable.PlaceableItems;
+import core.World.Creatures.Player.Inventory.Tools;
 import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.ShadowMap;
+import core.World.Textures.StaticWorldObjects;
+import core.World.Textures.TextureDrawing;
 import java.awt.*;
 import static core.EventHandling.EventHandler.getMousePos;
 import static core.Window.start;
+import static core.World.Creatures.Player.Inventory.Inventory.*;
 import static core.World.HitboxMap.*;
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -60,34 +65,85 @@ public class Player {
     }
 
     public static void updateDestroyBlocks() {
-        if (Inventory.currentObjectType.equals("tool")) {
+        if (currentObject != null) {
             new Thread(() -> {
-                float mouseX = (getMousePos().x - 960) / 3f + 16;
-                float mouseY = (getMousePos().y - 540) / 3f + 64;
 
-                int blockX = (int) ((mouseX + DynamicObjects[0].x) / 16);
-                int blockY = (int) ((mouseY + DynamicObjects[0].y) / 16);
+                if (currentObjectType.equals("tool")) {
+                    Tools tool = inventoryObjects[currentObject.x][currentObject.y].tool;
 
-                if (!lastDestroySet) {
-                    Color color = ShadowMap.getColor(blockX, blockY);
-                    int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
+                    int blockX = getBlockUnderMousePoint().x;
+                    int blockY = getBlockUnderMousePoint().y;
+                    StaticWorldObjects object = StaticObjects[getBlockUnderMousePoint().x][getBlockUnderMousePoint().y];
 
-                    lastDestroySet = true;
-                    lastDestroyIndexX = blockX;
-                    lastDestroyIndexY = blockY;
+                    if (!lastDestroySet) {
+                        Color color = ShadowMap.getColor(blockX, blockY);
+                        int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
 
-                    if (ShadowMap.colorDegree[blockX][blockY] == 0) {
-                        ShadowMap.setColor(blockX, blockY, new Color(Math.max(0, a - 150), Math.max(0, a - 150), a, 255));
-                    } else {
-                        ShadowMap.setColor(blockX, blockY, new Color(a, Math.max(0, a - 150), Math.max(0, a - 150), 255));
+                        lastDestroySet = true;
+                        lastDestroyIndexX = blockX;
+                        lastDestroyIndexY = blockY;
+
+                        if (ShadowMap.colorDegree[blockX][blockY] == 0 && getDistanceUMB() <= tool.maxInteractionRange) {
+                            ShadowMap.setColor(blockX, blockY, new Color(Math.max(0, a - 150), Math.max(0, a - 150), a, 255));
+                        } else {
+                            ShadowMap.setColor(blockX, blockY, new Color(a, Math.max(0, a - 150), Math.max(0, a - 150), 255));
+                        }
                     }
-                }
-                if (blockX != lastDestroyIndexX || blockY != lastDestroyIndexY) {
-                    lastDestroySet = false;
-                    ShadowMap.update();
+                    if (blockX != lastDestroyIndexX || blockY != lastDestroyIndexY) {
+                        lastDestroySet = false;
+                        ShadowMap.update();
+                    }
+                    if (EventHandler.getMousePress() && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getDistanceUMB() <= tool.maxInteractionRange && object.currentHp > 0 && ShadowMap.colorDegree[blockX][blockY] == 0) {
+                        tool.lastHitTime = System.currentTimeMillis();
+                        object.currentHp -= tool.damage;
+
+                        if (object.currentHp <= 0 && object.type != StaticWorldObjects.Types.GAS) {
+                            createElementPlaceable(new StaticWorldObjects(object.path, object.x, object.y, object.type));
+                            object.destroyObject();
+                        }
+                    }
+                } else if (currentObjectType.equals("placeable")) {
+                    if (getMousePos().x > (Inventory.inventoryOpen ? 1488 : 1866) && getMousePos().y > 756) {
+                        return;
+                    }
+
+                    int blockX = getBlockUnderMousePoint().x;
+                    int blockY = getBlockUnderMousePoint().y;
+                    PlaceableItems placeable = inventoryObjects[currentObject.x][currentObject.y].placeable;
+
+                    if (StaticObjects[getBlockUnderMousePoint().x][getBlockUnderMousePoint().y].gas && EventHandler.getMousePress() && Player.getDistanceUMB() < 9) {
+                        if (placeable.factoryObject != null) {
+                            //закос на будущее
+                        } else if (placeable.staticWorldObject != null && (StaticObjects[blockX][blockY + 1].solid || StaticObjects[blockX][blockY - 1].solid || StaticObjects[blockX + 1][blockY].solid || StaticObjects[blockX - 1][blockY].solid)) {
+                            inventoryObjects[currentObject.x][currentObject.y].countInCell--;
+                            StaticObjects[blockX][blockY] = new StaticWorldObjects(placeable.staticWorldObject.path, blockX * 16, blockY * 16, placeable.staticWorldObject.type);
+                            StaticObjects[blockX][blockY].solid = true;
+                            TextureDrawing.loadObjects();
+                            ShadowMap.update();
+
+                            if (inventoryObjects[currentObject.x][currentObject.y].countInCell <= 0) {
+                                inventoryObjects[currentObject.x][currentObject.y] = null;
+                                currentObject = null;
+                            }
+                        }
+                    }
                 }
             }).start();
         }
+    }
+
+    public static Point getBlockUnderMousePoint() {
+        float mouseX = (getMousePos().x - 960) / 3f + 16;
+        float mouseY = (getMousePos().y - 540) / 3f + 64;
+
+        int blockX = (int) ((mouseX + DynamicObjects[0].x) / 16);
+        int blockY = (int) ((mouseY + DynamicObjects[0].y) / 16);
+
+        return new Point(blockX, blockY);
+    }
+
+    public static int getDistanceUMB() {
+        return (int) Math.abs((DynamicObjects[0].x / 16 - getBlockUnderMousePoint().x) + (DynamicObjects[0].y / 16 - getBlockUnderMousePoint().y));
     }
 
     public static void updatePlayerGUI() {
