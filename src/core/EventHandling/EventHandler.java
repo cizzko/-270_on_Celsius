@@ -202,7 +202,7 @@ public class EventHandler extends Thread {
                 } else if (button.name.equals("DiscordButton")) {
                     try {
                         Desktop desktop = Desktop.getDesktop();
-                        desktop.browse(new URI("https://discord.gg/CgVmJhmk"));
+                        desktop.browse(new URI("https://discord.gg/gUS9X6exAQ"));
                     } catch (Exception e) {
                         log(e.toString());
                     }
