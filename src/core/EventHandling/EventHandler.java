@@ -27,6 +27,7 @@ public class EventHandler extends Thread {
     public static boolean mouseNotMoved = false, keyLogging = false;
     public static String keyLoggingText = "";
     private static final boolean[] pressedButtons = new boolean[349];
+    private static int handlerUpdates = 0;
 
     public EventHandler() {
         log("Thread: Event handling started");
@@ -73,22 +74,14 @@ public class EventHandler extends Thread {
         return false;
     }
 
-    public static boolean getRectanglePress(int x, int y, int x1, int y1) {
-        int state = glfwGetMouseButton(glfwWindow, GLFW_MOUSE_BUTTON_LEFT);
-        Point mousePos = getMousePos();
-
-        return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 && state == GLFW_PRESS;
+    public static boolean getMousePress() {
+        return glfwGetMouseButton(glfwWindow, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
     }
 
-    public static boolean getDropMenuClick(String menuName, String buttonName) {
-        for (int x = 0; x < dropMenu.get(menuName).length; x++) {
-            ButtonObject obj = dropMenu.get(menuName)[x];
+    public static boolean getRectanglePress(int x, int y, int x1, int y1) {
+        Point mousePos = getMousePos();
 
-            if (obj.name.equals(buttonName) && obj.isClicked) {
-                return true;
-            }
-        }
-        return false;
+        return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 && getMousePress();
     }
 
     public static String getDropMenuClicks(String menuName) {
@@ -130,7 +123,12 @@ public class EventHandler extends Thread {
                     button.lastClickTime = System.currentTimeMillis();
                 }
             } else {
-                button.isClicked = EventHandler.getRectanglePress(button.x, button.y, button.width + button.x, button.height + button.y);
+                boolean press = EventHandler.getRectanglePress(button.x, button.y, button.width + button.x, button.height + button.y);
+                button.isClicked = press;
+
+                if (press) {
+                   button.taskOnClick.run();
+                }
             }
         }
     }
@@ -165,113 +163,29 @@ public class EventHandler extends Thread {
     }
 
     private static void updateClicks() {
-        for (ButtonObject button : buttons.values()) {
-            if (!button.visible || !button.isClickable) {
-                button.isClicked = false;
-                continue;
+        if (Settings.createdSettings && !buttons.get(Json.getName("SettingsSave")).isClicked) {
+            int count = (int) buttons.values().stream().filter(currentButton -> currentButton.isClicked && currentButton.visible && (currentButton.group.contains("Swap") || currentButton.group.contains("Drop"))).count();
+
+            if (Settings.needUpdateCount) {
+                Settings.pressedCount = count;
+                Settings.needUpdateCount = false;
+            } else if (count != Settings.pressedCount) {
+                buttons.get(Json.getName("SettingsSave")).isClickable = true;
             }
+        }
 
-            if (Settings.createdSettings && !buttons.get(Json.getName("SettingsSave")).isClicked) {
-                int count = (int) buttons.values().stream().filter(currentButton -> currentButton.isClicked && currentButton.visible && (currentButton.group.contains("Swap") || currentButton.group.contains("Drop"))).count();
+        if (sliders.get("worldSize") != null && sliders.get("worldSize").visible) {
+            float worldSize = sliders.get("worldSize").max;
+            String pic;
 
-                if (Settings.needUpdateCount) {
-                    Settings.pressedCount = count;
-                    Settings.needUpdateCount = false;
-                } else if (count != Settings.pressedCount) {
-                    buttons.get(Json.getName("SettingsSave")).isClickable = true;
-                }
+            if (getSliderPos("worldSize") >= worldSize / 1.5f) {
+                pic = "planetBig.png";
+            } else if (getSliderPos("worldSize") >= worldSize / 3) {
+                pic = "planetAverage.png";
+            } else {
+                pic = "planetMini.png";
             }
-
-            if (button.isClicked) {
-                if (button.name.equals(Json.getName("Play")) && !Window.start) {
-                    Main.delete();
-                    CreatePlanet.create();
-
-                } else if (button.name.equals(Json.getName("Exit"))) {
-                    Logger.logExit(0);
-
-                } else if (button.name.equals(Json.getName("Settings"))) {
-                    Settings.create();
-
-                    if (!start) {
-                        Main.delete();
-                    } else {
-                        Pause.delete();
-                    }
-
-                } else if (button.name.equals("DiscordButton")) {
-                    try {
-                        Desktop desktop = Desktop.getDesktop();
-                        desktop.browse(new URI("https://discord.gg/gUS9X6exAQ"));
-                    } catch (Exception e) {
-                        log(e.toString());
-                    }
-
-                } else if (button.name.equals(Json.getName("SettingsGraphics"))) {
-                    Settings.deleteBasicSett();
-                    Settings.deleteOtherSett();
-                    Settings.createGraphicsSett();
-
-                    button.isClickable = false;
-                    buttons.get(Json.getName("SettingsBasic")).isClickable = true;
-                    buttons.get(Json.getName("SettingsOther")).isClickable = true;
-                    buttons.get(Json.getName("SettingsSave")).isClickable = false;
-                    Settings.needUpdateCount = true;
-
-                } else if (button.name.equals(Json.getName("SettingsBasic"))) {
-                    Settings.createBasicSett();
-                    Settings.deleteOtherSett();
-                    Settings.deleteGraphicsSett();
-
-                    button.isClickable = false;
-                    buttons.get(Json.getName("SettingsGraphics")).isClickable = true;
-                    buttons.get(Json.getName("SettingsOther")).isClickable = true;
-                    buttons.get(Json.getName("SettingsSave")).isClickable = false;
-                    Settings.needUpdateCount = true;
-
-                } else if (button.name.equals(Json.getName("SettingsOther"))) {
-                    Settings.deleteBasicSett();
-                    Settings.createOtherSett();
-                    Settings.deleteGraphicsSett();
-
-                    button.isClickable = false;
-                    buttons.get(Json.getName("SettingsGraphics")).isClickable = true;
-                    buttons.get(Json.getName("SettingsBasic")).isClickable = true;
-                    buttons.get(Json.getName("SettingsSave")).isClickable = false;
-                    Settings.needUpdateCount = true;
-
-                } else if (button.name.equals(Json.getName("SettingsExit"))) {
-                    Settings.delete();
-                    if (!start) {
-                        Main.create();
-                    }
-
-                } else if (button.name.equals(Json.getName("SettingsSave"))) {
-                    buttons.get(Json.getName("SettingsSave")).isClickable = false;
-                    Settings.updateConfigAll();
-
-                } else if (button.name.equals(Json.getName("GenerateWorld")) && !Window.start) {
-                    WorldGenerator.generateWorld();
-
-                } else if (button.name.equals(Json.getName("Continue"))) {
-                    Pause.delete();
-                    Settings.delete();
-                }
-            }
-
-            if (sliders.get("worldSize") != null && sliders.get("worldSize").visible) {
-                float worldSize = sliders.get("worldSize").max;
-                String pic;
-
-                if (getSliderPos("worldSize") >= worldSize / 1.5f) {
-                    pic = "planetBig.png";
-                } else if (getSliderPos("worldSize") >= worldSize / 3) {
-                    pic = "planetAverage.png";
-                } else {
-                    pic = "planetMini.png";
-                }
-                createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\worldGenerator\\" + pic, "WorldGenerator");
-            }
+            panels.get("planet").options = defPath + "\\src\\assets\\World\\worldGenerator\\" + pic;
         }
     }
 
@@ -335,9 +249,11 @@ public class EventHandler extends Thread {
         if (Config.getFromConfig("Debug").equals("true") && System.currentTimeMillis() - lastSecond >= 1000) {
             lastSecond = System.currentTimeMillis();
 
-            CreateElement.createText(5, 1020, "PhysicsUpdate", "Physics FPS: " + updates, new Color(0, 0, 0, 255), null);
+            CreateElement.createText(5, 985, "HandlerFPS", "Handler FPS: " + handlerUpdates, new Color(0, 0, 0, 255), null);
+            CreateElement.createText(5, 1020, "PhysicsFPS", "Physics FPS: " + updates, new Color(0, 0, 0, 255), null);
             CreateElement.createText(5, 1055, "GameFPS", "Game FPS: " + fps, new Color(0, 0, 0, 255), null);
 
+            handlerUpdates = 0;
             updates = 0;
             fps = 0;
         }
@@ -355,6 +271,8 @@ public class EventHandler extends Thread {
             updateHotkeys();
             updateLine();
             updateDebug();
+
+            handlerUpdates++;
         }
     }
 }

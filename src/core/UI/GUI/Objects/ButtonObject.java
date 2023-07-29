@@ -8,8 +8,9 @@ public class ButtonObject {
     public long lastClickTime;
     public Color color;
     public String name, prompt, group, path;
+    public Runnable taskOnClick;
 
-    public ButtonObject(boolean simple, boolean swapButton, int x, int y, int height, int width, String name, String prompt, Color color, String group) {
+    public ButtonObject(boolean simple, boolean swapButton, int x, int y, int height, int width, String name, String prompt, Color color, String group, Runnable taskOnClick) {
         if (group == null) {
             group = "None";
         }
@@ -29,5 +30,6 @@ public class ButtonObject {
         this.prompt = prompt;
         this.color = color;
         this.lastClickTime = System.currentTimeMillis();
+        this.taskOnClick = taskOnClick;
     }
 }

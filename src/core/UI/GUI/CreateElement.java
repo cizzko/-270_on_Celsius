@@ -17,19 +17,19 @@ public class CreateElement {
     public static ConcurrentHashMap<String, ButtonObject[]> dropMenu = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, TextObject> texts = new ConcurrentHashMap<>();
 
-    public static void createButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, Color color, String group) {
-        buttons.put(name, new ButtonObject(simple, false, x, y, btnHeight, btnWidth, name, prompt, color, group));
+    public static void createButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, Color color, String group, Runnable taskOnClick) {
+        buttons.put(name, new ButtonObject(simple, false, x, y, btnHeight, btnWidth, name, prompt, color, group, taskOnClick));
     }
 
     public static void createDropMenu(int x, int y, int menuWidth, int menuHeight, String[] btnNames, String pressedButton, String menuName, Color color, String group) {
         ButtonObject[] dropButtons = new ButtonObject[btnNames.length];
-        buttons.put(menuName, new ButtonObject(true, false, x, y, menuHeight, menuWidth, menuName, null, color, group));
+        buttons.put(menuName, new ButtonObject(true, false, x, y, menuHeight, menuWidth, menuName, null, color, group, null));
 
         for (int i = 0; i < btnNames.length; i++) {
             if (i == 0) {
-                dropButtons[i] = new ButtonObject(true, true, x, y - menuHeight, menuHeight, menuWidth, btnNames[i], null, color, group);
+                dropButtons[i] = new ButtonObject(true, true, x, y - menuHeight, menuHeight, menuWidth, btnNames[i], null, color, group, null);
             } else {
-                dropButtons[i] = new ButtonObject(true, true, x, dropButtons[i - 1].y - menuHeight, menuHeight, menuWidth, btnNames[i], null, color, group);
+                dropButtons[i] = new ButtonObject(true, true, x, dropButtons[i - 1].y - menuHeight, menuHeight, menuWidth, btnNames[i], null, color, group, null);
             }
             dropButtons[i].visible = false;
 
@@ -40,16 +40,16 @@ public class CreateElement {
         dropMenu.put(menuName, dropButtons);
     }
 
-    public static void createPictureButton(int x, int y, String path, String name, String group) {
-        buttons.put(name, new ButtonObject(true, false, x, y, TextureLoader.BufferedImageEncoder(path).getHeight(), TextureLoader.BufferedImageEncoder(path).getWidth(), name, null, new Color(255, 255, 255, 255), group));
+    public static void createPictureButton(int x, int y, String path, String name, String group, Runnable taskOnClick) {
+        buttons.put(name, new ButtonObject(true, false, x, y, TextureLoader.BufferedImageEncoder(path).getHeight(), TextureLoader.BufferedImageEncoder(path).getWidth(), name, null, new Color(255, 255, 255, 255), group, taskOnClick));
         buttons.get(name).path = path;
     }
 
     public static void createSwapButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, Color color, boolean isClicked, String group) {
         if (simple) {
-            buttons.put(name, new ButtonObject(simple, true, x, y, btnHeight, btnWidth, name, prompt, color, group));
+            buttons.put(name, new ButtonObject(simple, true, x, y, btnHeight, btnWidth, name, prompt, color, group, null));
         } else {
-            buttons.put(name, new ButtonObject(simple, true, x, y, 44, 44, name, prompt, color, group));
+            buttons.put(name, new ButtonObject(simple, true, x, y, 44, 44, name, prompt, color, group, null));
         }
         if (isClicked) {
             buttons.get(name).isClicked = true;

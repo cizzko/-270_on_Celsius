@@ -16,7 +16,7 @@ public class MouseCalibration {
         glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
         createPanel(400, 400, 1120, 400, "CalibratePan", true, "MouseCalibration");
-        createButton(860, 410, 240, 65, Json.getName("CalibrateMouseContinue"), null, true, new Color(255, 80, 0, 55), "MouseCalibration");
+        createButton(860, 410, 240, 65, Json.getName("CalibrateMouseContinue"), null, true, new Color(255, 80, 0, 55), "MouseCalibration", null);
         createText(410, 770, "CalibratePanText", Json.getName("CalibrateMouseText"), new Color(210, 210, 210, 255), "MouseCalibration");
 
         try {
