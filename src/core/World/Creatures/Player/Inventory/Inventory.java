@@ -2,12 +2,12 @@ package core.World.Creatures.Player.Inventory;
 
 import core.EventHandling.EventHandler;
 import core.World.Creatures.Player.Inventory.Placeable.PlaceableItems;
+import core.World.Creatures.Player.Inventory.Weapons.Weapons;
 import core.World.Creatures.Player.Player;
 import core.World.Textures.StaticWorldObjects;
 import core.World.WorldGenerator;
 import java.awt.*;
 import java.util.Arrays;
-
 import static core.Window.defPath;
 import static core.World.Textures.TextureDrawing.*;
 
@@ -58,11 +58,11 @@ public class Inventory {
         }
         Point current = currentObject;
 
-        if (current != null && currentObjectType != null) {
+        if (current != null) {
             if ((inventoryOpen || current.x > 6)) {
                 drawTexture(defPath + "\\src\\assets\\World\\inventory\\inventoryCurrent.png", 1488 + current.x * 54, 756 + current.y * 54f, 1, true);
             }
-            if (currentObjectType.equals("placeable")) {
+            if (currentObjectType != null && currentObjectType.equals("placeable")) {
                 int blockX = Player.getBlockUnderMousePoint().x;
                 int blockY = Player.getBlockUnderMousePoint().y;
                 boolean isDeclined = Player.getDistanceUMB() > 8 || (!StaticObjects[blockX][blockY].gas || !(WorldGenerator.StaticObjects[blockX][blockY + 1].solid || WorldGenerator.StaticObjects[blockX][blockY - 1].solid || WorldGenerator.StaticObjects[blockX + 1][blockY].solid || WorldGenerator.StaticObjects[blockX - 1][blockY].solid));
@@ -75,7 +75,7 @@ public class Inventory {
         }
     }
 
-    public static void createElementTool(float maxHp, float damage, float secBetweenHits, float maxInteractionRange, int id, String path) {
+    public static void createElementTool(Tools tool, int id, String path) {
         if (findCountID(id) > 1) {
             Point cell = findItemByID(id);
 
@@ -85,7 +85,7 @@ public class Inventory {
 
         Point cell = findFreeCell();
         if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = new Items(new Tools(maxHp, damage, secBetweenHits, maxInteractionRange), id, path);
+            inventoryObjects[cell.x][cell.y] = new Items(tool, id, path);
         }
     }
 
@@ -101,6 +101,19 @@ public class Inventory {
         Point cell = findFreeCell();
         if (cell != null) {
             inventoryObjects[cell.x][cell.y] = new Items(new PlaceableItems(object), id, object.path);
+        }
+    }
+
+    public static void createElementWeapon(Weapons weapon, int id, String path) {
+        if (findCountID(id) > 1) {
+            Point cell = findItemByID(id);
+            inventoryObjects[cell.x][cell.y].countInCell++;
+            return;
+        }
+
+        Point cell = findFreeCell();
+        if (cell != null) {
+            inventoryObjects[cell.x][cell.y] = new Items(weapon, id, path);
         }
     }
 

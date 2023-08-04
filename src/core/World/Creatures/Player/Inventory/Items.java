@@ -1,7 +1,8 @@
 package core.World.Creatures.Player.Inventory;
 
 import core.World.Creatures.Player.Inventory.Placeable.PlaceableItems;
-import static core.World.Textures.TextureLoader.BufferedImageEncoder;
+import core.World.Creatures.Player.Inventory.Weapons.Weapons;
+import static core.World.Textures.TextureLoader.getSize;
 
 public class Items {
     public Weapons weapon;
@@ -46,6 +47,9 @@ public class Items {
     }
 
     private static float findZoom(String path) {
-        return 64f / (BufferedImageEncoder(path).getHeight() + BufferedImageEncoder(path).getWidth());
+        int width = getSize(path).width;
+        int height = getSize(path).height;
+
+        return 32f / (Math.max(width, height));
     }
 }
