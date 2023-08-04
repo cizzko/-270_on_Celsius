@@ -1,9 +1,12 @@
 package core.World;
 
+import core.World.Textures.DynamicWorldObjects;
+import core.World.Textures.StaticWorldObjects;
+import core.World.Textures.TextureLoader;
+
 import static core.World.WorldGenerator.*;
 
 public class HitboxMap {
-    //private static HashMap<String, Dimension> sizes = new HashMap<>(); he for check intersection with non-static object
 
     public static boolean checkIntersStaticR(float x, float y, int sizeX, int sizeY) {
         int tarX = (int) (x / 16);
@@ -69,5 +72,39 @@ public class HitboxMap {
             }
         }
         return false;
+    }
+
+    public static StaticWorldObjects checkIntersectionsInside(float x, float y, int sizeX, int sizeY) {
+        int tarX = (int) (x / 16);
+        int tarY = (int) (y / 16);
+        int tarYSize = (int) Math.ceil(sizeY / 16f);
+        int tarXSize = (int) Math.ceil(sizeX / 16f);
+
+        for (int xPos = 0; xPos < tarXSize; xPos++) {
+            for (int yPos = 0; yPos < tarYSize; yPos++) {
+                if (tarX + tarXSize > StaticObjects.length || tarY + tarYSize > StaticObjects.length || StaticObjects[tarX + xPos][tarY + yPos] == null || StaticObjects[tarX + tarXSize][tarY + tarYSize] == null) {
+                    continue;
+                }
+                if (StaticObjects[tarX + xPos][tarY + yPos].solid) {
+                    return StaticObjects[tarX + xPos][tarY + yPos];
+                }
+                if (StaticObjects[tarX + tarXSize][tarY + tarYSize].solid) {
+                    return StaticObjects[tarX +tarXSize][tarY + tarYSize];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public static DynamicWorldObjects checkIntersectionsDynamic(float x, float y, int sizeX, int sizeY) {
+        for (DynamicWorldObjects dynamicObject : DynamicObjects) {
+            if (dynamicObject != null) {
+                if ((x + sizeX > dynamicObject.x && x < dynamicObject.x + TextureLoader.getSize(dynamicObject.path).width) || (y + sizeY > dynamicObject.y && y < dynamicObject.y + TextureLoader.getSize(dynamicObject.path).height)) {
+                    return dynamicObject;
+                }
+            }
+        }
+        return null;
     }
 }

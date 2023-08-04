@@ -56,16 +56,12 @@ public class Logger {
             reason = "none";
         }
 
-        if (status == 0) {
-            exit = " (normal)";
-        } else if (status == 1863) {
-            exit = " (sudden closure)";
-        } else if (status == 1) {
-            exit = " (critical error)";
-        } else if (status >= 6553) {
-            exit = " (glfw error)";
-        } else {
-            exit = " (unknown state)";
+        switch (status) {
+            case 0 -> exit = " (normal)";
+            case 1 -> exit = " (critical error)";
+            case 1863 -> exit = " (sudden closure)";
+            case 6553 -> exit = " (glfw error)";
+            default -> exit = " (unknown state)";
         }
 
         AnonymousStatistics.sendStateMessage("Session '" + sessionId + "' exit, time: '" + LocalDateTime.now() + "', reason: '" + reason + "', status: " + status + exit);

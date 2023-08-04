@@ -1,5 +1,6 @@
 package core.World.Textures;
 
+import core.World.HitboxMap;
 import java.io.Serializable;
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -10,13 +11,13 @@ import static core.World.WorldGenerator.*;
 
 //динамические объекты, могут иметь любые координаты внутри мира и быть перемещены когда угодно
 public class DynamicWorldObjects implements Serializable {
-    public int framesCount, currentFrame;
-    public float x, y, animSpeed, dropSpeed;
+    public int framesCount, currentFrame, uniqueId;
+    public float x, y, animSpeed, dropSpeed, currentHp, maxHp;
     public String path;
     public long lastFrameTime = System.currentTimeMillis();
     public boolean onCamera, isJumping, isDropping, isFlying, mirrored, notForDrawing;
 
-    public DynamicWorldObjects(int framesCount, boolean isFlying, String path, float animSpeed, float x, float y) {
+    public DynamicWorldObjects(boolean isFlying,int framesCount, float animSpeed, float x, float y, float maxHp, int uniqueId, String path) {
         this.framesCount = framesCount;
         this.animSpeed = animSpeed;
         this.path = path;
@@ -28,9 +29,12 @@ public class DynamicWorldObjects implements Serializable {
         this.isDropping = false;
         this.x = x;
         this.y = y;
+        this.maxHp = maxHp;
+        this.currentHp = maxHp;
+        this.uniqueId = uniqueId;
     }
 
-    public DynamicWorldObjects(int framesCount, boolean isFlying, String path, float animSpeed, float x) {
+    public DynamicWorldObjects(boolean isFlying, int framesCount, float animSpeed, float x, float maxHp, int uniqueId, String path) {
         this.framesCount = framesCount;
         this.animSpeed = animSpeed;
         this.path = path;
@@ -41,9 +45,12 @@ public class DynamicWorldObjects implements Serializable {
         this.isJumping = false;
         this.isDropping = false;
         this.x = x;
+        this.maxHp = maxHp;
+        this.currentHp = maxHp;
+        this.uniqueId = uniqueId;
 
         float y = 1;
-        int sizeX = framesCount == 1 ? (int) Math.ceil(TextureLoader.BufferedImageEncoder(path).getWidth() / 16) : (int) Math.ceil(TextureLoader.BufferedImageEncoder(path + "1.png").getWidth() / 16);
+        int sizeX = (int) Math.ceil(TextureLoader.getSize(path).width / 16f);
         sizeX += 1;
 
         for (int worldX = 0; worldX < sizeX; worldX++) {
@@ -55,6 +62,9 @@ public class DynamicWorldObjects implements Serializable {
                     y = objUp.y;
                 }
             }
+        }
+        if (HitboxMap.checkIntersectionsInside(x, y, TextureLoader.getSize(path).width + 10, TextureLoader.getSize(path).height + 10) != null) {
+            y += 16;
         }
 
         this.y = y;

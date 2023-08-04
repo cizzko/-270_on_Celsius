@@ -5,10 +5,9 @@ import core.UI.GUI.Objects.PanelObject;
 import core.UI.GUI.Objects.SliderObject;
 import core.UI.GUI.Objects.TextObject;
 import core.World.Textures.TextureLoader;
-
 import java.awt.*;
 import java.util.concurrent.ConcurrentHashMap;
-import static core.World.Textures.TextureLoader.BufferedImageEncoder;
+import static core.World.Textures.TextureLoader.getSize;
 
 public class CreateElement {
     public static ConcurrentHashMap<String, ButtonObject> buttons = new ConcurrentHashMap<>();
@@ -41,7 +40,7 @@ public class CreateElement {
     }
 
     public static void createPictureButton(int x, int y, String path, String name, String group, Runnable taskOnClick) {
-        buttons.put(name, new ButtonObject(true, false, x, y, TextureLoader.BufferedImageEncoder(path).getHeight(), TextureLoader.BufferedImageEncoder(path).getWidth(), name, null, new Color(255, 255, 255, 255), group, taskOnClick));
+        buttons.put(name, new ButtonObject(true, false, x, y, TextureLoader.getSize(path).height, TextureLoader.getSize(path).width, name, null, new Color(255, 255, 255, 255), group, taskOnClick));
         buttons.get(name).path = path;
     }
 
@@ -80,6 +79,6 @@ public class CreateElement {
     }
 
     public static void createPicture(int x, int y, int layer, String name, String path, String group) {
-        panels.put(name, new PanelObject(x, y, BufferedImageEncoder(path).getWidth(), BufferedImageEncoder(path).getHeight(), layer, name, true, path, group, new Color(255, 255, 255, 255)));
+        panels.put(name, new PanelObject(x, y, getSize(path).width, getSize(path).height, layer, name, true, path, group, new Color(255, 255, 255, 255)));
     }
 }

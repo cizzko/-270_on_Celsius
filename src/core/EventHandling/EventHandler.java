@@ -8,11 +8,9 @@ import core.UI.GUI.Menu.*;
 import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.SliderObject;
 import core.Window;
-import core.World.WorldGenerator;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import java.awt.*;
-import java.net.URI;
 import java.util.Arrays;
 import static core.Commandline.updateLine;
 import static core.EventHandling.Logging.Logger.log;
@@ -126,7 +124,7 @@ public class EventHandler extends Thread {
                 boolean press = EventHandler.getRectanglePress(button.x, button.y, button.width + button.x, button.height + button.y);
                 button.isClicked = press;
 
-                if (press) {
+                if (press && button.taskOnClick != null) {
                    button.taskOnClick.run();
                 }
             }
@@ -249,9 +247,9 @@ public class EventHandler extends Thread {
         if (Config.getFromConfig("Debug").equals("true") && System.currentTimeMillis() - lastSecond >= 1000) {
             lastSecond = System.currentTimeMillis();
 
-            CreateElement.createText(5, 985, "HandlerFPS", "Handler FPS: " + handlerUpdates, new Color(0, 0, 0, 255), null);
-            CreateElement.createText(5, 1020, "PhysicsFPS", "Physics FPS: " + updates, new Color(0, 0, 0, 255), null);
-            CreateElement.createText(5, 1055, "GameFPS", "Game FPS: " + fps, new Color(0, 0, 0, 255), null);
+            CreateElement.createText(5, 985, "HandlerFPS", "Handler FPS: " + handlerUpdates, new Color(25, 25, 25, 255), null);
+            CreateElement.createText(5, 1020, "PhysicsFPS", "Physics FPS: " + updates, new Color(25, 25, 25, 255), null);
+            CreateElement.createText(5, 1055, "GameFPS", "Game FPS: " + fps, new Color(25, 25, 25, 255), null);
 
             handlerUpdates = 0;
             updates = 0;

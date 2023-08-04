@@ -71,6 +71,10 @@ public class ShadowMap {
     public static void update() {
         for (int x = (int) (DynamicObjects[0].x / 16) - 20; x < DynamicObjects[0].x / 16 + 21; x++) {
             for (int y = (int) (DynamicObjects[0].y / 16) - 8; y < DynamicObjects[0].y / 16 + 16; y++) {
+                if (x < 2 || y < 2 || x > StaticObjects.length - 2 || y > StaticObjects.length - 2 || StaticObjects[x][y] == null) {
+                    continue;
+                }
+
                 if (!StaticObjects[x - 1][y].gas && !StaticObjects[x + 1][y].gas && !StaticObjects[x][y - 1].gas && !StaticObjects[x][y + 1].gas) {
                     colorDegree[x][y] = 1;
                     shadows[x][y] = new Color(140, 140, 140, 255);

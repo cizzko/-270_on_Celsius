@@ -8,6 +8,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.Stack;
 import static core.EventHandling.Logging.Logger.log;
 import static core.EventHandling.Logging.Logger.logExit;
@@ -18,6 +19,7 @@ import static core.World.Textures.TextureDrawing.bindTexture;
 import static org.lwjgl.opengl.GL11.*;
 
 public class TextureLoader extends Thread {
+    private static HashMap<String, Dimension> sizes = new HashMap<>();
 
     public static BufferedImage BufferedImageEncoder(String path) {
         try {
@@ -74,6 +76,15 @@ public class TextureLoader extends Thread {
         }
 
         return buffer.flip();
+    }
+
+    public static Dimension getSize(String path) {
+        path += path.endsWith(".png") ? "" : "1.png";
+
+        if (sizes.get(path) == null) {
+            sizes.put(path, new Dimension(BufferedImageEncoder(path).getWidth(), BufferedImageEncoder(path).getHeight()));
+        }
+        return sizes.get(path);
     }
 
     public static ByteBuffer uniteTextures(String mainTexture, String secondTexture) {

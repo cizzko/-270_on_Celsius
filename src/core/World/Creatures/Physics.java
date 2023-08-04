@@ -4,6 +4,7 @@ import core.EventHandling.Logging.Logger;
 import core.UI.GUI.Menu.Pause;
 import core.UI.GUI.Menu.Settings;
 import core.World.Creatures.Player.Inventory.Inventory;
+import core.World.Creatures.Player.Inventory.Weapons.Weapons;
 import static core.Window.*;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.HitboxMap.*;
@@ -61,7 +62,8 @@ public class Physics extends Thread {
         updatePlayerMove();
         updatePlayerJump();
         updatePlayerDrop();
-        updateDestroyBlocks();
+        updateInventoryInteraction();
+        Weapons.updateAmmo();
     }
 
     private static void updateCreaturesPhys() {

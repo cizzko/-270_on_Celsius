@@ -36,15 +36,17 @@ public class StaticWorldObjects implements Serializable {
     }
 
     public void destroyObject() {
-        this.path = null;
-        this.solid = false;
-        this.liquid = false;
-        this.plasma = false;
-        this.gas = true;
-        this.currentHp = 0;
-        this.id = 0;
-        if (start) {
-            ShadowMap.update();
+        if (id != 0) {
+            this.path = null;
+            this.solid = false;
+            this.liquid = false;
+            this.plasma = false;
+            this.gas = true;
+            this.currentHp = 0;
+            this.id = 0;
+            if (start) {
+                ShadowMap.update();
+            }
         }
     }
 

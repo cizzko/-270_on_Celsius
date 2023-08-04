@@ -10,18 +10,24 @@ public class Sound {
     private static final int effectVolume = Integer.parseInt(Config.getFromConfig("EffectsVolume"));
     private static final int musicVolume = Integer.parseInt(Config.getFromConfig("SoundsVolume"));
     private static int volume;
-    private static boolean suppVolumeLevel = true;
+    private static boolean suppVolumeLevel = true, error = false;
     public static ConcurrentHashMap<String, Boolean> sounds = new ConcurrentHashMap<>();
 
+    public enum types {
+        SOUND,
+        EFFECT
+    }
+
     //only wav, dev 0.0.0.2
-    public static void SoundPlay(String path, String type) {
-        if (sounds.get(path) == null || !sounds.get(path)) {
-            if (!suppVolumeLevel) {
+    public static void SoundPlay(String path, types type, boolean limitAmount) {
+        if (sounds.get(path) == null || !sounds.get(path) || !limitAmount) {
+            if (!suppVolumeLevel && !error) {
+                error = true;
                 Logger.log("this device not supported volume level");
             }
 
             new Thread(() -> {
-                volume = type.equals("effect") ? effectVolume : musicVolume;
+                volume = type == types.EFFECT ? effectVolume : musicVolume;
 
                 try {
                     sounds.put(path, true);
@@ -39,10 +45,13 @@ public class Sound {
                     suppVolumeLevel = sourceDataLine.isControlSupported(FloatControl.Type.MASTER_GAIN);
 
                     try {
-                        FloatControl gainControl = (FloatControl) sourceDataLine.getControl(FloatControl.Type.MASTER_GAIN);
+                        FloatControl gainControl = (FloatControl) sourceDataLine.getControl(FloatControl.Type.VOLUME);
                         gainControl.setValue(20f * (float) Math.log10(volume));
                     } catch (Exception e) {
-                        Logger.log(e.toString());
+                        if (!error) {
+                            error = true;
+                            Logger.log(e.toString());
+                        }
                     }
 
                     sourceDataLine.open(format);

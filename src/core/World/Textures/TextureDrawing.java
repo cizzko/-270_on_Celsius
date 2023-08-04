@@ -10,7 +10,6 @@ import core.UI.GUI.Video;
 import core.Window;
 import core.World.WorldGenerator;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -23,7 +22,6 @@ import static core.UI.GUI.Fonts.*;
 import static core.UI.GUI.Video.*;
 import static core.Window.defPath;
 import static core.World.Creatures.Player.Player.updatePlayerGUI;
-import static core.World.Textures.TextureLoader.BufferedImageEncoder;
 import static core.World.Textures.TextureLoader.ByteBufferEncoder;
 import static core.World.Weather.Sun.updateSun;
 import static core.World.WorldGenerator.SizeX;
@@ -121,7 +119,7 @@ public class TextureDrawing {
 
         int textureId = pathMain.hashCode() + pathSecond.hashCode();
         if (textures.get(textureId) == null) {
-            bindTexture(TextureLoader.uniteTextures(pathMain, pathSecond), textureId, TextureLoader.BufferedImageEncoder(pathMain).getWidth(), TextureLoader.BufferedImageEncoder(pathMain).getHeight());
+            bindTexture(TextureLoader.uniteTextures(pathMain, pathSecond), textureId, TextureLoader.getSize(pathMain).width, TextureLoader.getSize(pathMain).height);
         }
 
         TextureData textureData = textures.get(textureId);
@@ -469,7 +467,11 @@ public class TextureDrawing {
 
         for (int x = (int) (playerX / 16) - 20; x < playerX / 16 + 21; x++) {
             for (int y = (int) (playerY / 16) - 8; y < playerY / 16 + 16; y++) {
-                if (x < 0 || y < 0 || x > SizeX || y > SizeY || StaticObjects[x][y] == null || StaticObjects[x][y].path == null || StaticObjects[x][y].currentHp <= 0) {
+                if (x < 0 || y < 0 || x > SizeX || y > SizeY || StaticObjects[x][y] == null || StaticObjects[x][y].path == null) {
+                    continue;
+                }
+                if (StaticObjects[x][y].currentHp <= 0 && StaticObjects[x][y].id != 0) {
+                    StaticObjects[x][y].destroyObject();
                     continue;
                 }
                 StaticWorldObjects obj = StaticObjects[x][y];
@@ -478,7 +480,7 @@ public class TextureDrawing {
                 float yBlock = obj.y;
                 boolean mirrored = obj.mirrored;
 
-                if (!(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top)) {
+                if (!(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top) && obj.path != null) {
                     if (obj.currentHp > obj.totalHp / 1.5f) {
                         drawTexture(obj.path, xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, mirrored);
 
@@ -687,17 +689,16 @@ public class TextureDrawing {
 
     public static void bindTexture(String path) {
         ByteBuffer buffer = ByteBufferEncoder(path);
-        BufferedImage image = BufferedImageEncoder(path);
 
-        int width = image.getWidth();
-        int height = image.getHeight();
+        int width = TextureLoader.getSize(path).width;
+        int height = TextureLoader.getSize(path).height;
         int id = glGenTextures();
 
         glBindTexture(GL_TEXTURE_2D, id);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.getWidth(), image.getHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
         textures.put(path.hashCode(), new TextureData(id, width, height));
 
         glBindTexture(GL_TEXTURE_2D, 0);
