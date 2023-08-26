@@ -22,7 +22,7 @@ import static core.Window.defPath;
 public class WorldGenerator {
     public static int SizeX, SizeY;
     public static StaticWorldObjects[][] StaticObjects;
-    public static DynamicWorldObjects[] DynamicObjects = new DynamicWorldObjects[20];
+    public static ArrayList<DynamicWorldObjects> DynamicObjects = new ArrayList<>();
 
     public static void generateWorld() {
         int SizeX = getSliderPos("worldSize") + 20;
@@ -228,8 +228,8 @@ public class WorldGenerator {
     }
 
     public static void generateDynamicsObjects(boolean randomSpawn) {
-        DynamicObjects[0] = new DynamicWorldObjects(false, 0.003f, 1, 0, randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f, 100, 0, defPath + "\\src\\assets\\World\\creatures\\player.png");
-    }
+        DynamicObjects.add(new DynamicWorldObjects(false, 0.003f, 1, 0, randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f, 100, defPath + "\\src\\assets\\World\\creatures\\player.png"));
+        DynamicObjects.set(0, new DynamicWorldObjects(false, 0.003f, 1, 0, randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f, 100, defPath + "\\src\\assets\\World\\creatures\\player.png"));}
 
     public static void start(boolean generateCreatures) {
         TextureDrawing.loadObjects();

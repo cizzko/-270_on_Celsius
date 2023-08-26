@@ -23,33 +23,28 @@ public class Player {
     public static boolean noClip = false, lastDestroySet = false;
     private static int lastDestroyIndexX = 0, lastDestroyIndexY = 0;
 
-    public static void setPlayerPos(float x, float y) {
-        DynamicObjects[0].x = x == 0 ? DynamicObjects[0].x : x;
-        DynamicObjects[0].y = y == 0 ? DynamicObjects[0].y : y;
-    }
-
     public static void updatePlayerJump() {
         if (EventHandler.getKeyClick(GLFW_KEY_SPACE)) {
-            DynamicObjects[0].jump(0.45f);
+            DynamicObjects.get(0).jump(0.45f);
         }
     }
 
     public static void updatePlayerMove() {
         float increment = noClip ? 0.5f : 0.1f;
 
-        if (EventHandler.getKey(GLFW_KEY_D) && DynamicObjects[0].x + 24 < SizeX * 16 && (noClip || !checkIntersStaticR(DynamicObjects[0].x + 0.1f, DynamicObjects[0].y, 24, 24))) {
-            DynamicObjects[0].motionVector.x = increment;
+        if (EventHandler.getKey(GLFW_KEY_D) && DynamicObjects.get(0).x + 24 < SizeX * 16 && (noClip || !checkIntersStaticR(DynamicObjects.get(0).x + 0.1f, DynamicObjects.get(0).y, 24, 24))) {
+            DynamicObjects.get(0).motionVector.x = increment;
         }
-        if (EventHandler.getKey(GLFW_KEY_A) && DynamicObjects[0].x > 0 && (noClip || !checkIntersStaticL(DynamicObjects[0].x - 0.1f, DynamicObjects[0].y, 24))) {
-            DynamicObjects[0].motionVector.x = -increment;
+        if (EventHandler.getKey(GLFW_KEY_A) && DynamicObjects.get(0).x > 0 && (noClip || !checkIntersStaticL(DynamicObjects.get(0).x - 0.1f, DynamicObjects.get(0).y, 24))) {
+            DynamicObjects.get(0).motionVector.x = -increment;
         }
         if (noClip && EventHandler.getKey(GLFW_KEY_S)) {
-            DynamicObjects[0].motionVector.y = -increment;
+            DynamicObjects.get(0).motionVector.y = -increment;
         }
         if (noClip && EventHandler.getKey(GLFW_KEY_W)) {
-            DynamicObjects[0].motionVector.y = increment;
+            DynamicObjects.get(0).motionVector.y = increment;
         }
-        DynamicObjects[0].notForDrawing = noClip;
+        DynamicObjects.get(0).notForDrawing = noClip;
     }
 
     public static void updateInventoryInteraction() {
@@ -154,14 +149,14 @@ public class Player {
     }
 
     public static Point2D.Float getWorldMousePoint() {
-        float blockX = ((getMousePos().x - 960) / 3f + 16) + DynamicObjects[0].x;
-        float blockY = ((getMousePos().y - 540) / 3f + 64) + DynamicObjects[0].y;
+        float blockX = ((getMousePos().x - 960) / 3f + 16) + DynamicObjects.get(0).x;
+        float blockY = ((getMousePos().y - 540) / 3f + 64) + DynamicObjects.get(0).y;
 
         return new Point2D.Float(blockX, blockY);
     }
 
     public static int getDistanceUMB() {
-        return (int) Math.abs((DynamicObjects[0].x / 16 - getBlockUnderMousePoint().x) + (DynamicObjects[0].y / 16 - getBlockUnderMousePoint().y));
+        return (int) Math.abs((DynamicObjects.get(0).x / 16 - getBlockUnderMousePoint().x) + (DynamicObjects.get(0).y / 16 - getBlockUnderMousePoint().y));
     }
 
     public static void updatePlayerGUI() {
@@ -179,15 +174,15 @@ public class Player {
     }
 
     public static float getDistanceToPlayerABS(float x) {
-        if (DynamicObjects[0] != null) {
-            return Math.abs((DynamicObjects[0].x - x));
+        if (DynamicObjects.get(0) != null) {
+            return Math.abs((DynamicObjects.get(0).x - x));
         }
         return 0;
     }
 
     public static float getDistanceToPlayer(float x) {
-        if (DynamicObjects[0] != null) {
-            return (DynamicObjects[0].x - x);
+        if (DynamicObjects.get(0) != null) {
+            return (DynamicObjects.get(0).x - x);
         }
         return 0;
     }

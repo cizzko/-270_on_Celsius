@@ -18,7 +18,7 @@ public class ShadowMap {
     public static void generate() {
         shadows = new Color[WorldGenerator.SizeX][WorldGenerator.SizeY];
         colorDegree = new int[WorldGenerator.SizeX][WorldGenerator.SizeY];
-        shadowsDynamic = new Color[WorldGenerator.DynamicObjects.length];
+        shadowsDynamic = new Color[WorldGenerator.DynamicObjects.size()];
 
         for (Color[] shadow : shadows) {
             Arrays.fill(shadow, new Color(255, 255, 255, 255));
@@ -69,8 +69,8 @@ public class ShadowMap {
     }
 
     public static void update() {
-        for (int x = (int) (DynamicObjects[0].x / 16) - 20; x < DynamicObjects[0].x / 16 + 21; x++) {
-            for (int y = (int) (DynamicObjects[0].y / 16) - 8; y < DynamicObjects[0].y / 16 + 16; y++) {
+        for (int x = (int) (DynamicObjects.get(0).x / 16) - 20; x < DynamicObjects.get(0).x / 16 + 21; x++) {
+            for (int y = (int) (DynamicObjects.get(0).y / 16) - 8; y < DynamicObjects.get(0).y / 16 + 16; y++) {
                 if (x < 2 || y < 2 || x > StaticObjects.length - 2 || y > StaticObjects.length - 2 || StaticObjects[x][y] == null) {
                     continue;
                 }

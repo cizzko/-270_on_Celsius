@@ -42,9 +42,9 @@ public class BuildMenu {
             Items currentItem = items[currentObject.x][currentObject.y].item;
 
             switch (items[currentObject.x][currentObject.y].item.type) {
-                case TOOL -> Inventory.createElementTool(currentItem.tool, currentItem.id, currentItem.path, currentItem.description);
-                case DETAIL -> Inventory.createElementDetail(currentItem.detail, currentItem.id, currentItem.description);
-                case WEAPON -> Inventory.createElementWeapon(currentItem.weapon, currentItem.id, currentItem.path, currentItem.description);
+                case TOOL -> Inventory.createElementTool(currentItem.tool, currentItem.path, currentItem.description);
+                case DETAIL -> Inventory.createElementDetail(currentItem.detail, currentItem.description);
+                case WEAPON -> Inventory.createElementWeapon(currentItem.weapon, currentItem.path, currentItem.description);
                 case PLACEABLE_BLOCK -> Inventory.createElementPlaceable(currentItem.placeable.staticWorldObject, currentItem.description);
                 case PLACEABLE_FACTORY -> Inventory.createElementFactory(currentItem.placeable.factoryObject, currentItem.description);
             }

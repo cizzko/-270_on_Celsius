@@ -12,6 +12,7 @@ import core.World.Creatures.Player.Inventory.Items.Placeable.Factories;
 import core.World.WorldGenerator;
 import java.awt.*;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -33,7 +34,7 @@ public class TextureDrawing {
     private static float playerX, playerY;
     public static final HashMap<Integer, TextureData> textures = new HashMap<>();
     public static StaticWorldObjects[][] StaticObjects;
-    public static DynamicWorldObjects[] DynamicObjects;
+    public static ArrayList<DynamicWorldObjects> DynamicObjects;
 
     public static void loadObjects() {
         StaticObjects = WorldGenerator.StaticObjects;
@@ -458,8 +459,8 @@ public class TextureDrawing {
     }
 
     public static void updatePlayerPos() {
-        playerX = DynamicObjects[0].x;
-        playerY = DynamicObjects[0].y;
+        playerX = DynamicObjects.get(0).x;
+        playerY = DynamicObjects.get(0).y;
     }
 
     public static void updateStaticObj() {
@@ -498,10 +499,10 @@ public class TextureDrawing {
     }
 
     public static boolean isOnCamera(float x, float y, float xSize, float ySize) {
-        float left = DynamicObjects[0].x - (1920 / 5.5f) - (32 + xSize);
-        float right = DynamicObjects[0].x + (1920 / 5.5f) + (32 - xSize);
-        float bottom = DynamicObjects[0].y - (1080 / 16f) - (32 + ySize); //меньше число деления - выше прорисовка
-        float top = DynamicObjects[0].y + (1080 / 5f) + (32 - ySize);
+        float left = DynamicObjects.get(0).x - (1920 / 5.5f) - (32 + xSize);
+        float right = DynamicObjects.get(0).x + (1920 / 5.5f) + (32 - xSize);
+        float bottom = DynamicObjects.get(0).y - (1080 / 16f) - (32 + ySize); //меньше число деления - выше прорисовка
+        float top = DynamicObjects.get(0).y + (1080 / 5f) + (32 - ySize);
 
         return !(x + 16 < left) && !(x > right) && !(y + 16 < bottom) && !(y > top);
     }
@@ -509,16 +510,16 @@ public class TextureDrawing {
     public static void updateDynamicObj() {
         int fieldObjects = 0;
 
-        for (int x = 0; x < WorldGenerator.DynamicObjects.length; x++) {
-            DynamicWorldObjects dynamicObject = WorldGenerator.DynamicObjects[x];
+        for (int x = 0; x < WorldGenerator.DynamicObjects.size(); x++) {
+            DynamicWorldObjects dynamicObject = WorldGenerator.DynamicObjects.get(x);
 
             if (dynamicObject != null && !dynamicObject.notForDrawing) {
                 fieldObjects++;
 
-                float left = DynamicObjects[0].x - (1920 / 5.5f) - (48);
-                float right = DynamicObjects[0].x + (1920 / 5.5f) + (48);
-                float bottom = DynamicObjects[0].y - (1080 / 16f) - (48); //меньше число деления - выше прорисовка
-                float top = DynamicObjects[0].y + (1080 / 5f) + (48);
+                float left = DynamicObjects.get(0).x - (1920 / 5.5f) - (48);
+                float right = DynamicObjects.get(0).x + (1920 / 5.5f) + (48);
+                float bottom = DynamicObjects.get(0).y - (1080 / 16f) - (48); //меньше число деления - выше прорисовка
+                float top = DynamicObjects.get(0).y + (1080 / 5f) + (48);
 
                 float xBlock = dynamicObject.x;
                 float yBlock = dynamicObject.y;
@@ -542,11 +543,6 @@ public class TextureDrawing {
                     drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, ShadowMap.getColorDynamic(x), false, dynamicObject.mirrored);
                 }
             }
-        }
-        if (fieldObjects >= DynamicObjects.length - 1) {
-            DynamicWorldObjects[] newObjects = new DynamicWorldObjects[DynamicObjects.length * 2];
-            System.arraycopy(DynamicObjects, 0, newObjects, 0, DynamicObjects.length);
-            DynamicObjects = newObjects;
         }
     }
 

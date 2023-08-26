@@ -26,7 +26,7 @@ public class Sun {
                 if (currentTime > 2400 || currentTime < 0) { // 2400 - 23:59
                     currentTime = 0;
                 }
-                x = DynamicObjects[0].x;
+                x = DynamicObjects.get(0).x;
 
                 if (currentTime >= 2400 || currentTime < 1) {
                     y = endYSun;

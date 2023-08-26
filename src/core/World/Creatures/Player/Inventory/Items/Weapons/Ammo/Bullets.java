@@ -49,7 +49,7 @@ public class Bullets {
 
             if (EventHandler.getMousePress() && System.currentTimeMillis() - weapon.lastShootTime >= weapon.fireRate) {
                 weapon.lastShootTime = System.currentTimeMillis();
-                Bullets.createBullet(DynamicObjects[0].x, DynamicObjects[0].y, weapon.ammoSpeed, weapon.damage, Math.abs((float) Math.toDegrees(Math.atan2(getMousePos().y - 540, getMousePos().x - 960)) - 180));
+                Bullets.createBullet(DynamicObjects.get(0).x, DynamicObjects.get(0).y, weapon.ammoSpeed, weapon.damage, Math.abs((float) Math.toDegrees(Math.atan2(getMousePos().y - 540, getMousePos().x - 960)) - 180));
                 Sound.SoundPlay(weapon.sound, Sound.types.EFFECT, false);
             }
         }
@@ -79,13 +79,13 @@ public class Bullets {
                         if (staticObject.currentHp <= 0) {
                             staticObject.destroyObject();
                         }
-                    } else if (dynamicObject != null && dynamicObject.uniqueId != 0) {
+                    } else if (dynamicObject != null) {
                         float hp = dynamicObject.currentHp;
                         dynamicObject.currentHp -= bullet.damage;
                         bullet.damage -= hp;
 
                         if (dynamicObject.currentHp <= 0) {
-                            DynamicObjects[dynamicObject.uniqueId] = null;
+                            DynamicObjects.remove(dynamicObject);
                         }
                     }
                     if (bullet.damage <= 0 || bullet.x < 0 || bullet.y < 0 || bullet.x / 16 > StaticObjects.length || bullet.y / 16 > StaticObjects.length) {
@@ -100,7 +100,7 @@ public class Bullets {
     public static void drawBullets() {
         for (Bullets bullet : bullets) {
             //TODO: дописать пути нормальные
-            if (bullet != null && !(bullet.x > DynamicObjects[0].x + 350 || bullet.x < DynamicObjects[0].x - 350)) {
+            if (bullet != null && !(bullet.x > DynamicObjects.get(0).x + 350 || bullet.x < DynamicObjects.get(0).x - 350)) {
                 drawTexture("D:\\-270_On_Celsius\\-270_on_Celsius\\src\\assets\\World\\Items\\someBullet.png", bullet.x, bullet.y, 3, false);
             }
         }

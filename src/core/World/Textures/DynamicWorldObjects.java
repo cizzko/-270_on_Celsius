@@ -7,14 +7,14 @@ import static core.World.WorldGenerator.*;
 
 //динамические объекты, могут иметь любые координаты внутри мира и быть перемещены когда угодно
 public class DynamicWorldObjects implements Serializable {
-    public int framesCount, currentFrame, uniqueId;
+    public int framesCount, currentFrame;
     public float x, y, animSpeed, weight, currentHp, maxHp;
     public String path;
     public long lastFrameTime = System.currentTimeMillis();
     public boolean onCamera, isJumping, isDropping, isFlying, mirrored, notForDrawing;
     public Point2D.Float motionVector = new Point2D.Float(0, 0);
 
-    public DynamicWorldObjects(boolean isFlying, int framesCount, float animSpeed, float x, float y, float maxHp, float weight, int uniqueId, String path) {
+    public DynamicWorldObjects(boolean isFlying, int framesCount, float animSpeed, float x, float y, float maxHp, float weight, String path) {
         this.framesCount = framesCount;
         this.animSpeed = animSpeed;
         this.path = path;
@@ -28,11 +28,10 @@ public class DynamicWorldObjects implements Serializable {
         this.y = y;
         this.maxHp = maxHp;
         this.currentHp = maxHp;
-        this.uniqueId = uniqueId;
         this.weight = weight;
     }
 
-    public DynamicWorldObjects(boolean isFlying, float weight, int framesCount, float animSpeed, float x, float maxHp, int uniqueId, String path) {
+    public DynamicWorldObjects(boolean isFlying, float weight, int framesCount, float animSpeed, float x, float maxHp, String path) {
         this.framesCount = framesCount;
         this.animSpeed = animSpeed;
         this.path = path;
@@ -45,7 +44,6 @@ public class DynamicWorldObjects implements Serializable {
         this.x = x;
         this.maxHp = maxHp;
         this.currentHp = maxHp;
-        this.uniqueId = uniqueId;
         this.weight = weight;
 
         float y = 1;

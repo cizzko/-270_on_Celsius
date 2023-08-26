@@ -32,7 +32,7 @@ public class StaticWorldObjects implements Serializable {
         this.totalHp = 100;
         this.currentHp = totalHp;
         this.type = type;
-        this.id = getId(type);
+        this.id = path == null ? 0 : path.hashCode();
     }
 
     public void destroyObject() {
@@ -48,17 +48,5 @@ public class StaticWorldObjects implements Serializable {
                 ShadowMap.update();
             }
         }
-    }
-
-    private static int getId(Types type) {
-        switch (type) {
-            case GAS        -> { return 0; }
-            case DIRT       -> { return 1; }
-            case GRASS      -> { return 2; }
-            case STONE      -> { return 3; }
-            case IRON_ORE   -> { return 4; }
-            case DIRT_STONE -> { return 5; }
-        }
-        return 0;
     }
 }

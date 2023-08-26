@@ -6,6 +6,7 @@ import core.World.Textures.ShadowMap;
 import core.World.Textures.StaticWorldObjects;
 import java.io.*;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
@@ -64,7 +65,7 @@ public class Saves {
         WorldGenerator.SizeY = objects.length;
         WorldGenerator.SizeX = objects.length;
         WorldGenerator.StaticObjects = objects;
-        WorldGenerator.DynamicObjects = (DynamicWorldObjects[]) data.get("DynamicWorldObjects");
+        WorldGenerator.DynamicObjects = (ArrayList<DynamicWorldObjects>) data.get("DynamicWorldObjects");
 
         WorldGenerator.start((Boolean) data.get("WorldGeneratorCreatures"));
         ShadowMap.setAllData((HashMap<String, Object>) data.get("ShadowsData"));

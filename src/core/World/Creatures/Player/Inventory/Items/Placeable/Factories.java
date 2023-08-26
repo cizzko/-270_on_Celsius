@@ -33,12 +33,12 @@ public class Factories {
         CRITICAL //полная остановка работы, нужно перестроить
     }
 
-    public Factories(float productionSpeed, float needEnergy, float maxHp, int id, int maxStoredObjects, Items[] outputObjects, Items[] inputObjects, String path, String sound) {
+    public Factories(float productionSpeed, float needEnergy, float maxHp, int maxStoredObjects, Items[] outputObjects, Items[] inputObjects, String path, String sound) {
         this.productionSpeed = productionSpeed;
         this.lastProductionTime = System.currentTimeMillis();
         this.needEnergy = needEnergy;
         this.maxHp = maxHp;
-        this.id = id;
+        this.id = path.hashCode();
         this.maxStoredObjects = maxStoredObjects;
         this.outputObjects = outputObjects;
         this.inputObjects = inputObjects;

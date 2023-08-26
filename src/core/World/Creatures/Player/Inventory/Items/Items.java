@@ -23,9 +23,9 @@ public class Items {
         PLACEABLE_BLOCK
     }
 
-    public Items(Weapons weapon, int id, String path, String description) {
+    public Items(Weapons weapon, String path, String description) {
         this.weapon = weapon;
-        this.id = id;
+        this.id = path.hashCode();
         this.path = path;
         this.zoom = findZoom(path);
         this.countInCell = Inventory.findCountID(id);
@@ -33,9 +33,9 @@ public class Items {
         this.description = description;
     }
 
-    public Items(Tools tool, int id, String path, String description) {
+    public Items(Tools tool, String path, String description) {
         this.tool = tool;
-        this.id = id;
+        this.id = path.hashCode();
         this.path = path;
         this.zoom = findZoom(path);
         this.countInCell = Inventory.findCountID(id);
@@ -43,9 +43,9 @@ public class Items {
         this.description = description;
     }
 
-    public Items(PlaceableItems placeable, int id, Types type, String description) {
+    public Items(PlaceableItems placeable, Types type, String description) {
         this.placeable = placeable;
-        this.id = id;
+        this.id = placeable.hashCode();
         this.path = placeable.factoryObject != null ? placeable.factoryObject.path : placeable.staticWorldObject.path;
         this.zoom = findZoom(path);
         this.countInCell = Inventory.findCountID(id);
@@ -53,9 +53,9 @@ public class Items {
         this.description = description;
     }
 
-    public Items(Details detail, int id, String description) {
+    public Items(Details detail, String description) {
         this.detail = detail;
-        this.id = id;
+        this.id = detail.path.hashCode();
         this.path = detail.path;
         this.zoom = findZoom(path);
         this.countInCell = Inventory.findCountID(id);

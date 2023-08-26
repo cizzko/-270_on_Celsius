@@ -103,7 +103,9 @@ public class Inventory {
         }
     }
 
-    public static void createElementTool(Tools tool, int id, String path, String description) {
+    public static void createElementTool(Tools tool, String path, String description) {
+        int id = path.hashCode();
+
         if (findCountID(id) > 1) {
             Point cell = findItemByID(id);
 
@@ -113,7 +115,7 @@ public class Inventory {
 
         Point cell = findFreeCell();
         if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = new Items(tool, id, path, description);
+            inventoryObjects[cell.x][cell.y] = new Items(tool, path, description);
         }
     }
 
@@ -128,11 +130,13 @@ public class Inventory {
 
         Point cell = findFreeCell();
         if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = new Items(new PlaceableItems(object), id, Items.Types.PLACEABLE_BLOCK, description);
+            inventoryObjects[cell.x][cell.y] = new Items(new PlaceableItems(object), Items.Types.PLACEABLE_BLOCK, description);
         }
     }
 
-    public static void createElementDetail(Details object, int id, String description) {
+    public static void createElementDetail(Details object, String description) {
+        int id = object.path.hashCode();
+
         if (findCountID(id) > 1) {
             Point cell = findItemByID(id);
             inventoryObjects[cell.x][cell.y].countInCell++;
@@ -141,7 +145,7 @@ public class Inventory {
 
         Point cell = findFreeCell();
         if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = new Items(new Details(object.name, object.path), id, description);
+            inventoryObjects[cell.x][cell.y] = new Items(new Details(object.name, object.path), description);
         }
     }
 
@@ -156,11 +160,13 @@ public class Inventory {
 
         Point cell = findFreeCell();
         if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = new Items(new PlaceableItems(factory), id, Items.Types.PLACEABLE_FACTORY, description);
+            inventoryObjects[cell.x][cell.y] = new Items(new PlaceableItems(factory), Items.Types.PLACEABLE_FACTORY, description);
         }
     }
 
-    public static void createElementWeapon(Weapons weapon, int id, String path, String description) {
+    public static void createElementWeapon(Weapons weapon, String path, String description) {
+        int id = path.hashCode();
+
         if (findCountID(id) > 1) {
             Point cell = findItemByID(id);
             inventoryObjects[cell.x][cell.y].countInCell++;
@@ -169,7 +175,7 @@ public class Inventory {
 
         Point cell = findFreeCell();
         if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = new Items(weapon, id, path, description);
+            inventoryObjects[cell.x][cell.y] = new Items(weapon, path, description);
         }
     }
 

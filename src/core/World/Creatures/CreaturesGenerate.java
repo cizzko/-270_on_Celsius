@@ -16,9 +16,9 @@ public class CreaturesGenerate extends Thread {
         Logger.log("Thread: Creatures logic started");
 
         while (!glfwWindowShouldClose(glfwWindow)) {
-            for (int i = 1; i < DynamicObjects.length; i++) {
-                if (DynamicObjects[i] != null && (DynamicObjects[i].x - 960 > SizeX * 16 || DynamicObjects[i].y - 540 > SizeY * 16 || DynamicObjects[i].x + 960 < 0 || DynamicObjects[i].y + 540 < 0)) {
-                    DynamicObjects[i] = null;
+            for (int i = 1; i < DynamicObjects.size(); i++) {
+                if (DynamicObjects.get(i) != null && (DynamicObjects.get(i).x - 960 > SizeX * 16 || DynamicObjects.get(i).y - 540 > SizeY * 16 || DynamicObjects.get(i).x + 960 < 0 || DynamicObjects.get(i).y + 540 < 0)) {
+                    DynamicObjects.remove(i);
                 }
             }
 
@@ -42,20 +42,12 @@ public class CreaturesGenerate extends Thread {
     }
 
     public static void generateButterfly() {
-        int cell = ArrayUtils.findFreeCell(DynamicObjects);
-
-        if (cell != -1) {
-            DynamicObjects[cell] = new DynamicWorldObjects(true, 0.001f, 2, 0.1f, (float) (Math.random() * (SizeX * 16)), 15, cell, defPath + "\\src\\assets\\World\\creatures\\butterfly");
-            count++;
-        }
+        DynamicObjects.add(new DynamicWorldObjects(true, 0.001f, 2, 0.1f, (float) (Math.random() * (SizeX * 16)), 15, defPath + "\\src\\assets\\World\\creatures\\butterfly"));
+        count++;
     }
 
     public static void generateBird() {
-        int cell = ArrayUtils.findFreeCell(DynamicObjects);
-
-        if (cell != -1) {
-            DynamicObjects[cell] = new DynamicWorldObjects(true, 0.0001f, 2, 0.1f, 24, SizeY * 13, cell, defPath + "\\src\\assets\\World\\creatures\\bird");
-            count++;
-        }
+        DynamicObjects.add(new DynamicWorldObjects(true, 0.0001f, 2, 0.1f, 24, SizeY * 13, defPath + "\\src\\assets\\World\\creatures\\bird"));
+        count++;
     }
 }
