@@ -20,7 +20,7 @@ public class Sound {
 
     //only wav, dev 0.0.0.2
     public static void SoundPlay(String path, types type, boolean limitAmount) {
-        if (sounds.get(path) == null || !sounds.get(path) || !limitAmount) {
+        if (path != null && (sounds.get(path) == null || !sounds.get(path) || !limitAmount)) {
             if (!suppVolumeLevel && !error) {
                 error = true;
                 Logger.log("this device not supported volume level");

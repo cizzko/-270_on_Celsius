@@ -228,7 +228,7 @@ public class WorldGenerator {
     }
 
     public static void generateDynamicsObjects(boolean randomSpawn) {
-        DynamicObjects[0] = new DynamicWorldObjects(false, 1, 0, randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f, 100, 0, defPath + "\\src\\assets\\World\\creatures\\player.png");
+        DynamicObjects[0] = new DynamicWorldObjects(false, 0.003f, 1, 0, randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f, 100, 0, defPath + "\\src\\assets\\World\\creatures\\player.png");
     }
 
     public static void start(boolean generateCreatures) {

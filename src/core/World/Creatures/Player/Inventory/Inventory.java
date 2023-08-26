@@ -1,8 +1,13 @@
 package core.World.Creatures.Player.Inventory;
 
 import core.EventHandling.EventHandler;
-import core.World.Creatures.Player.Inventory.Placeable.PlaceableItems;
-import core.World.Creatures.Player.Inventory.Weapons.Weapons;
+import core.World.Creatures.Player.BuildMenu.BuildMenu;
+import core.World.Creatures.Player.Inventory.Items.Details;
+import core.World.Creatures.Player.Inventory.Items.Items;
+import core.World.Creatures.Player.Inventory.Items.Placeable.Factories;
+import core.World.Creatures.Player.Inventory.Items.Tools;
+import core.World.Creatures.Player.Inventory.Items.Placeable.PlaceableItems;
+import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.Creatures.Player.Player;
 import core.World.Textures.StaticWorldObjects;
 import core.World.WorldGenerator;
@@ -15,11 +20,12 @@ public class Inventory {
     public static boolean inventoryOpen = false, create = false;
     public static final Items[][] inventoryObjects = new Items[8][6];
     public static Point currentObject;
-    public static String currentObjectType = "none";
+    public static Items.Types currentObjectType;
     private static long lastOpen = System.currentTimeMillis();
 
     public static void create() {
         create = true;
+        BuildMenu.create();
     }
 
     public static void update() {
@@ -30,7 +36,7 @@ public class Inventory {
     }
 
     private static void drawInventory() {
-        drawTexture(defPath + "\\src\\assets\\World\\inventory\\inventory" + (inventoryOpen ? "Open" : "Closed") + ".png", inventoryOpen ? 1488 : 1866, 756, 1, true);
+        drawTexture(defPath + "\\src\\assets\\UI\\GUI\\inventory\\inventory" + (inventoryOpen ? "Open" : "Closed") + ".png", inventoryOpen ? 1488 : 1866, 756, 1, true);
 
         for (int x = inventoryOpen ? 0 : 7; x < inventoryObjects.length; x++) {
             for (int y = 0; y < inventoryObjects[x].length; y++) {
@@ -38,15 +44,37 @@ public class Inventory {
                     float xCoord = 1498 + x * 54;
                     float yCoord = 766 + y * 54f;
 
-                    float zoom = inventoryObjects[x][y].zoom;
-                    drawTexture(inventoryObjects[x][y].path, (xCoord + 5) / zoom, (yCoord + 5) / zoom, zoom, true);
-                    drawText((int) xCoord + 31, (int) yCoord - 7, inventoryObjects[x][y].countInCell > 9 ? "9+" : String.valueOf(inventoryObjects[x][y].countInCell), new Color(10, 10, 10, 255));
+                    drawInventoryItem(xCoord, yCoord, inventoryObjects[x][y].countInCell, inventoryObjects[x][y].path);
 
                     if (EventHandler.getRectanglePress((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
-                        currentObjectType = inventoryObjects[x][y] == null ? "none" : String.valueOf(inventoryObjects[x][y].type).toLowerCase();
+                        currentObjectType = inventoryObjects[x][y] == null ? null : inventoryObjects[x][y].type;
                         currentObject = new Point(x, y);
                     }
                 }
+            }
+        }
+    }
+
+    public static void drawInventoryItem(float x, float y, int countInCell, String path) {
+        float zoom = Items.findZoom(path);
+
+        drawTexture(path, (x + 5) / zoom, (y + 5) / zoom, zoom, true);
+        drawText((int) x + 31, (int) y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell), new Color(10, 10, 10, 255));
+    }
+
+    public static void drawInventoryItem(float x, float y, String path) {
+        float zoom = Items.findZoom(path);
+
+        drawTexture(path, (x + 5) / zoom, (y + 5) / zoom, zoom, true);
+    }
+
+    public static void decrementItem(int x, int y) {
+        if (inventoryObjects[x][y] != null) {
+            inventoryObjects[x][y].countInCell--;
+
+            if (inventoryObjects[x][y].countInCell <= 0) {
+                inventoryObjects[x][y] = null;
+                currentObject = null;
             }
         }
     }
@@ -60,9 +88,9 @@ public class Inventory {
 
         if (current != null) {
             if ((inventoryOpen || current.x > 6)) {
-                drawTexture(defPath + "\\src\\assets\\World\\inventory\\inventoryCurrent.png", 1488 + current.x * 54, 756 + current.y * 54f, 1, true);
+                drawTexture(defPath + "\\src\\assets\\UI\\GUI\\inventory\\inventoryCurrent.png", 1488 + current.x * 54, 756 + current.y * 54f, 1, true);
             }
-            if (currentObjectType != null && currentObjectType.equals("placeable")) {
+            if (currentObjectType == Items.Types.PLACEABLE_BLOCK || currentObjectType == Items.Types.PLACEABLE_FACTORY) {
                 int blockX = Player.getBlockUnderMousePoint().x;
                 int blockY = Player.getBlockUnderMousePoint().y;
                 boolean isDeclined = Player.getDistanceUMB() > 8 || (!StaticObjects[blockX][blockY].gas || !(WorldGenerator.StaticObjects[blockX][blockY + 1].solid || WorldGenerator.StaticObjects[blockX][blockY - 1].solid || WorldGenerator.StaticObjects[blockX + 1][blockY].solid || WorldGenerator.StaticObjects[blockX - 1][blockY].solid));
@@ -75,7 +103,7 @@ public class Inventory {
         }
     }
 
-    public static void createElementTool(Tools tool, int id, String path) {
+    public static void createElementTool(Tools tool, int id, String path, String description) {
         if (findCountID(id) > 1) {
             Point cell = findItemByID(id);
 
@@ -85,11 +113,11 @@ public class Inventory {
 
         Point cell = findFreeCell();
         if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = new Items(tool, id, path);
+            inventoryObjects[cell.x][cell.y] = new Items(tool, id, path, description);
         }
     }
 
-    public static void createElementPlaceable(StaticWorldObjects object) {
+    public static void createElementPlaceable(StaticWorldObjects object, String description) {
         int id = object.id;
 
         if (findCountID(id) > 1) {
@@ -100,11 +128,11 @@ public class Inventory {
 
         Point cell = findFreeCell();
         if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = new Items(new PlaceableItems(object), id, object.path);
+            inventoryObjects[cell.x][cell.y] = new Items(new PlaceableItems(object), id, Items.Types.PLACEABLE_BLOCK, description);
         }
     }
 
-    public static void createElementWeapon(Weapons weapon, int id, String path) {
+    public static void createElementDetail(Details object, int id, String description) {
         if (findCountID(id) > 1) {
             Point cell = findItemByID(id);
             inventoryObjects[cell.x][cell.y].countInCell++;
@@ -113,7 +141,35 @@ public class Inventory {
 
         Point cell = findFreeCell();
         if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = new Items(weapon, id, path);
+            inventoryObjects[cell.x][cell.y] = new Items(new Details(object.name, object.path), id, description);
+        }
+    }
+
+    public static void createElementFactory(Factories factory, String description) {
+        int id = factory.id;
+
+        if (findCountID(id) > 1) {
+            Point cell = findItemByID(id);
+            inventoryObjects[cell.x][cell.y].countInCell++;
+            return;
+        }
+
+        Point cell = findFreeCell();
+        if (cell != null) {
+            inventoryObjects[cell.x][cell.y] = new Items(new PlaceableItems(factory), id, Items.Types.PLACEABLE_FACTORY, description);
+        }
+    }
+
+    public static void createElementWeapon(Weapons weapon, int id, String path, String description) {
+        if (findCountID(id) > 1) {
+            Point cell = findItemByID(id);
+            inventoryObjects[cell.x][cell.y].countInCell++;
+            return;
+        }
+
+        Point cell = findFreeCell();
+        if (cell != null) {
+            inventoryObjects[cell.x][cell.y] = new Items(weapon, id, path, description);
         }
     }
 
@@ -138,7 +194,6 @@ public class Inventory {
     public static Point findItemByID(int id) {
         for (int x = 0; x < inventoryObjects.length; x++) {
             for (int y = 0; y < inventoryObjects[x].length; y++) {
-
                 if (inventoryObjects[x][y] != null && inventoryObjects[x][y].id == id) {
                     return new Point(x, y);
                 }

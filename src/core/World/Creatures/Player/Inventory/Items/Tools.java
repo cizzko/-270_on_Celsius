@@ -1,4 +1,4 @@
-package core.World.Creatures.Player.Inventory;
+package core.World.Creatures.Player.Inventory.Items;
 
 public class Tools {
     public float maxHp, currentHp, damage, secBetweenHits, maxInteractionRange;

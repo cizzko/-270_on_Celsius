@@ -8,9 +8,14 @@ import core.UI.GUI.Menu.*;
 import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.SliderObject;
 import core.Window;
+import core.World.Creatures.Player.Player;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
+import javax.imageio.ImageIO;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.util.Arrays;
 import static core.Commandline.updateLine;
 import static core.EventHandling.Logging.Logger.log;
@@ -20,7 +25,7 @@ import static core.World.Creatures.Physics.updates;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class EventHandler extends Thread {
-    private static long lastMouseMovedTime = System.currentTimeMillis(), lastSecond = System.currentTimeMillis();
+    public static long lastMouseMovedTime = System.currentTimeMillis(), lastSecond = System.currentTimeMillis();
     private static Point lastMousePos;
     public static boolean mouseNotMoved = false, keyLogging = false;
     public static String keyLoggingText = "";
@@ -260,6 +265,7 @@ public class EventHandler extends Thread {
     @Override
     public void run() {
         while (!glfwWindowShouldClose(glfwWindow)) {
+            Player.updatePlayerGUILogic();
             updateButtons();
             updateClicks();
             updateKeyLogging();

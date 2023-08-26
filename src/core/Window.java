@@ -2,6 +2,7 @@ package core;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
+import core.EventHandling.MouseScrollCallback;
 import core.UI.GUI.Fonts;
 import core.UI.GUI.Menu.Main;
 import core.EventHandling.Logging.Logger;
@@ -19,7 +20,7 @@ public class Window {
     public static String defPath = Paths.get("").toAbsolutePath().toString();
 
     public static int width = 1920, height = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0, fps = 0;
-    public static final String version = "dev 0.0.0.7";
+    public static final String version = "dev 0.0.0.9";
     public static boolean start = false;
     public static long glfwWindow;
 
@@ -45,6 +46,7 @@ public class Window {
 
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         glfwMakeContextCurrent(glfwWindow);
+        glfwSetScrollCallback(glfwWindow, new MouseScrollCallback());
         //glfwSetScrollCallback(glfwWindow, new MouseScrollCallback());
         //vsync
         glfwSwapInterval(verticalSync);

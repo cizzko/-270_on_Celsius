@@ -8,6 +8,7 @@ import core.UI.GUI.Objects.SliderObject;
 import core.UI.GUI.Objects.TextObject;
 import core.UI.GUI.Video;
 import core.Window;
+import core.World.Creatures.Player.Inventory.Items.Placeable.Factories;
 import core.World.WorldGenerator;
 import java.awt.*;
 import java.nio.ByteBuffer;
@@ -20,7 +21,7 @@ import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.UI.GUI.CreateElement.*;
 import static core.UI.GUI.Fonts.*;
 import static core.UI.GUI.Video.*;
-import static core.Window.defPath;
+import static core.Window.*;
 import static core.World.Creatures.Player.Player.updatePlayerGUI;
 import static core.World.Textures.TextureLoader.ByteBufferEncoder;
 import static core.World.Weather.Sun.updateSun;
@@ -69,6 +70,9 @@ public class TextureDrawing {
         if (Window.start && !isStatic) {
             glTranslatef(-playerX * zoom + Window.width / 2f - 32, -playerY * zoom + Window.height / 2f - 200, 0); // Смещение относительно нужной точки
         }
+//            glTranslatef(x * zoom + (width / 2f), y * zoom + (height / 2f), 0.0f);
+//            glRotatef(0f, 0.0f, 0.0f, 1.0f);
+//            glTranslatef(-(x * zoom + (width / 2f)), -(y * zoom + (height / 2f)), 0.0f);
 
         glMultMatrixf(new float[]{zoom, 0, 0, 0, 0, zoom, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
         glBegin(GL_QUADS);
@@ -87,7 +91,6 @@ public class TextureDrawing {
             glTexCoord2f(1, 0);
             glVertex2f(x, y + height);
         } else {
-            ///верхний левый
             glTexCoord2f(0, 1);
             glVertex2f(x, y);
             //верхний правый
@@ -411,7 +414,7 @@ public class TextureDrawing {
         drawText(x + 36, y + height - 32 - height / 2, text);
     }
 
-    private static Dimension getTextSize(String text) {
+    public static Dimension getTextSize(String text) {
         String longestLine = "";
         int width = 12;
 
@@ -434,18 +437,21 @@ public class TextureDrawing {
     }
 
     public static void updateVideo() {
-        ByteBuffer buff = null;
-        for (Map.Entry<String, Video> entry : video.entrySet()) {
-            String name = entry.getKey();
-            Video video = entry.getValue();
+        if (!video.isEmpty()) {
 
-            if (video != null && video.isPlaying) {
-                if (video.frame == video.totalFrames) {
-                    video.frame = 1;
-                }
-                if (byteBuffer.get(name) != null && !byteBuffer.get(name).equals(buff)) {
-                    drawTexture(video.x, video.y, video.width, video.height, null, byteBuffer.get(name), new Color(255, 255, 255, 255), 1);
-                    buff = byteBuffer.get(name);
+            ByteBuffer buff = null;
+            for (Map.Entry<String, Video> entry : video.entrySet()) {
+                String name = entry.getKey();
+                Video video = entry.getValue();
+
+                if (video != null && video.isPlaying) {
+                    if (video.frame == video.totalFrames) {
+                        video.frame = 1;
+                    }
+                    if (byteBuffer.get(name) != null && !byteBuffer.get(name).equals(buff)) {
+                        drawTexture(video.x, video.y, video.width, video.height, null, byteBuffer.get(name), new Color(255, 255, 255, 255), 1);
+                        buff = byteBuffer.get(name);
+                    }
                 }
             }
         }
@@ -458,12 +464,8 @@ public class TextureDrawing {
 
     public static void updateStaticObj() {
         updateSun();
+        Factories.update();
         updatePlayerPos();
-
-        float left = DynamicObjects[0].x - (1920 / 5.5f) - (48);
-        float right = DynamicObjects[0].x + (1920 / 5.5f) + (48);
-        float bottom = DynamicObjects[0].y - (1080 / 16f) - (48); //меньше число деления - выше прорисовка
-        float top = DynamicObjects[0].y + (1080 / 5f) + (48);
 
         for (int x = (int) (playerX / 16) - 20; x < playerX / 16 + 21; x++) {
             for (int y = (int) (playerY / 16) - 8; y < playerY / 16 + 16; y++) {
@@ -480,7 +482,7 @@ public class TextureDrawing {
                 float yBlock = obj.y;
                 boolean mirrored = obj.mirrored;
 
-                if (!(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top) && obj.path != null) {
+                if (isOnCamera(xBlock, yBlock, 16, 16) && obj.path != null) {
                     if (obj.currentHp > obj.totalHp / 1.5f) {
                         drawTexture(obj.path, xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, mirrored);
 
@@ -493,6 +495,15 @@ public class TextureDrawing {
                 }
             }
         }
+    }
+
+    public static boolean isOnCamera(float x, float y, float xSize, float ySize) {
+        float left = DynamicObjects[0].x - (1920 / 5.5f) - (32 + xSize);
+        float right = DynamicObjects[0].x + (1920 / 5.5f) + (32 - xSize);
+        float bottom = DynamicObjects[0].y - (1080 / 16f) - (32 + ySize); //меньше число деления - выше прорисовка
+        float top = DynamicObjects[0].y + (1080 / 5f) + (32 - ySize);
+
+        return !(x + 16 < left) && !(x > right) && !(y + 16 < bottom) && !(y > top);
     }
 
     public static void updateDynamicObj() {
@@ -550,135 +561,147 @@ public class TextureDrawing {
     }
 
     private static void updatePanels() {
-        for (PanelObject panel : panels.values()) {
-            if (!panel.visible) {
-                continue;
-            }
+        if (!panels.isEmpty()) {
+            for (PanelObject panel : panels.values()) {
+                if (!panel.visible) {
+                    continue;
+                }
 
-            if (panel.options != null) {
-                List<Integer> layers = panels.values().stream().map(p -> p.layer).distinct().sorted().toList();
+                if (panel.options != null) {
+                    List<Integer> layers = panels.values().stream().map(p -> p.layer).distinct().sorted().toList();
 
-                for (int layer : layers) {
-                    for (PanelObject panelObj : panels.values()) {
-                        if (panelObj.options != null && panelObj.layer == layer && panelObj.visible) {
-                            drawTexture(panelObj.options, panelObj.x, panelObj.y, 1, true);
+                    for (int layer : layers) {
+                        for (PanelObject panelObj : panels.values()) {
+                            if (panelObj.options != null && panelObj.layer == layer && panelObj.visible) {
+                                drawTexture(panelObj.options, panelObj.x, panelObj.y, 1, true);
+                            }
                         }
                     }
+                    continue;
                 }
-                continue;
-            }
 
-            if (!panel.simple) {
-                drawRectangle(panel.x, panel.y, panel.width, panel.height, panel.color);
-                drawRectangleBorder(panel.x, panel.y, panel.width, panel.height, 20, panel.color);
-            } else {
-                drawRectangle(panel.x, panel.y, panel.width, panel.height, panel.color);
+                if (!panel.simple) {
+                    drawRectangle(panel.x, panel.y, panel.width, panel.height, panel.color);
+                    drawRectangleBorder(panel.x, panel.y, panel.width, panel.height, 20, panel.color);
+                } else {
+                    drawRectangle(panel.x, panel.y, panel.width, panel.height, panel.color);
+                }
             }
         }
     }
 
     private static void updateDropMenu() {
-        for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
-            ButtonObject button = entry.getValue();
-            if (!button.visible || dropMenu.get(button.name) == null) {
-                continue;
-            }
-
-            drawRectangle(button.x, button.y, button.width, button.height, button.color);
-            drawText(button.x + 20, (int) (button.y + button.height / 2.8), button.name);
-
-            if (button.isClicked) {
-                drawTexture(defPath + "\\src\\assets\\UI\\GUI\\openDrop.png", button.x + button.width - 42, button.y + button.height / 3.f, 1, true);
-                ButtonObject[] dropButtons = dropMenu.get(button.name);
-
-                for (ButtonObject dropButton : dropButtons) {
-                    drawRectangle(dropButton.x, dropButton.y, dropButton.width, 5, new Color(10, 10, 10, 255));
-
-                    if (dropButton.simple && dropButton.swapButton && dropButton.isClicked) {
-                        drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
-                        drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", dropButton.x + dropButton.width / 1.3f, dropButton.y + dropButton.height / 3f, 1, true);
-                        drawText(dropButton.x + 20, dropButton.y + dropButton.height / 3, dropButton.name);
-                    } else if (dropButton.simple && dropButton.swapButton) {
-                        drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
-                        drawText(dropButton.x + 20, dropButton.y + dropButton.height / 3, dropButton.name);
-                    }
+        if (!buttons.isEmpty()) {
+            for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
+                ButtonObject button = entry.getValue();
+                if (!button.visible || dropMenu.get(button.name) == null) {
+                    continue;
                 }
-            } else {
-                drawTexture(defPath + "\\src\\assets\\UI\\GUI\\closedDrop.png", button.x + button.width - 42, button.y + button.height / 3.5f, 1, true);
+
+                drawRectangle(button.x, button.y, button.width, button.height, button.color);
+                drawText(button.x + 20, (int) (button.y + button.height / 2.8), button.name);
+
+                if (button.isClicked) {
+                    drawTexture(defPath + "\\src\\assets\\UI\\GUI\\openDrop.png", button.x + button.width - 42, button.y + button.height / 3.f, 1, true);
+                    ButtonObject[] dropButtons = dropMenu.get(button.name);
+
+                    for (ButtonObject dropButton : dropButtons) {
+                        drawRectangle(dropButton.x, dropButton.y, dropButton.width, 5, new Color(10, 10, 10, 255));
+
+                        if (dropButton.simple && dropButton.swapButton && dropButton.isClicked) {
+                            drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
+                            drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", dropButton.x + dropButton.width / 1.3f, dropButton.y + dropButton.height / 3f, 1, true);
+                            drawText(dropButton.x + 20, dropButton.y + dropButton.height / 3, dropButton.name);
+                        } else if (dropButton.simple && dropButton.swapButton) {
+                            drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
+                            drawText(dropButton.x + 20, dropButton.y + dropButton.height / 3, dropButton.name);
+                        }
+                    }
+                } else {
+                    drawTexture(defPath + "\\src\\assets\\UI\\GUI\\closedDrop.png", button.x + button.width - 42, button.y + button.height / 3.5f, 1, true);
+                }
             }
         }
     }
 
     private static void updateSwapButtons() {
-        for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
-            ButtonObject button = entry.getValue();
-            if (!button.visible || !button.swapButton) {
-                continue;
-            }
-
-            if (button.simple && button.isClicked) {
-                drawRectangle(button.x, button.y, button.width, button.height, button.color);
-                drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", button.x + button.width / 1.3f, button.y + button.height / 3f, 1, true);
-                drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
-            } else if (button.simple) {
-                drawRectangle(button.x, button.y, button.width, button.height, button.color);
-                drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
-            } else {
-                //if swap and not simple
-                if (button.isClicked) {
-                    drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
-                    drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", button.x, button.y, 1, true);
-                    drawText(button.width + button.x + 24, button.y, button.name);
-                } else {
-                    drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
-                    drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkFalse.png", button.x, button.y, 1, true);
-                    drawText(button.width + button.x + 24, button.y, button.name);
+        if (!buttons.isEmpty()) {
+            for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
+                ButtonObject button = entry.getValue();
+                if (!button.visible || !button.swapButton) {
+                    continue;
                 }
+
+                if (button.simple && button.isClicked) {
+                    drawRectangle(button.x, button.y, button.width, button.height, button.color);
+                    drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", button.x + button.width / 1.3f, button.y + button.height / 3f, 1, true);
+                    drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
+                } else if (button.simple) {
+                    drawRectangle(button.x, button.y, button.width, button.height, button.color);
+                    drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
+                } else {
+                    //if swap and not simple
+                    if (button.isClicked) {
+                        drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
+                        drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", button.x, button.y, 1, true);
+                        drawText(button.width + button.x + 24, button.y, button.name);
+                    } else {
+                        drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
+                        drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkFalse.png", button.x, button.y, 1, true);
+                        drawText(button.width + button.x + 24, button.y, button.name);
+                    }
+                }
+                drawPrompt(button);
             }
-            drawPrompt(button);
         }
     }
 
     private static void updateButtons() {
-        for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
-            ButtonObject button = entry.getValue();
-            if (!button.visible || button.swapButton) {
-                continue;
-            }
+        if (!buttons.isEmpty()) {
+            for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
+                ButtonObject button = entry.getValue();
+                if (!button.visible || button.swapButton) {
+                    continue;
+                }
 
-            if (button.path != null) {
-                drawTexture(button.path, button.x, button.y, 1, true);
-                continue;
+                if (button.path != null) {
+                    drawTexture(button.path, button.x, button.y, 1, true);
+                    continue;
+                }
+                if (button.simple) {
+                    drawRectangle(button.x, button.y, button.width, button.height, button.color);
+                } else {
+                    drawRectangleBorder(button.x, button.y, button.width, button.height, 6, button.color);
+                }
+                if (!button.isClickable) {
+                    drawRectangle(button.x, button.y, button.width, button.height, new Color(0, 0, 0, 123));
+                }
+                drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
+                drawPrompt(button);
             }
-            if (button.simple) {
-                drawRectangle(button.x, button.y, button.width, button.height, button.color);
-            } else {
-                drawRectangleBorder(button.x, button.y, button.width, button.height, 6, button.color);
-            }
-            if (!button.isClickable) {
-                drawRectangle(button.x, button.y, button.width, button.height, new Color(0, 0, 0, 123));
-            }
-            drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
-            drawPrompt(button);
         }
     }
 
     private static void updateSliders() {
-        for (SliderObject slider : sliders.values()) {
-            if (!slider.visible) {
-                continue;
+        if (!sliders.isEmpty()) {
+            for (SliderObject slider : sliders.values()) {
+                if (!slider.visible) {
+                    continue;
+                }
+                drawRectangle(slider.x, slider.y, slider.width, slider.height, slider.sliderColor);
+                drawCircle(slider.sliderPos, slider.y + slider.height / 2, slider.height / 1.1f, slider.dotColor);
             }
-            drawRectangle(slider.x, slider.y, slider.width, slider.height, slider.sliderColor);
-            drawCircle(slider.sliderPos, slider.y + slider.height / 2, slider.height / 1.1f, slider.dotColor);
         }
     }
 
     private static void updateTexts() {
-        for (TextObject text : texts.values()) {
-            if (!text.visible) {
-                continue;
+        if (!texts.isEmpty()) {
+            for (TextObject text : texts.values()) {
+                if (!text.visible) {
+                    continue;
+                }
+                drawText(text.x, text.y, text.text, text.color);
             }
-            drawText(text.x, text.y, text.text, text.color);
         }
 
         if (Commandline.created) {

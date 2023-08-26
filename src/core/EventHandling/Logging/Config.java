@@ -28,6 +28,7 @@ public class Config {
         return value;
     }
 
+    //fast commands
     public static String getFromFC(String key) {
         if (values.containsKey(key)) {
             return values.get(key);
@@ -45,7 +46,6 @@ public class Config {
 
         return value;
     }
-
 
     public static void updateConfig(String key, String value) {
         try (FileInputStream fis = new FileInputStream(defPath + "\\src\\assets\\Config.properties");

@@ -1,4 +1,4 @@
-package core.World.Creatures.Player.Inventory.Placeable;
+package core.World.Creatures.Player.Inventory.Items.Placeable;
 import core.World.Textures.StaticWorldObjects;
 
 public class PlaceableItems {

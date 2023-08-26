@@ -1,6 +1,6 @@
-package core.World.Creatures.Player.Inventory.Weapons;
+package core.World.Creatures.Player.Inventory.Items.Weapons;
 
-import core.World.Creatures.Player.Inventory.Weapons.Ammo.Bullets;
+import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
 
 public class Weapons {
     public int magazineSize, currentAmmo;
