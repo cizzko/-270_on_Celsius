@@ -4,13 +4,17 @@ import core.EventHandling.Logging.Logger;
 import core.UI.GUI.Menu.Pause;
 import core.UI.GUI.Menu.Settings;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Weapons.Weapons;
+import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
+import core.World.Textures.DynamicWorldObjects;
+import core.World.Textures.TextureLoader;
 import static core.Window.*;
+import static core.World.Creatures.Player.Inventory.Items.Placeable.Factories.updateFactoriesOutput;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.HitboxMap.*;
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.*;
 
+//version 1.2
 public class Physics extends Thread {
     public static int physicsSpeed = 400, updates = 0;
     private static boolean stop = false;
@@ -25,8 +29,8 @@ public class Physics extends Thread {
 
         while (!glfwWindowShouldClose(glfwWindow)) {
             if (System.nanoTime() - lastUpdateTime >= 1.0 / physicsSpeed * 1000000000) {
-                updateCreaturesPhys();
-                updatePlayerPhys();
+                updatePhys();
+                updateWorldInteractions();
 
                 updates++;
                 lastUpdateTime = System.nanoTime();
@@ -42,31 +46,63 @@ public class Physics extends Thread {
         }
     }
 
-    private static void updateDrop() {
-        for (core.World.Textures.DynamicWorldObjects dynamicObject : DynamicObjects) {
-            if (dynamicObject == null || dynamicObject.isFlying || dynamicObject.path.contains("player")) {
-                continue;
-            }
-            if (!checkIntersStaticD(dynamicObject.x, dynamicObject.y, 24, 24)) {
-                dynamicObject.isDropping = true;
-                dynamicObject.dropSpeed += 0.001f;
-                dynamicObject.y -= dynamicObject.dropSpeed;
+    public static void updateVerticalSpeed(DynamicWorldObjects dynamicObject) {
+        boolean intersD = checkIntersStaticD(dynamicObject.x, dynamicObject.y + dynamicObject.motionVector.y, TextureLoader.getSize(dynamicObject.path).width, TextureLoader.getSize(dynamicObject.path).height);
+        boolean intersU = checkIntersStaticU(dynamicObject.x, dynamicObject.y + dynamicObject.motionVector.y, TextureLoader.getSize(dynamicObject.path).width, TextureLoader.getSize(dynamicObject.path).height);
+
+        dynamicObject.y += dynamicObject.motionVector.y;
+
+        if (!intersD) {
+            dynamicObject.motionVector.y -= dynamicObject.weight;
+        }
+        if (intersD && dynamicObject.motionVector.y < 0) {
+            dynamicObject.motionVector.y = 0;
+        }
+
+        if (dynamicObject.motionVector.y > 0 && intersU) {
+            dynamicObject.motionVector.y = 0;
+        }
+    }
+
+    public static void updateHorizontalSpeed(DynamicWorldObjects dynamicObject) {
+        boolean intersR = checkIntersStaticR(dynamicObject.x + dynamicObject.motionVector.x * 2, dynamicObject.y, TextureLoader.getSize(dynamicObject.path).width, TextureLoader.getSize(dynamicObject.path).height);
+        boolean intersL = checkIntersStaticL(dynamicObject.x + dynamicObject.motionVector.x * 2, dynamicObject.y, TextureLoader.getSize(dynamicObject.path).height);
+
+        dynamicObject.x += dynamicObject.motionVector.x;
+
+        if (!intersR && dynamicObject.motionVector.x > 0) {
+            if (dynamicObject.motionVector.x - dynamicObject.weight > 0) {
+                dynamicObject.motionVector.x -= dynamicObject.weight;
             } else {
-                dynamicObject.dropSpeed = 0;
-                dynamicObject.isDropping = false;
+                dynamicObject.motionVector.x = 0;
+            }
+        } else if (intersR) {
+            dynamicObject.motionVector.x = 0;
+        }
+
+        if (!intersL && dynamicObject.motionVector.x < 0) {
+            dynamicObject.motionVector.x += dynamicObject.weight;
+        } else if (intersL) {
+            dynamicObject.motionVector.x = 0;
+        }
+    }
+
+
+    private static void updatePhys() {
+        updatePlayerMove();
+        updatePlayerJump();
+
+        for (core.World.Textures.DynamicWorldObjects dynamicObject : DynamicObjects) {
+            if (dynamicObject != null) {
+                updateVerticalSpeed(dynamicObject);
+                updateHorizontalSpeed(dynamicObject);
             }
         }
     }
 
-    private static void updatePlayerPhys() {
-        updatePlayerMove();
-        updatePlayerJump();
-        updatePlayerDrop();
+    private static void updateWorldInteractions() {
         updateInventoryInteraction();
         Weapons.updateAmmo();
-    }
-
-    private static void updateCreaturesPhys() {
-        updateDrop();
+        updateFactoriesOutput();
     }
 }

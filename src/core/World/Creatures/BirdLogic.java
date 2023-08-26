@@ -12,8 +12,6 @@ public class BirdLogic {
         if (System.currentTimeMillis() - deltaTime > 10) {
             for (int x = 0; x < DynamicObjects.length; x++) {
                 if (DynamicObjects[x] != null && DynamicObjects[x].path.contains("bird")) {
-                    DynamicObjects[x].x++;
-
                     if (birdFlying[x] == 0 && Math.random() * 500 < 1) {
                         birdFlying[x] = (int) (Math.random() * 5);
                     }
@@ -26,6 +24,7 @@ public class BirdLogic {
                         DynamicObjects[x].animSpeed = 0.0f;
                     }
                     else if (birdFlying[x] == 0) {
+                        DynamicObjects[x].motionVector.x = 0.3f;
                         DynamicObjects[x].animSpeed = 0.1f;
                     }
                 }

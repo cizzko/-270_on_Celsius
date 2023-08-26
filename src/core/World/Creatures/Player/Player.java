@@ -1,15 +1,17 @@
 package core.World.Creatures.Player;
 
 import core.EventHandling.EventHandler;
+import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Placeable.PlaceableItems;
-import core.World.Creatures.Player.Inventory.Tools;
-import core.World.Creatures.Player.Inventory.Weapons.Ammo.Bullets;
-import core.World.Textures.DynamicWorldObjects;
-import core.World.Textures.ShadowMap;
-import core.World.Textures.StaticWorldObjects;
-import core.World.Textures.TextureDrawing;
+import core.World.Creatures.Player.Inventory.Items.Items;
+import core.World.Creatures.Player.Inventory.Items.Placeable.Factories;
+import core.World.Creatures.Player.Inventory.Items.Placeable.PlaceableItems;
+import core.World.Creatures.Player.Inventory.Items.Tools;
+import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
+import core.World.HitboxMap;
+import core.World.Textures.*;
 import java.awt.*;
+import java.awt.geom.Point2D;
 import static core.EventHandling.EventHandler.getMousePos;
 import static core.Window.start;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
@@ -27,8 +29,8 @@ public class Player {
     }
 
     public static void updatePlayerJump() {
-        if (EventHandler.getKey(GLFW_KEY_SPACE)) {
-            DynamicObjects[0].jump(52, 600);
+        if (EventHandler.getKeyClick(GLFW_KEY_SPACE)) {
+            DynamicObjects[0].jump(0.45f);
         }
     }
 
@@ -36,33 +38,18 @@ public class Player {
         float increment = noClip ? 0.5f : 0.1f;
 
         if (EventHandler.getKey(GLFW_KEY_D) && DynamicObjects[0].x + 24 < SizeX * 16 && (noClip || !checkIntersStaticR(DynamicObjects[0].x + 0.1f, DynamicObjects[0].y, 24, 24))) {
-            DynamicObjects[0].x += increment;
+            DynamicObjects[0].motionVector.x = increment;
         }
         if (EventHandler.getKey(GLFW_KEY_A) && DynamicObjects[0].x > 0 && (noClip || !checkIntersStaticL(DynamicObjects[0].x - 0.1f, DynamicObjects[0].y, 24))) {
-            DynamicObjects[0].x -= increment;
+            DynamicObjects[0].motionVector.x = -increment;
         }
         if (noClip && EventHandler.getKey(GLFW_KEY_S)) {
-            DynamicObjects[0].y -= increment;
+            DynamicObjects[0].motionVector.y = -increment;
         }
         if (noClip && EventHandler.getKey(GLFW_KEY_W)) {
-            DynamicObjects[0].y += increment;
+            DynamicObjects[0].motionVector.y = increment;
         }
         DynamicObjects[0].notForDrawing = noClip;
-    }
-
-    public static void updatePlayerDrop() {
-        if (DynamicObjects[0] != null && !noClip) {
-            DynamicWorldObjects obj = DynamicObjects[0];
-
-            if (!checkIntersStaticD(obj.x, obj.y, 24, 24)) {
-                obj.isDropping = true;
-                obj.dropSpeed += 0.001f;
-                obj.y -= obj.dropSpeed;
-            } else {
-                obj.dropSpeed = 0;
-                obj.isDropping = false;
-            }
-        }
     }
 
     public static void updateInventoryInteraction() {
@@ -75,36 +62,54 @@ public class Player {
     }
 
     private static void updatePlaceableInteraction() {
-        if (currentObjectType.equals("placeable")) {
+        if (currentObjectType == Items.Types.PLACEABLE_BLOCK || currentObjectType == Items.Types.PLACEABLE_FACTORY) {
             if (getMousePos().x > (Inventory.inventoryOpen ? 1488 : 1866) && getMousePos().y > 756) {
                 return;
             }
-
-            int blockX = getBlockUnderMousePoint().x;
-            int blockY = getBlockUnderMousePoint().y;
-            PlaceableItems placeable = inventoryObjects[currentObject.x][currentObject.y].placeable;
-
             if (StaticObjects[getBlockUnderMousePoint().x][getBlockUnderMousePoint().y].gas && EventHandler.getMousePress() && Player.getDistanceUMB() < 9) {
-                if (placeable.factoryObject != null) {
-                    //закос на будущее
-                } else if (placeable.staticWorldObject != null && (StaticObjects[blockX][blockY + 1].solid || StaticObjects[blockX][blockY - 1].solid || StaticObjects[blockX + 1][blockY].solid || StaticObjects[blockX - 1][blockY].solid)) {
-                    inventoryObjects[currentObject.x][currentObject.y].countInCell--;
-                    StaticObjects[blockX][blockY] = new StaticWorldObjects(placeable.staticWorldObject.path, blockX * 16, blockY * 16, placeable.staticWorldObject.type);
-                    StaticObjects[blockX][blockY].solid = true;
-                    TextureDrawing.loadObjects();
-                    ShadowMap.update();
+                int blockX = getBlockUnderMousePoint().x;
+                int blockY = getBlockUnderMousePoint().y;
 
-                    if (inventoryObjects[currentObject.x][currentObject.y].countInCell <= 0) {
-                        inventoryObjects[currentObject.x][currentObject.y] = null;
-                        currentObject = null;
-                    }
+                if (currentObject != null) {
+                    PlaceableItems placeable = inventoryObjects[currentObject.x][currentObject.y].placeable;
+
+                    updatePlaceableFactory(placeable, blockX, blockY);
+                    updatePlaceableBlock(placeable, blockX, blockY);
                 }
             }
         }
     }
 
+    private static void updatePlaceableFactory(PlaceableItems placeable, int blockX, int blockY) {
+        if (placeable.factoryObject != null) {
+            StaticWorldObjects obj = HitboxMap.checkIntersectionsInside(blockX * 16, blockY * 16, TextureLoader.getSize(placeable.factoryObject.path).width, TextureLoader.getSize(placeable.factoryObject.path).height);
+
+            if (obj == null || !obj.solid) {
+                Factories factory = placeable.factoryObject;
+                factory.x = blockX * 16;
+                factory.y = blockY * 16;
+
+                Factories.factories.add(placeable.factoryObject);
+                if (currentObject != null) {
+                    decrementItem(currentObject.x, currentObject.y);
+                }
+            }
+        }
+    }
+
+    private static void updatePlaceableBlock(PlaceableItems placeable, int blockX, int blockY) {
+        if (placeable.staticWorldObject != null && (StaticObjects[blockX][blockY + 1].solid || StaticObjects[blockX][blockY - 1].solid || StaticObjects[blockX + 1][blockY].solid || StaticObjects[blockX - 1][blockY].solid)) {
+            decrementItem(currentObject.x, currentObject.y);
+            StaticObjects[blockX][blockY] = new StaticWorldObjects(placeable.staticWorldObject.path, blockX * 16, blockY * 16, placeable.staticWorldObject.type);
+            StaticObjects[blockX][blockY].solid = true;
+            TextureDrawing.loadObjects();
+            ShadowMap.update();
+
+        }
+    }
+
     private static void updateToolInteraction() {
-        if (currentObjectType.equals("tool")) {
+        if (currentObjectType == Items.Types.TOOL) {
             Tools tool = inventoryObjects[currentObject.x][currentObject.y].tool;
 
             int blockX = getBlockUnderMousePoint().x;
@@ -134,7 +139,7 @@ public class Player {
                 object.currentHp -= tool.damage;
 
                 if (object.currentHp <= 0 && object.type != StaticWorldObjects.Types.GAS) {
-                    createElementPlaceable(new StaticWorldObjects(object.path, object.x, object.y, object.type));
+                    createElementPlaceable(new StaticWorldObjects(object.path, object.x, object.y, object.type), "none");
                     object.destroyObject();
                 }
             }
@@ -142,16 +147,17 @@ public class Player {
     }
 
     public static Point getBlockUnderMousePoint() {
-        float mouseX = (getMousePos().x - 960) / 3f + 16;
-        float mouseY = (getMousePos().y - 540) / 3f + 64;
-
-        int blockX = (int) ((mouseX + DynamicObjects[0].x) / 16);
-        int blockY = (int) ((mouseY + DynamicObjects[0].y) / 16);
-
-        blockX = Math.max(0, Math.min(blockX, StaticObjects.length));
-        blockY = Math.max(0, Math.min(blockY, StaticObjects.length));
+        int blockX = (int) Math.max(0, Math.min(getWorldMousePoint().x / 16, StaticObjects.length));
+        int blockY = (int) Math.max(0, Math.min(getWorldMousePoint().y / 16, StaticObjects.length));
 
         return new Point(blockX, blockY);
+    }
+
+    public static Point2D.Float getWorldMousePoint() {
+        float blockX = ((getMousePos().x - 960) / 3f + 16) + DynamicObjects[0].x;
+        float blockY = ((getMousePos().y - 540) / 3f + 64) + DynamicObjects[0].y;
+
+        return new Point2D.Float(blockX, blockY);
     }
 
     public static int getDistanceUMB() {
@@ -162,6 +168,27 @@ public class Player {
         if (start) {
             Inventory.update();
             Bullets.drawBullets();
+            BuildMenu.draw();
         }
+    }
+
+    public static void updatePlayerGUILogic() {
+        if (start) {
+            BuildMenu.updateLogic();
+        }
+    }
+
+    public static float getDistanceToPlayerABS(float x) {
+        if (DynamicObjects[0] != null) {
+            return Math.abs((DynamicObjects[0].x - x));
+        }
+        return 0;
+    }
+
+    public static float getDistanceToPlayer(float x) {
+        if (DynamicObjects[0] != null) {
+            return (DynamicObjects[0].x - x);
+        }
+        return 0;
     }
 }

@@ -1,6 +1,7 @@
 package core.World.Creatures;
 
 import core.EventHandling.Logging.Logger;
+import core.World.ArrayUtils;
 import core.World.Textures.DynamicWorldObjects;
 import static core.Window.defPath;
 import static core.Window.glfwWindow;
@@ -40,27 +41,21 @@ public class CreaturesGenerate extends Thread {
         }
     }
 
-    public static void generate(int s) {
-        generateBird();
-    }
-
     public static void generateButterfly() {
-        for (int x = 0; x < DynamicObjects.length; x++) {
-            if (DynamicObjects[x] == null) {
-                DynamicObjects[x] = new DynamicWorldObjects(true, 2, 0.1f, (float) (Math.random() * (SizeX * 16)), 15, x, defPath + "\\src\\assets\\World\\creatures\\butterfly");
-                count++;
-                break;
-            }
+        int cell = ArrayUtils.findFreeCell(DynamicObjects);
+
+        if (cell != -1) {
+            DynamicObjects[cell] = new DynamicWorldObjects(true, 0.001f, 2, 0.1f, (float) (Math.random() * (SizeX * 16)), 15, cell, defPath + "\\src\\assets\\World\\creatures\\butterfly");
+            count++;
         }
     }
 
     public static void generateBird() {
-        for (int x = 0; x < DynamicObjects.length; x++) {
-            if (DynamicObjects[x] == null) {
-                DynamicObjects[x] = new DynamicWorldObjects(true, 2, 0.1f, 24, SizeY * 13, 40, x,  defPath + "\\src\\assets\\World\\creatures\\bird");
-                count++;
-                break;
-            }
+        int cell = ArrayUtils.findFreeCell(DynamicObjects);
+
+        if (cell != -1) {
+            DynamicObjects[cell] = new DynamicWorldObjects(true, 0.0001f, 2, 0.1f, 24, SizeY * 13, cell, defPath + "\\src\\assets\\World\\creatures\\bird");
+            count++;
         }
     }
 }

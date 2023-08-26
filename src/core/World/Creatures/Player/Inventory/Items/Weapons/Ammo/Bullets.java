@@ -1,9 +1,10 @@
-package core.World.Creatures.Player.Inventory.Weapons.Ammo;
+package core.World.Creatures.Player.Inventory.Items.Weapons.Ammo;
 
 import core.EventHandling.EventHandler;
 import core.UI.Sounds.Sound;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Weapons.Weapons;
+import core.World.Creatures.Player.Inventory.Items.Items;
+import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.HitboxMap;
 import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.StaticWorldObjects;
@@ -43,7 +44,7 @@ public class Bullets {
     }
 
     public static void updateBullets() {
-        if (Inventory.currentObject != null && Inventory.currentObjectType.equals("weapon")) {
+        if (Inventory.currentObjectType == Items.Types.WEAPON) {
             Weapons weapon = Inventory.inventoryObjects[Inventory.currentObject.x][Inventory.currentObject.y].weapon;
 
             if (EventHandler.getMousePress() && System.currentTimeMillis() - weapon.lastShootTime >= weapon.fireRate) {
@@ -98,6 +99,7 @@ public class Bullets {
 
     public static void drawBullets() {
         for (Bullets bullet : bullets) {
+            //TODO: дописать пути нормальные
             if (bullet != null && !(bullet.x > DynamicObjects[0].x + 350 || bullet.x < DynamicObjects[0].x - 350)) {
                 drawTexture("D:\\-270_On_Celsius\\-270_on_Celsius\\src\\assets\\World\\Items\\someBullet.png", bullet.x, bullet.y, 3, false);
             }
