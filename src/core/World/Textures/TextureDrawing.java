@@ -508,14 +508,10 @@ public class TextureDrawing {
     }
 
     public static void updateDynamicObj() {
-        int fieldObjects = 0;
-
         for (int x = 0; x < WorldGenerator.DynamicObjects.size(); x++) {
             DynamicWorldObjects dynamicObject = WorldGenerator.DynamicObjects.get(x);
 
             if (dynamicObject != null && !dynamicObject.notForDrawing) {
-                fieldObjects++;
-
                 float left = DynamicObjects.get(0).x - (1920 / 5.5f) - (48);
                 float right = DynamicObjects.get(0).x + (1920 / 5.5f) + (48);
                 float bottom = DynamicObjects.get(0).y - (1080 / 16f) - (48); //меньше число деления - выше прорисовка

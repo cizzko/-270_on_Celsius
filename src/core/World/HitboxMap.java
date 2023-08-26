@@ -31,7 +31,7 @@ public class HitboxMap {
         int tarYSize = (int) Math.ceil(sizeY / 16f);
 
         for (int i = 0; i < tarYSize; i++) {
-            if (StaticObjects[tarX][tarY + i + 1] == null) {
+            if (tarX < 0 || tarY < 0 || StaticObjects[tarX][tarY + i + 1] == null) {
                 return true;
             }
             if (StaticObjects[tarX][tarY + i + 1].solid) {

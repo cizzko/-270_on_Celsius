@@ -2,13 +2,14 @@ package core.World.Textures;
 
 import core.World.WorldGenerator;
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import static core.World.WorldGenerator.*;
 
 public class ShadowMap {
     private static Color[][] shadows;
-    private static Color[] shadowsDynamic;
+    private static ArrayList<Color> shadowsDynamic = new ArrayList<>(10);
     public static int[][] colorDegree;
     private static Color deletedColor = new Color(0, 0, 0, 0), deletedColorDynamic = new Color(0, 0, 0, 0);
     private static Color addedColor = new Color(0, 0, 0, 0), addedColorDynamic = new Color(0, 0, 0, 0);
@@ -18,7 +19,6 @@ public class ShadowMap {
     public static void generate() {
         shadows = new Color[WorldGenerator.SizeX][WorldGenerator.SizeY];
         colorDegree = new int[WorldGenerator.SizeX][WorldGenerator.SizeY];
-        shadowsDynamic = new Color[WorldGenerator.DynamicObjects.size()];
 
         for (Color[] shadow : shadows) {
             Arrays.fill(shadow, new Color(255, 255, 255, 255));
@@ -26,7 +26,6 @@ public class ShadowMap {
         for (int[] color : colorDegree) {
             Arrays.fill(color, 0);
         }
-        Arrays.fill(shadowsDynamic, new Color(255, 255, 255, 255));
         generateShadows();
     }
 
@@ -112,12 +111,17 @@ public class ShadowMap {
     }
 
     public static Color getColorDynamic(int cell) {
-        int r = checkColor(shadowsDynamic[cell].getRed() + addedColorDynamic.getRed() - deletedColorDynamic.getRed());
-        int g = checkColor(shadowsDynamic[cell].getGreen() + addedColorDynamic.getGreen() - deletedColorDynamic.getGreen());
-        int b = checkColor(shadowsDynamic[cell].getBlue() + addedColorDynamic.getBlue() - deletedColorDynamic.getBlue());
-        int a = checkColor(shadowsDynamic[cell].getAlpha() + addedColorDynamic.getAlpha() - deletedColorDynamic.getAlpha());
+        if (shadowsDynamic != null && cell < shadowsDynamic.size()) {
+            int r = checkColor(shadowsDynamic.get(cell).getRed() + addedColorDynamic.getRed() - deletedColorDynamic.getRed());
+            int g = checkColor(shadowsDynamic.get(cell).getGreen() + addedColorDynamic.getGreen() - deletedColorDynamic.getGreen());
+            int b = checkColor(shadowsDynamic.get(cell).getBlue() + addedColorDynamic.getBlue() - deletedColorDynamic.getBlue());
+            int a = checkColor(shadowsDynamic.get(cell).getAlpha() + addedColorDynamic.getAlpha() - deletedColorDynamic.getAlpha());
 
-        return new Color(r, g, b, a);
+            return new Color(r, g, b, a);
+        }
+        shadowsDynamic.add(new Color(255, 255, 255, 255));
+
+        return new Color(255, 255, 255, 255);
     }
 
     public static void addAllColor(Color color) {
@@ -184,7 +188,7 @@ public class ShadowMap {
 
     public static void setAllData(HashMap<String, Object> data) {
         shadows = (Color[][]) data.get("Shadows");
-        shadowsDynamic = (Color[]) data.get("ShadowsDynamic");
+        shadowsDynamic = (ArrayList<Color>) data.get("ShadowsDynamic");
         colorDegree = (int[][]) data.get("ColorDegree");
         deletedColor = (Color) data.get("DeletedColor");
         deletedColorDynamic = (Color) data.get("DeletedColorDynamic");

@@ -94,8 +94,11 @@ public class Physics extends Thread {
 
         for (core.World.Textures.DynamicWorldObjects dynamicObject : DynamicObjects) {
             if (dynamicObject != null) {
-                updateVerticalSpeed(dynamicObject);
                 updateHorizontalSpeed(dynamicObject);
+
+                if (!dynamicObject.isFlying) {
+                    updateVerticalSpeed(dynamicObject);
+                }
             }
         }
     }

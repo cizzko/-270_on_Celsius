@@ -1,7 +1,6 @@
 package core.World.Creatures;
 
 import core.EventHandling.Logging.Logger;
-import core.World.ArrayUtils;
 import core.World.Textures.DynamicWorldObjects;
 import static core.Window.defPath;
 import static core.Window.glfwWindow;
@@ -41,8 +40,12 @@ public class CreaturesGenerate extends Thread {
         }
     }
 
+    public static void s() {
+        generateBird();
+    }
+
     public static void generateButterfly() {
-        DynamicObjects.add(new DynamicWorldObjects(true, 0.001f, 2, 0.1f, (float) (Math.random() * (SizeX * 16)), 15, defPath + "\\src\\assets\\World\\creatures\\butterfly"));
+        DynamicObjects.add(new DynamicWorldObjects(true, 0.00002f, 2, 0.1f, (float) (Math.random() * (SizeX * 16)), 15, defPath + "\\src\\assets\\World\\creatures\\butterfly"));
         count++;
     }
 
