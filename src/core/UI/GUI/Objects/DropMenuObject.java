@@ -1,17 +1,17 @@
 package core.UI.GUI.Objects;
 
-import java.awt.*;
+import core.World.Textures.SimpleColor;
 import java.util.Arrays;
 
 public class DropMenuObject {
     public int x, y, width, height;
-    public Color color;
+    public SimpleColor color;
     public String menuName;
     public String[] btnNames;
     public boolean[] btnIsClicked;
     public boolean isVisible, menuIsClicked;
 
-    public DropMenuObject(int x, int y, int width, int height, String[] btnNames, String menuName, Color color) {
+    public DropMenuObject(int x, int y, int width, int height, String[] btnNames, String menuName, SimpleColor color) {
         this.x = x;
         this.y = y;
         this.width = width;

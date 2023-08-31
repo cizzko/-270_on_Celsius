@@ -3,7 +3,7 @@ package core.UI.GUI.Menu;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
-import java.awt.*;
+import core.World.Textures.SimpleColor;
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.EventHandling.Logging.Json.getName;
 import static core.UI.GUI.CreateElement.*;
@@ -18,11 +18,11 @@ public class Settings {
         createPanel(20, 20, 1880, 1040, "defaultPanSettings", false, "Settings");
         createPanel(40, 40, 240, 1000, "leftPanSettings", true, "Settings");
 
-        createButton(40, 900, 240, 65, getName("SettingsExit"), null, true, new Color(255, 80, 0, 55), "Settings", Settings::exitBtn);
-        createButton(40, 800, 240, 65, getName("SettingsSave"), null, true, new Color(255, 80, 0, 55), "Settings", Settings::saveBtn);
-        createButton(40, 300, 240, 65, getName("SettingsGraphics"), null, true, new Color(0, 0, 0, 50), "Settings", Settings::graphicsBtn);
-        createButton(40, 200, 240, 65, getName("SettingsBasic"), null, true, new Color(0, 0, 0, 50), "Settings", Settings::basicBtn);
-        createButton(40, 100, 240, 65, getName("SettingsOther"), null, true, new Color(0, 0, 0, 50), "Settings", Settings::otherBtn);
+        createButton(40, 900, 240, 65, getName("SettingsExit"), null, true, new SimpleColor(255, 80, 0, 55), "Settings", Settings::exitBtn);
+        createButton(40, 800, 240, 65, getName("SettingsSave"), null, true, new SimpleColor(255, 80, 0, 55), "Settings", Settings::saveBtn);
+        createButton(40, 300, 240, 65, getName("SettingsGraphics"), null, true, new SimpleColor(0, 0, 0, 50), "Settings", Settings::graphicsBtn);
+        createButton(40, 200, 240, 65, getName("SettingsBasic"), null, true, new SimpleColor(0, 0, 0, 50), "Settings", Settings::basicBtn);
+        createButton(40, 100, 240, 65, getName("SettingsOther"), null, true, new SimpleColor(0, 0, 0, 50), "Settings", Settings::otherBtn);
 
         buttons.get(Json.getName("SettingsSave")).isClickable = false;
         buttons.get(getName("SettingsGraphics")).isClickable = false;
@@ -32,21 +32,21 @@ public class Settings {
     }
 
     public static void createGraphicsSett() {
-        createSwapButton(310, 980, 32, 32, getName("InterpolateSunset"), getName("InterpolateSunsetPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("InterpolateSunset")), "SettingsGraphicsSwap");
-        createSwapButton(310, 910, 32, 32, getName("PreloadTextures"), getName("PreloadTexturesPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("PreloadTextures")), "SettingsGraphicsSwap");
-        createSwapButton(310, 840, 32, 32, getName("VerticalSync"), getName("VerticalSyncPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("VerticalSync")), "SettingsGraphicsSwap");
+        createSwapButton(310, 980, 32, 32, getName("InterpolateSunset"), getName("InterpolateSunsetPrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("InterpolateSunset")), "SettingsGraphicsSwap");
+        createSwapButton(310, 910, 32, 32, getName("PreloadTextures"), getName("PreloadTexturesPrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("PreloadTextures")), "SettingsGraphicsSwap");
+        createSwapButton(310, 840, 32, 32, getName("VerticalSync"), getName("VerticalSyncPrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("VerticalSync")), "SettingsGraphicsSwap");
     }
 
 
     public static void createBasicSett() {
-        createDropMenu(780, 950, 240, 65, Json.getAllLanguagesArray(), Json.lang, Json.getName("Language"), new Color(255, 80, 0, 55), "SettingsBasicDrop");
-        createSwapButton(310, 980, 32, 32, getName("ShowPrompts"), getName("ShowPromptsPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("ShowPrompts")), "SettingsBasicSwap");
-        createSwapButton(310, 910, 32, 32, getName("DetectLanguage"), getName("DetectLanguagePrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("DetectLanguage")), "SettingsBasicSwap");
+        createDropMenu(780, 950, 240, 65, Json.getAllLanguagesArray(), Json.lang, Json.getName("Language"), new SimpleColor(255, 80, 0, 55), "SettingsBasicDrop");
+        createSwapButton(310, 980, 32, 32, getName("ShowPrompts"), getName("ShowPromptsPrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("ShowPrompts")), "SettingsBasicSwap");
+        createSwapButton(310, 910, 32, 32, getName("DetectLanguage"), getName("DetectLanguagePrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("DetectLanguage")), "SettingsBasicSwap");
         createPicture(745, 965, 1, "languageIcon", defPath + "\\src\\assets\\UI\\GUI\\languageIcon.png", "SettingsBasic");
     }
 
     public static void createOtherSett() {
-        createSwapButton(310, 980, 32, 32, getName("SendAnonymousStatistics"), getName("SendAnonymousStatisticsPrompt"), false, new Color(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("SendAnonymousStatistics")), "SettingsOtherSwap");
+        createSwapButton(310, 980, 32, 32, getName("SendAnonymousStatistics"), getName("SendAnonymousStatisticsPrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("SendAnonymousStatistics")), "SettingsOtherSwap");
     }
 
     public static void deleteGraphicsSett() {

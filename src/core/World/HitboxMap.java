@@ -1,7 +1,8 @@
 package core.World;
 
 import core.World.Textures.DynamicWorldObjects;
-import core.World.Textures.StaticWorldObjects;
+import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
+import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureLoader;
 
 import static core.World.WorldGenerator.*;
@@ -15,10 +16,10 @@ public class HitboxMap {
         int tarYSize = (int) Math.ceil(sizeY / 16f);
 
         for (int i = 0; i < tarYSize; i++) {
-            if (StaticObjects[tarX + tarXSize][tarY + i + 1] == null) {
+            if (getObject(tarX + tarXSize, tarY + i + 1) == null) {
                 return true;
             }
-            if (x + sizeX >= (StaticObjects[tarX + tarXSize][tarY + i + 1].solid ? StaticObjects[tarX + tarXSize][tarY + i + 1].x : SizeX * 16)) {
+            if (x + sizeX >= (getObject(tarX + tarXSize, tarY + i + 1).getType() == StaticObjectsConst.Types.SOLID ? getObject(tarX + tarXSize, tarY + i + 1).x : SizeX * 16)) {
                 return true;
             }
         }
@@ -31,10 +32,10 @@ public class HitboxMap {
         int tarYSize = (int) Math.ceil(sizeY / 16f);
 
         for (int i = 0; i < tarYSize; i++) {
-            if (tarX < 0 || tarY < 0 || StaticObjects[tarX][tarY + i + 1] == null) {
+            if (tarX < 0 || tarY < 0 || getObject(tarX, tarY + i + 1) == null) {
                 return true;
             }
-            if (StaticObjects[tarX][tarY + i + 1].solid) {
+            if (getObject(tarX, tarY + i + 1).getType() == StaticObjectsConst.Types.SOLID) {
                 return true;
             }
         }
@@ -47,10 +48,10 @@ public class HitboxMap {
         int tarXSize = (int) Math.ceil(sizeX / 16f);
 
         for (int i = 0; i < tarXSize; i++) {
-            if (StaticObjects[tarX + i][tarY] == null || StaticObjects[tarX + tarXSize][tarY] == null) {
+            if (getObject(tarX + i, tarY) == null || getObject(tarX + tarXSize, tarY) == null) {
                 return true;
             }
-            if ((y - sizeY <= (StaticObjects[tarX + i][tarY].solid ? StaticObjects[tarX + i][tarY].y : 0)) || x + sizeX >= (StaticObjects[tarX + tarXSize][tarY].solid ? StaticObjects[tarX + tarXSize][tarY].x : SizeX * 16)) {
+            if ((y - sizeY <= (getObject(tarX + i, tarY).getType() == StaticObjectsConst.Types.SOLID ? getObject(tarX + i, tarY).y : 0)) || x + sizeX >= (getObject(tarX + tarXSize, tarY).getType() == StaticObjectsConst.Types.SOLID ? getObject(tarX + tarXSize, tarY).x : SizeX * 16)) {
                 return true;
             }
         }
@@ -64,10 +65,10 @@ public class HitboxMap {
         int tarXSize = (int) Math.ceil(sizeX / 16f);
 
         for (int i = 0; i < tarXSize; i++) {
-            if (StaticObjects[tarX + i][tarY + tarYSize] == null || StaticObjects[tarX + tarXSize][tarY + tarYSize] == null) {
+            if (getObject(tarX + i, tarY + tarYSize) == null || getObject(tarX + tarXSize, tarY + tarYSize) == null) {
                 return true;
             }
-            if ((y + sizeY >= (StaticObjects[tarX + i][tarY + tarYSize].solid ? StaticObjects[tarX + i][tarY + tarYSize].y : SizeY * 16)) || x + sizeX >= (StaticObjects[tarX + tarXSize][tarY + tarYSize].solid ? StaticObjects[tarX + tarXSize][tarY + tarYSize].x : SizeX * 16)) {
+            if ((y + sizeY >= (getObject(tarX + i, tarY + tarYSize).getType() == StaticObjectsConst.Types.SOLID ?getObject(tarX + i, tarY + tarYSize).y : SizeY * 16)) || x + sizeX >= (getObject(tarX + tarXSize, tarY + tarYSize).getType() == StaticObjectsConst.Types.SOLID ? getObject(tarX + tarXSize, tarY + tarYSize).x : SizeX * 16)) {
                 return true;
             }
         }
@@ -82,14 +83,14 @@ public class HitboxMap {
 
         for (int xPos = 0; xPos < tarXSize; xPos++) {
             for (int yPos = 0; yPos < tarYSize; yPos++) {
-                if (tarX + tarXSize > StaticObjects.length || tarY + tarYSize > StaticObjects.length || StaticObjects[tarX + xPos][tarY + yPos] == null || StaticObjects[tarX + tarXSize][tarY + tarYSize] == null) {
+                if (tarX + tarXSize > SizeX || tarY + tarYSize > SizeY || getObject(tarX + xPos, tarY + yPos) == null || getObject(tarX + tarXSize, tarY + tarYSize) == null) {
                     continue;
                 }
-                if (StaticObjects[tarX + xPos][tarY + yPos].solid) {
-                    return StaticObjects[tarX + xPos][tarY + yPos];
+                if (getObject(tarX + xPos, tarY + yPos).getType() == StaticObjectsConst.Types.SOLID) {
+                    return getObject(tarX + xPos, tarY + yPos);
                 }
-                if (StaticObjects[tarX + tarXSize][tarY + tarYSize].solid) {
-                    return StaticObjects[tarX +tarXSize][tarY + tarYSize];
+                if (getObject(tarX + tarXSize, tarY + tarYSize).getType() == StaticObjectsConst.Types.SOLID) {
+                    return getObject(tarX +tarXSize, tarY + tarYSize);
                 }
             }
         }

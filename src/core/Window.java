@@ -6,13 +6,8 @@ import core.EventHandling.MouseScrollCallback;
 import core.UI.GUI.Fonts;
 import core.UI.GUI.Menu.Main;
 import core.EventHandling.Logging.Logger;
-import core.World.Creatures.Player.BuildMenu.BuildItems;
-import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.Items;
-import core.World.Creatures.Player.Inventory.Items.Placeable.Factories;
-import core.World.Creatures.Player.Inventory.Items.Placeable.PlaceableItems;
-import core.World.Textures.StaticWorldObjects;
+import core.World.Creatures.Player.Inventory.Items.Tools;
 import core.World.Textures.TextureLoader;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -24,8 +19,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL13.*;
 
 public class Window {
-    public static String defPath = Paths.get("").toAbsolutePath().toString();
-
+    public final static String defPath = Paths.get("").toAbsolutePath().toString();
     public static int width = 1920, height = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0, fps = 0;
     public static final String version = "dev 0.0.0.9";
     public static boolean start = false;
@@ -75,6 +69,8 @@ public class Window {
     }
 
     public void draw() {
+        Inventory.createElementTool(new Tools(100, 50, 300, 10), "D:\\-270_On_Celsius\\-270_on_Celsius\\src\\assets\\UI\\GUI\\checkMarkFalse.png", "D:\\-270_On_Celsius\\-270_on_Celsius\\src\\assets\\UI\\GUI\\checkMarkFalse.png");
+
         log("Thread: Main thread started drawing");
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);

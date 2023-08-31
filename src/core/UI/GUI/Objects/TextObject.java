@@ -1,14 +1,14 @@
 package core.UI.GUI.Objects;
 
-import java.awt.Color;
+import core.World.Textures.SimpleColor;
 
 public class TextObject {
     public String text, group;
     public int x, y;
-    public Color color;
+    public SimpleColor color;
     public boolean visible;
 
-    public TextObject(int x, int y, String text, Color color, String group) {
+    public TextObject(int x, int y, String text, SimpleColor color, String group) {
         if (group == null) {
             group = "None";
         }

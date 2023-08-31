@@ -10,6 +10,8 @@ import core.World.Creatures.Player.Inventory.Items.Tools;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
 import core.World.HitboxMap;
 import core.World.Textures.*;
+import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
+import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import static core.EventHandling.EventHandler.getMousePos;
@@ -61,7 +63,7 @@ public class Player {
             if (getMousePos().x > (Inventory.inventoryOpen ? 1488 : 1866) && getMousePos().y > 756) {
                 return;
             }
-            if (StaticObjects[getBlockUnderMousePoint().x][getBlockUnderMousePoint().y].gas && EventHandler.getMousePress() && Player.getDistanceUMB() < 9) {
+            if (getObject(getBlockUnderMousePoint().x, getBlockUnderMousePoint().y).getType() != StaticObjectsConst.Types.GAS && EventHandler.getMousePress() && Player.getDistanceUMB() < 9) {
                 int blockX = getBlockUnderMousePoint().x;
                 int blockY = getBlockUnderMousePoint().y;
 
@@ -79,7 +81,7 @@ public class Player {
         if (placeable.factoryObject != null) {
             StaticWorldObjects obj = HitboxMap.checkIntersectionsInside(blockX * 16, blockY * 16, TextureLoader.getSize(placeable.factoryObject.path).width, TextureLoader.getSize(placeable.factoryObject.path).height);
 
-            if (obj == null || !obj.solid) {
+            if (obj == null || obj.getType() != StaticObjectsConst.Types.SOLID) {
                 Factories factory = placeable.factoryObject;
                 factory.x = blockX * 16;
                 factory.y = blockY * 16;
@@ -93,13 +95,10 @@ public class Player {
     }
 
     private static void updatePlaceableBlock(PlaceableItems placeable, int blockX, int blockY) {
-        if (placeable.staticWorldObject != null && (StaticObjects[blockX][blockY + 1].solid || StaticObjects[blockX][blockY - 1].solid || StaticObjects[blockX + 1][blockY].solid || StaticObjects[blockX - 1][blockY].solid)) {
+        if (placeable.staticWorldObject != null && (getObject(blockX, blockY + 1).getType() == StaticObjectsConst.Types.SOLID || getObject(blockX, blockY - 1).getType() == StaticObjectsConst.Types.SOLID || getObject(blockX + 1, blockY).getType() == StaticObjectsConst.Types.SOLID || getObject(blockX - 1, blockY).getType() == StaticObjectsConst.Types.SOLID)) {
             decrementItem(currentObject.x, currentObject.y);
-            StaticObjects[blockX][blockY] = new StaticWorldObjects(placeable.staticWorldObject.path, blockX * 16, blockY * 16, placeable.staticWorldObject.type);
-            StaticObjects[blockX][blockY].solid = true;
-            TextureDrawing.loadObjects();
+            setObject(blockX, blockY, new StaticWorldObjects(placeable.staticWorldObject.getName(), blockX * 16, blockY * 16));
             ShadowMap.update();
-
         }
     }
 
@@ -109,10 +108,10 @@ public class Player {
 
             int blockX = getBlockUnderMousePoint().x;
             int blockY = getBlockUnderMousePoint().y;
-            StaticWorldObjects object = StaticObjects[getBlockUnderMousePoint().x][getBlockUnderMousePoint().y];
+            StaticWorldObjects object = getObject(getBlockUnderMousePoint().x, getBlockUnderMousePoint().y);
 
             if (!lastDestroySet) {
-                Color color = ShadowMap.getColor(blockX, blockY);
+                SimpleColor color = ShadowMap.getSimpleColor(blockX, blockY);
                 int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
 
                 lastDestroySet = true;
@@ -120,9 +119,9 @@ public class Player {
                 lastDestroyIndexY = blockY;
 
                 if (ShadowMap.colorDegree[blockX][blockY] == 0 && getDistanceUMB() <= tool.maxInteractionRange) {
-                    ShadowMap.setColor(blockX, blockY, new Color(Math.max(0, a - 150), Math.max(0, a - 150), a, 255));
+                    ShadowMap.setColor(blockX, blockY, new SimpleColor(Math.max(0, a - 150), Math.max(0, a - 150), a, 255));
                 } else {
-                    ShadowMap.setColor(blockX, blockY, new Color(a, Math.max(0, a - 150), Math.max(0, a - 150), 255));
+                    ShadowMap.setColor(blockX, blockY, new SimpleColor(a, Math.max(0, a - 150), Math.max(0, a - 150), 255));
                 }
             }
             if (blockX != lastDestroyIndexX || blockY != lastDestroyIndexY) {
@@ -133,8 +132,8 @@ public class Player {
                 tool.lastHitTime = System.currentTimeMillis();
                 object.currentHp -= tool.damage;
 
-                if (object.currentHp <= 0 && object.type != StaticWorldObjects.Types.GAS) {
-                    createElementPlaceable(new StaticWorldObjects(object.path, object.x, object.y, object.type), "none");
+                if (object.currentHp <= 0 && !object.getName().equals("Gas")) {
+                    //createElementPlaceable(new StaticWorldObjects(object.getName(), object.x, object.y), "none");
                     object.destroyObject();
                 }
             }
@@ -142,8 +141,8 @@ public class Player {
     }
 
     public static Point getBlockUnderMousePoint() {
-        int blockX = (int) Math.max(0, Math.min(getWorldMousePoint().x / 16, StaticObjects.length));
-        int blockY = (int) Math.max(0, Math.min(getWorldMousePoint().y / 16, StaticObjects.length));
+        int blockX = (int) Math.max(0, Math.min(getWorldMousePoint().x / 16, SizeX));
+        int blockY = (int) Math.max(0, Math.min(getWorldMousePoint().y / 16, SizeY));
 
         return new Point(blockX, blockY);
     }
@@ -171,19 +170,5 @@ public class Player {
         if (start) {
             BuildMenu.updateLogic();
         }
-    }
-
-    public static float getDistanceToPlayerABS(float x) {
-        if (DynamicObjects.get(0) != null) {
-            return Math.abs((DynamicObjects.get(0).x - x));
-        }
-        return 0;
-    }
-
-    public static float getDistanceToPlayer(float x) {
-        if (DynamicObjects.get(0) != null) {
-            return (DynamicObjects.get(0).x - x);
-        }
-        return 0;
     }
 }

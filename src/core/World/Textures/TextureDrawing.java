@@ -9,10 +9,9 @@ import core.UI.GUI.Objects.TextObject;
 import core.UI.GUI.Video;
 import core.Window;
 import core.World.Creatures.Player.Inventory.Items.Placeable.Factories;
-import core.World.WorldGenerator;
+import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 import java.awt.*;
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
@@ -26,27 +25,19 @@ import static core.Window.*;
 import static core.World.Creatures.Player.Player.updatePlayerGUI;
 import static core.World.Textures.TextureLoader.ByteBufferEncoder;
 import static core.World.Weather.Sun.updateSun;
-import static core.World.WorldGenerator.SizeX;
-import static core.World.WorldGenerator.SizeY;
+import static core.World.WorldGenerator.*;
 import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
     private static float playerX, playerY;
     public static final HashMap<Integer, TextureData> textures = new HashMap<>();
-    public static StaticWorldObjects[][] StaticObjects;
-    public static ArrayList<DynamicWorldObjects> DynamicObjects;
-
-    public static void loadObjects() {
-        StaticObjects = WorldGenerator.StaticObjects;
-        DynamicObjects = WorldGenerator.DynamicObjects;
-    }
 
     //for textures (world)
-    public static void drawTexture(String path, float x, float y, float zoom, Color color, boolean isStatic, boolean mirrorVertical) {
+    public static void drawTexture(String path, float x, float y, float zoom, SimpleColor color, boolean isStatic, boolean mirrorVertical) {
         if (color != null && color.getAlpha() == 0) {
             return;
         } else if (color == null) {
-            color = new Color(255, 255, 255, 255);
+            color = new SimpleColor(255, 255, 255, 255);
         }
 
         int textureId = path.hashCode();
@@ -114,11 +105,11 @@ public class TextureDrawing {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    public static void drawMultiTexture(String pathMain, String pathSecond, float x, float y, float zoom, Color color, boolean isStatic, boolean mirrorVertical) {
+    public static void drawMultiTexture(String pathMain, String pathSecond, float x, float y, float zoom, SimpleColor color, boolean isStatic, boolean mirrorVertical) {
         if (color != null && color.getAlpha() == 0) {
             return;
         } else if (color == null) {
-            color = new Color(255, 255, 255, 255);
+            color = new SimpleColor(255, 255, 255, 255);
         }
 
         int textureId = pathMain.hashCode() + pathSecond.hashCode();
@@ -185,11 +176,11 @@ public class TextureDrawing {
     }
 
     public static void drawTexture(String path, float x, float y, float zoom, boolean isStatic) {
-        drawTexture(path, x, y, zoom, new Color(255, 255, 255, 255), isStatic, false);
+        drawTexture(path, x, y, zoom, new SimpleColor(255, 255, 255, 255), isStatic, false);
     }
 
     //for video, text, etc
-    public static void drawTexture(float x, float y, int width, int height, String name, ByteBuffer buffer, Color color, float zoom) {
+    public static void drawTexture(float x, float y, int width, int height, String name, ByteBuffer buffer, SimpleColor color, float zoom) {
         if (name != null && textures.get(name.hashCode()) != null) {
             glBindTexture(GL_TEXTURE_2D, textures.get(name.hashCode()).id);
         } else {
@@ -235,7 +226,7 @@ public class TextureDrawing {
         drawTexture(defPath + "\\src\\assets\\World\\other\\cursorDefault.png", EventHandler.getMousePos().x, getMousePos().y - 20, 1, true);
     }
 
-    public static void drawText(int x, int y, String text, Color color) {
+    public static void drawText(int x, int y, String text, SimpleColor color) {
         int startX = x;
 
         for (int i = 0; i < text.length(); i++) {
@@ -256,10 +247,10 @@ public class TextureDrawing {
     }
 
     public static void drawText(int x, int y, String text) {
-        drawText(x, y, text, new Color(210, 210, 210, 255));
+        drawText(x, y, text, new SimpleColor(210, 210, 210, 255));
     }
 
-    public static void drawRectangleBorder(int x, int y, int width, int height, int thickness, Color color) {
+    public static void drawRectangleBorder(int x, int y, int width, int height, int thickness, SimpleColor color) {
         glPushMatrix();
         glLineWidth(thickness);
 
@@ -275,7 +266,7 @@ public class TextureDrawing {
         glPopMatrix();
     }
 
-    public static void drawRectangle(int x, int y, int width, int height, Color color) {
+    public static void drawRectangle(int x, int y, int width, int height, SimpleColor color) {
         glPushMatrix();
         glBegin(GL_QUADS);
 
@@ -290,7 +281,7 @@ public class TextureDrawing {
         glPopMatrix();
     }
 
-    public static void drawRoundedRectangle(int x, int y, int width, int height, Color color) {
+    public static void drawRoundedRectangle(int x, int y, int width, int height, SimpleColor color) {
         int radius = height / 2;
         int SEGMENTS = 16;
         float ANGLE_INCREMENT = (float) (2.0 * Math.PI / SEGMENTS);
@@ -358,7 +349,7 @@ public class TextureDrawing {
         glEnd();
     }
 
-    public static void drawCircle(int x, int y, float radius, Color color) {
+    public static void drawCircle(int x, int y, float radius, SimpleColor color) {
         int samples = 64;
         glPushMatrix();
         glBegin(GL_TRIANGLE_FAN);
@@ -380,11 +371,11 @@ public class TextureDrawing {
 
     public static void drawPrompt(ButtonObject button) {
         if (getFromConfig("ShowPrompts").equals("true") && new Rectangle(button.x, button.y, button.width, button.height).contains(getMousePos()) && mouseNotMoved && button.prompt != null) {
-            drawRectangleText(button.x, button.y, 0, button.prompt, false, new Color(40, 40, 40, 240));
+            drawRectangleText(button.x, button.y, 0, button.prompt, false, new SimpleColor(40, 40, 40, 240));
         }
     }
 
-    public static void drawRectangleText(int x, int y, int maxWidth, String text, boolean staticTransfer, Color panColor) {
+    public static void drawRectangleText(int x, int y, int maxWidth, String text, boolean staticTransfer, SimpleColor panColor) {
         maxWidth = (maxWidth > 0 ? maxWidth : 1920 - x);
         y = staticTransfer ? y + getTextSize(text).width / maxWidth * 16 : y;
 
@@ -450,7 +441,7 @@ public class TextureDrawing {
                         video.frame = 1;
                     }
                     if (byteBuffer.get(name) != null && !byteBuffer.get(name).equals(buff)) {
-                        drawTexture(video.x, video.y, video.width, video.height, null, byteBuffer.get(name), new Color(255, 255, 255, 255), 1);
+                        drawTexture(video.x, video.y, video.width, video.height, null, byteBuffer.get(name), new SimpleColor(255, 255, 255, 255), 1);
                         buff = byteBuffer.get(name);
                     }
                 }
@@ -470,28 +461,31 @@ public class TextureDrawing {
 
         for (int x = (int) (playerX / 16) - 20; x < playerX / 16 + 21; x++) {
             for (int y = (int) (playerY / 16) - 8; y < playerY / 16 + 16; y++) {
-                if (x < 0 || y < 0 || x > SizeX || y > SizeY || StaticObjects[x][y] == null || StaticObjects[x][y].path == null) {
+                if (x < 0 || y < 0 || x > SizeX || y > SizeY) {
                     continue;
                 }
-                if (StaticObjects[x][y].currentHp <= 0 && StaticObjects[x][y].id != 0) {
-                    StaticObjects[x][y].destroyObject();
+                StaticWorldObjects obj = getObject(x, y);
+
+                if (obj == null || obj.getPath() == null) {
                     continue;
                 }
-                StaticWorldObjects obj = StaticObjects[x][y];
+                if (obj.currentHp <= 0) {
+                    obj.destroyObject();
+                    continue;
+                }
 
                 float xBlock = obj.x;
                 float yBlock = obj.y;
-                boolean mirrored = obj.mirrored;
 
-                if (isOnCamera(xBlock, yBlock, 16, 16) && obj.path != null) {
-                    if (obj.currentHp > obj.totalHp / 1.5f) {
-                        drawTexture(obj.path, xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, mirrored);
+                if (isOnCamera(xBlock, yBlock, 16, 16)) {
+                    if (obj.currentHp > obj.getMaxHp() / 1.5f) {
+                        drawTexture(obj.getPath(), xBlock, yBlock, 3f, ShadowMap.getSimpleColor(x, y), false, false);
 
-                    } else if (obj.currentHp < obj.totalHp / 3) {
-                        drawMultiTexture(obj.path, defPath + "\\src\\assets\\World\\blocks\\damaged2.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, mirrored);
+                    } else if (obj.currentHp < obj.getMaxHp() / 3) {
+                        drawMultiTexture(obj.getPath(), defPath + "\\src\\assets\\World\\blocks\\damaged2.png", xBlock, yBlock, 3f, ShadowMap.getSimpleColor(x, y), false, false);
 
                     } else {
-                        drawMultiTexture(obj.path, defPath + "\\src\\assets\\World\\blocks\\damaged1.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, mirrored);
+                        drawMultiTexture(obj.getPath(), defPath + "\\src\\assets\\World\\blocks\\damaged1.png", xBlock, yBlock, 3f, ShadowMap.getSimpleColor(x, y), false, false);
                     }
                 }
             }
@@ -502,14 +496,14 @@ public class TextureDrawing {
         float left = DynamicObjects.get(0).x - (1920 / 5.5f) - (32 + xSize);
         float right = DynamicObjects.get(0).x + (1920 / 5.5f) + (32 - xSize);
         float bottom = DynamicObjects.get(0).y - (1080 / 16f) - (32 + ySize); //меньше число деления - выше прорисовка
-        float top = DynamicObjects.get(0).y + (1080 / 5f) + (32 - ySize);
+        float top = DynamicObjects.get(0).y + (1080 / 4.5f) + (32 - ySize);
 
         return !(x + 16 < left) && !(x > right) && !(y + 16 < bottom) && !(y > top);
     }
 
     public static void updateDynamicObj() {
-        for (int x = 0; x < WorldGenerator.DynamicObjects.size(); x++) {
-            DynamicWorldObjects dynamicObject = WorldGenerator.DynamicObjects.get(x);
+        for (int x = 0; x < DynamicObjects.size(); x++) {
+            DynamicWorldObjects dynamicObject = DynamicObjects.get(x);
 
             if (dynamicObject != null && !dynamicObject.notForDrawing) {
                 float left = DynamicObjects.get(0).x - (1920 / 5.5f) - (48);
@@ -523,7 +517,7 @@ public class TextureDrawing {
                 dynamicObject.onCamera = !(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top);
 
                 if (dynamicObject.onCamera && dynamicObject.framesCount == 1) {
-                    drawTexture(dynamicObject.path, dynamicObject.x, dynamicObject.y, 3, ShadowMap.getColorDynamic(x), false, dynamicObject.mirrored);
+                    drawTexture(dynamicObject.path, dynamicObject.x, dynamicObject.y, 3, ShadowMap.getSimpleColorDynamic(x), false, dynamicObject.mirrored);
                 }
                 if (dynamicObject.onCamera && dynamicObject.framesCount != 1 && dynamicObject.animSpeed != 0) {
                     if (dynamicObject.currentFrame != dynamicObject.framesCount && System.currentTimeMillis() - dynamicObject.lastFrameTime >= dynamicObject.animSpeed * 1000) {
@@ -534,9 +528,9 @@ public class TextureDrawing {
                         dynamicObject.lastFrameTime = System.currentTimeMillis();
                     }
 
-                    drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, ShadowMap.getColorDynamic(x), false, dynamicObject.mirrored);
+                    drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, ShadowMap.getSimpleColorDynamic(x), false, dynamicObject.mirrored);
                 } else if (dynamicObject.onCamera && dynamicObject.framesCount != 1) {
-                    drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, ShadowMap.getColorDynamic(x), false, dynamicObject.mirrored);
+                    drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, ShadowMap.getSimpleColorDynamic(x), false, dynamicObject.mirrored);
                 }
             }
         }
@@ -598,7 +592,7 @@ public class TextureDrawing {
                     ButtonObject[] dropButtons = dropMenu.get(button.name);
 
                     for (ButtonObject dropButton : dropButtons) {
-                        drawRectangle(dropButton.x, dropButton.y, dropButton.width, 5, new Color(10, 10, 10, 255));
+                        drawRectangle(dropButton.x, dropButton.y, dropButton.width, 5, new SimpleColor(10, 10, 10, 255));
 
                         if (dropButton.simple && dropButton.swapButton && dropButton.isClicked) {
                             drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
@@ -666,7 +660,7 @@ public class TextureDrawing {
                     drawRectangleBorder(button.x, button.y, button.width, button.height, 6, button.color);
                 }
                 if (!button.isClickable) {
-                    drawRectangle(button.x, button.y, button.width, button.height, new Color(0, 0, 0, 123));
+                    drawRectangle(button.x, button.y, button.width, button.height, new SimpleColor(0, 0, 0, 123));
                 }
                 drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
                 drawPrompt(button);
@@ -697,8 +691,8 @@ public class TextureDrawing {
         }
 
         if (Commandline.created) {
-            drawRectangle(20, 800, 650, 260, new Color(0, 0, 0, 220));
-            drawRectangleText(-10, 810, 630, EventHandler.keyLoggingText, true, new Color(0, 0, 0, 0));
+            drawRectangle(20, 800, 650, 260, new SimpleColor(0, 0, 0, 220));
+            drawRectangleText(-10, 810, 630, EventHandler.keyLoggingText, true, new SimpleColor(0, 0, 0, 0));
         }
     }
 

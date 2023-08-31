@@ -4,6 +4,7 @@ import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.PanelObject;
 import core.UI.GUI.Objects.SliderObject;
 import core.UI.GUI.Objects.TextObject;
+import core.World.Textures.SimpleColor;
 import core.World.Textures.TextureLoader;
 import java.awt.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -16,11 +17,11 @@ public class CreateElement {
     public static ConcurrentHashMap<String, ButtonObject[]> dropMenu = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, TextObject> texts = new ConcurrentHashMap<>();
 
-    public static void createButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, Color color, String group, Runnable taskOnClick) {
+    public static void createButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, SimpleColor color, String group, Runnable taskOnClick) {
         buttons.put(name, new ButtonObject(simple, false, x, y, btnHeight, btnWidth, name, prompt, color, group, taskOnClick));
     }
 
-    public static void createDropMenu(int x, int y, int menuWidth, int menuHeight, String[] btnNames, String pressedButton, String menuName, Color color, String group) {
+    public static void createDropMenu(int x, int y, int menuWidth, int menuHeight, String[] btnNames, String pressedButton, String menuName, SimpleColor color, String group) {
         ButtonObject[] dropButtons = new ButtonObject[btnNames.length];
         buttons.put(menuName, new ButtonObject(true, false, x, y, menuHeight, menuWidth, menuName, null, color, group, null));
 
@@ -32,7 +33,7 @@ public class CreateElement {
             }
             dropButtons[i].visible = false;
 
-            if (pressedButton != null && dropButtons[i].name.equals(pressedButton)) {
+            if (dropButtons[i].name.equals(pressedButton)) {
                 dropButtons[i].isClicked = true;
             }
         }
@@ -40,11 +41,11 @@ public class CreateElement {
     }
 
     public static void createPictureButton(int x, int y, String path, String name, String group, Runnable taskOnClick) {
-        buttons.put(name, new ButtonObject(true, false, x, y, TextureLoader.getSize(path).height, TextureLoader.getSize(path).width, name, null, new Color(255, 255, 255, 255), group, taskOnClick));
+        buttons.put(name, new ButtonObject(true, false, x, y, TextureLoader.getSize(path).height, TextureLoader.getSize(path).width, name, null, new SimpleColor(255, 255, 255, 255), group, taskOnClick));
         buttons.get(name).path = path;
     }
 
-    public static void createSwapButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, Color color, boolean isClicked, String group) {
+    public static void createSwapButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, SimpleColor color, boolean isClicked, String group) {
         if (simple) {
             buttons.put(name, new ButtonObject(simple, true, x, y, btnHeight, btnWidth, name, prompt, color, group, null));
         } else {
@@ -55,11 +56,11 @@ public class CreateElement {
         }
     }
 
-    public static void createSwapButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, Color color, String group) {
+    public static void createSwapButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, SimpleColor color, String group) {
         createSwapButton(x, y, btnWidth, btnHeight, name, prompt, simple, color, false, group);
     }
 
-    public static void createSlider(int x, int y, int sliderWidth, int sliderHeight, int max, String name, Color sliderColor, Color dotColor) {
+    public static void createSlider(int x, int y, int sliderWidth, int sliderHeight, int max, String name, SimpleColor sliderColor, SimpleColor dotColor) {
         sliders.put(name, new SliderObject(x, y, sliderWidth, sliderHeight, max, sliderColor, dotColor));
         sliders.get(name).sliderPos = x + 1;
     }
@@ -71,14 +72,14 @@ public class CreateElement {
     }
 
     public static void createPanel(int x, int y, int panWidth, int panHeight, String name, boolean simple, String group) {
-        panels.put(name, new PanelObject(x, y, panWidth, panHeight, 1, name, simple, null, group, new Color(40, 40, 40, 240)));
+        panels.put(name, new PanelObject(x, y, panWidth, panHeight, 1, name, simple, null, group, new SimpleColor(40, 40, 40, 240)));
     }
 
-    public static void createText(int x, int y, String name, String text, Color color, String group) {
+    public static void createText(int x, int y, String name, String text, SimpleColor color, String group) {
         texts.put(name, new TextObject(x, y, text, color, group));
     }
 
     public static void createPicture(int x, int y, int layer, String name, String path, String group) {
-        panels.put(name, new PanelObject(x, y, getSize(path).width, getSize(path).height, layer, name, true, path, group, new Color(255, 255, 255, 255)));
+        panels.put(name, new PanelObject(x, y, getSize(path).width, getSize(path).height, layer, name, true, path, group, new SimpleColor(255, 255, 255, 255)));
     }
 }

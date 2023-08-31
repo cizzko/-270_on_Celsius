@@ -5,6 +5,7 @@ import core.EventHandling.MouseScrollCallback;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Inventory.Items.Placeable.Factories;
+import core.World.Textures.SimpleColor;
 import core.World.Textures.TextureDrawing;
 import java.awt.*;
 import static core.Window.defPath;
@@ -128,7 +129,7 @@ public class BuildMenu {
                     drawTexture(defPath + "\\src\\assets\\UI\\GUI\\inventory\\inventoryCurrent.png", 1650 + currentObject.x * 54, yCoord, 1, true);
                 }
             }
-            drawRectangle(1915, (int) Math.abs(scroll / 2f) - 5, 4, 20, new Color(0, 0, 0, 200));
+            drawRectangle(1915, (int) Math.abs(scroll / 2f) - 5, 4, 20, new SimpleColor(0, 0, 0, 200));
 
             drawRequirements(1663, 156);
 
@@ -137,8 +138,8 @@ public class BuildMenu {
         }
 
         if (infoCreated && currentObject != null && items[currentObject.x][currentObject.y] != null) {
-            TextureDrawing.drawRectangle(0, 0, 1920, 1080, new Color(0, 0, 0, 50));
-            TextureDrawing.drawRectangle(560, 0, 800, 1080, new Color(0, 0, 0, 50));
+            TextureDrawing.drawRectangle(0, 0, 1920, 1080, new SimpleColor(0, 0, 0, 50));
+            TextureDrawing.drawRectangle(560, 0, 800, 1080, new SimpleColor(0, 0, 0, 50));
             TextureDrawing.drawTexture(defPath + "\\src\\assets\\UI\\GUI\\buildMenu\\exitBtn.png", 605, 989, 1, true);
             TextureDrawing.drawText(694, 730, items[currentObject.x][currentObject.y].item.description);
             Inventory.drawInventoryItem(694, 915, items[currentObject.x][currentObject.y].item.path);
@@ -165,7 +166,6 @@ public class BuildMenu {
     }
 
     public static void addItem(BuildItems item) {
-
         for (int y = 0; y < items[0].length; y++) {
             boolean isAllSameCategory = true;
 

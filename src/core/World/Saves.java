@@ -3,7 +3,7 @@ package core.World;
 import core.EventHandling.Logging.Json;
 import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.ShadowMap;
-import core.World.Textures.StaticWorldObjects;
+import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 import java.io.*;
 import java.time.LocalDate;
 import java.util.ArrayList;

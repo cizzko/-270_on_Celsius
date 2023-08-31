@@ -6,7 +6,9 @@ import core.Window;
 import core.World.Weather.Sun;
 import java.awt.*;
 import java.io.*;
+import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
 import java.time.LocalDateTime;
 import java.util.Random;
 import static core.EventHandling.Logging.Config.getFromConfig;
@@ -62,6 +64,11 @@ public class Logger {
             case 1863 -> exit = " (sudden closure)";
             case 6553 -> exit = " (glfw error)";
             default -> exit = " (unknown state)";
+        }
+
+        for (GarbageCollectorMXBean gcBean : ManagementFactory.getGarbageCollectorMXBeans()) {
+            log("\nName GC: " + gcBean.getName() + "\nFull collection cycles GC: " + gcBean.getCollectionCount() + "\nFull time GC (ms): " + gcBean.getCollectionTime() + "\nRAM use: " + ManagementFactory.getMemoryMXBean().getHeapMemoryUsage());
+            break;
         }
 
         AnonymousStatistics.sendStateMessage("Session '" + sessionId + "' exit, time: '" + LocalDateTime.now() + "', reason: '" + reason + "', status: " + status + exit);

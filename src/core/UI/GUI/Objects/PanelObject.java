@@ -1,14 +1,15 @@
 package core.UI.GUI.Objects;
 
-import java.awt.*;
+import core.World.Textures.SimpleColor;
+
 
 public class PanelObject {
     public int x, y, width, height, layer;
     public String name, options, group;
     public boolean visible, simple;
-    public Color color;
+    public SimpleColor color;
 
-    public PanelObject(int x, int y, int width, int height, int layer, String name, boolean simple, String options, String group, Color color) {
+    public PanelObject(int x, int y, int width, int height, int layer, String name, boolean simple, String options, String group, SimpleColor color) {
         if (group == null) {
             group = "None";
         }

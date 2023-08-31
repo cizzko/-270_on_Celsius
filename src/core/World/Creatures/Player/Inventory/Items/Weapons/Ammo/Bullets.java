@@ -7,11 +7,10 @@ import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.HitboxMap;
 import core.World.Textures.DynamicWorldObjects;
-import core.World.Textures.StaticWorldObjects;
+import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 import static core.EventHandling.EventHandler.getMousePos;
 import static core.World.Textures.TextureDrawing.drawTexture;
-import static core.World.WorldGenerator.DynamicObjects;
-import static core.World.WorldGenerator.StaticObjects;
+import static core.World.WorldGenerator.*;
 
 public class Bullets {
     public float bulletSpeed, damage, angle, x, y;
@@ -88,7 +87,7 @@ public class Bullets {
                             DynamicObjects.remove(dynamicObject);
                         }
                     }
-                    if (bullet.damage <= 0 || bullet.x < 0 || bullet.y < 0 || bullet.x / 16 > StaticObjects.length || bullet.y / 16 > StaticObjects.length) {
+                    if (bullet.damage <= 0 || bullet.x < 0 || bullet.y < 0 || bullet.x / 16 > SizeX || bullet.y / 16 > SizeY) {
                         bullets[i] = null;
                         bulletCount--;
                     }

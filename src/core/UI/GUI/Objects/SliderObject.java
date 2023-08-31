@@ -1,13 +1,13 @@
 package core.UI.GUI.Objects;
 
-import java.awt.*;
+import core.World.Textures.SimpleColor;
 
 public class SliderObject {
     public int x, y, width, height, sliderPos, max;
     public boolean isClicked, visible;
-    public Color sliderColor, dotColor;
+    public SimpleColor sliderColor, dotColor;
 
-    public SliderObject(int x, int y, int width, int height, int max, Color sliderColor, Color dotColor) {
+    public SliderObject(int x, int y, int width, int height, int max, SimpleColor sliderColor, SimpleColor dotColor) {
         this.x = x;
         this.y = y;
         this.sliderColor = sliderColor;

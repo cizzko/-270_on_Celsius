@@ -19,7 +19,7 @@ import static core.World.Textures.TextureDrawing.bindTexture;
 import static org.lwjgl.opengl.GL11.*;
 
 public class TextureLoader extends Thread {
-    private static HashMap<String, Dimension> sizes = new HashMap<>();
+    private static final HashMap<String, Dimension> sizes = new HashMap<>();
 
     public static BufferedImage BufferedImageEncoder(String path) {
         try {

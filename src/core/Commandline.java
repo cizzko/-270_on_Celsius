@@ -124,10 +124,8 @@ public class Commandline {
         } else if (arg.endsWith("i")) {
             arg = arg.substring(0, arg.length() - 1);
             return Integer.parseInt(arg);
-
-        } else {
-            return arg;
         }
+        return arg;
     }
 
     public static void createLine() {

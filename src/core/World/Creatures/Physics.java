@@ -50,8 +50,6 @@ public class Physics extends Thread {
         boolean intersD = checkIntersStaticD(dynamicObject.x, dynamicObject.y + dynamicObject.motionVector.y, TextureLoader.getSize(dynamicObject.path).width, TextureLoader.getSize(dynamicObject.path).height);
         boolean intersU = checkIntersStaticU(dynamicObject.x, dynamicObject.y + dynamicObject.motionVector.y, TextureLoader.getSize(dynamicObject.path).width, TextureLoader.getSize(dynamicObject.path).height);
 
-        dynamicObject.y += dynamicObject.motionVector.y;
-
         if (!intersD) {
             dynamicObject.motionVector.y -= dynamicObject.weight;
         }
@@ -62,13 +60,13 @@ public class Physics extends Thread {
         if (dynamicObject.motionVector.y > 0 && intersU) {
             dynamicObject.motionVector.y = 0;
         }
+
+        dynamicObject.y += dynamicObject.motionVector.y;
     }
 
     public static void updateHorizontalSpeed(DynamicWorldObjects dynamicObject) {
         boolean intersR = checkIntersStaticR(dynamicObject.x + dynamicObject.motionVector.x * 2, dynamicObject.y, TextureLoader.getSize(dynamicObject.path).width, TextureLoader.getSize(dynamicObject.path).height);
         boolean intersL = checkIntersStaticL(dynamicObject.x + dynamicObject.motionVector.x * 2, dynamicObject.y, TextureLoader.getSize(dynamicObject.path).height);
-
-        dynamicObject.x += dynamicObject.motionVector.x;
 
         if (!intersR && dynamicObject.motionVector.x > 0) {
             if (dynamicObject.motionVector.x - dynamicObject.weight > 0) {
@@ -85,6 +83,8 @@ public class Physics extends Thread {
         } else if (intersL) {
             dynamicObject.motionVector.x = 0;
         }
+
+        dynamicObject.x += dynamicObject.motionVector.x;
     }
 
 

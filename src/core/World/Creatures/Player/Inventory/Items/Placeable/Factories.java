@@ -6,6 +6,7 @@ import core.World.ArrayUtils;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Player;
+import core.World.Textures.SimpleColor;
 import core.World.Textures.TextureDrawing;
 import core.World.Textures.TextureLoader;
 import java.awt.*;
@@ -97,7 +98,7 @@ public class Factories {
                 float y = factory.y;
 
                 if (TextureDrawing.isOnCamera(x, y, TextureLoader.getSize(factory.path).width, TextureLoader.getSize(factory.path).height)) {
-                    TextureDrawing.drawTexture(factory.path, x, y, 3, new Color(255, 255, 255, 255), false, false);
+                    TextureDrawing.drawTexture(factory.path, x, y, 3, new SimpleColor(255, 255, 255, 255), false, false);
                 }
             }
         }
@@ -110,13 +111,13 @@ public class Factories {
             boolean output = factory.outputStoredObjects != null;
 
             if (input && ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0) {
-                TextureDrawing.drawRectangle((int) xMouse, (int) yMouse, ArrayUtils.findDistinctObjects(factory.inputStoredObjects) * 54 + 24, 64, new Color(40, 40, 40, 240));
+                TextureDrawing.drawRectangle((int) xMouse, (int) yMouse, ArrayUtils.findDistinctObjects(factory.inputStoredObjects) * 54 + 24, 64, new SimpleColor(40, 40, 40, 240));
                 drawObjects(xMouse, yMouse, factory.inputStoredObjects, defPath + "\\src\\assets\\UI\\GUI\\buildMenu\\factoryIn.png");
             }
             if (output && ArrayUtils.findFreeCell(factory.outputStoredObjects) != 0) {
                 xMouse += (ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0 ? 78 : 0);
 
-                TextureDrawing.drawRectangle((int) xMouse, (int) yMouse, ArrayUtils.findDistinctObjects(factory.outputStoredObjects) * 54 + 24, 64, new Color(40, 40, 40, 240));
+                TextureDrawing.drawRectangle((int) xMouse, (int) yMouse, ArrayUtils.findDistinctObjects(factory.outputStoredObjects) * 54 + 24, 64, new SimpleColor(40, 40, 40, 240));
                 drawObjects(xMouse, yMouse, factory.outputStoredObjects, defPath + "\\src\\assets\\UI\\GUI\\buildMenu\\factoryOut.png");
             }
         }

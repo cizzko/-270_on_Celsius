@@ -9,13 +9,10 @@ import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.SliderObject;
 import core.Window;
 import core.World.Creatures.Player.Player;
+import core.World.Textures.SimpleColor;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
-import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.Arrays;
 import static core.Commandline.updateLine;
 import static core.EventHandling.Logging.Logger.log;
@@ -252,9 +249,9 @@ public class EventHandler extends Thread {
         if (Config.getFromConfig("Debug").equals("true") && System.currentTimeMillis() - lastSecond >= 1000) {
             lastSecond = System.currentTimeMillis();
 
-            CreateElement.createText(5, 985, "HandlerFPS", "Handler FPS: " + handlerUpdates, new Color(25, 25, 25, 255), null);
-            CreateElement.createText(5, 1020, "PhysicsFPS", "Physics FPS: " + updates, new Color(25, 25, 25, 255), null);
-            CreateElement.createText(5, 1055, "GameFPS", "Game FPS: " + fps, new Color(25, 25, 25, 255), null);
+            CreateElement.createText(5, 985, "HandlerFPS", "Handler FPS: " + handlerUpdates, new SimpleColor(25, 25, 25, 255), null);
+            CreateElement.createText(5, 1020, "PhysicsFPS", "Physics FPS: " + updates, new SimpleColor(25, 25, 25, 255), null);
+            CreateElement.createText(5, 1055, "GameFPS", "Game FPS: " + fps, new SimpleColor(25, 25, 25, 255), null);
 
             handlerUpdates = 0;
             updates = 0;

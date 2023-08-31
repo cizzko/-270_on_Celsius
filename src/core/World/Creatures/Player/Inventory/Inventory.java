@@ -9,7 +9,9 @@ import core.World.Creatures.Player.Inventory.Items.Tools;
 import core.World.Creatures.Player.Inventory.Items.Placeable.PlaceableItems;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.Creatures.Player.Player;
-import core.World.Textures.StaticWorldObjects;
+import core.World.Textures.SimpleColor;
+import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
+import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 import core.World.WorldGenerator;
 import java.awt.*;
 import java.util.Arrays;
@@ -59,7 +61,7 @@ public class Inventory {
         float zoom = Items.findZoom(path);
 
         drawTexture(path, (x + 5) / zoom, (y + 5) / zoom, zoom, true);
-        drawText((int) x + 31, (int) y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell), new Color(10, 10, 10, 255));
+        drawText((int) x + 31, (int) y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell), new SimpleColor(10, 10, 10, 255));
     }
 
     public static void drawInventoryItem(float x, float y, String path) {
@@ -93,8 +95,8 @@ public class Inventory {
             if (currentObjectType == Items.Types.PLACEABLE_BLOCK || currentObjectType == Items.Types.PLACEABLE_FACTORY) {
                 int blockX = Player.getBlockUnderMousePoint().x;
                 int blockY = Player.getBlockUnderMousePoint().y;
-                boolean isDeclined = Player.getDistanceUMB() > 8 || (!StaticObjects[blockX][blockY].gas || !(WorldGenerator.StaticObjects[blockX][blockY + 1].solid || WorldGenerator.StaticObjects[blockX][blockY - 1].solid || WorldGenerator.StaticObjects[blockX + 1][blockY].solid || WorldGenerator.StaticObjects[blockX - 1][blockY].solid));
-                Color color = new Color(isDeclined ? 255 : 100, 100, !isDeclined ? 255 : 100, 255);
+                boolean isDeclined = Player.getDistanceUMB() > 8 || (WorldGenerator.getObject(blockX, blockY).getType() != StaticObjectsConst.Types.GAS || !(WorldGenerator.getObject(blockX, blockY + 1).getType() == StaticObjectsConst.Types.GAS || WorldGenerator.getObject(blockX, blockY - 1).getType() == StaticObjectsConst.Types.GAS || WorldGenerator.getObject(blockX + 1, blockY).getType() == StaticObjectsConst.Types.GAS || WorldGenerator.getObject(blockX - 1, blockY).getType() == StaticObjectsConst.Types.GAS));
+                SimpleColor color = new SimpleColor(isDeclined ? 255 : 100, 100, !isDeclined ? 255 : 100, 255);
 
                 if (inventoryObjects[current.x][current.y] != null) {
                     drawTexture(inventoryObjects[current.x][current.y].path, blockX * 16, blockY * 16, 3, color, false, false);

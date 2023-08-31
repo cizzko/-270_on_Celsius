@@ -2,9 +2,9 @@ package core.UI.GUI.Menu;
 
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.CreateElement;
+import core.World.Textures.SimpleColor;
 import java.awt.*;
 import java.net.URI;
-
 import static core.EventHandling.Logging.Json.getName;
 import static core.EventHandling.Logging.Logger.log;
 import static core.UI.GUI.CreateElement.*;
@@ -17,9 +17,9 @@ public class Main {
         createPanel(0, 965, 1920, 115, "defPan", true, "MainMenu");
 
         CreateElement.createPictureButton(1830, 990, defPath + "\\src\\assets\\UI\\discordIcon.png", "DiscordButton", "MainMenu", Main::discordBtn);
-        createButton(822, 990, 240, 65, getName("Exit"), null, false, new Color(236, 236, 236, 55), "MainMenu", Main::exitBtn);
-        createButton(548, 990, 240, 65, getName("Settings"), null, false, new Color(236, 236, 236, 55), "MainMenu", Main::settingsBtn);
-        createButton(46, 990, 240, 65, getName("Play"), null, false, new Color(255, 80, 0, 55), "MainMenu", Main::playBtn);
+        createButton(822, 990, 240, 65, getName("Exit"), null, false, new SimpleColor(236, 236, 236, 55), "MainMenu", Main::exitBtn);
+        createButton(548, 990, 240, 65, getName("Settings"), null, false, new SimpleColor(236, 236, 236, 55), "MainMenu", Main::settingsBtn);
+        createButton(46, 990, 240, 65, getName("Play"), null, false, new SimpleColor(255, 80, 0, 55), "MainMenu", Main::playBtn);
     }
 
     public static void delete() {

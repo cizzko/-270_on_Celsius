@@ -1,6 +1,8 @@
 package core.World.Textures;
 
 import core.World.HitboxMap;
+import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
+import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 import java.awt.geom.Point2D;
 import java.io.Serializable;
 import static core.World.WorldGenerator.*;
@@ -52,10 +54,10 @@ public class DynamicWorldObjects implements Serializable {
 
         for (int worldX = 0; worldX < sizeX; worldX++) {
             for (int worldY = 1; worldY < SizeY - 2; worldY++) {
-                StaticWorldObjects objUp = StaticObjects[(int) (x / 16 + worldX)][worldY + 1];
-                StaticWorldObjects obj = StaticObjects[(int) (x / 16 + worldX)][worldY];
+                StaticWorldObjects objUp = getObject((int) (x / 16 + worldX), worldY + 1);
+                StaticWorldObjects obj = getObject((int) (x / 16 + worldX), worldY);
 
-                if (!objUp.solid && obj.solid && obj.y > y) {
+                if (objUp != null && objUp.getType() != StaticObjectsConst.Types.SOLID && obj.getType() == StaticObjectsConst.Types.SOLID && obj.y > y) {
                     y = objUp.y;
                 }
             }

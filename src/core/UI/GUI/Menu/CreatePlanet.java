@@ -1,5 +1,6 @@
 package core.UI.GUI.Menu;
 
+import core.World.Textures.SimpleColor;
 import core.World.WorldGenerator;
 
 import java.awt.*;
@@ -17,12 +18,12 @@ public class CreatePlanet {
         createPicture(1460, 620, 1, "planetBackground", defPath + "\\src\\assets\\World\\worldGenerator\\skyBackgroundPlanet.png", "WorldGenerator");
         createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\worldGenerator\\planetMini.png", "WorldGenerator");
 
-        createButton(1460, 260, 420, 67, getName("GenerateWorld"), null, true, new Color(255, 80, 0, 55), "WorldGenerator", WorldGenerator::generateWorld);
-        createSwapButton(70, 980, 32, 32, getName("GenerateSimpleWorld"), getName("GenerateSimpleWorldPrompt"), false, new Color(236, 236, 236, 55), "WorldGenerator");
-        createSwapButton(70, 910, 32, 32, getName("GenerateCreatures"), getName("GenerateCreaturesPrompt"), false, new Color(236, 236, 236, 55), true, "WorldGenerator");
-        createSwapButton(70, 840, 32, 32, getName("RandomSpawn"), getName("RandomSpawnPrompt"), false, new Color(236, 236, 236, 55), "WorldGenerator");
+        createButton(1460, 260, 420, 67, getName("GenerateWorld"), null, true, new SimpleColor(255, 80, 0, 55), "WorldGenerator", WorldGenerator::generateWorld);
+        createSwapButton(70, 980, 32, 32, getName("GenerateSimpleWorld"), getName("GenerateSimpleWorldPrompt"), false, new SimpleColor(236, 236, 236, 55), "WorldGenerator");
+        createSwapButton(70, 910, 32, 32, getName("GenerateCreatures"), getName("GenerateCreaturesPrompt"), false, new SimpleColor(236, 236, 236, 55), true, "WorldGenerator");
+        createSwapButton(70, 840, 32, 32, getName("RandomSpawn"), getName("RandomSpawnPrompt"), false, new SimpleColor(236, 236, 236, 55), "WorldGenerator");
 
-        createSlider(1460, 340, 420, 20, 2500, "worldSize", new Color(40, 40, 40, 240), new Color(255, 80, 0, 119));
+        createSlider(1460, 340, 420, 20, 2500, "worldSize", new SimpleColor(40, 40, 40, 240), new SimpleColor(255, 80, 0, 119));
     }
 
     public static void delete() {

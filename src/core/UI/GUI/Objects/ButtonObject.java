@@ -1,16 +1,16 @@
 package core.UI.GUI.Objects;
 
-import java.awt.*;
+import core.World.Textures.SimpleColor;
 
 public class ButtonObject {
     public boolean visible, isClicked, simple, swapButton, isClickable;
     public int x, y, width, height;
     public long lastClickTime;
-    public Color color;
+    public SimpleColor color;
     public String name, prompt, group, path;
     public Runnable taskOnClick;
 
-    public ButtonObject(boolean simple, boolean swapButton, int x, int y, int height, int width, String name, String prompt, Color color, String group, Runnable taskOnClick) {
+    public ButtonObject(boolean simple, boolean swapButton, int x, int y, int height, int width, String name, String prompt, SimpleColor color, String group, Runnable taskOnClick) {
         if (group == null) {
             group = "None";
         }

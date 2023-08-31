@@ -1,5 +1,5 @@
 package core.World.Creatures.Player.Inventory.Items.Placeable;
-import core.World.Textures.StaticWorldObjects;
+import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 
 public class PlaceableItems {
     public StaticWorldObjects staticWorldObject;
