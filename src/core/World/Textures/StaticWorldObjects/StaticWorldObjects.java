@@ -46,6 +46,10 @@ public class StaticWorldObjects implements Serializable {
         return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).objectName : "";
     }
 
+    public String getFileName() {
+        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).originalFileName : null;
+    }
+
     public StaticObjectsConst.Types getType() {
         return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).type : null;
     }

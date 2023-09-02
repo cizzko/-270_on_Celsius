@@ -95,9 +95,9 @@ public class Player {
     }
 
     private static void updatePlaceableBlock(PlaceableItems placeable, int blockX, int blockY) {
-        if (placeable.staticWorldObject != null && (getObject(blockX, blockY + 1).getType() == StaticObjectsConst.Types.SOLID || getObject(blockX, blockY - 1).getType() == StaticObjectsConst.Types.SOLID || getObject(blockX + 1, blockY).getType() == StaticObjectsConst.Types.SOLID || getObject(blockX - 1, blockY).getType() == StaticObjectsConst.Types.SOLID)) {
+        if (placeable.staticWorldObject != null && getObject(blockX, blockY).getType() == StaticObjectsConst.Types.GAS && (getObject(blockX, blockY + 1).getType() == StaticObjectsConst.Types.SOLID || getObject(blockX, blockY - 1).getType() == StaticObjectsConst.Types.SOLID || getObject(blockX + 1, blockY).getType() == StaticObjectsConst.Types.SOLID || getObject(blockX - 1, blockY).getType() == StaticObjectsConst.Types.SOLID)) {
             decrementItem(currentObject.x, currentObject.y);
-            setObject(blockX, blockY, new StaticWorldObjects(placeable.staticWorldObject.getName(), blockX * 16, blockY * 16));
+            setObject(blockX, blockY, new StaticWorldObjects(placeable.staticWorldObject.getFileName(), blockX * 16, blockY * 16));
             ShadowMap.update();
         }
     }
@@ -110,31 +110,33 @@ public class Player {
             int blockY = getBlockUnderMousePoint().y;
             StaticWorldObjects object = getObject(getBlockUnderMousePoint().x, getBlockUnderMousePoint().y);
 
-            if (!lastDestroySet) {
-                SimpleColor color = ShadowMap.getSimpleColor(blockX, blockY);
-                int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
+            if (object != null) {
+                if (!lastDestroySet) {
+                    SimpleColor color = ShadowMap.getSimpleColor(blockX, blockY);
+                    int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
 
-                lastDestroySet = true;
-                lastDestroyIndexX = blockX;
-                lastDestroyIndexY = blockY;
+                    lastDestroySet = true;
+                    lastDestroyIndexX = blockX;
+                    lastDestroyIndexY = blockY;
 
-                if (ShadowMap.colorDegree[blockX][blockY] == 0 && getDistanceUMB() <= tool.maxInteractionRange) {
-                    ShadowMap.setColor(blockX, blockY, new SimpleColor(Math.max(0, a - 150), Math.max(0, a - 150), a, 255));
-                } else {
-                    ShadowMap.setColor(blockX, blockY, new SimpleColor(a, Math.max(0, a - 150), Math.max(0, a - 150), 255));
+                    if (ShadowMap.colorDegree[blockX][blockY] == 0 && getDistanceUMB() <= tool.maxInteractionRange) {
+                        ShadowMap.setColor(blockX, blockY, new SimpleColor(Math.max(0, a - 150), Math.max(0, a - 150), a, 255));
+                    } else {
+                        ShadowMap.setColor(blockX, blockY, new SimpleColor(a, Math.max(0, a - 150), Math.max(0, a - 150), 255));
+                    }
                 }
-            }
-            if (blockX != lastDestroyIndexX || blockY != lastDestroyIndexY) {
-                lastDestroySet = false;
-                ShadowMap.update();
-            }
-            if (EventHandler.getMousePress() && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getDistanceUMB() <= tool.maxInteractionRange && object.currentHp > 0 && ShadowMap.colorDegree[blockX][blockY] == 0) {
-                tool.lastHitTime = System.currentTimeMillis();
-                object.currentHp -= tool.damage;
+                if (blockX != lastDestroyIndexX || blockY != lastDestroyIndexY) {
+                    lastDestroySet = false;
+                    ShadowMap.update();
+                }
+                if (EventHandler.getMousePress() && object.id != 0 && !object.getFileName().equals("Gas") && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getDistanceUMB() <= tool.maxInteractionRange && object.currentHp > 0 && ShadowMap.colorDegree[blockX][blockY] == 0) {
+                    tool.lastHitTime = System.currentTimeMillis();
+                    object.currentHp -= tool.damage;
 
-                if (object.currentHp <= 0 && !object.getName().equals("Gas")) {
-                    //createElementPlaceable(new StaticWorldObjects(object.getName(), object.x, object.y), "none");
-                    object.destroyObject();
+                    if (object.currentHp <= 0) {
+                        createElementPlaceable(new StaticWorldObjects(object.getFileName(), object.x, object.y), "none");
+                        object.destroyObject();
+                    }
                 }
             }
         }

@@ -7,7 +7,7 @@ import core.UI.GUI.Fonts;
 import core.UI.GUI.Menu.Main;
 import core.EventHandling.Logging.Logger;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.Tools;
+import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureLoader;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -69,8 +69,6 @@ public class Window {
     }
 
     public void draw() {
-        Inventory.createElementTool(new Tools(100, 50, 300, 10), "D:\\-270_On_Celsius\\-270_on_Celsius\\src\\assets\\UI\\GUI\\checkMarkFalse.png", "D:\\-270_On_Celsius\\-270_on_Celsius\\src\\assets\\UI\\GUI\\checkMarkFalse.png");
-
         log("Thread: Main thread started drawing");
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);

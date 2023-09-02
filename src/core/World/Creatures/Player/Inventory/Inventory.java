@@ -110,7 +110,6 @@ public class Inventory {
 
         if (findCountID(id) > 1) {
             Point cell = findItemByID(id);
-
             inventoryObjects[cell.x][cell.y].countInCell++;
             return;
         }

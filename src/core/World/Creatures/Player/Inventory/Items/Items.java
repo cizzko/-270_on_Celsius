@@ -45,8 +45,8 @@ public class Items {
 
     public Items(PlaceableItems placeable, Types type, String description) {
         this.placeable = placeable;
-        this.id = placeable.hashCode();
-        //this.path = placeable.factoryObject != null ? placeable.factoryObject.path : placeable.staticWorldObject.path;
+        this.id = placeable.factoryObject != null ? placeable.factoryObject.path.hashCode() : placeable.staticWorldObject.id;
+        this.path = placeable.factoryObject != null ? placeable.factoryObject.path : placeable.staticWorldObject.getPath();
         this.zoom = findZoom(path);
         this.countInCell = Inventory.findCountID(id);
         this.type = type;

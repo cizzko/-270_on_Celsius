@@ -7,7 +7,7 @@ import static core.Window.defPath;
 public class StaticObjectsConst {
     private static final HashMap<Integer, StaticObjectsConst> constants = new HashMap<>();
     public float maxHp, density;
-    public String path, objectName;
+    public String path, originalFileName, objectName;
     public Types type;
 
     public enum Types {
@@ -17,16 +17,18 @@ public class StaticObjectsConst {
         PLASMA
     }
 
-    private StaticObjectsConst(float maxHp, float density, String path, String objectName, Types type) {
+    private StaticObjectsConst(float maxHp, float density, String path, String objectName, String originalFileName, Types type) {
         this.maxHp = maxHp;
         this.density = density;
         this.path = path;
         this.objectName = objectName;
+        this.originalFileName = originalFileName;
         this.type = type;
     }
 
     public static void setConst(String name, int id) {
         if (constants.get(id) == null) {
+            String originalName = name;
             name = (defPath + "\\src\\assets\\World\\ItemsJson\\Blocks\\" + name + ".properties");
 
             float maxHp = Float.parseFloat((String) Config.getProperties(name).get("MaxHp"));
@@ -36,15 +38,15 @@ public class StaticObjectsConst {
             String objectName = (String) Config.getProperties(name).get("Name");
 
             if (path == null || path.equals("null")) {
-                constants.put(id, new StaticObjectsConst(maxHp, density, path, objectName, Enum.valueOf(Types.class, enumType.toUpperCase())));
+                constants.put(id, new StaticObjectsConst(maxHp, density, path, objectName, originalName, Enum.valueOf(Types.class, enumType.toUpperCase())));
             } else {
-                constants.put(id, new StaticObjectsConst(maxHp, density, defPath + path, objectName, Enum.valueOf(Types.class, enumType.toUpperCase())));
+                constants.put(id, new StaticObjectsConst(maxHp, density, defPath + path, objectName, originalName, Enum.valueOf(Types.class, enumType.toUpperCase())));
             }
         }
     }
 
     public static void setDestroyed() {
-        constants.put(0, new StaticObjectsConst(0, 0, null, "Destroyed", Types.GAS));
+        constants.put(0, new StaticObjectsConst(0, 0, null, "Destroyed", null, Types.GAS));
     }
 
     public static StaticObjectsConst getConst(int id) {

@@ -31,13 +31,17 @@ public class Commandline {
             }
         }
 
-        if (target.contains("modify")) {
+        if (target.startsWith("modify")) {
             target = target.substring(7);
             modifyField(target);
 
-        } else if (target.contains("start")) {
+        } else if (target.startsWith("start")) {
             target = target.substring(6);
             startMethod(target);
+
+        } else if (target.startsWith("eval")) {
+            final String[] targetMethod = target.split(" ");
+            new Thread(() -> EventHandler.keyLoggingText = ImportClassMethod.startMethod(targetMethod[1], targetMethod[targetMethod.length - 1], null, null)).start();
         }
     }
 

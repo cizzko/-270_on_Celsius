@@ -8,18 +8,16 @@ import java.lang.reflect.Method;
 
 public class ImportClassMethod {
 
-    public static Object startMethod(String classPath, String methodName, Object[] args, Class<?> implementsClass) {
+    public static String startMethod(String classPath, String methodName, Object[] args, Class<?> implementsClass) {
         try {
             JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
             int result = compiler.run(null, null, null, classPath);
+
             if (result != 0) {
                 throw new RuntimeException("Error at compiling .java file");
             }
 
-            String fileName = new File(classPath).getName();
-            int index = fileName.lastIndexOf('.');
-            String className = fileName.substring(0, index);
-            Class<?> loadedClass = Class.forName(className);
+            Class<?> loadedClass = Class.forName(classPath.replace("\\", ".").replaceAll(".*src\\.", "").replace(".java", ""));
 
             if (implementsClass != null && !implementsClass.isAssignableFrom(loadedClass)) {
                 throw new RuntimeException("Class at path: '" + classPath + "' not implements class: '" + implementsClass + "'");
@@ -34,15 +32,23 @@ public class ImportClassMethod {
                     argTypes[i] = args[i].getClass();
                 }
                 method = loadedClass.getMethod(methodName, argTypes);
-                return method.invoke(instance, args);
+                Object startResult = method.invoke(instance, args);
+
+                return startResult == null ? "Successfully" : "Returned: " + startResult;
             } else {
                 method = loadedClass.getMethod(methodName);
-                return method.invoke(instance);
+                Object startResult = method.invoke(instance);
+
+                return startResult == null ? "Successfully" : "Returned: " + startResult;
             }
 
         } catch (Exception e) {
             Logger.log("Some error at start method, class path: '" + classPath + "', method: '" + methodName + "', exception: '" + e + "'");
-            return null;
         }
+        return null;
+    }
+
+    public static void deleteFile(String path) {
+        new File(path).delete();
     }
 }
