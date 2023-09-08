@@ -46,16 +46,11 @@ public class Saves {
 
     public static void loadWorldSave(String path) {
         HashMap<String, Object> data = new HashMap<>();
-        try {
-            FileInputStream fis = new FileInputStream(path);
+        try (FileInputStream fis = new FileInputStream(path);
             InflaterInputStream iis = new InflaterInputStream(fis);
-            ObjectInputStream ois = new ObjectInputStream(iis);
+            ObjectInputStream ois = new ObjectInputStream(iis)) {
 
             data = (HashMap<String, Object>) ois.readObject();
-
-            ois.close();
-            iis.close();
-            fis.close();
         } catch (Exception e) {
             log("Error at load world save: '" + e + "', path: " + path);
         }

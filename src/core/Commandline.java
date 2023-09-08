@@ -18,6 +18,10 @@ public class Commandline {
     public static boolean created = false;
 
     private static void startReflection(String target) {
+        if (target.equalsIgnoreCase("help")) {
+            keyLoggingText = "Prefix: " + prefix + ", write '" + prefix + " help'";
+            return;
+        }
         if (target.startsWith(prefix)) {
             target = Config.getFromFC(target.substring(prefix.length() + 1));
 

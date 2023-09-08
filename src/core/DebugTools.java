@@ -10,7 +10,9 @@ import core.UI.GUI.CreateElement;
 import core.World.Creatures.Player.Player;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.SimpleColor;
+import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
+import core.World.Textures.StaticWorldObjects.Structures;
 import core.World.WorldGenerator;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -44,25 +46,13 @@ public class DebugTools {
                         CreateElement.createPanel(lastMousePos.x, lastMousePos.y, EventHandler.getMousePos().x - lastMousePos.x, EventHandler.getMousePos().y - lastMousePos.y, "debugPanel", true, "debugModule");
                     }
                     if (mousePressed && !EventHandler.getMousePress()) {
-                        StaticWorldObjects[][] objects = new StaticWorldObjects[Player.getBlockUnderMousePoint().x - lastMousePosBlocks.x][Player.getBlockUnderMousePoint().y - lastMousePosBlocks.y];
                         mousePressed = false;
-
                         CreateElement.panels.get("debugPanel").visible = false;
 
-                        for (int x = lastMousePosBlocks.x; x < Player.getBlockUnderMousePoint().x; x++) {
-                            for (int y = lastMousePosBlocks.y; y < Player.getBlockUnderMousePoint().y; y++) {
-                                if (x < WorldGenerator.SizeX && y < WorldGenerator.SizeY && x > 0 && y > 0 && getObject(x, y) != null && getObject(x, y).id != 0) {
-                                    if (selectionBlocksDelete) {
-                                        getObject(x, y).destroyObject();
-                                    } else if (selectionBlocksCopy) {
-                                        ShadowMap.setColor(x, y, new SimpleColor(0, 0, 255, 255));
-                                        objects[x - lastMousePosBlocks.x][y - lastMousePosBlocks.y] = getObject(x, y);
-                                    }
-                                }
-                            }
-                        }
                         if (selectionBlocksCopy) {
-                            saveStructure(objects);
+                            copy();
+                        } else if (selectionBlocksDelete) {
+                            delete();
                         }
                     }
                 }
@@ -70,12 +60,46 @@ public class DebugTools {
         }).start();
     }
 
-    private static void saveStructure(StaticWorldObjects[][] objects) {
+    private static void copy() {
+        int lowestSolidBlock = -1;
+        int startX = lastMousePosBlocks.x;
+        int startY = lastMousePosBlocks.y;
+        int targetX = Player.getBlockUnderMousePoint().x;
+        int targetY = Player.getBlockUnderMousePoint().y;
+
+        StaticWorldObjects[][] objects = new StaticWorldObjects[targetX - startX][targetY - startY];
+
+        for (int x = startX; x < targetX; x++) {
+            for (int y = startY; y < targetY; y++) {
+                if (x < WorldGenerator.SizeX && y < WorldGenerator.SizeY && x > 0 && y > 0 && getObject(x, y) != null && getObject(x, y).id != 0) {
+                    ShadowMap.setColor(x, y, new SimpleColor(0, 0, 255, 255));
+                    objects[x - startX][y - startY] = getObject(x, y);
+
+                    if (lowestSolidBlock == -1 && y == startY && objects[x - startX][y - startY].getType() == StaticObjectsConst.Types.SOLID) {
+                        lowestSolidBlock = x;
+                    }
+                }
+            }
+        }
+        saveStructure(new Structures(lowestSolidBlock, objects));
+    }
+
+    private static void delete() {
+        for (int x = lastMousePosBlocks.x; x < Player.getBlockUnderMousePoint().x; x++) {
+            for (int y = lastMousePosBlocks.y; y < Player.getBlockUnderMousePoint().y; y++) {
+                if (x < WorldGenerator.SizeX && y < WorldGenerator.SizeY && x > 0 && y > 0 && getObject(x, y) != null && getObject(x, y).id != 0) {
+                    getObject(x, y).destroyObject();
+                }
+            }
+        }
+    }
+
+    private static void saveStructure(Structures data) {
         Logger.log("Start saving structure..");
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(objects);
+            oos.writeObject(data);
             oos.close();
             byte[] bytes = baos.toByteArray();
 

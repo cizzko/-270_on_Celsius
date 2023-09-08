@@ -9,6 +9,7 @@ import core.World.HitboxMap;
 import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 import static core.EventHandling.EventHandler.getMousePos;
+import static core.Window.defPath;
 import static core.World.Textures.TextureDrawing.drawTexture;
 import static core.World.WorldGenerator.*;
 
@@ -67,7 +68,7 @@ public class Bullets {
                     bullet.y += deltaY;
                     bullet.damage -= 0.01f;
 
-                    StaticWorldObjects staticObject = HitboxMap.checkIntersectionsInside(x, y, 8, 8);
+                    StaticWorldObjects staticObject = HitboxMap.checkIntersInside(x, y, 8, 8);
                     DynamicWorldObjects dynamicObject = HitboxMap.checkIntersectionsDynamic(x, y, 8, 8);
 
                     if (staticObject != null) {
@@ -100,7 +101,7 @@ public class Bullets {
         for (Bullets bullet : bullets) {
             //TODO: дописать пути нормальные
             if (bullet != null && !(bullet.x > DynamicObjects.get(0).x + 350 || bullet.x < DynamicObjects.get(0).x - 350)) {
-                drawTexture("D:\\-270_On_Celsius\\-270_on_Celsius\\src\\assets\\World\\Items\\someBullet.png", bullet.x, bullet.y, 3, false);
+                drawTexture(defPath + "\\src\\assets\\World\\Items\\someBullet.png", bullet.x, bullet.y, 3, false);
             }
         }
     }

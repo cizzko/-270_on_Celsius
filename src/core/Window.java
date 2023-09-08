@@ -6,8 +6,6 @@ import core.EventHandling.MouseScrollCallback;
 import core.UI.GUI.Fonts;
 import core.UI.GUI.Menu.Main;
 import core.EventHandling.Logging.Logger;
-import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureLoader;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;

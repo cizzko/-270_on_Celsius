@@ -63,7 +63,7 @@ public class Player {
             if (getMousePos().x > (Inventory.inventoryOpen ? 1488 : 1866) && getMousePos().y > 756) {
                 return;
             }
-            if (getObject(getBlockUnderMousePoint().x, getBlockUnderMousePoint().y).getType() != StaticObjectsConst.Types.GAS && EventHandler.getMousePress() && Player.getDistanceUMB() < 9) {
+            if (getObject(getBlockUnderMousePoint().x, getBlockUnderMousePoint().y).getType() == StaticObjectsConst.Types.GAS && EventHandler.getMousePress() && Player.getDistanceUMB() < 9) {
                 int blockX = getBlockUnderMousePoint().x;
                 int blockY = getBlockUnderMousePoint().y;
 
@@ -79,7 +79,7 @@ public class Player {
 
     private static void updatePlaceableFactory(PlaceableItems placeable, int blockX, int blockY) {
         if (placeable.factoryObject != null) {
-            StaticWorldObjects obj = HitboxMap.checkIntersectionsInside(blockX * 16, blockY * 16, TextureLoader.getSize(placeable.factoryObject.path).width, TextureLoader.getSize(placeable.factoryObject.path).height);
+            StaticWorldObjects obj = HitboxMap.checkIntersInside(blockX * 16, blockY * 16, TextureLoader.getSize(placeable.factoryObject.path).width, TextureLoader.getSize(placeable.factoryObject.path).height);
 
             if (obj == null || obj.getType() != StaticObjectsConst.Types.SOLID) {
                 Factories factory = placeable.factoryObject;

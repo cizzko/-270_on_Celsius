@@ -53,4 +53,12 @@ public class StaticWorldObjects implements Serializable {
     public StaticObjectsConst.Types getType() {
         return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).type : null;
     }
+
+    public float getResistance() {
+        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).resistance : null;
+    }
+
+    public float getLightTransmission() {
+        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).lightTransmission : null;
+    }
 }

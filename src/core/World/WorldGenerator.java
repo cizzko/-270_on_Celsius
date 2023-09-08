@@ -10,10 +10,16 @@ import core.World.Textures.ShadowMap;
 import core.World.Textures.SimpleColor;
 import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
+import core.World.Textures.StaticWorldObjects.Structures;
 import core.World.Weather.Sun;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.ObjectInputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.zip.InflaterInputStream;
 import static core.EventHandling.Logging.Logger.log;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.*;
@@ -22,6 +28,7 @@ public class WorldGenerator {
     public static int SizeX, SizeY;
     public static StaticWorldObjects[][] StaticObjects;
     public static ArrayList<DynamicWorldObjects> DynamicObjects = new ArrayList<>();
+    private static HashMap<String, Structures> structures = new HashMap<>();
 
     public static StaticWorldObjects getObject(int x, int y) {
         return StaticObjects[x][y];
@@ -44,28 +51,34 @@ public class WorldGenerator {
         WorldGenerator.SizeX = SizeX;
         WorldGenerator.SizeY = SizeY;
 
-        StaticObjectsConst.setDestroyed();
-        generateFlatWorld();
-        if (!simple) {
-            generateMountains();
-            smoothWorld();
-            fillHollows();
-        }
-        ShadowMap.generate();
-        generateResources();
+        generateBlocks(simple);
         generateDynamicsObjects(randomSpawn);
-        ShadowMap.generate();
-
-        Sun.createSun();
 
         log("World generator: generating done!\n");
         createText(42, 50, "generatingDone", "Done! Starting world..", new SimpleColor(147, 51, 0, 255), "WorldGeneratorState");
 
+        Sun.createSun();
         start(creatures);
     }
 
-    private static void da(byte s) {
+    private static void generateBlocks(boolean simple) {
+        StaticObjectsConst.setDestroyed();
+        generateFlatWorld();
 
+        if (simple) {
+            ShadowMap.generate();
+            generateResources();
+
+        } else {
+            generateMountains();
+            smoothWorld();
+            fillHollows();
+
+            ShadowMap.generate();
+            generateResources();
+            generateEnvironment();
+            ShadowMap.generate();
+        }
     }
 
     private static void generateFlatWorld() {
@@ -80,6 +93,39 @@ public class WorldGenerator {
                     setObject(x, y, new StaticWorldObjects("Grass", x * 16, y * 16));
                 }
             }
+        }
+    }
+
+    private static void loadAllStructures() {
+        File folder = new File(defPath + "\\src\\assets\\World\\Saves");
+
+        if (folder.exists() && folder.isDirectory()) {
+            getAllFilePaths(folder);
+        }
+    }
+
+    private static void getAllFilePaths(File folder) {
+        File[] files = folder.listFiles();
+
+        if (files != null) {
+            for (File file : files) {
+                if (file.isFile()) {
+                    loadStructure(file.getAbsolutePath());
+                } else if (file.isDirectory()) {
+                    getAllFilePaths(file);
+                }
+            }
+        }
+    }
+
+    private static void loadStructure(String path) {
+        try (FileInputStream fis = new FileInputStream(path);
+             InflaterInputStream iis = new InflaterInputStream(fis);
+             ObjectInputStream ois = new ObjectInputStream(iis)) {
+
+            structures.put(path, (Structures) ois.readObject());
+        } catch (Exception e) {
+            log("Error when load structure: " + e);
         }
     }
 
@@ -180,6 +226,23 @@ public class WorldGenerator {
         return isClosed;
     }
 
+    public static void createStructure(int cellX, int cellY, String path) {
+        if (structures.get(path) != null) {
+            StaticWorldObjects[][] objects = structures.get(path).blocks;
+
+            for (int x = 0; x < objects.length; x++) {
+                for (int y = 0; y < objects[x].length; y++) {
+                    if (cellX + x < SizeX && cellY + y < SizeY && cellX + x > 0 && cellY + y > 0 && objects[x][y] != null && objects[x][y].id != 0 && objects[x][y].getType() != StaticObjectsConst.Types.GAS) {
+                        setObject(cellX + x, cellY + y, new StaticWorldObjects(objects[x][y].getFileName(), (cellX + x) * 16, (cellY + y) * 16));
+                    }
+                }
+            }
+        } else {
+            loadStructure(path);
+            createStructure(cellX, cellY, path);
+        }
+    }
+
     private static void fillAreaWithGrass(List<int[]> area) {
         for (int[] coord : area) {
             int x = coord[0];
@@ -190,6 +253,73 @@ public class WorldGenerator {
 
     private static void generateCanyons() {
 
+    }
+
+    private static void generateEnvironment() {
+        loadAllStructures();
+        generateTrees();
+    }
+
+    private static void generateTrees() {
+        byte[] forests = new byte[SizeX];
+        float lastForest = 0;
+        float lastForestSize = 0;
+
+        //(максимальный размер + минимальный) не должны превышать 127
+        float chance = 80;
+        float maxForestSize = 20;
+        float minForestSize = 2;
+
+        //первый этап - сажает семечки для лесов и задает размер
+        for (int x = 0; x < SizeX; x++) {
+            if (Math.random() * chance < 1 && lastForest != x && lastForest + lastForestSize < x) {
+                forests[x] = (byte) ((Math.random() * maxForestSize) + minForestSize);
+                lastForest = x;
+                lastForestSize = (float) ((forests[x] * Math.random() * 8) + 4);
+            }
+        }
+
+        //второй этап - сажает деревья по семечкам
+        for (int x = 0; x < forests.length; x++) {
+            if (forests[x] > 0) {
+                for (int i = 0; i < forests[x]; i++) {
+                    int distance = (int) ((Math.random() * 8) + 4);
+                    int xTree = (x - 4) + (i * distance);
+                    int yTree = findFreeVerticalCell(x + (i * distance));
+                    final String path = defPath + "\\src\\assets\\World\\Saves\\tree" + (int) (Math.random() * 2) + ".ser";
+
+                    if (yTree != -1 && xTree + (i * distance) < forests.length && !checkInterInsideSolid(xTree, yTree, path)) {
+                        createStructure(xTree, yTree, path);
+                    }
+                }
+            }
+        }
+    }
+
+    private static boolean checkInterInsideSolid(int xCell, int yCell, String path) {
+        int width = structures.get(path).blocks.length;
+        int height = structures.get(path).blocks[0].length;
+        StaticWorldObjects[][] objects = structures.get(path).blocks;
+
+        for (int x = xCell; x < xCell + width; x++) {
+            for (int y = yCell; y < yCell + height; y++) {
+                if (x > 0 && y > 0 && x < SizeX && y < SizeY && getObject(x, y) != null && getObject(x, y).getType() == StaticObjectsConst.Types.SOLID && objects[x - xCell][y - yCell].getType() == StaticObjectsConst.Types.SOLID) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static int findFreeVerticalCell(int x) {
+        if (x > 0 && x < SizeX) {
+            for (int y = 0; y < SizeY; y++) {
+                if (getObject(x, y) != null && getObject(x, y).getType() == StaticObjectsConst.Types.GAS) {
+                    return y;
+                }
+            }
+        }
+        return -1;
     }
 
     private static void generateResources() {
@@ -212,7 +342,7 @@ public class WorldGenerator {
                 }
 
                 if (ShadowMap.colorDegree[x][y] == 2) { // Генерация перехода между землёй и камнем
-                    if (getObject(x, y + 1) != null && !getObject(x, y + 1).getName().equals("DirtStone")) {
+                    if (getObject(x, y + 1) != null && !getObject(x, y + 1).getFileName().equals("DirtStone")) {
                         setObject(x, y, new StaticWorldObjects("DirtStone", x * 16, y * 16));
                     }
                 }
