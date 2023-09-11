@@ -55,11 +55,11 @@ public class Saves {
             log("Error at load world save: '" + e + "', path: " + path);
         }
 
-        StaticWorldObjects[][] objects = (StaticWorldObjects[][]) data.get("StaticWorldObjects");
+        StaticWorldObjects[] objects = (StaticWorldObjects[]) data.get("StaticWorldObjects");
 
         WorldGenerator.SizeY = objects.length;
         WorldGenerator.SizeX = objects.length;
-        WorldGenerator.StaticObjects = objects;
+
         WorldGenerator.DynamicObjects = (ArrayList<DynamicWorldObjects>) data.get("DynamicWorldObjects");
 
         WorldGenerator.start((Boolean) data.get("WorldGeneratorCreatures"));

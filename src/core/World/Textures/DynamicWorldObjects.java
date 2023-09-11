@@ -70,7 +70,7 @@ public class DynamicWorldObjects implements Serializable {
     }
 
     public void jump(float impulse) {
-        if (HitboxMap.checkIntersStaticD(x, y, TextureLoader.getSize(path).width, TextureLoader.getSize(path).height)) {
+        if (HitboxMap.checkIntersStaticD(x, y, TextureLoader.getSize(path).width, TextureLoader.getSize(path).height) && motionVector.y == 0) {
             motionVector.y += impulse;
         }
     }

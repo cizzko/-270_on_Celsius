@@ -479,13 +479,13 @@ public class TextureDrawing {
 
                 if (isOnCamera(xBlock, yBlock, 16, 16)) {
                     if (obj.currentHp > obj.getMaxHp() / 1.5f) {
-                        drawTexture(obj.getPath(), xBlock, yBlock, 3f, ShadowMap.getSimpleColor(x, y), false, false);
+                        drawTexture(obj.getPath(), xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
 
                     } else if (obj.currentHp < obj.getMaxHp() / 3) {
-                        drawMultiTexture(obj.getPath(), defPath + "\\src\\assets\\World\\blocks\\damaged2.png", xBlock, yBlock, 3f, ShadowMap.getSimpleColor(x, y), false, false);
+                        drawMultiTexture(obj.getPath(), defPath + "\\src\\assets\\World\\blocks\\damaged2.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
 
                     } else {
-                        drawMultiTexture(obj.getPath(), defPath + "\\src\\assets\\World\\blocks\\damaged1.png", xBlock, yBlock, 3f, ShadowMap.getSimpleColor(x, y), false, false);
+                        drawMultiTexture(obj.getPath(), defPath + "\\src\\assets\\World\\blocks\\damaged1.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
                     }
                 }
             }
@@ -517,7 +517,7 @@ public class TextureDrawing {
                 dynamicObject.onCamera = !(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top);
 
                 if (dynamicObject.onCamera && dynamicObject.framesCount == 1) {
-                    drawTexture(dynamicObject.path, dynamicObject.x, dynamicObject.y, 3, ShadowMap.getSimpleColorDynamic(x), false, dynamicObject.mirrored);
+                    drawTexture(dynamicObject.path, dynamicObject.x, dynamicObject.y, 3, ShadowMap.getColorDynamic(x), false, dynamicObject.mirrored);
                 }
                 if (dynamicObject.onCamera && dynamicObject.framesCount != 1 && dynamicObject.animSpeed != 0) {
                     if (dynamicObject.currentFrame != dynamicObject.framesCount && System.currentTimeMillis() - dynamicObject.lastFrameTime >= dynamicObject.animSpeed * 1000) {
@@ -528,9 +528,9 @@ public class TextureDrawing {
                         dynamicObject.lastFrameTime = System.currentTimeMillis();
                     }
 
-                    drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, ShadowMap.getSimpleColorDynamic(x), false, dynamicObject.mirrored);
+                    drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, ShadowMap.getColorDynamic(x), false, dynamicObject.mirrored);
                 } else if (dynamicObject.onCamera && dynamicObject.framesCount != 1) {
-                    drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, ShadowMap.getSimpleColorDynamic(x), false, dynamicObject.mirrored);
+                    drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, ShadowMap.getColorDynamic(x), false, dynamicObject.mirrored);
                 }
             }
         }

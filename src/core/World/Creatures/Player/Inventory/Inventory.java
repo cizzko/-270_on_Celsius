@@ -28,6 +28,11 @@ public class Inventory {
     public static void create() {
         create = true;
         BuildMenu.create();
+        createDefaultItems();
+    }
+
+    private static void createDefaultItems() {
+        Inventory.createElementTool(new Tools(200, 20, 200, 8), defPath + "\\src\\assets\\World\\Items\\hammer.png", "");
     }
 
     public static void update() {

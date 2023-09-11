@@ -22,11 +22,10 @@ import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Player {
-    public static boolean noClip = false, lastDestroySet = false;
-    private static int lastDestroyIndexX = 0, lastDestroyIndexY = 0;
+    public static boolean noClip = false;
 
     public static void updatePlayerJump() {
-        if (EventHandler.getKeyClick(GLFW_KEY_SPACE)) {
+        if (EventHandler.getKey(GLFW_KEY_SPACE)) {
             DynamicObjects.get(0).jump(0.45f);
         }
     }
@@ -51,10 +50,7 @@ public class Player {
 
     public static void updateInventoryInteraction() {
         if (currentObject != null) {
-            new Thread(() -> {
-                updatePlaceableInteraction();
-                updateToolInteraction();
-            }).start();
+            updatePlaceableInteraction();
         }
     }
 
@@ -110,33 +106,24 @@ public class Player {
             int blockY = getBlockUnderMousePoint().y;
             StaticWorldObjects object = getObject(getBlockUnderMousePoint().x, getBlockUnderMousePoint().y);
 
-            if (object != null) {
-                if (!lastDestroySet) {
-                    SimpleColor color = ShadowMap.getSimpleColor(blockX, blockY);
-                    int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
+            if (object != null && object.getType() != StaticObjectsConst.Types.GAS) {
+                SimpleColor color = ShadowMap.getColor(blockX, blockY);
+                int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
 
-                    lastDestroySet = true;
-                    lastDestroyIndexX = blockX;
-                    lastDestroyIndexY = blockY;
+                if (getDistanceUMB() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
+                    TextureDrawing.drawTexture(object.getPath(), object.x, object.y, 3, new SimpleColor(Math.max(0, a - 150), Math.max(0, a - 150), a, 255), false, false);
 
-                    if (ShadowMap.colorDegree[blockX][blockY] == 0 && getDistanceUMB() <= tool.maxInteractionRange) {
-                        ShadowMap.setColor(blockX, blockY, new SimpleColor(Math.max(0, a - 150), Math.max(0, a - 150), a, 255));
-                    } else {
-                        ShadowMap.setColor(blockX, blockY, new SimpleColor(a, Math.max(0, a - 150), Math.max(0, a - 150), 255));
+                    if (EventHandler.getMousePress() && object.id != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && object.currentHp > 0) {
+                        tool.lastHitTime = System.currentTimeMillis();
+                        object.currentHp -= tool.damage;
+
+                        if (object.currentHp <= 0) {
+                            createElementPlaceable(new StaticWorldObjects(object.getFileName(), object.x, object.y), "none");
+                            object.destroyObject();
+                        }
                     }
-                }
-                if (blockX != lastDestroyIndexX || blockY != lastDestroyIndexY) {
-                    lastDestroySet = false;
-                    ShadowMap.update();
-                }
-                if (EventHandler.getMousePress() && object.id != 0 && !object.getFileName().equals("Gas") && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getDistanceUMB() <= tool.maxInteractionRange && object.currentHp > 0 && ShadowMap.colorDegree[blockX][blockY] == 0) {
-                    tool.lastHitTime = System.currentTimeMillis();
-                    object.currentHp -= tool.damage;
-
-                    if (object.currentHp <= 0) {
-                        createElementPlaceable(new StaticWorldObjects(object.getFileName(), object.x, object.y), "none");
-                        object.destroyObject();
-                    }
+                } else {
+                    TextureDrawing.drawTexture(object.getPath(), object.x, object.y, 3, new SimpleColor(a, Math.max(0, a - 150), Math.max(0, a - 150), 255), false, false);
                 }
             }
         }
@@ -165,6 +152,7 @@ public class Player {
             Inventory.update();
             Bullets.drawBullets();
             BuildMenu.draw();
+            updateToolInteraction();
         }
     }
 

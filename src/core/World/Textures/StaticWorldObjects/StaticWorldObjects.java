@@ -31,11 +31,11 @@ public class StaticWorldObjects implements Serializable {
         }
     }
     public float getMaxHp() {
-        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).maxHp : null;
+        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).maxHp : 0;
     }
 
     public float getDensity() {
-        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).density : null;
+        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).density : 0;
     }
 
     public String getPath() {
@@ -55,10 +55,10 @@ public class StaticWorldObjects implements Serializable {
     }
 
     public float getResistance() {
-        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).resistance : null;
+        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).resistance : 0;
     }
 
     public float getLightTransmission() {
-        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).lightTransmission : null;
+        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).lightTransmission : 0;
     }
 }

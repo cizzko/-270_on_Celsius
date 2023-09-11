@@ -26,16 +26,16 @@ import static core.Window.*;
 
 public class WorldGenerator {
     public static int SizeX, SizeY;
-    public static StaticWorldObjects[][] StaticObjects;
+    public static StaticWorldObjects[] StaticObjects;
     public static ArrayList<DynamicWorldObjects> DynamicObjects = new ArrayList<>();
     private static HashMap<String, Structures> structures = new HashMap<>();
 
     public static StaticWorldObjects getObject(int x, int y) {
-        return StaticObjects[x][y];
+        return StaticObjects[x + SizeX * y];
     }
 
     public static void setObject(int x, int y, StaticWorldObjects object) {
-        StaticObjects[x][y] = object;
+        StaticObjects[x + SizeX * y] = object;
     }
 
     public static void generateWorld() {
@@ -47,7 +47,7 @@ public class WorldGenerator {
 
         log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world at size: x - " + SizeX + ", y - " + SizeY + " (" + SizeX * SizeY + "); with arguments 'simple: " + simple + ", random spawn: " + randomSpawn + "'");
 
-        StaticObjects = new StaticWorldObjects[SizeX + 1][SizeY + 1];
+        StaticObjects = new StaticWorldObjects[(SizeX + 1) * (SizeY + 1)];
         WorldGenerator.SizeX = SizeX;
         WorldGenerator.SizeY = SizeY;
 
@@ -68,7 +68,6 @@ public class WorldGenerator {
         if (simple) {
             ShadowMap.generate();
             generateResources();
-
         } else {
             generateMountains();
             smoothWorld();
@@ -226,6 +225,7 @@ public class WorldGenerator {
         return isClosed;
     }
 
+    //start core.World.WorldGenerator.createStructure 173i 236i D:\-270_On_Celsius\-270_on_Celsius\src\assets\World\Saves\tree0.ser
     public static void createStructure(int cellX, int cellY, String path) {
         if (structures.get(path) != null) {
             StaticWorldObjects[][] objects = structures.get(path).blocks;
@@ -258,6 +258,7 @@ public class WorldGenerator {
     private static void generateEnvironment() {
         loadAllStructures();
         generateTrees();
+        structures.clear();
     }
 
     private static void generateTrees() {
@@ -283,12 +284,12 @@ public class WorldGenerator {
         for (int x = 0; x < forests.length; x++) {
             if (forests[x] > 0) {
                 for (int i = 0; i < forests[x]; i++) {
-                    int distance = (int) ((Math.random() * 8) + 4);
-                    int xTree = (x - 4) + (i * distance);
-                    int yTree = findFreeVerticalCell(x + (i * distance));
                     final String path = defPath + "\\src\\assets\\World\\Saves\\tree" + (int) (Math.random() * 2) + ".ser";
+                    int distance = (int) ((Math.random() * 8) + 4);
+                    int xTree = x + (i * distance);
+                    int yTree = findFreeVerticalCell(x + (i * distance));
 
-                    if (yTree != -1 && xTree + (i * distance) < forests.length && !checkInterInsideSolid(xTree, yTree, path)) {
+                    if (xTree > 0 && yTree > 0 && xTree < forests.length && !checkInterInsideSolid(xTree, yTree, path) && xTree + structures.get(path).lowestSolidBlock < SizeX && yTree - 1 < SizeY && getObject(xTree + structures.get(path).lowestSolidBlock, yTree - 1).getType() == StaticObjectsConst.Types.SOLID) {
                         createStructure(xTree, yTree, path);
                     }
                 }
@@ -333,15 +334,15 @@ public class WorldGenerator {
                     setObject(x, y, new StaticWorldObjects("Dirt", x * 16, y * 16));
                 }
 
-                if (ShadowMap.colorDegree[x][y] >= 3) { // Генерация камня
+                if (ShadowMap.getDegree(x, y) >= 3) { // Генерация камня
                     setObject(x, y, new StaticWorldObjects("Stone", x * 16, y * 16));
                 }
 
-                if (PerlinNoiseGenerator.noise[x][y] && ShadowMap.colorDegree[x][y] >= 3) { // Генерация руды
+                if (PerlinNoiseGenerator.noise[x][y] && ShadowMap.getDegree(x, y) >= 3) { // Генерация руды
                     setObject(x, y, new StaticWorldObjects("IronOre", x * 16, y * 16));
                 }
 
-                if (ShadowMap.colorDegree[x][y] == 2) { // Генерация перехода между землёй и камнем
+                if (ShadowMap.getDegree(x, y) == 2) { // Генерация перехода между землёй и камнем
                     if (getObject(x, y + 1) != null && !getObject(x, y + 1).getFileName().equals("DirtStone")) {
                         setObject(x, y, new StaticWorldObjects("DirtStone", x * 16, y * 16));
                     }

@@ -10,6 +10,7 @@ import core.UI.GUI.Objects.SliderObject;
 import core.Window;
 import core.World.Creatures.Player.Player;
 import core.World.Textures.SimpleColor;
+import core.World.WorldGenerator;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import java.awt.*;
@@ -63,11 +64,11 @@ public class EventHandler extends Thread {
     }
 
     public static boolean getKeyClick(int key) {
-        if (pressedButtons[key] && glfwGetKey(glfwWindow, key) == 0) {
-            pressedButtons[key] = false;
-            return true;
-        } else if (getKey(key)) {
+        if (!pressedButtons[key] && glfwGetKey(glfwWindow, key) == 1) {
             pressedButtons[key] = true;
+            return true;
+        } else if (!getKey(key)) {
+            pressedButtons[key] = false;
             return false;
         }
 
@@ -150,12 +151,8 @@ public class EventHandler extends Thread {
 
                 //a - z, 0 - 9
                 if (i <= 57 || i >= 65) {
-                    if (pressedButtons[i] && glfwGetKey(glfwWindow, i) == 0) {
+                    if (getKeyClick(i)) {
                         keyLoggingText += !getKey(GLFW_KEY_LEFT_SHIFT) ? glfwGetKeyName(i, 0) : glfwGetKeyName(i, 0).toUpperCase();
-                        pressedButtons[i] = false;
-
-                    } else if (!pressedButtons[i] && getKey(i)) {
-                        pressedButtons[i] = true;
                     }
                 }
             }
@@ -249,8 +246,11 @@ public class EventHandler extends Thread {
         if (Config.getFromConfig("Debug").equals("true") && System.currentTimeMillis() - lastSecond >= 1000) {
             lastSecond = System.currentTimeMillis();
 
-            CreateElement.createText(5, 985, "HandlerFPS", "Handler FPS: " + handlerUpdates, new SimpleColor(25, 25, 25, 255), null);
-            CreateElement.createText(5, 1020, "PhysicsFPS", "Physics FPS: " + updates, new SimpleColor(25, 25, 25, 255), null);
+            if (start) {
+                CreateElement.createText(5, 980, "PlayerPos", "Player pos: x - " + (int) WorldGenerator.DynamicObjects.get(0).x + "(" + (int) WorldGenerator.DynamicObjects.get(0).x / 16 + ") y - " + (int) WorldGenerator.DynamicObjects.get(0).y + "(" + (int) WorldGenerator.DynamicObjects.get(0).y / 16 + ")", new SimpleColor(25, 25, 25, 255), null);
+                CreateElement.createText(5, 1005, "PhysicsFPS", "Physics FPS: " + updates, new SimpleColor(25, 25, 25, 255), null);
+            }
+            CreateElement.createText(5, 1030, "HandlerFPS", "Handler FPS: " + handlerUpdates, new SimpleColor(25, 25, 25, 255), null);
             CreateElement.createText(5, 1055, "GameFPS", "Game FPS: " + fps, new SimpleColor(25, 25, 25, 255), null);
 
             handlerUpdates = 0;

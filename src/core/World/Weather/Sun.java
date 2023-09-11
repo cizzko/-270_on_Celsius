@@ -73,8 +73,8 @@ public class Sun {
         int deleteGradient = Math.max(0, Math.min(150, aGradient));
         int backGradient = Math.max(0, Math.min(255, aGradient));
 
-        ShadowMap.deleteAllSimpleColor(new SimpleColor(deleteGradient, deleteGradient, deleteGradient, 0));
-        ShadowMap.deleteAllSimpleColorDynamic(new SimpleColor(deleteGradient, deleteGradient, deleteGradient, 0));
+        ShadowMap.deleteAllColor(new SimpleColor(deleteGradient, deleteGradient, deleteGradient, 0));
+        ShadowMap.deleteAllColorDynamic(new SimpleColor(deleteGradient, deleteGradient, deleteGradient, 0));
 
         drawTexture(defPath + "\\src\\assets\\World\\sky\\skyBackground0.png", 0, 0, 1, new SimpleColor(255, 255, 255, backGradient), true, false);
     }
