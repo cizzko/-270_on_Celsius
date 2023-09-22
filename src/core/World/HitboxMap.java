@@ -2,8 +2,10 @@ package core.World;
 
 import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
-import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureLoader;
+import java.awt.*;
+import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.getResistance;
+import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.WorldGenerator.*;
 
 public class HitboxMap {
@@ -15,10 +17,10 @@ public class HitboxMap {
         int tarYSize = (int) Math.ceil(sizeY / 16f);
 
         for (int i = 0; i < tarYSize; i++) {
-            if (getObject(tarX + tarXSize, tarY + i + 1) == null) {
+            if (getObject(tarX + tarXSize, tarY + i + 1) == -1) {
                 return true;
             }
-            if (getObject(tarX + tarXSize, tarY + i + 1).getResistance() == 100 && x + sizeX >= (getObject(tarX + tarXSize, tarY + i + 1).getType() == StaticObjectsConst.Types.SOLID ? getObject(tarX + tarXSize, tarY + i + 1).x : SizeX * 16)) {
+            if (getResistance(getObject(tarX + tarXSize, tarY + i + 1)) == 100 && x + sizeX >= (getType(getObject(tarX + tarXSize, tarY + i + 1)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + i + 1) : SizeX * 16)) {
                 return true;
             }
         }
@@ -31,10 +33,10 @@ public class HitboxMap {
         int tarYSize = (int) Math.ceil(sizeY / 16f);
 
         for (int i = 0; i < tarYSize; i++) {
-            if (tarX < 0 || tarY < 0 || getObject(tarX, tarY + i + 1) == null) {
+            if (tarX < 0 || tarY < 0 || getObject(tarX, tarY + i + 1) == -1) {
                 return true;
             }
-            if (getObject(tarX, tarY + i + 1).getResistance() == 100 && getObject(tarX, tarY + i + 1).getType() == StaticObjectsConst.Types.SOLID) {
+            if (getResistance(getObject(tarX, tarY + i + 1)) == 100 && getType(getObject(tarX, tarY + i + 1)) == StaticObjectsConst.Types.SOLID) {
                 return true;
             }
         }
@@ -47,10 +49,10 @@ public class HitboxMap {
         int tarXSize = (int) Math.ceil(sizeX / 16f);
 
         for (int i = 0; i < tarXSize; i++) {
-            if (getObject(tarX + i, tarY) == null || getObject(tarX + tarXSize, tarY) == null) {
+            if (getObject(tarX + i, tarY) == -1 || getObject(tarX + tarXSize, tarY) == -1) {
                 return true;
             }
-            if (getObject(tarX + i, tarY).getResistance() == 100 && (y - sizeY <= (getObject(tarX + i, tarY).getType() == StaticObjectsConst.Types.SOLID ? getObject(tarX + i, tarY).y : 0)) || x + sizeX >= (getObject(tarX + tarXSize, tarY).getType() == StaticObjectsConst.Types.SOLID ? getObject(tarX + tarXSize, tarY).x : SizeX * 16)) {
+            if (getResistance(getObject(tarX + i, tarY)) == 100 && (y - sizeY <= (getType(getObject(tarX + i, tarY)) == StaticObjectsConst.Types.SOLID ? findY(tarX + i, tarY) : 0)) || x + sizeX >= (getType(getObject(tarX + tarXSize, tarY)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY) : SizeX * 16)) {
                 return true;
             }
         }
@@ -64,17 +66,17 @@ public class HitboxMap {
         int tarXSize = (int) Math.ceil(sizeX / 16f);
 
         for (int i = 0; i < tarXSize; i++) {
-            if (getObject(tarX + i, tarY + tarYSize) == null || getObject(tarX + tarXSize, tarY + tarYSize) == null) {
+            if (getObject(tarX + i, tarY + tarYSize) == -1 || getObject(tarX + tarXSize, tarY + tarYSize) == -1) {
                 return true;
             }
-            if (getObject(tarX + i, tarY + tarYSize).getResistance() == 100 && (y + sizeY >= (getObject(tarX + i, tarY + tarYSize).getType() == StaticObjectsConst.Types.SOLID ?getObject(tarX + i, tarY + tarYSize).y : SizeY * 16)) || x + sizeX >= (getObject(tarX + tarXSize, tarY + tarYSize).getType() == StaticObjectsConst.Types.SOLID ? getObject(tarX + tarXSize, tarY + tarYSize).x : SizeX * 16)) {
+            if (getResistance(getObject(tarX + i, tarY + tarYSize)) == 100 && (y + sizeY >= (getType(getObject(tarX + i, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID ? findY(tarX + i, tarY + tarYSize) : SizeY * 16)) || x + sizeX >= (getType(getObject(tarX + tarXSize, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + tarYSize) : SizeX * 16)) {
                 return true;
             }
         }
         return false;
     }
 
-    public static StaticWorldObjects checkIntersInside(float x, float y, int sizeX, int sizeY) {
+    public static Point checkIntersInside(float x, float y, int sizeX, int sizeY) {
         int tarX = (int) (x / 16);
         int tarY = (int) (y / 16);
         int tarYSize = (int) Math.ceil(sizeY / 16f);
@@ -82,18 +84,40 @@ public class HitboxMap {
 
         for (int xPos = 0; xPos < tarXSize; xPos++) {
             for (int yPos = 0; yPos < tarYSize; yPos++) {
-                if (tarX + tarXSize > SizeX || tarY + tarYSize > SizeY || getObject(tarX + xPos, tarY + yPos) == null || getObject(tarX + tarXSize, tarY + tarYSize) == null) {
+                if (tarX + tarXSize > SizeX || tarY + tarYSize > SizeY || getObject(tarX + xPos, tarY + yPos) == -1 || getObject(tarX + tarXSize, tarY + tarYSize) == -1) {
                     continue;
                 }
-                if (getObject(tarX + xPos, tarY + yPos).getType() == StaticObjectsConst.Types.SOLID) {
-                    return getObject(tarX + xPos, tarY + yPos);
+                if (getType(getObject(tarX + xPos, tarY + yPos)) == StaticObjectsConst.Types.SOLID) {
+                    return new Point(tarX + xPos, tarY + yPos);
                 }
-                if (getObject(tarX + tarXSize, tarY + tarYSize).getType() == StaticObjectsConst.Types.SOLID) {
-                    return getObject(tarX +tarXSize, tarY + tarYSize);
+                if (getType(getObject(tarX + tarXSize, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID) {
+                    return new Point(tarX +tarXSize, tarY + tarYSize);
                 }
             }
         }
         return null;
+    }
+
+    public static short checkIntersInsideAll(float x, float y, int sizeX, int sizeY) {
+        int tarX = (int) (x / 16);
+        int tarY = (int) (y / 16);
+        int tarYSize = (int) Math.ceil(sizeY / 16f);
+        int tarXSize = (int) Math.ceil(sizeX / 16f);
+
+        for (int xPos = 0; xPos < tarXSize; xPos++) {
+            for (int yPos = 0; yPos < tarYSize; yPos++) {
+                if (tarX + tarXSize > SizeX || tarY + tarYSize > SizeY || getObject(tarX + xPos, tarY + yPos) == -1 || getObject(tarX + tarXSize, tarY + tarYSize) == -1) {
+                    continue;
+                }
+                if (getType(getObject(tarX + xPos, tarY + yPos)) == StaticObjectsConst.Types.SOLID) {
+                    return getObject(tarX + xPos, tarY + yPos);
+                }
+                if (getType(getObject(tarX + tarXSize, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID) {
+                    return getObject(tarX +tarXSize, tarY + tarYSize);
+                }
+            }
+        }
+        return -1;
     }
 
     public static DynamicWorldObjects checkIntersectionsDynamic(float x, float y, int sizeX, int sizeY) {

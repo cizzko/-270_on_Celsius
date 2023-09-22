@@ -11,7 +11,6 @@ import core.World.Creatures.Player.Player;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.SimpleColor;
 import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
-import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.StaticWorldObjects.Structures;
 import core.World.WorldGenerator;
 import java.awt.*;
@@ -23,7 +22,9 @@ import java.util.zip.DeflaterOutputStream;
 import static core.EventHandling.Logging.Logger.log;
 import static core.Window.defPath;
 import static core.Window.glfwWindow;
+import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.WorldGenerator.getObject;
+import static core.World.WorldGenerator.setObject;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
 //сделан по принципу автономного модуля, который можно удалить без последствий
@@ -67,15 +68,15 @@ public class DebugTools {
         int targetX = Player.getBlockUnderMousePoint().x;
         int targetY = Player.getBlockUnderMousePoint().y;
 
-        StaticWorldObjects[][] objects = new StaticWorldObjects[targetX - startX][targetY - startY];
+        short[][] objects = new short[targetX - startX][targetY - startY];
 
         for (int x = startX; x < targetX; x++) {
             for (int y = startY; y < targetY; y++) {
-                if (x < WorldGenerator.SizeX && y < WorldGenerator.SizeY && x > 0 && y > 0 && getObject(x, y) != null && getObject(x, y).id != 0) {
+                if (x < WorldGenerator.SizeX && y < WorldGenerator.SizeY && x > 0 && y > 0 && getObject(x, y) > 0 && getId(getObject(x, y)) != 0) {
                     ShadowMap.setShadow(x, y, new SimpleColor(0, 0, 255, 255));
                     objects[x - startX][y - startY] = getObject(x, y);
 
-                    if (lowestSolidBlock == -1 && y == startY && objects[x - startX][y - startY].getType() == StaticObjectsConst.Types.SOLID) {
+                    if (lowestSolidBlock == -1 && y == startY && getType(objects[x - startX][y - startY]) == StaticObjectsConst.Types.SOLID) {
                         lowestSolidBlock = x - startX;
                     }
                 }
@@ -87,8 +88,8 @@ public class DebugTools {
     private static void delete() {
         for (int x = lastMousePosBlocks.x; x < Player.getBlockUnderMousePoint().x; x++) {
             for (int y = lastMousePosBlocks.y; y < Player.getBlockUnderMousePoint().y; y++) {
-                if (x < WorldGenerator.SizeX && y < WorldGenerator.SizeY && x > 0 && y > 0 && getObject(x, y) != null && getObject(x, y).id != 0) {
-                    getObject(x, y).destroyObject();
+                if (x < WorldGenerator.SizeX && y < WorldGenerator.SizeY && x > 0 && y > 0 && getObject(x, y) > 0 && getId(getObject(x, y)) != 0) {
+                    setObject(x, y, destroyObject(getObject(x, y)));
                 }
             }
         }

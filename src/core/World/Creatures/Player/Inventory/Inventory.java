@@ -13,6 +13,8 @@ import core.World.Textures.SimpleColor;
 import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 import core.World.WorldGenerator;
+import org.lwjgl.system.linux.Stat;
+
 import java.awt.*;
 import java.util.Arrays;
 import static core.Window.defPath;
@@ -28,11 +30,6 @@ public class Inventory {
     public static void create() {
         create = true;
         BuildMenu.create();
-        createDefaultItems();
-    }
-
-    private static void createDefaultItems() {
-        Inventory.createElementTool(new Tools(200, 20, 200, 8), defPath + "\\src\\assets\\World\\Items\\hammer.png", "");
     }
 
     public static void update() {
@@ -100,7 +97,7 @@ public class Inventory {
             if (currentObjectType == Items.Types.PLACEABLE_BLOCK || currentObjectType == Items.Types.PLACEABLE_FACTORY) {
                 int blockX = Player.getBlockUnderMousePoint().x;
                 int blockY = Player.getBlockUnderMousePoint().y;
-                boolean isDeclined = Player.getDistanceUMB() > 8 || (WorldGenerator.getObject(blockX, blockY).getType() != StaticObjectsConst.Types.GAS || !(WorldGenerator.getObject(blockX, blockY + 1).getType() == StaticObjectsConst.Types.GAS || WorldGenerator.getObject(blockX, blockY - 1).getType() == StaticObjectsConst.Types.GAS || WorldGenerator.getObject(blockX + 1, blockY).getType() == StaticObjectsConst.Types.GAS || WorldGenerator.getObject(blockX - 1, blockY).getType() == StaticObjectsConst.Types.GAS));
+                boolean isDeclined = Player.getDistanceUMB() > 8 || (StaticWorldObjects.getType(WorldGenerator.getObject(blockX, blockY)) != StaticObjectsConst.Types.GAS || !(StaticWorldObjects.getType(WorldGenerator.getObject(blockX, blockY + 1)) == StaticObjectsConst.Types.GAS || StaticWorldObjects.getType(WorldGenerator.getObject(blockX, blockY - 1)) == StaticObjectsConst.Types.GAS || StaticWorldObjects.getType(WorldGenerator.getObject(blockX + 1, blockY)) == StaticObjectsConst.Types.GAS || StaticWorldObjects.getType(WorldGenerator.getObject(blockX - 1, blockY)) == StaticObjectsConst.Types.GAS));
                 SimpleColor color = new SimpleColor(isDeclined ? 255 : 100, 100, !isDeclined ? 255 : 100, 255);
 
                 if (inventoryObjects[current.x][current.y] != null) {
@@ -111,7 +108,7 @@ public class Inventory {
     }
 
     public static void createElementTool(Tools tool, String path, String description) {
-        int id = path.hashCode();
+        int id = tool.name.hashCode();
 
         if (findCountID(id) > 1) {
             Point cell = findItemByID(id);
@@ -125,11 +122,9 @@ public class Inventory {
         }
     }
 
-    public static void createElementPlaceable(StaticWorldObjects object, String description) {
-        int id = object.id;
-
-        if (findCountID(id) > 1) {
-            Point cell = findItemByID(id);
+    public static void createElementPlaceable(short object, String description) {
+        if ((short) findCountID(object) > 1) {
+            Point cell = findItemByID(object);
             inventoryObjects[cell.x][cell.y].countInCell++;
             return;
         }
@@ -141,7 +136,7 @@ public class Inventory {
     }
 
     public static void createElementDetail(Details object, String description) {
-        int id = object.path.hashCode();
+        int id = object.name.hashCode();
 
         if (findCountID(id) > 1) {
             Point cell = findItemByID(id);
@@ -171,7 +166,7 @@ public class Inventory {
     }
 
     public static void createElementWeapon(Weapons weapon, String path, String description) {
-        int id = path.hashCode();
+        int id = weapon.name.hashCode();
 
         if (findCountID(id) > 1) {
             Point cell = findItemByID(id);

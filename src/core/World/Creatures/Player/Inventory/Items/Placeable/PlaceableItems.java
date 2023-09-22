@@ -1,11 +1,10 @@
 package core.World.Creatures.Player.Inventory.Items.Placeable;
-import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 
 public class PlaceableItems {
-    public StaticWorldObjects staticWorldObject;
+    public short staticWorldObject;
     public Factories factoryObject;
 
-    public PlaceableItems(StaticWorldObjects object) {
+    public PlaceableItems(short object) {
         this.staticWorldObject = object;
     }
 

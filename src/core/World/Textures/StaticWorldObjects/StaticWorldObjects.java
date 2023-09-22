@@ -1,64 +1,78 @@
 package core.World.Textures.StaticWorldObjects;
 
+import core.World.Creatures.Player.Inventory.Items.Details;
 import core.World.Textures.ShadowMap;
 import java.io.Serializable;
+import static core.Window.defPath;
 import static core.Window.start;
+import static core.World.Creatures.Player.Inventory.Inventory.createElementDetail;
 
-public class StaticWorldObjects implements Serializable {
-    public int id;
-    public float y, x, currentHp;
+public abstract class StaticWorldObjects implements Serializable {
+    public static short createStatic(String name) {
+        byte id = (byte) name.hashCode();
+        StaticObjectsConst.setConst(name, id);
 
-    public StaticWorldObjects(String name, float x, float y) {
-        this.x = x;
-        this.y = y;
-        if (name != null) {
-            StaticObjectsConst.setConst(name, name.hashCode());
-            this.id = name.hashCode();
-            this.currentHp = StaticObjectsConst.getConst(id).maxHp;
-        } else {
-            id = 0;
-            currentHp = 0;
-        }
+        return (short) ((((byte) getMaxHp(id) & 0xFF) << 8) | (id & 0xFF));
     }
 
-    public void destroyObject() {
+    public static short destroyObject(short id) {
         if (id != 0) {
-            this.currentHp = 0;
-            this.id = 0;
+            //TODO: костыль
+            if (getName(id).toLowerCase().contains("trunk") && Math.random() * 100 < 30) {
+                createElementDetail(new Details("Stick", defPath + "\\src\\assets\\World\\Items\\stick.png"), "");
+            }
             if (start) {
                 ShadowMap.update();
             }
         }
-    }
-    public float getMaxHp() {
-        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).maxHp : 0;
+        return 0;
     }
 
-    public float getDensity() {
-        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).density : 0;
+    public static float getMaxHp(short id) {
+        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).maxHp : 0;
     }
 
-    public String getPath() {
-        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).path : null;
+    public static float getDensity(short id) {
+        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).density : 0;
     }
 
-    public String getName() {
-        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).objectName : "";
+    public static String getPath(short id) {
+        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).path : null;
     }
 
-    public String getFileName() {
-        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).originalFileName : null;
+    public static String getName(short id) {
+        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).objectName : "";
     }
 
-    public StaticObjectsConst.Types getType() {
-        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).type : null;
+    public static String getFileName(short id) {
+        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).originalFileName : null;
     }
 
-    public float getResistance() {
-        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).resistance : 0;
+    public static StaticObjectsConst.Types getType(short id) {
+        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).type : null;
     }
 
-    public float getLightTransmission() {
-        return StaticObjectsConst.checkIsHere(id) ? StaticObjectsConst.getConst(id).lightTransmission : 0;
+    public static float getResistance(short id) {
+        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).resistance : 0;
+    }
+
+    public static int getLightTransmission(short id) {
+        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).lightTransmission : 0;
+    }
+
+    public static byte getId(short id) {
+        return (byte) (id & 0xFF);
+    }
+
+    public static byte getHp(short id) {
+        return (byte) ((id >> 8) & 0xFF);
+    }
+
+    public static short incrementHp(short id, int count) {
+        return (short) (((getHp(id) + count & 0xFF) << 8) | (id & 0xFF));
+    }
+
+    public static short decrementHp(short id, int count) {
+        return (short) (((getHp(id) - count & 0xFF) << 8) | (id & 0xFF));
     }
 }

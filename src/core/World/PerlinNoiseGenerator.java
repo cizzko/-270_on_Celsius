@@ -5,9 +5,9 @@ import java.util.Random;
 public class PerlinNoiseGenerator {
     public static boolean[][] noise;
     private static int smoothness, height = 0, width = 0;
-    private static double amplitude, density, octaves = 0, persistence = 0;
+    private static float amplitude, density, octaves = 0, persistence = 0;
 
-    public PerlinNoiseGenerator(int width, int height, double amplitude, double persistence, double octaves, double density, int smoothness) {
+    public PerlinNoiseGenerator(int width, int height, float amplitude, float persistence, float octaves, float density, int smoothness) {
         PerlinNoiseGenerator.density = density;
         PerlinNoiseGenerator.amplitude = amplitude;
         PerlinNoiseGenerator.persistence = persistence;
@@ -18,14 +18,14 @@ public class PerlinNoiseGenerator {
         noise = new boolean[width][height];
     }
 
-    public static void main(int width, int height, double amplitude, double persistence, double octaves, double density, int smoothness) {
+    public static void main(int width, int height, float amplitude, float persistence, float octaves, float density, int smoothness) {
         PerlinNoiseGenerator noiseGenerator = new PerlinNoiseGenerator(width, height, amplitude, persistence, octaves, density, smoothness);
         noiseGenerator.generateNoise();
     }
 
     public void generateNoise() {
-        double[][] baseNoise = generateBaseNoise();
-        double[][] smoothedNoise;
+        float[][] baseNoise = generateBaseNoise();
+        float[][] smoothedNoise;
 
         if (smoothness > 0) {
             smoothedNoise = smoothNoise(baseNoise);
@@ -33,7 +33,7 @@ public class PerlinNoiseGenerator {
             smoothedNoise = baseNoise;
         }
 
-        double[][] perlinNoise = new double[width][height];
+        float[][] perlinNoise = new float[width][height];
 
         for (int octave = 0; octave < octaves; octave++) {
             perlinNoise = generatePerlinNoise(smoothedNoise, octave);
@@ -51,35 +51,35 @@ public class PerlinNoiseGenerator {
 
     }
 
-    private double[][] generateBaseNoise() {
-        double[][] baseNoise = new double[width][height];
+    private float[][] generateBaseNoise() {
+        float[][] baseNoise = new float[width][height];
         Random random = new Random();
 
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                baseNoise[i][j] = random.nextDouble();
+                baseNoise[i][j] = (float) random.nextDouble();
             }
         }
 
         return baseNoise;
     }
 
-    private double[][] smoothNoise(double[][] baseNoise) {
+    private float[][] smoothNoise(float[][] baseNoise) {
         int samplePeriod = smoothness * 2;
-        double[][] smoothNoise = new double[width][height];
+        float[][] smoothNoise = new float[width][height];
 
         for (int i = 0; i < width; i++) {
             int i0 = (i / samplePeriod) * samplePeriod;
             int i1 = (i0 + samplePeriod) % width;
-            double horizontalBlend = (i - i0) / (double) samplePeriod;
+            float horizontalBlend = (i - i0) / (float) samplePeriod;
 
             for (int j = 0; j < height; j++) {
                 int j0 = (j / samplePeriod) * samplePeriod;
                 int j1 = (j0 + samplePeriod) % height;
-                double verticalBlend = (j - j0) / (double) samplePeriod;
+                float verticalBlend = (j - j0) / (float) samplePeriod;
 
-                double top = interpolate(baseNoise[i0][j0], baseNoise[i1][j0], horizontalBlend);
-                double bottom = interpolate(baseNoise[i0][j1], baseNoise[i1][j1], horizontalBlend);
+                float top = interpolate(baseNoise[i0][j0], baseNoise[i1][j0], horizontalBlend);
+                float bottom = interpolate(baseNoise[i0][j1], baseNoise[i1][j1], horizontalBlend);
                 smoothNoise[i][j] = interpolate(top, bottom, verticalBlend);
             }
         }
@@ -87,14 +87,14 @@ public class PerlinNoiseGenerator {
         return smoothNoise;
     }
 
-    private double interpolate(double x0, double x1, double alpha) {
+    private float interpolate(float x0, float x1, float alpha) {
         return x0 * (1 - alpha) + alpha * x1;
     }
 
-    private double[][] generatePerlinNoise(double[][] baseNoise, int octave) {
+    private float[][] generatePerlinNoise(float[][] baseNoise, int octave) {
         smoothness = (int) Math.pow(2, octave);
-        double[][] perlinNoise = new double[width][height];
-        double[][] octaveBaseNoise = smoothNoise(baseNoise);
+        float[][] perlinNoise = new float[width][height];
+        float[][] octaveBaseNoise = smoothNoise(baseNoise);
 
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
@@ -105,7 +105,7 @@ public class PerlinNoiseGenerator {
         return perlinNoise;
     }
 
-    private void addNoise(double[][] perlinNoise, double amplitude) {
+    private void addNoise(float[][] perlinNoise, float amplitude) {
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
                 perlinNoise[i][j] += amplitude;
@@ -113,9 +113,9 @@ public class PerlinNoiseGenerator {
         }
     }
 
-    private void normalizeNoise(double[][] perlinNoise) {
-        double maxNoise = Double.MIN_VALUE;
-        double minNoise = Double.MAX_VALUE;
+    private void normalizeNoise(float[][] perlinNoise) {
+        float maxNoise = Float.MIN_VALUE;
+        float minNoise = Float.MAX_VALUE;
 
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
@@ -128,7 +128,7 @@ public class PerlinNoiseGenerator {
             }
         }
 
-        double range = maxNoise - minNoise;
+        float range = maxNoise - minNoise;
 
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {

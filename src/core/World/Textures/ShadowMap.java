@@ -2,9 +2,8 @@ package core.World.Textures;
 
 import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
 import core.World.WorldGenerator;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.*;
+import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.WorldGenerator.*;
 
 public class ShadowMap {
@@ -38,7 +37,7 @@ public class ShadowMap {
     private static void generateShadows() {
         for (int x = 1; x < WorldGenerator.SizeX - 1; x++) {
             for (int y = 1; y < WorldGenerator.SizeY - 1; y++) {
-                if (getObject(x - 1, y).getType() != StaticObjectsConst.Types.GAS && getObject(x + 1, y).getType() != StaticObjectsConst.Types.GAS && getObject(x, y - 1).getType() != StaticObjectsConst.Types.GAS && getObject(x, y + 1).getType() != StaticObjectsConst.Types.GAS) {
+                if (checkHasGasAround(x, y, 1)) {
                     setShadow(x, y, new SimpleColor(165, 165, 165, 255));
                 } else {
                     setShadow(x, y, new SimpleColor(255, 255, 255, 255));
@@ -48,10 +47,7 @@ public class ShadowMap {
 
         for (int x = 1; x < WorldGenerator.SizeX - 1; x++) {
             for (int y = 1; y < WorldGenerator.SizeY - 1; y++) {
-                boolean hasGas = getObject(x - 1, y).getType() != StaticObjectsConst.Types.GAS && getObject(x + 1, y).getType() != StaticObjectsConst.Types.GAS && getObject(x, y - 1).getType() != StaticObjectsConst.Types.GAS && getObject(x, y + 1).getType() != StaticObjectsConst.Types.GAS && getObject(x, y).getType() != StaticObjectsConst.Types.GAS;
-                boolean hasSimpleColor = getDegree(x - 1, y) > 0 && getDegree(x + 1, y) > 0 && getDegree(x, y + 1) > 0 && getDegree(x, y - 1) > 0;
-
-                if (hasSimpleColor && hasGas) {
+                if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
                     setShadow(x, y, new SimpleColor(85, 85, 85, 255));
                 }
             }
@@ -59,10 +55,7 @@ public class ShadowMap {
 
         for (int x = 2; x < WorldGenerator.SizeX - 2; x++) {
             for (int y = 2; y < WorldGenerator.SizeY - 2; y++) {
-                boolean hasGas = getObject(x - 2, y).getType() != StaticObjectsConst.Types.GAS && getObject(x + 2, y).getType() != StaticObjectsConst.Types.GAS && getObject(x, y - 2).getType() != StaticObjectsConst.Types.GAS && getObject(x, y + 2).getType() != StaticObjectsConst.Types.GAS && getObject(x, y).getType() != StaticObjectsConst.Types.GAS;
-                boolean hasSimpleColor = getDegree(x - 2, y) > 0 && getDegree(x + 2, y) > 0 && getDegree(x, y + 2) > 0 && getDegree(x, y - 2) > 0;
-
-                if (hasSimpleColor && hasGas) {
+                if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
                     setShadow(x, y, new SimpleColor(5, 5, 5, 255));
                 }
             }
@@ -72,27 +65,23 @@ public class ShadowMap {
     public static void update() {
         for (int x = (int) (DynamicObjects.get(0).x / 16) - 20; x < DynamicObjects.get(0).x / 16 + 21; x++) {
             for (int y = (int) (DynamicObjects.get(0).y / 16) - 8; y < DynamicObjects.get(0).y / 16 + 16; y++) {
-                if (x < 5 || y < 5 || x > SizeX - 5 || y > SizeY - 5 || getObject(x, y) == null) {
-                    continue;
-                }
-
-                if (getObject(x - 1, y).getType() != StaticObjectsConst.Types.GAS && getObject(x + 1, y).getType() != StaticObjectsConst.Types.GAS && getObject(x, y - 1).getType() != StaticObjectsConst.Types.GAS && getObject(x, y + 1).getType() != StaticObjectsConst.Types.GAS) {
+                if (checkHasGasAround(x, y, 1)) {
                     setShadow(x, y, new SimpleColor(165, 165, 165, 255));
                 } else {
                     setShadow(x, y, new SimpleColor(255, 255, 255, 255));
                 }
-
-                boolean hasGas = getObject(x - 1, y).getType() != StaticObjectsConst.Types.GAS && getObject(x + 1, y).getType() != StaticObjectsConst.Types.GAS && getObject(x, y - 1).getType() != StaticObjectsConst.Types.GAS && getObject(x, y + 1).getType() != StaticObjectsConst.Types.GAS && getObject(x, y).getType() != StaticObjectsConst.Types.GAS;
-                boolean hasSimpleColor = getDegree(x - 1, y) > 0 && getDegree(x + 1, y) > 0 && getDegree(x, y + 1) > 0 && getDegree(x, y - 1) > 0;
-
-                if (hasSimpleColor && hasGas) {
+            }
+        }
+        for (int x = (int) (DynamicObjects.get(0).x / 16) - 20; x < DynamicObjects.get(0).x / 16 + 21; x++) {
+            for (int y = (int) (DynamicObjects.get(0).y / 16) - 8; y < DynamicObjects.get(0).y / 16 + 16; y++) {
+                if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
                     setShadow(x, y, new SimpleColor(85, 85, 85, 255));
                 }
-
-                hasGas = getObject(x - 2, y).getType() != StaticObjectsConst.Types.GAS && getObject(x + 2, y).getType() != StaticObjectsConst.Types.GAS && getObject(x, y - 2).getType() != StaticObjectsConst.Types.GAS && getObject(x, y + 2).getType() != StaticObjectsConst.Types.GAS && getObject(x, y).getType() != StaticObjectsConst.Types.GAS;
-                hasSimpleColor = getDegree(x - 2, y) > 0 && getDegree(x + 2, y) > 0 && getDegree(x, y + 2) > 0 && getDegree(x, y - 2) > 0;
-
-                if (hasSimpleColor && hasGas) {
+            }
+        }
+        for (int x = (int) (DynamicObjects.get(0).x / 16) - 20; x < DynamicObjects.get(0).x / 16 + 21; x++) {
+            for (int y = (int) (DynamicObjects.get(0).y / 16) - 8; y < DynamicObjects.get(0).y / 16 + 16; y++) {
+                if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
                     setShadow(x, y, new SimpleColor(5, 5, 5, 255));
                 }
             }
@@ -164,6 +153,23 @@ public class ShadowMap {
         int a = checkColor(color.getAlpha());
 
         return new SimpleColor(r, g, b, a);
+    }
+
+    private static SimpleColor checkLightTransmission(SimpleColor color, int transmission) {
+        int r = checkColor(color.getRed() + transmission);
+        int g = checkColor(color.getGreen() + transmission);
+        int b = checkColor(color.getBlue() + transmission);
+        int a = checkColor(color.getAlpha() + transmission);
+
+        return new SimpleColor(r, g, b, a);
+    }
+
+    private static boolean checkHasGasAround(int x, int y, int radius) {
+        return getType(getObject(x - radius, y)) != StaticObjectsConst.Types.GAS && getType(getObject(x + radius, y)) != StaticObjectsConst.Types.GAS && getType(getObject(x, y - radius)) != StaticObjectsConst.Types.GAS && getType(getObject(x, y + radius)) != StaticObjectsConst.Types.GAS && getType(getObject(x, y)) != StaticObjectsConst.Types.GAS;
+    }
+
+    private static boolean checkHasDegreeAround(int x, int y, int radius) {
+        return getDegree(x - radius, y) > 0 && getDegree(x + radius, y) > 0 && getDegree(x, y + radius) > 0 && getDegree(x, y - radius) > 0;
     }
 
     public static HashMap<String, Object> getAllData() {

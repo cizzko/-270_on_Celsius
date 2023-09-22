@@ -13,19 +13,17 @@ public class DynamicWorldObjects implements Serializable {
     public float x, y, animSpeed, weight, currentHp, maxHp;
     public String path;
     public long lastFrameTime = System.currentTimeMillis();
-    public boolean onCamera, isJumping, isDropping, isFlying, mirrored, notForDrawing;
+    public boolean isFlying, mirrored, notForDrawing, oneoffAnimation;
     public Point2D.Float motionVector = new Point2D.Float(0, 0);
 
-    public DynamicWorldObjects(boolean isFlying, int framesCount, float animSpeed, float x, float y, float maxHp, float weight, String path) {
+    public DynamicWorldObjects(boolean oneoffAnimation, boolean isFlying, int framesCount, float animSpeed, float x, float y, float maxHp, float weight, String path) {
+        this.oneoffAnimation = oneoffAnimation;
         this.framesCount = framesCount;
         this.animSpeed = animSpeed;
         this.path = path;
         this.currentFrame = 1;
         this.isFlying = isFlying;
-        this.onCamera = true;
         this.mirrored = false;
-        this.isJumping = false;
-        this.isDropping = false;
         this.x = x;
         this.y = y;
         this.maxHp = maxHp;
@@ -33,16 +31,14 @@ public class DynamicWorldObjects implements Serializable {
         this.weight = weight;
     }
 
-    public DynamicWorldObjects(boolean isFlying, float weight, int framesCount, float animSpeed, float x, float maxHp, String path) {
+    public DynamicWorldObjects(boolean oneoffAnimation, boolean isFlying, float weight, int framesCount, float animSpeed, float x, float maxHp, String path) {
+        this.oneoffAnimation = oneoffAnimation;
         this.framesCount = framesCount;
         this.animSpeed = animSpeed;
         this.path = path;
         this.currentFrame = 1;
         this.isFlying = isFlying;
-        this.onCamera = true;
         this.mirrored = false;
-        this.isJumping = false;
-        this.isDropping = false;
         this.x = x;
         this.maxHp = maxHp;
         this.currentHp = maxHp;
@@ -54,15 +50,15 @@ public class DynamicWorldObjects implements Serializable {
 
         for (int worldX = 0; worldX < sizeX; worldX++) {
             for (int worldY = 1; worldY < SizeY - 2; worldY++) {
-                StaticWorldObjects objUp = getObject((int) (x / 16 + worldX), worldY + 1);
-                StaticWorldObjects obj = getObject((int) (x / 16 + worldX), worldY);
+                short objUp = getObject((int) (x / 16 + worldX), worldY + 1);
+                short obj = getObject((int) (x / 16 + worldX), worldY);
 
-                if (objUp != null && objUp.getType() != StaticObjectsConst.Types.SOLID && obj.getType() == StaticObjectsConst.Types.SOLID && obj.y > y) {
-                    y = objUp.y;
+                if (StaticWorldObjects.getType(objUp) != StaticObjectsConst.Types.SOLID && StaticWorldObjects.getType(obj) == StaticObjectsConst.Types.SOLID && findY((int) (x / 16 + worldX), worldY) > y) {
+                    y = findY((int) (x / 16 + worldX), worldY + 1);
                 }
             }
         }
-        if (HitboxMap.checkIntersInside(x, y, TextureLoader.getSize(path).width + 10, TextureLoader.getSize(path).height + 10) != null) {
+        if (HitboxMap.checkIntersInsideAll(x, y, TextureLoader.getSize(path).width + 10, TextureLoader.getSize(path).height + 10) > 0) {
             y += 16;
         }
 

@@ -13,10 +13,12 @@ import static core.Window.*;
 import static core.World.Creatures.Player.Inventory.Items.Placeable.Factories.updateFactoriesOutput;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.HitboxMap.*;
+import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.getResistance;
+import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.*;
 
-//version 1.25
+//version 1.3
 public class Physics extends Thread {
     //default 400
     public static int physicsSpeed = 400, updates = 0;
@@ -126,11 +128,11 @@ public class Physics extends Thread {
 
         for (int xPos = 0; xPos < tarXSize; xPos++) {
             for (int yPos = 0; yPos < tarYSize; yPos++) {
-                if (tarX + tarXSize > SizeX || tarY + tarYSize > SizeY || getObject(tarX + xPos, tarY + yPos) == null || getObject(tarX + tarXSize, tarY + tarYSize) == null) {
+                if (tarX + tarXSize > SizeX || tarY + tarYSize > SizeY || getObject(tarX + xPos, tarY + yPos) == -1 || getObject(tarX + tarXSize, tarY + tarYSize) == -1) {
                     continue;
                 }
-                if (getObject(tarX + xPos, tarY + yPos).getResistance() < 100 && getObject(tarX + xPos, tarY + yPos).getType() == StaticObjectsConst.Types.SOLID) {
-                    totalResistance += getObject(tarX + xPos, tarY + yPos).getResistance();
+                if (getResistance(getObject(tarX + xPos, tarY + yPos)) < 100 && getType(getObject(tarX + xPos, tarY + yPos)) == StaticObjectsConst.Types.SOLID) {
+                    totalResistance += getResistance(getObject(tarX + xPos, tarY + yPos));
                 }
             }
         }

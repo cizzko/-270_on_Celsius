@@ -3,6 +3,7 @@
     "Language": "Language",
     "Play": "Play",
     "Settings": "Settings",
+
     "Exit": "Exit",
     "Continue": "Continue",
     "GenerateWorld": "Generate world",
@@ -15,6 +16,8 @@
 
     "SettingsExit": "Return",
     "SettingsSave": "Save",
+    "SettingsCancel": "reserved",
+    "SettingsAccept": "Accept",
 
     "SettingsGraphics": "Graphics",
     "InterpolateSunset": "Interpolate sunset",
@@ -34,7 +37,9 @@
 
     "SettingsOther": "Other",
     "SendAnonymousStatistics": "Send statistic",
-    "SendAnonymousStatisticsPrompt": "We will collect anonymous data to improve the product:\\ndevice components, game settings, current time.\\nThe author has the right to change the list of data.\\nBy agreeing to this message, you give the right to collect and use your data.\\nA also helps to improve the game :)"
+    "SendAnonymousStatisticsPrompt": "We will collect anonymous data to improve the product:\\ndevice components, game settings, current time.\\nThe author has the right to change the list of data.\\nBy agreeing to this message, you give the right to collect and use your data.\\nA also helps to improve the game :)",
+
+    "StoneAxe": "Stone axe"
   },
 
   "ru": {
@@ -42,6 +47,7 @@
     "Play": "Начать",
     "Settings": "Настройки",
     "Exit": "Выход",
+
     "Continue": "Продолжить",
     "GenerateWorld": "Создать мир",
     "GenerateSimpleWorld": "Упрощенная генерация",
@@ -53,6 +59,8 @@
 
     "SettingsExit": "Вернуться",
     "SettingsSave": "Сохранить",
+    "SettingsCancel": "reserved",
+    "SettingsAccept": "Подтвердить",
 
     "SettingsGraphics": "Графика",
     "InterpolateSunset": "Интерполяция заката",
@@ -72,7 +80,9 @@
 
     "SettingsOther": "Другое",
     "SendAnonymousStatistics": "Отправлять статистику",
-    "SendAnonymousStatisticsPrompt": "Мы (автор) будем собирать анонимные данные для улучшения продукта:\\nкомплектующие устройства, игровые параметры, текущее время.\\nАвтор вправе изменить перечень данных.\\nСоглашаясь с этим сообщением, вы даете право на сбор и использование ваших данных.\\nА так же помогаете улучшать игру :)"
+    "SendAnonymousStatisticsPrompt": "Мы (автор) будем собирать анонимные данные для улучшения продукта:\\nкомплектующие устройства, игровые параметры, текущее время.\\nАвтор вправе изменить перечень данных.\\nСоглашаясь с этим сообщением, вы даете право на сбор и использование ваших данных.\\nА так же помогаете улучшать игру :)",
+
+    "StoneAxe": "Каменный топор"
   },
 
   "uk": {
@@ -80,6 +90,7 @@
     "Play": "Начати",
     "Settings": "Налаштування",
     "Exit": "Выхід",
+
     "Continue": "Продовжити",
     "GenerateWorld": "Создати мир ",
     "GenerateSimpleWorld": "Спрощенна генерація",
@@ -88,8 +99,12 @@
     "GenerateCreaturesPrompt": "Генерація та прорахунок метеликів, птахів тощо. Може впливати на продуктивність",
     "RandomSpawn": "Случайное положение",
     "RandomSpawnPrompt": "Если включено, персонаж появится в случайном месте, иначе - посередине мира",
+
     "SettingsExit": "Повернутися",
     "SettingsSave": "Сохранити",
+    "SettingsCancel": "reserved",
+    "SettingsAccept": "Подтвердить",
+
     "SettingsGraphics": "Графіка",
     "InterpolateSunset": "Интерполяція заходу сонця",
     "InterpolateSunsetPrompt": "Згладжування градієнта заходу сонця, він стає м'якшим і плавнішим\\nЦе може незначно впливати на продуктивність.",
@@ -97,6 +112,7 @@
     "PreloadTexturesPrompt": "Може незначно підвищити продуктивність та прибрати мікролаги\\nоднак зросте споживання пам'яті та час завантаження",
     "VerticalSync": "Вертикальная синхронизация",
     "VerticalSyncPrompt": "Синхронізує фпс із частотою оновлення екрана, дозволяє уникнути візуальних розрививів зображення",
+
     "SettingsBasic": "Основне",
     "CalibrateMouseText": "Калибровка положения мыши. Используйте wasd или стрелочки для передвижения,\\nпока реальный курсор не окажется ровно под игровым (орандевым) курсором",
     "CalibrateMouseContinue": "Завершить",
@@ -104,8 +120,11 @@
     "DetectLanguagePrompt": "Автоматическое определение языка на основе языка системы",
     "ShowPrompts": "Вспливаючі підказки",
     "ShowPromptsPrompt": "Показувати вспливаючі підказки (якщо є) при наведенні на кнопки",
+
     "SettingsOther": "Друге",
     "SendAnonymousStatistics": "Відправляти статистику",
-    "SendAnonymousStatisticsPrompt": "Ми (автор) будемо збирати анонімні дані для покращення продукту:\\nкомплектуючі пристрою, ігрові параметри, поточний час. \nАвтор має право змінити список даних.\\nПогоджуючись із цим повідомленням, ви даєте право на збір та використовування ваших даних.\\nА також ви допомагаєте покращувати гру :)"
+    "SendAnonymousStatisticsPrompt": "Ми (автор) будемо збирати анонімні дані для покращення продукту:\\nкомплектуючі пристрою, ігрові параметри, поточний час. \nАвтор має право змінити список даних.\\nПогоджуючись із цим повідомленням, ви даєте право на збір та використовування ваших даних.\\nА також ви допомагаєте покращувати гру :)",
+
+    "StoneAxe": "Каменный топор"
   }
 }

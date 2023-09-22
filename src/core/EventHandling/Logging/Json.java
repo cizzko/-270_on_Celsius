@@ -10,18 +10,18 @@ import static core.Window.defPath;
 
 public class Json {
     private static final HashMap<String, String> words = new HashMap<>(), keys = new HashMap<>();
-    public static String lang, allLanguages;
+    public static String lang, allLanguages, translateFile = defPath + "\\src\\assets\\Translate.jsonc";
 
     public static String getName(String key) {
         if (words.get(key) == null) {
-            try (FileReader reader = new FileReader(defPath + "\\src\\assets\\Translate.json")) {
+            try (FileReader reader = new FileReader(translateFile)) {
                 Gson gson = new Gson();
                 JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
                 words.put(key, jsonObject.getAsJsonObject(lang).get(key).getAsString());
                 keys.put(jsonObject.getAsJsonObject(lang).get(key).getAsString(), key);
 
             } catch (Exception e) {
-                log("Key '" + key + "' at language '" + lang + "' not found, see file at " + defPath + "\\src\\assets\\Translate.json");
+                log("Key '" + key + "' at language '" + lang + "' not found, see file " + translateFile);
                 return key;
             }
         }
@@ -34,7 +34,7 @@ public class Json {
 
     public static String getAllLanguages() {
         if (allLanguages == null) {
-            try (FileReader reader = new FileReader(defPath + "\\src\\assets\\Translate.json")) {
+            try (FileReader reader = new FileReader(translateFile)) {
                 Gson gson = new Gson();
                 JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
 
@@ -50,7 +50,7 @@ public class Json {
     public static String[] getAllLanguagesArray() {
         String[] availableLanguages = null;
 
-        try (FileReader reader = new FileReader(defPath + "\\src\\assets\\Translate.json")) {
+        try (FileReader reader = new FileReader(translateFile)) {
             Gson gson = new Gson();
             JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
 
@@ -71,7 +71,7 @@ public class Json {
             }
         } catch (Exception e) {
             Config.updateConfig("DetectLanguage", "false");
-            log("Some error at detecting language '" + e + "', path: '" + defPath + "\\src\\assets\\Translate.json" + "', auto - detect deactivated, language set to " + Config.getFromConfig("Language"));
+            log("Some error at detecting language '" + e + "', path: '" + translateFile + "', auto - detect deactivated, language set to " + Config.getFromConfig("Language"));
         }
     }
 }

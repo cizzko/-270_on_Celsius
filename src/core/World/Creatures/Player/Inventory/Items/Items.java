@@ -3,6 +3,7 @@ package core.World.Creatures.Player.Inventory.Items;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Placeable.PlaceableItems;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
+import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 import static core.World.Textures.TextureLoader.getSize;
 
 public class Items {
@@ -25,7 +26,7 @@ public class Items {
 
     public Items(Weapons weapon, String path, String description) {
         this.weapon = weapon;
-        this.id = path.hashCode();
+        this.id = weapon.name.hashCode();
         this.path = path;
         this.zoom = findZoom(path);
         this.countInCell = Inventory.findCountID(id);
@@ -35,7 +36,7 @@ public class Items {
 
     public Items(Tools tool, String path, String description) {
         this.tool = tool;
-        this.id = path.hashCode();
+        this.id = tool.name.hashCode();
         this.path = path;
         this.zoom = findZoom(path);
         this.countInCell = Inventory.findCountID(id);
@@ -45,8 +46,8 @@ public class Items {
 
     public Items(PlaceableItems placeable, Types type, String description) {
         this.placeable = placeable;
-        this.id = placeable.factoryObject != null ? placeable.factoryObject.path.hashCode() : placeable.staticWorldObject.id;
-        this.path = placeable.factoryObject != null ? placeable.factoryObject.path : placeable.staticWorldObject.getPath();
+        this.id = placeable.factoryObject != null ? placeable.factoryObject.id : placeable.staticWorldObject;
+        this.path = placeable.factoryObject != null ? placeable.factoryObject.path : StaticWorldObjects.getPath(placeable.staticWorldObject);
         this.zoom = findZoom(path);
         this.countInCell = Inventory.findCountID(id);
         this.type = type;
@@ -55,7 +56,7 @@ public class Items {
 
     public Items(Details detail, String description) {
         this.detail = detail;
-        this.id = detail.path.hashCode();
+        this.id = detail.name.hashCode();
         this.path = detail.path;
         this.zoom = findZoom(path);
         this.countInCell = Inventory.findCountID(id);

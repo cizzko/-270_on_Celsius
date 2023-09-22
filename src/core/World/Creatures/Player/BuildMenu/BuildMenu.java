@@ -32,22 +32,24 @@ public class BuildMenu {
     }
 
     private static void updateBuildButton() {
-        Point[] required = hasRequiredItems();
+        if (isOpen && EventHandler.getRectanglePress(1769, 325, 1810, 366)) {
+            Point[] required = hasRequiredItems();
 
-        if (isOpen && EventHandler.getRectanglePress(1769, 325, 1810, 366) && required != null) {
-            for (Point obj : required) {
-                if (obj != null) {
-                    Inventory.decrementItem(obj.x, obj.y);
+            if (required != null) {
+                for (Point obj : required) {
+                    if (obj != null) {
+                        Inventory.decrementItem(obj.x, obj.y);
+                    }
                 }
-            }
-            Items currentItem = items[currentObject.x][currentObject.y].item;
+                Items currentItem = items[currentObject.x][currentObject.y].item;
 
-            switch (items[currentObject.x][currentObject.y].item.type) {
-                case TOOL -> Inventory.createElementTool(currentItem.tool, currentItem.path, currentItem.description);
-                case DETAIL -> Inventory.createElementDetail(currentItem.detail, currentItem.description);
-                case WEAPON -> Inventory.createElementWeapon(currentItem.weapon, currentItem.path, currentItem.description);
-                case PLACEABLE_BLOCK -> Inventory.createElementPlaceable(currentItem.placeable.staticWorldObject, currentItem.description);
-                case PLACEABLE_FACTORY -> Inventory.createElementFactory(currentItem.placeable.factoryObject, currentItem.description);
+                switch (items[currentObject.x][currentObject.y].item.type) {
+                    case TOOL -> Inventory.createElementTool(currentItem.tool, currentItem.path, currentItem.description);
+                    case DETAIL -> Inventory.createElementDetail(currentItem.detail, currentItem.description);
+                    case WEAPON -> Inventory.createElementWeapon(currentItem.weapon, currentItem.path, currentItem.description);
+                    case PLACEABLE_BLOCK -> Inventory.createElementPlaceable(currentItem.placeable.staticWorldObject, currentItem.description);
+                    case PLACEABLE_FACTORY -> Inventory.createElementFactory(currentItem.placeable.factoryObject, currentItem.description);
+                }
             }
         }
     }
@@ -82,10 +84,10 @@ public class BuildMenu {
     }
 
     private static Point[] hasRequiredItems() {
-        Point inventoryCurrent = currentObject;
+        Point menuCurrent = currentObject;
 
-        if (inventoryCurrent != null && items[inventoryCurrent.x][inventoryCurrent.y].requiredForBuild != null) {
-            Items[] required = items[inventoryCurrent.x][inventoryCurrent.y].requiredForBuild;
+        if (menuCurrent != null && items[menuCurrent.x][menuCurrent.y].requiredForBuild != null) {
+            Items[] required = items[menuCurrent.x][menuCurrent.y].requiredForBuild;
             Point[] hasNeededObject = new Point[required.length];
 
             for (int i = 0; i < required.length; i++) {
@@ -97,7 +99,7 @@ public class BuildMenu {
                     }
                 }
             }
-            return hasNeededObject[0] == null ? null : hasNeededObject;
+            return hasNeededObject[hasNeededObject.length - 1] == null ? null : hasNeededObject;
         }
         return null;
     }

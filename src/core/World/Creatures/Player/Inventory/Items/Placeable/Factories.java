@@ -20,7 +20,7 @@ public class Factories {
     public float lastProductionSpeed, productionSpeed, needEnergy, currentHp, currentEnergy, maxHp, timeSinceBreakdown, x, y;
     public long lastProductionTime;
     public int id, maxStoredObjects;
-    public String path, sound;
+    public String path, sound, name;
     public breaking breakingType;
     public Items[] outputObjects, outputStoredObjects, missOutput, inputObjects, inputStoredObjects, missInput;
     private static boolean mouseGrabbedItem = false;
@@ -34,12 +34,12 @@ public class Factories {
         CRITICAL //полная остановка работы, нужно перестроить
     }
 
-    public Factories(float productionSpeed, float needEnergy, float maxHp, int maxStoredObjects, Items[] outputObjects, Items[] inputObjects, String path, String sound) {
+    public Factories(float productionSpeed, float needEnergy, float maxHp, int maxStoredObjects, Items[] outputObjects, Items[] inputObjects, String path, String sound, String name) {
         this.productionSpeed = productionSpeed;
         this.lastProductionTime = System.currentTimeMillis();
         this.needEnergy = needEnergy;
         this.maxHp = maxHp;
-        this.id = path.hashCode();
+        this.id = name.hashCode();
         this.maxStoredObjects = maxStoredObjects;
         this.outputObjects = outputObjects;
         this.inputObjects = inputObjects;
@@ -51,6 +51,7 @@ public class Factories {
         this.outputStoredObjects = new Items[maxStoredObjects];
         this.inputStoredObjects = new Items[inputObjects.length];
         this.currentEnergy = 0;
+        this.name = name;
     }
 
     public void breakFactory(breaking breakingType) {

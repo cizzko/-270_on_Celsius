@@ -8,6 +8,7 @@ import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.HitboxMap;
 import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
+import java.awt.*;
 import static core.EventHandling.EventHandler.getMousePos;
 import static core.Window.defPath;
 import static core.World.Textures.TextureDrawing.drawTexture;
@@ -68,16 +69,17 @@ public class Bullets {
                     bullet.y += deltaY;
                     bullet.damage -= 0.01f;
 
-                    StaticWorldObjects staticObject = HitboxMap.checkIntersInside(x, y, 8, 8);
+                    Point staticObjectPoint = HitboxMap.checkIntersInside(x, y, 8, 8);
+                    short staticObject = getObject(staticObjectPoint.x, staticObjectPoint.y);
                     DynamicWorldObjects dynamicObject = HitboxMap.checkIntersectionsDynamic(x, y, 8, 8);
 
-                    if (staticObject != null) {
-                        float hp = staticObject.currentHp;
-                        staticObject.currentHp -= bullet.damage;
+                    if (staticObject > 0) {
+                        float hp = StaticWorldObjects.getHp(staticObject);
+                        setObject(staticObjectPoint.x, staticObjectPoint.y, StaticWorldObjects.decrementHp(staticObject, (int) bullet.damage));
                         bullets[i].damage -= hp;
 
-                        if (staticObject.currentHp <= 0) {
-                            staticObject.destroyObject();
+                        if (getObject(staticObjectPoint.x, staticObjectPoint.y) <= 0) {
+                            setObject(staticObjectPoint.x, staticObjectPoint.y, StaticWorldObjects.destroyObject(staticObject));
                         }
                     } else if (dynamicObject != null) {
                         float hp = dynamicObject.currentHp;

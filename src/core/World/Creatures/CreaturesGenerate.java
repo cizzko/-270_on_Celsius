@@ -45,12 +45,12 @@ public class CreaturesGenerate extends Thread {
     }
 
     public static void generateButterfly() {
-        DynamicObjects.add(new DynamicWorldObjects(true, 0.00002f, 2, 0.1f, (float) (Math.random() * (SizeX * 16)), 15, defPath + "\\src\\assets\\World\\creatures\\butterfly"));
+        DynamicObjects.add( new DynamicWorldObjects(false, true, 0.00002f, 2, 0.1f, (float) (Math.random() * (SizeX * 16)), 15, defPath + "\\src\\assets\\World\\creatures\\butterfly"));
         count++;
     }
 
     public static void generateBird() {
-        DynamicObjects.add(new DynamicWorldObjects(true, 0.0001f, 2, 0.1f, 24, SizeY * 13, defPath + "\\src\\assets\\World\\creatures\\bird"));
+        DynamicObjects.add(new DynamicWorldObjects(false, true, 0.0001f, 2, 0.1f, 24, SizeY * 13, defPath + "\\src\\assets\\World\\creatures\\bird"));
         count++;
     }
 }

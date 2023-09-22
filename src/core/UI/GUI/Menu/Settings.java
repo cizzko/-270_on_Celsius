@@ -3,7 +3,10 @@ package core.UI.GUI.Menu;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
+import core.EventHandling.Logging.Logger;
+import core.UI.GUI.CreateElement;
 import core.World.Textures.SimpleColor;
+import java.awt.*;
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.EventHandling.Logging.Json.getName;
 import static core.UI.GUI.CreateElement.*;
@@ -29,6 +32,7 @@ public class Settings {
 
         createdSettings = true;
         createGraphicsSett();
+        otter();
     }
 
     public static void createGraphicsSett() {
@@ -123,5 +127,51 @@ public class Settings {
         buttons.get(Json.getName("SettingsBasic")).isClickable = true;
         buttons.get(Json.getName("SettingsSave")).isClickable = false;
         Settings.needUpdateCount = true;
+    }
+
+    private static void otter() {
+        new Thread(() -> {
+            boolean crawlingOut = false;
+            boolean out = false;
+            int pressedCount = 0;
+            long lastPress = System.currentTimeMillis();
+            long lastPosSwap = System.currentTimeMillis();
+            Point pos = new Point(2160, -480);
+
+            while (createdSettings) {
+                if (EventHandler.getRectanglePress(1800, 0, 1920, 120) && !crawlingOut && System.currentTimeMillis() - lastPress >= 100) {
+                    pressedCount++;
+                    lastPress = System.currentTimeMillis();
+                }
+                if (pressedCount >= 5) {
+                    crawlingOut = true;
+                    pressedCount = 0;
+                }
+                if (crawlingOut && System.currentTimeMillis() - lastPosSwap >= 7) {
+                    lastPosSwap = System.currentTimeMillis();
+                    CreateElement.createPicture(pos.x, pos.y, 0, "otter", defPath + "\\src\\assets\\UI\\comeOutOtter.png", "Settings");
+
+                    if (!out && pos.x > 1770 && pos.y < -90) {
+                        pos.x -= 1;
+                        pos.y += 1;
+                    } else if (pos.x <= 1770 && pos.y >= -90) {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            Logger.log("Error when stop otter: " + e);
+                        }
+                        out = true;
+                    }
+                    if (out) {
+                        pos.x += 1;
+                        pos.y -= 1;
+                    }
+                    if (pos.x >= 2160 && pos.y <= -480) {
+                        crawlingOut = false;
+                        out = false;
+                    }
+                }
+            }
+        }).start();
     }
 }

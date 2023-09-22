@@ -36,7 +36,7 @@ public class Saves {
             dos.close();
             byte[] compressedBytes = compressed.toByteArray();
 
-            FileOutputStream fos = new FileOutputStream(defPath + "\\src\\assets\\World\\Saves\\Save" + LocalDate.now() + ".ser");
+            FileOutputStream fos = new FileOutputStream(defPath + "\\src\\assets\\World\\Saves\\WorldSaves\\Saves" + LocalDate.now() + ".ser");
             fos.write(compressedBytes);
             fos.close();
         } catch (Exception e) {
@@ -67,7 +67,7 @@ public class Saves {
     }
 
     public static String[] loadWorldSaves() {
-        File directory = new File(defPath + "\\src\\assets\\World\\Saves");
+        File directory = new File(defPath + "\\src\\assets\\World\\Saves\\WorldSaves");
         File[] files = directory.listFiles();
 
         if (files != null) {

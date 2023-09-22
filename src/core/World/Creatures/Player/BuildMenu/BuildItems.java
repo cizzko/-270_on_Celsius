@@ -7,10 +7,11 @@ public class BuildItems {
     public Items[] inputObjects, outputObjects, requiredForBuild;
     public Items item;
 
-    public BuildItems(Items item, Items[] inputObjects, Items[] outputObjects, String name) {
+    public BuildItems(Items item, Items[] inputObjects, Items[] outputObjects, Items[] requiredForBuild, String name) {
         this.name = name;
         this.item = item;
         this.inputObjects = inputObjects;
         this.outputObjects = outputObjects;
+        this.requiredForBuild = requiredForBuild;
     }
 }

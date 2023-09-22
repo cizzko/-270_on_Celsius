@@ -23,6 +23,7 @@ import static core.UI.GUI.Fonts.*;
 import static core.UI.GUI.Video.*;
 import static core.Window.*;
 import static core.World.Creatures.Player.Player.updatePlayerGUI;
+import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.Textures.TextureLoader.ByteBufferEncoder;
 import static core.World.Weather.Sun.updateSun;
 import static core.World.WorldGenerator.*;
@@ -464,28 +465,28 @@ public class TextureDrawing {
                 if (x < 0 || y < 0 || x > SizeX || y > SizeY) {
                     continue;
                 }
-                StaticWorldObjects obj = getObject(x, y);
+                short obj = getObject(x, y);
 
-                if (obj == null || obj.getPath() == null) {
+                if (StaticWorldObjects.getId(obj) == 0 || getPath(obj) == null) {
                     continue;
                 }
-                if (obj.currentHp <= 0) {
-                    obj.destroyObject();
+                if (getHp(obj) <= 0) {
+                    setObject(x, y, destroyObject(obj));
                     continue;
                 }
 
-                float xBlock = obj.x;
-                float yBlock = obj.y;
+                float xBlock = findX(x, y);
+                float yBlock = findY(x, y);
 
                 if (isOnCamera(xBlock, yBlock, 16, 16)) {
-                    if (obj.currentHp > obj.getMaxHp() / 1.5f) {
-                        drawTexture(obj.getPath(), xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
+                    if (getHp(obj) > getMaxHp(obj) / 1.5f) {
+                        drawTexture(getPath(obj), xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
 
-                    } else if (obj.currentHp < obj.getMaxHp() / 3) {
-                        drawMultiTexture(obj.getPath(), defPath + "\\src\\assets\\World\\blocks\\damaged2.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
+                    } else if (getHp(obj) < getMaxHp(obj) / 3) {
+                        drawMultiTexture(getPath(obj), defPath + "\\src\\assets\\World\\blocks\\damaged2.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
 
                     } else {
-                        drawMultiTexture(obj.getPath(), defPath + "\\src\\assets\\World\\blocks\\damaged1.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
+                        drawMultiTexture(getPath(obj), defPath + "\\src\\assets\\World\\blocks\\damaged1.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
                     }
                 }
             }
@@ -514,23 +515,25 @@ public class TextureDrawing {
                 float xBlock = dynamicObject.x;
                 float yBlock = dynamicObject.y;
 
-                dynamicObject.onCamera = !(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top);
-
-                if (dynamicObject.onCamera && dynamicObject.framesCount == 1) {
-                    drawTexture(dynamicObject.path, dynamicObject.x, dynamicObject.y, 3, ShadowMap.getColorDynamic(x), false, dynamicObject.mirrored);
-                }
-                if (dynamicObject.onCamera && dynamicObject.framesCount != 1 && dynamicObject.animSpeed != 0) {
+                if (dynamicObject.animSpeed != 0) {
                     if (dynamicObject.currentFrame != dynamicObject.framesCount && System.currentTimeMillis() - dynamicObject.lastFrameTime >= dynamicObject.animSpeed * 1000) {
                         dynamicObject.currentFrame++;
                         dynamicObject.lastFrameTime = System.currentTimeMillis();
                     } else if (dynamicObject.currentFrame == dynamicObject.framesCount && System.currentTimeMillis() - dynamicObject.lastFrameTime >= dynamicObject.animSpeed * 1000) {
                         dynamicObject.currentFrame = 1;
                         dynamicObject.lastFrameTime = System.currentTimeMillis();
-                    }
 
-                    drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, ShadowMap.getColorDynamic(x), false, dynamicObject.mirrored);
-                } else if (dynamicObject.onCamera && dynamicObject.framesCount != 1) {
-                    drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, ShadowMap.getColorDynamic(x), false, dynamicObject.mirrored);
+                        if (dynamicObject.oneoffAnimation) {
+                            dynamicObject.animSpeed = 0;
+                        }
+                    }
+                }
+                if (!(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top)) {
+                    if (dynamicObject.framesCount == 1) {
+                        drawTexture(dynamicObject.path, dynamicObject.x, dynamicObject.y, 3, ShadowMap.getColorDynamic(x), false, dynamicObject.mirrored);
+                    } else {
+                        drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, ShadowMap.getColorDynamic(x), false, dynamicObject.mirrored);
+                    }
                 }
             }
         }

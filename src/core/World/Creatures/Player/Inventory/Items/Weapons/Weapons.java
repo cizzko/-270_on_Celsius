@@ -6,7 +6,7 @@ public class Weapons {
     public int magazineSize, currentAmmo;
     public float fireRate, damage, ammoSpeed, reloadTime, bulletSpread;
     public long lastShootTime = System.currentTimeMillis();
-    public String sound, bulletPath;
+    public String sound, bulletPath, name;
     public Types type;
 
     public enum Types {
@@ -14,7 +14,7 @@ public class Weapons {
         BULLET
     }
 
-    public Weapons(float fireRate, float damage, float ammoSpeed, float reloadTime, float bulletSpread, int magazineSize, String sound, String bulletPath, Types type) {
+    public Weapons(float fireRate, float damage, float ammoSpeed, float reloadTime, float bulletSpread, int magazineSize, String sound, String bulletPath, String name, Types type) {
         this.fireRate = fireRate;
         this.damage = damage;
         this.ammoSpeed = ammoSpeed;
@@ -24,6 +24,7 @@ public class Weapons {
         this.sound = sound;
         this.type = type;
         this.bulletPath = bulletPath;
+        this.name = name;
         this.currentAmmo = magazineSize;
     }
 
