@@ -182,7 +182,7 @@ public class EventHandler extends Thread {
             } else {
                 pic = "planetMini.png";
             }
-            panels.get("planet").options = defPath + "\\src\\assets\\World\\worldGenerator\\" + pic;
+            panels.get("planet").options = defPath + "\\src\\assets\\World\\WorldGenerator\\" + pic;
         }
     }
 

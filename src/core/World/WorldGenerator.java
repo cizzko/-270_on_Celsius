@@ -28,7 +28,7 @@ public class WorldGenerator {
     public static int SizeX, SizeY;
     public static short[] StaticObjects;
     public static ArrayList<DynamicWorldObjects> DynamicObjects = new ArrayList<>();
-    private static HashMap<String, Structures> structures = new HashMap<>();
+    private static final HashMap<String, Structures> structures = new HashMap<>();
 
     public static void setObject(int x, int y, short object) {
         StaticObjects[x + SizeX * y] = object;
@@ -98,7 +98,7 @@ public class WorldGenerator {
         for (int x = 0; x < SizeX; x++) {
             for (int y = 0; y < SizeY; y++) {
                 if (y > SizeY / 1.5f) {
-                    setObject(x, y, createStatic("Gas"));
+                    setObject(x, y, createStatic("Air"));
                 } else {
                     setObject(x, y, createStatic("Grass"));
                 }
@@ -156,7 +156,7 @@ public class WorldGenerator {
                     if ((getType(getObject(x + 1, y)) == StaticObjectsConst.Types.SOLID || getType(getObject(x - 1, y)) == StaticObjectsConst.Types.SOLID || getType(getObject(x, y + 1)) == StaticObjectsConst.Types.SOLID || getType(getObject(x, y - 1)) == StaticObjectsConst.Types.SOLID) && Math.random() * randGrass < 1) {
                         setObject(x, y, createStatic("Grass"));
                     } else if (Math.random() * randAir < 1) {
-                        setObject(x, y, destroyObject(getObject(x, y)));
+                        destroyObject(x, y);
                     }
                 }
             }
@@ -295,7 +295,7 @@ public class WorldGenerator {
         for (int x = 0; x < forests.length; x++) {
             if (forests[x] > 0) {
                 for (int i = 0; i < forests[x]; i++) {
-                    final String path = defPath + "\\src\\assets\\World\\Saves\\tree" + (int) (Math.random() * 2) + ".ser";
+                    final String path = defPath + "\\src\\assets\\World\\Saves\\Structures\\tree" + (int) (Math.random() * 2) + ".ser";
                     int distance = (int) ((Math.random() * 8) + 4);
                     int xTree = x + (i * distance);
                     int yTree = findFreeVerticalCell(x + (i * distance));
@@ -316,7 +316,7 @@ public class WorldGenerator {
                 int y = findFreeVerticalCell(x);
 
                 if (y - 1 > 0 && getType(getObject(x, y - 1)) == StaticObjectsConst.Types.SOLID && getResistance(getObject(x, y - 1)) == 100) {
-                    createStructure(x, y, defPath + "\\src\\assets\\World\\Saves\\decorStone.ser");
+                    createStructure(x, y, defPath + "\\src\\assets\\World\\Saves\\Structures\\decorStone.ser");
                 }
             }
         }
@@ -377,8 +377,8 @@ public class WorldGenerator {
     }
 
     public static void generateDynamicsObjects(boolean randomSpawn) {
-        DynamicObjects.add(new DynamicWorldObjects(true, false, 0.003f, 4, 0, randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f, 100, defPath + "\\src\\assets\\World\\creatures\\playerRight\\player"));
-        DynamicObjects.set(0, new DynamicWorldObjects(true, false, 0.003f, 4, 0, randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f, 100, defPath + "\\src\\assets\\World\\creatures\\playerRight\\player"));}
+        DynamicObjects.add(new DynamicWorldObjects(true, false, 0.003f, 4, 0, randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f, 100, defPath + "\\src\\assets\\World\\Creatures\\playerRight\\player"));
+        DynamicObjects.set(0, new DynamicWorldObjects(true, false, 0.003f, 4, 0, randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f, 100, defPath + "\\src\\assets\\World\\Creatures\\playerRight\\player"));}
 
     public static void start(boolean generateCreatures) {
         CreatePlanet.delete();

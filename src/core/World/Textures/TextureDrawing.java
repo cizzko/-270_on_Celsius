@@ -224,7 +224,7 @@ public class TextureDrawing {
     }
 
     public static void drawCursor() {
-        drawTexture(defPath + "\\src\\assets\\World\\other\\cursorDefault.png", EventHandler.getMousePos().x, getMousePos().y - 20, 1, true);
+        drawTexture(defPath + "\\src\\assets\\World\\Other\\cursorDefault.png", EventHandler.getMousePos().x, getMousePos().y - 20, 1, true);
     }
 
     public static void drawText(int x, int y, String text, SimpleColor color) {
@@ -471,7 +471,7 @@ public class TextureDrawing {
                     continue;
                 }
                 if (getHp(obj) <= 0) {
-                    setObject(x, y, destroyObject(obj));
+                    destroyObject(x, y);
                     continue;
                 }
 
@@ -483,10 +483,10 @@ public class TextureDrawing {
                         drawTexture(getPath(obj), xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
 
                     } else if (getHp(obj) < getMaxHp(obj) / 3) {
-                        drawMultiTexture(getPath(obj), defPath + "\\src\\assets\\World\\blocks\\damaged2.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
+                        drawMultiTexture(getPath(obj), defPath + "\\src\\assets\\World\\Blocks\\damaged1.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
 
                     } else {
-                        drawMultiTexture(getPath(obj), defPath + "\\src\\assets\\World\\blocks\\damaged1.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
+                        drawMultiTexture(getPath(obj), defPath + "\\src\\assets\\World\\Blocks\\damaged0.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
                     }
                 }
             }

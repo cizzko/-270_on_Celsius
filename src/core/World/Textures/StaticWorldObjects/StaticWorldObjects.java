@@ -2,6 +2,8 @@ package core.World.Textures.StaticWorldObjects;
 
 import core.World.Creatures.Player.Inventory.Items.Details;
 import core.World.Textures.ShadowMap;
+import core.World.WorldGenerator;
+
 import java.io.Serializable;
 import static core.Window.defPath;
 import static core.Window.start;
@@ -15,8 +17,11 @@ public abstract class StaticWorldObjects implements Serializable {
         return (short) ((((byte) getMaxHp(id) & 0xFF) << 8) | (id & 0xFF));
     }
 
-    public static short destroyObject(short id) {
+    public static void destroyObject(int cellX, int cellY) {
+        short id = WorldGenerator.getObject(cellX, cellY);
+
         if (id != 0) {
+            WorldGenerator.setObject(cellX, cellY, (short) 0);
             //TODO: костыль
             if (getName(id).toLowerCase().contains("trunk") && Math.random() * 100 < 30) {
                 createElementDetail(new Details("Stick", defPath + "\\src\\assets\\World\\Items\\stick.png"), "");
@@ -25,7 +30,6 @@ public abstract class StaticWorldObjects implements Serializable {
                 ShadowMap.update();
             }
         }
-        return 0;
     }
 
     public static float getMaxHp(short id) {

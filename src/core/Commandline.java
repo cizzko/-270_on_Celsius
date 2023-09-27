@@ -38,15 +38,19 @@ public class Commandline {
         if (target.startsWith("modify")) {
             target = target.substring(7);
             modifyField(target);
+            return;
 
         } else if (target.startsWith("start")) {
             target = target.substring(6);
             startMethod(target);
+            return;
 
         } else if (target.startsWith("eval")) {
             final String[] targetMethod = target.split(" ");
             new Thread(() -> EventHandler.keyLoggingText = ImportClassMethod.startMethod(targetMethod[1], targetMethod[targetMethod.length - 1], null, null)).start();
+            return;
         }
+        keyLoggingText = "Command not found";
     }
 
     private static void modifyField(String target) {

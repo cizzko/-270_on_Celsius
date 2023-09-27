@@ -2,8 +2,6 @@ package core.UI.GUI.Menu;
 
 import core.World.Textures.SimpleColor;
 import core.World.WorldGenerator;
-
-import java.awt.*;
 import static core.EventHandling.Logging.Json.getName;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.defPath;
@@ -15,8 +13,8 @@ public class CreatePlanet {
         createPanel(20, 240, 1400, 820, "leftPanel", false, "WorldGenerator");
         createPanel(1440, 240, 460, 820, "rightPanel", false, "WorldGenerator");
 
-        createPicture(1460, 620, 1, "planetBackground", defPath + "\\src\\assets\\World\\worldGenerator\\skyBackgroundPlanet.png", "WorldGenerator");
-        createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\worldGenerator\\planetMini.png", "WorldGenerator");
+        createPicture(1460, 620, 1, "planetBackground", defPath + "\\src\\assets\\World\\WorldGenerator\\skyBackgroundPlanet.png", "WorldGenerator");
+        createPicture(1510, 670, 2, "planet", defPath + "\\src\\assets\\World\\WorldGenerator\\planetMini.png", "WorldGenerator");
 
         createButton(1460, 260, 420, 67, getName("GenerateWorld"), null, true, new SimpleColor(255, 80, 0, 55), "WorldGenerator", WorldGenerator::generateWorld);
         createSwapButton(70, 980, 32, 32, getName("GenerateSimpleWorld"), getName("GenerateSimpleWorldPrompt"), false, new SimpleColor(236, 236, 236, 55), "WorldGenerator");

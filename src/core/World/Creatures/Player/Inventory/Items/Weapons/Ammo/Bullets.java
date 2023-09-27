@@ -11,6 +11,7 @@ import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 import java.awt.*;
 import static core.EventHandling.EventHandler.getMousePos;
 import static core.Window.defPath;
+import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.destroyObject;
 import static core.World.Textures.TextureDrawing.drawTexture;
 import static core.World.WorldGenerator.*;
 
@@ -79,7 +80,7 @@ public class Bullets {
                         bullets[i].damage -= hp;
 
                         if (getObject(staticObjectPoint.x, staticObjectPoint.y) <= 0) {
-                            setObject(staticObjectPoint.x, staticObjectPoint.y, StaticWorldObjects.destroyObject(staticObject));
+                            destroyObject(staticObjectPoint.x, staticObjectPoint.y);
                         }
                     } else if (dynamicObject != null) {
                         float hp = dynamicObject.currentHp;

@@ -36,12 +36,12 @@ public class Player {
         float increment = noClip ? 0.5f : 0.1f;
 
         if (EventHandler.getKeyClick(GLFW_KEY_Q) && DynamicObjects.get(0).animSpeed == 0) {
-            DynamicObjects.get(0).path = defPath + "\\src\\assets\\World\\creatures\\playerLeft\\player";
+            DynamicObjects.get(0).path = defPath + "\\src\\assets\\World\\Creatures\\playerLeft\\player";
             DynamicObjects.get(0).animSpeed = 0.03f;
             setObject((int) ((DynamicObjects.get(0).x - 1) / 16), (int) (DynamicObjects.get(0).y / 16 + 1), StaticWorldObjects.decrementHp(getObject((int) ((DynamicObjects.get(0).x - 1) / 16), (int) (DynamicObjects.get(0).y / 16 + 1)), 10));
         }
         if (EventHandler.getKeyClick(GLFW_KEY_E) && DynamicObjects.get(0).animSpeed == 0) {
-            DynamicObjects.get(0).path = defPath + "\\src\\assets\\World\\creatures\\playerRight\\player";
+            DynamicObjects.get(0).path = defPath + "\\src\\assets\\World\\Creatures\\playerRight\\player";
             DynamicObjects.get(0).animSpeed = 0.03f;
             setObject((int) (DynamicObjects.get(0).x / 16 + 2), (int) (DynamicObjects.get(0).y / 16 + 1), StaticWorldObjects.decrementHp(getObject((int) (DynamicObjects.get(0).x / 16 + 2), (int) (DynamicObjects.get(0).y / 16 + 1)), 10));
         }
@@ -123,11 +123,8 @@ public class Player {
             short object = getObject(blockX, blockY);
 
             if (object > 0 && getPath(object) != null) {
-                SimpleColor color = ShadowMap.getColor(blockX, blockY);
-                int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
-
                 if (getDistanceUMB() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
-                    TextureDrawing.drawTexture(getPath(object), blockX, blockY, 3, new SimpleColor(Math.max(0, a - 150), Math.max(0, a - 150), a, 255), false, false);
+                    drawBlock(blockX, blockY, object, true);
 
                     if (EventHandler.getMousePress() && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
                         tool.lastHitTime = System.currentTimeMillis();
@@ -135,13 +132,37 @@ public class Player {
 
                         if (getHp(object) <= 0) {
                             createElementPlaceable(object, "none");
-                            setObject(blockX, blockY, destroyObject(object));
+                            destroyObject(blockX, blockY);
                         }
                     }
                 } else {
-                    TextureDrawing.drawTexture(getPath(object), blockX, blockY, 3, new SimpleColor(a, Math.max(0, a - 150), Math.max(0, a - 150), 255), false, false);
+                    drawBlock(blockX, blockY, object, false);
                 }
             }
+        }
+    }
+
+    private static void drawBlock(int cellX, int cellY, short obj, boolean breakable) {
+        SimpleColor color = ShadowMap.getColor(cellX, cellY);
+        SimpleColor blockColor;
+        int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
+        int xBlock = cellX * 16;
+        int yBlock = cellY * 16;
+
+        if (breakable) {
+            blockColor = new SimpleColor(Math.max(0, a - 150), Math.max(0, a - 150), a, 255);
+        } else {
+            blockColor = new SimpleColor(a, Math.max(0, a - 150), Math.max(0, a - 150), 255);
+        }
+
+        if (getHp(obj) > getMaxHp(obj) / 1.5f) {
+            TextureDrawing.drawTexture(getPath(obj), xBlock, yBlock, 3f, blockColor, false, false);
+
+        } else if (getHp(obj) < getMaxHp(obj) / 3) {
+            TextureDrawing.drawMultiTexture(getPath(obj), defPath + "\\src\\assets\\World\\Blocks\\damaged1.png", xBlock, yBlock, 3f, blockColor, false, false);
+
+        } else {
+            TextureDrawing.drawMultiTexture(getPath(obj), defPath + "\\src\\assets\\World\\Blocks\\damaged0.png", xBlock, yBlock, 3f, blockColor, false, false);
         }
     }
 

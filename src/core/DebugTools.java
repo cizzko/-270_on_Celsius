@@ -17,14 +17,12 @@ import java.awt.*;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
-import java.time.LocalDate;
 import java.util.zip.DeflaterOutputStream;
 import static core.EventHandling.Logging.Logger.log;
 import static core.Window.defPath;
 import static core.Window.glfwWindow;
 import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.WorldGenerator.getObject;
-import static core.World.WorldGenerator.setObject;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
 //сделан по принципу автономного модуля, который можно удалить без последствий
@@ -89,14 +87,16 @@ public class DebugTools {
         for (int x = lastMousePosBlocks.x; x < Player.getBlockUnderMousePoint().x; x++) {
             for (int y = lastMousePosBlocks.y; y < Player.getBlockUnderMousePoint().y; y++) {
                 if (x < WorldGenerator.SizeX && y < WorldGenerator.SizeY && x > 0 && y > 0 && getObject(x, y) > 0 && getId(getObject(x, y)) != 0) {
-                    setObject(x, y, destroyObject(getObject(x, y)));
+                   destroyObject(x, y);
                 }
             }
         }
     }
 
     private static void saveStructure(Structures data) {
-        Logger.log("Start saving structure..");
+        long time = System.currentTimeMillis();
+
+        Logger.log("Start saving structure: " + time);
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -110,12 +110,12 @@ public class DebugTools {
             dos.close();
             byte[] compressedBytes = compressed.toByteArray();
 
-            FileOutputStream fos = new FileOutputStream(defPath + "\\src\\assets\\World\\Saves\\structure" + LocalDate.now() + ".ser");
+            FileOutputStream fos = new FileOutputStream(defPath + "\\src\\assets\\World\\Saves\\Structures\\structure" + time + ".ser");
             fos.write(compressedBytes);
             fos.close();
         } catch (Exception e) {
-            log("Error at serialization (saving) structure: " + e);
+            log("Error at serialization (saving) structure: '" + time + "', error: " + e);
         }
-        Logger.log("End saving structure");
+        Logger.log("End saving structure: " + time);
     }
 }

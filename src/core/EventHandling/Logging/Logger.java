@@ -8,19 +8,31 @@ import java.awt.*;
 import java.io.*;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
-import java.lang.management.MemoryMXBean;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.Random;
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Window.*;
 import static org.lwjgl.glfw.GLFW.*;
 
-public class Logger {
+public class Logger extends PrintStream {
     private static final long sessionId = (long) (new Random().nextDouble() * Long.MAX_VALUE);
     public static boolean cleanup = false;
+    private static byte[] lastErrBuf;
+    public Logger() {
+        super(System.err);
+    }
 
-    public static void log(String message, boolean forcibly) {
-        if (getFromConfig("Debug").equals("true") || forcibly) {
+    @Override
+    public void write(byte[] buf, int off, int len) {
+        if (!Arrays.equals(buf, lastErrBuf)) {
+            lastErrBuf = buf;
+            log("Some error: " + new String(buf, off, len));
+        }
+    }
+
+    public static void log(String message) {
+        if (getFromConfig("Debug").equals("true")) {
             System.out.println(message);
 
             if (!cleanup) {
@@ -43,10 +55,6 @@ public class Logger {
                 e.printStackTrace();
             }
         }
-    }
-
-    public static void log(String message) {
-        log(message, false);
     }
 
     public static void logExit(int status, String reason, boolean exitOnProgram) {
@@ -85,15 +93,20 @@ public class Logger {
     }
 
     public static void logStart() {
-        String langs = Json.getAllLanguages();
+        System.setErr(new Logger());
+        Json.detectLanguage();
+
         String computerInfo = String.format(" | Разрешение экрана: %d x %d | Процессор: %s | Количество потоков: %s | Количество ОЗУ: %d MB", Toolkit.getDefaultToolkit().getScreenSize().width, Toolkit.getDefaultToolkit().getScreenSize().height, System.getenv("PROCESSOR_IDENTIFIER"), Runtime.getRuntime().availableProcessors(), ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getTotalMemorySize() / (1024 * 1024));
         String system = System.getProperty("os.name").toLowerCase();
+        String message =
+                !system.contains("windows 10") ? "Warning: " + System.getProperty("os.name") + " not supported!\n" : "" +
+                "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version +
+                "\nStart time: " + LocalDateTime.now() + "\n\nPreload textures: " + getFromConfig("PreloadTextures") +
+                "\nVertical sync: " + Config.getFromConfig("VerticalSync") + " (" + verticalSync + ")" +
+                "\nCurrent language: " + getFromConfig("Language") + "\nAvailable languages: " +
+                Json.getAllLanguages().replace(" ", ", ") + "\n";
 
-        Json.detectLanguage();
         AnonymousStatistics.sendStateMessageThread("Session '" + sessionId + "' started, time: '" + LocalDateTime.now() + "', system info: " + system + computerInfo);
-
-        log(!system.contains("windows 10") ? "Warning: " + System.getProperty("os.name") + " not supported!\n" : "" + "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version + "\n");
-        log("Start time: " + LocalDateTime.now() + "\nPreload textures: " + getFromConfig("PreloadTextures"));
-        log("Vertical sync: " + Config.getFromConfig("VerticalSync") + " (" + verticalSync + ")" + "\n\nCurrent language: " + getFromConfig("Language") + "\nAvailable languages: " + langs.replace(" ", ", ") + "\n");
+        log(message);
     }
 }
