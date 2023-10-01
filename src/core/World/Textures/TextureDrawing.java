@@ -520,7 +520,7 @@ public class TextureDrawing {
                         dynamicObject.currentFrame++;
                         dynamicObject.lastFrameTime = System.currentTimeMillis();
                     } else if (dynamicObject.currentFrame == dynamicObject.framesCount && System.currentTimeMillis() - dynamicObject.lastFrameTime >= dynamicObject.animSpeed * 1000) {
-                        dynamicObject.currentFrame = 1;
+                        dynamicObject.currentFrame = 0;
                         dynamicObject.lastFrameTime = System.currentTimeMillis();
 
                         if (dynamicObject.oneoffAnimation) {
@@ -529,7 +529,7 @@ public class TextureDrawing {
                     }
                 }
                 if (!(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top)) {
-                    if (dynamicObject.framesCount == 1) {
+                    if (dynamicObject.framesCount == 0) {
                         drawTexture(dynamicObject.path, dynamicObject.x, dynamicObject.y, 3, ShadowMap.getColorDynamic(x), false, dynamicObject.mirrored);
                     } else {
                         drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, ShadowMap.getColorDynamic(x), false, dynamicObject.mirrored);

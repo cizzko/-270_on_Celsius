@@ -3,6 +3,7 @@ package core.World.Textures;
 import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
 import core.World.WorldGenerator;
 import java.util.*;
+import static core.Window.start;
 import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.WorldGenerator.*;
 
@@ -12,7 +13,7 @@ public class ShadowMap {
     private static SimpleColor deletedColor = new SimpleColor(0, 0, 0, 0), deletedColorDynamic = new SimpleColor(0, 0, 0, 0);
     private static SimpleColor addedColor = new SimpleColor(0, 0, 0, 0), addedColorDynamic = new SimpleColor(0, 0, 0, 0);
 
-    //TODO: рекомендуется переписать генерацию и апдейт
+    //TODO: переписать генерацию и апдейт
 
     public static SimpleColor getShadow(int x, int y) {
         return shadows[x + SizeX * y];
@@ -63,29 +64,69 @@ public class ShadowMap {
     }
 
     public static void update() {
-        for (int x = (int) (DynamicObjects.get(0).x / 16) - 20; x < DynamicObjects.get(0).x / 16 + 21; x++) {
-            for (int y = (int) (DynamicObjects.get(0).y / 16) - 8; y < DynamicObjects.get(0).y / 16 + 16; y++) {
-                if (checkHasGasAround(x, y, 1)) {
-                    setShadow(x, y, new SimpleColor(165, 165, 165, 255));
-                } else {
-                    setShadow(x, y, new SimpleColor(255, 255, 255, 255));
+        if (start) {
+            for (int x = (int) (DynamicObjects.get(0).x / 16) - 20; x < DynamicObjects.get(0).x / 16 + 21; x++) {
+                for (int y = (int) (DynamicObjects.get(0).y / 16) - 8; y < DynamicObjects.get(0).y / 16 + 16; y++) {
+                    if (checkHasGasAround(x, y, 1)) {
+                        setShadow(x, y, new SimpleColor(165, 165, 165, 255));
+                    } else {
+                        setShadow(x, y, new SimpleColor(255, 255, 255, 255));
+                    }
+                }
+            }
+            for (int x = (int) (DynamicObjects.get(0).x / 16) - 20; x < DynamicObjects.get(0).x / 16 + 21; x++) {
+                for (int y = (int) (DynamicObjects.get(0).y / 16) - 8; y < DynamicObjects.get(0).y / 16 + 16; y++) {
+                    if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
+                        setShadow(x, y, new SimpleColor(85, 85, 85, 255));
+                    }
+                }
+            }
+            for (int x = (int) (DynamicObjects.get(0).x / 16) - 20; x < DynamicObjects.get(0).x / 16 + 21; x++) {
+                for (int y = (int) (DynamicObjects.get(0).y / 16) - 8; y < DynamicObjects.get(0).y / 16 + 16; y++) {
+                    if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
+                        setShadow(x, y, new SimpleColor(5, 5, 5, 255));
+                    }
                 }
             }
         }
-        for (int x = (int) (DynamicObjects.get(0).x / 16) - 20; x < DynamicObjects.get(0).x / 16 + 21; x++) {
-            for (int y = (int) (DynamicObjects.get(0).y / 16) - 8; y < DynamicObjects.get(0).y / 16 + 16; y++) {
-                if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
-                    setShadow(x, y, new SimpleColor(85, 85, 85, 255));
-                }
-            }
-        }
-        for (int x = (int) (DynamicObjects.get(0).x / 16) - 20; x < DynamicObjects.get(0).x / 16 + 21; x++) {
-            for (int y = (int) (DynamicObjects.get(0).y / 16) - 8; y < DynamicObjects.get(0).y / 16 + 16; y++) {
-                if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
-                    setShadow(x, y, new SimpleColor(5, 5, 5, 255));
-                }
-            }
-        }
+    }
+
+//    public static int getBlockDepthVertical(int x, int y) {
+//        int maxDepth = 4;
+//        int depth = 0;
+//
+//        for (int i = y; i < SizeY; i++) {
+//            if (depth >= maxDepth || getType(getObject(x, i + 1)) == StaticObjectsConst.Types.GAS) {
+//                break;
+//            }
+//            depth++;
+//        }
+//        return depth;
+//    }
+//
+//    private static int getBlockLightingVertical(int x, int y) {
+//        int lighting = 255;
+//
+//        for (int i = y; i < SizeY; i++) {
+//            if (getType(getObject(x, i)) != StaticObjectsConst.Types.GAS) {
+//                lighting -= Math.abs(255 - StaticWorldObjects.getLightTransmission(getObject(x, i)));
+//
+//                if (lighting < 10) {
+//                    return 10;
+//                }
+//            } else {
+//                return 255;
+//            }
+//        }
+//        return lighting;
+//    }
+
+    private static SimpleColor calculateColor(int lighting, SimpleColor originalColor) {
+        int r = originalColor.getRed() - Math.abs(255 - lighting);
+        int g = originalColor.getGreen() - Math.abs(255 - lighting);
+        int b = originalColor.getBlue() - Math.abs(255 - lighting);
+
+        return checkColor(new SimpleColor(r, g, b, originalColor.getAlpha()));
     }
 
     public static SimpleColor getColor(int x, int y) {

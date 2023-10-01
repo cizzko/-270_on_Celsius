@@ -32,6 +32,20 @@ public class WorldGenerator {
 
     public static void setObject(int x, int y, short object) {
         StaticObjects[x + SizeX * y] = object;
+
+        if (StaticObjectsConst.getConst(getId(object)).optionalTiles != null) {
+            new Thread(() -> {
+                short[][] tiles = StaticObjectsConst.getConst(getId(object)).optionalTiles;
+
+                for (int blockX = 0; blockX < tiles.length; blockX++) {
+                    for (int blockY = 0; blockY < tiles[0].length; blockY++) {
+                        if (getType(tiles[blockX][blockY]) != StaticObjectsConst.Types.GAS && tiles[blockX][blockY] != 0) {
+                            StaticObjects[(x + blockX) + SizeX * (y + blockY)] = tiles[blockX][blockY];
+                        }
+                    }
+                }
+            }).start();
+        }
     }
 
     public static short getObject(int x, int y) {

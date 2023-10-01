@@ -18,10 +18,10 @@ public class DynamicWorldObjects implements Serializable {
 
     public DynamicWorldObjects(boolean oneoffAnimation, boolean isFlying, int framesCount, float animSpeed, float x, float y, float maxHp, float weight, String path) {
         this.oneoffAnimation = oneoffAnimation;
-        this.framesCount = framesCount;
+        this.framesCount = framesCount - 1;
         this.animSpeed = animSpeed;
         this.path = path;
-        this.currentFrame = 1;
+        this.currentFrame = 0;
         this.isFlying = isFlying;
         this.mirrored = false;
         this.x = x;
@@ -33,10 +33,10 @@ public class DynamicWorldObjects implements Serializable {
 
     public DynamicWorldObjects(boolean oneoffAnimation, boolean isFlying, float weight, int framesCount, float animSpeed, float x, float maxHp, String path) {
         this.oneoffAnimation = oneoffAnimation;
-        this.framesCount = framesCount;
+        this.framesCount = framesCount - 1;
         this.animSpeed = animSpeed;
         this.path = path;
-        this.currentFrame = 1;
+        this.currentFrame = 0;
         this.isFlying = isFlying;
         this.mirrored = false;
         this.x = x;

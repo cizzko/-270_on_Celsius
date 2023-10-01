@@ -128,11 +128,12 @@ public class Player {
 
                     if (EventHandler.getMousePress() && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
                         tool.lastHitTime = System.currentTimeMillis();
-                        setObject(blockX, blockY, decrementHp(object, (int) tool.damage));
 
-                        if (getHp(object) <= 0) {
+                        if (getHp(decrementHp(object, (int) tool.damage)) <= 0) {
                             createElementPlaceable(object, "none");
                             destroyObject(blockX, blockY);
+                        } else {
+                            setObject(blockX, blockY, decrementHp(object, (int) tool.damage));
                         }
                     }
                 } else {
