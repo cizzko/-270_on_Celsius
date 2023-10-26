@@ -113,7 +113,7 @@ public class TextureDrawing {
             color = new SimpleColor(255, 255, 255, 255);
         }
 
-        int textureId = pathMain.hashCode() + pathSecond.hashCode();
+        int textureId = (pathMain + pathSecond).hashCode();
         if (textures.get(textureId) == null) {
             bindTexture(TextureLoader.uniteTextures(pathMain, pathSecond), textureId, TextureLoader.getSize(pathMain).width, TextureLoader.getSize(pathMain).height);
         }
@@ -457,7 +457,6 @@ public class TextureDrawing {
 
     public static void updateStaticObj() {
         updateSun();
-        Factories.update();
         updatePlayerPos();
 
         for (int x = (int) (playerX / 16) - 20; x < playerX / 16 + 21; x++) {
@@ -479,18 +478,27 @@ public class TextureDrawing {
                 float yBlock = findY(x, y);
 
                 if (isOnCamera(xBlock, yBlock, 16, 16)) {
+                    SimpleColor color = ShadowMap.getColor(x, y);
+                    if (currentWorldTemperature <= 0) {
+                        int r = ShadowMap.checkColor((int) (color.getRed() + Math.max(currentWorldTemperature / 2, -75)));
+                        int g = ShadowMap.checkColor((int) (color.getGreen() + Math.max(currentWorldTemperature / 2, -75)));
+
+                        color = new SimpleColor(r, g, color.getBlue(), color.getAlpha());
+                    }
+
                     if (getHp(obj) > getMaxHp(obj) / 1.5f) {
-                        drawTexture(getPath(obj), xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
+                        drawTexture(getPath(obj), xBlock, yBlock, 3f, color, false, false);
 
                     } else if (getHp(obj) < getMaxHp(obj) / 3) {
-                        drawMultiTexture(getPath(obj), defPath + "\\src\\assets\\World\\Blocks\\damaged1.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
+                        drawMultiTexture(getPath(obj), defPath + "\\src\\assets\\World\\Blocks\\damaged1.png", xBlock, yBlock, 3f, color, false, false);
 
                     } else {
-                        drawMultiTexture(getPath(obj), defPath + "\\src\\assets\\World\\Blocks\\damaged0.png", xBlock, yBlock, 3f, ShadowMap.getColor(x, y), false, false);
+                        drawMultiTexture(getPath(obj), defPath + "\\src\\assets\\World\\Blocks\\damaged0.png", xBlock, yBlock, 3f, color, false, false);
                     }
                 }
             }
         }
+        Factories.update();
     }
 
     public static boolean isOnCamera(float x, float y, float xSize, float ySize) {

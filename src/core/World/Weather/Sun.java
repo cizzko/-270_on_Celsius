@@ -2,6 +2,8 @@ package core.World.Weather;
 
 import core.World.Textures.ShadowMap;
 import core.World.Textures.SimpleColor;
+import core.World.WorldGenerator;
+
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Window.*;
 import static core.World.Textures.TextureDrawing.*;
@@ -20,10 +22,12 @@ public class Sun {
     public static void updateSun() {
         if (visible) {
             if (System.currentTimeMillis() - lastTime >= 900) {
+                WorldGenerator.currentWorldTemperature -= WorldGenerator.temperatureDecrement;
                 lastTime = System.currentTimeMillis();
                 currentTime++;
 
                 if (currentTime > 2400 || currentTime < 0) { // 2400 - 23:59
+                    WorldGenerator.dayCount++;
                     currentTime = 0;
                 }
                 x = DynamicObjects.get(0).x;
@@ -33,6 +37,12 @@ public class Sun {
                 } else {
                     double t = (currentTime - 2400) / (1 - 2400);
                     y = (float) (endYSun * (1 - t) + startYSun * t);
+                }
+
+                if (currentTime >= startDay || (currentTime >= 0 && currentTime <= endSunset)) {
+                    WorldGenerator.currentWorldTemperature += WorldGenerator.temperatureDecrement / 3.29f;
+                } else {
+                    WorldGenerator.currentWorldTemperature -= WorldGenerator.temperatureDecrement;
                 }
             }
             final int minGreen = 85;
