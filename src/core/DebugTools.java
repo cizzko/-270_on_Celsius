@@ -18,10 +18,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.zip.DeflaterOutputStream;
-import static core.EventHandling.Logging.Logger.log;
+import static core.EventHandling.Logging.Logger.printException;
 import static core.Window.defPath;
 import static core.Window.glfwWindow;
 import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.*;
+import static core.World.WorldGenerator.destroyObject;
 import static core.World.WorldGenerator.getObject;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
@@ -31,7 +32,7 @@ public class DebugTools {
     private static Point lastMousePosBlocks = new Point(0, 0), lastMousePos = new Point(0, 0);
 
     public static void startUpdate() {
-        Logger.log("debug module has started");
+        Logger.log("Debug module has started");
 
         new Thread(() -> {
             while (!glfwWindowShouldClose(glfwWindow)) {
@@ -114,7 +115,7 @@ public class DebugTools {
             fos.write(compressedBytes);
             fos.close();
         } catch (Exception e) {
-            log("Error at serialization (saving) structure: '" + time + "', error: " + e);
+            printException("Error when serialization (saving) structure: " + time, e);
         }
         Logger.log("End saving structure: " + time);
     }

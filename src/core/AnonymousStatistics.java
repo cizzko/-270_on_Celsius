@@ -4,7 +4,7 @@ import core.EventHandling.Logging.Config;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import static core.EventHandling.Logging.Logger.log;
+import static core.EventHandling.Logging.Logger.printException;
 
 public class AnonymousStatistics extends Thread {
     public static final boolean sendStatic = Boolean.parseBoolean(Config.getFromConfig("SendAnonymousStatistics"));
@@ -27,7 +27,7 @@ public class AnonymousStatistics extends Thread {
                     con.getResponseCode();
 
                 } catch (Exception e) {
-                    log("Error at push anonymous state: '" + e + "'");
+                    printException("Error when push anonymous state", e);
                 }
             }).start();
         }
@@ -50,7 +50,7 @@ public class AnonymousStatistics extends Thread {
                 con.getResponseCode();
 
             } catch (Exception e) {
-                log("Error at push anonymous state: '" + e + "'");
+                printException("Error when push anonymous state", e);
             }
         }
     }

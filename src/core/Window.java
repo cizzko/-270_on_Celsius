@@ -19,7 +19,7 @@ import static org.lwjgl.opengl.GL13.*;
 public class Window {
     public final static String defPath = Paths.get("").toAbsolutePath().toString();
     public static int width = 1920, height = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0, fps = 0;
-    public static final String version = "dev 0.0.0.9";
+    public static final String version = "alpha 0.0.2 (non stable)";
     public static boolean start = false;
     public static long glfwWindow;
 
@@ -46,7 +46,7 @@ public class Window {
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         glfwMakeContextCurrent(glfwWindow);
         glfwSetScrollCallback(glfwWindow, new MouseScrollCallback());
-        //glfwSetScrollCallback(glfwWindow, new MouseScrollCallback());
+
         //vsync
         glfwSwapInterval(verticalSync);
         //настройка отображения
@@ -63,7 +63,7 @@ public class Window {
         TextureLoader.bindChars();
         Main.create();
 
-        log("Init status: true");
+        log("Init status: true\n");
     }
 
     public void draw() {
@@ -78,7 +78,7 @@ public class Window {
                 updateStaticObj();
                 updateDynamicObj();
             } else {
-                drawTexture(defPath + "\\src\\assets\\World\\other\\background.png", 0, 0, 1, true);
+                drawTexture(defPath + "\\src\\assets\\World\\Other\\background.png", 0, 0, 1, true);
             }
             updateGUI();
             drawCursor();

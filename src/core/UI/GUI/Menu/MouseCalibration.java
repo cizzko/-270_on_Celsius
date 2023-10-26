@@ -5,7 +5,7 @@ import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
 import core.World.Textures.SimpleColor;
 import java.awt.*;
-import static core.EventHandling.Logging.Logger.log;
+import static core.EventHandling.Logging.Logger.printException;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.glfwWindow;
 import static org.lwjgl.glfw.GLFW.*;
@@ -23,7 +23,7 @@ public class MouseCalibration {
         try {
             new Robot().mouseMove(960, 440);
         } catch (Exception e) {
-            log(e.toString());
+            printException("Error when moving mouse", e);
         }
 
         update();

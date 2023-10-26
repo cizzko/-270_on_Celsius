@@ -50,7 +50,7 @@ public class Sound {
                     } catch (Exception e) {
                         if (!error) {
                             error = true;
-                            Logger.log(e.toString());
+                            Logger.printException("Error at gain control", e);
                         }
                     }
 
@@ -69,7 +69,7 @@ public class Sound {
                     sourceDataLine.close();
 
                 } catch (Exception e) {
-                    Logger.log("Error during sound playback: '" + e + "', file: " + path);
+                    Logger.printException("Error during sound playback, file: " + path, e);
                 } finally {
                     sounds.put(path, false);
                 }

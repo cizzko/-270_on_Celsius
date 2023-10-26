@@ -2,6 +2,7 @@ package core;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
+import core.EventHandling.Logging.Logger;
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
@@ -68,7 +69,7 @@ public class Commandline {
 
             keyLoggingText = fieldName + " modified to " + convertToType(parts[parts.length - 1]);
         } catch (Exception e) {
-            keyLoggingText = e.toString();
+            keyLoggingText = e.getMessage();
         }
     }
 
@@ -113,7 +114,7 @@ public class Commandline {
             Object result = method.invoke(null, convertedArgs);
             keyLoggingText = result != null ? "Returned: " + result : "Successfully";
         } catch (Exception e) {
-            keyLoggingText = e.toString();
+            keyLoggingText = e.getMessage();
         }
     }
 
@@ -172,7 +173,7 @@ public class Commandline {
                         keyLoggingText += (String) transferable.getTransferData(DataFlavor.stringFlavor);
                         Thread.sleep(200);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Logger.printException("Error when past text at control line", e);
                     }
                 }
             }

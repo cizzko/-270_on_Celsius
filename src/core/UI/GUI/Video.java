@@ -60,7 +60,7 @@ public class Video {
                         }
                     }
                 } catch (Exception e) {
-                    Logger.log("Error at reading video: '" + e + "', path: '" + path + "'");
+                    Logger.printException("Error when reading video, path: " + path, e);
                 }
             }).start();
         }

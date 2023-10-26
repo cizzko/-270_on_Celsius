@@ -5,7 +5,7 @@ import com.google.gson.JsonObject;
 import java.io.FileReader;
 import java.util.HashMap;
 import java.util.Locale;
-import static core.EventHandling.Logging.Logger.log;
+import static core.EventHandling.Logging.Logger.printException;
 import static core.Window.defPath;
 
 public class Json {
@@ -21,7 +21,7 @@ public class Json {
                 keys.put(jsonObject.getAsJsonObject(lang).get(key).getAsString(), key);
 
             } catch (Exception e) {
-                log("Key '" + key + "' at language '" + lang + "' not found, see file " + translateFile);
+                printException("Key '" + key + "' at language '" + lang + "' not found, see file: " + translateFile, e);
                 return key;
             }
         }
@@ -41,7 +41,7 @@ public class Json {
                 String[] availableLanguages = jsonObject.keySet().stream().filter(key -> !key.equalsIgnoreCase("Languages")).toArray(String[]::new);
                 allLanguages = String.join(" ", availableLanguages);
             } catch (Exception e) {
-                log("Error while reading languages from JSON file: " + e);
+                printException("Error while reading languages from JSON file", e);
             }
         }
         return allLanguages;
@@ -56,7 +56,7 @@ public class Json {
 
             availableLanguages = jsonObject.keySet().stream().filter(key -> !key.equalsIgnoreCase("Languages")).toArray(String[]::new);
         } catch (Exception e) {
-            log("Error while reading languages from JSON file: " + e);
+            printException("Error while reading languages from JSON file", e);
         }
         return availableLanguages;
     }
@@ -71,7 +71,7 @@ public class Json {
             }
         } catch (Exception e) {
             Config.updateConfig("DetectLanguage", "false");
-            log("Some error at detecting language '" + e + "', path: '" + translateFile + "', auto - detect deactivated, language set to " + Config.getFromConfig("Language"));
+            printException("Some error when detecting language, path: '" + translateFile + "', auto - detect deactivated, language set to " + Config.getFromConfig("Language"), e);
         }
     }
 }

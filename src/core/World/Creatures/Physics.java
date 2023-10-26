@@ -30,6 +30,8 @@ public class Physics extends Thread {
         updates = 0;
         stop = false;
         new Thread(new Physics()).start();
+
+        Logger.log("Thread: Physics restarted");
     }
 
     public void run() {

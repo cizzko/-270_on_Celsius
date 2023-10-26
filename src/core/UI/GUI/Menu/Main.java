@@ -6,7 +6,7 @@ import core.World.Textures.SimpleColor;
 import java.awt.*;
 import java.net.URI;
 import static core.EventHandling.Logging.Json.getName;
-import static core.EventHandling.Logging.Logger.log;
+import static core.EventHandling.Logging.Logger.printException;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.defPath;
 import static core.Window.start;
@@ -32,7 +32,7 @@ public class Main {
             Desktop desktop = Desktop.getDesktop();
             desktop.browse(new URI("https://discord.gg/gUS9X6exAQ"));
         } catch (Exception e) {
-            log(e.toString());
+            printException("Error when open discord server", e);
         }
     }
 

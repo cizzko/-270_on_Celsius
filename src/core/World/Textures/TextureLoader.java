@@ -1,6 +1,7 @@
 package core.World.Textures;
 
 import core.EventHandling.Logging.Config;
+import core.World.ArrayUtils;
 import org.lwjgl.BufferUtils;
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -9,9 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.Stack;
-import static core.EventHandling.Logging.Logger.log;
-import static core.EventHandling.Logging.Logger.logExit;
+import static core.EventHandling.Logging.Logger.*;
 import static core.UI.GUI.Fonts.getCharBuffer;
 import static core.UI.GUI.Fonts.letterSize;
 import static core.Window.defPath;
@@ -25,7 +24,8 @@ public class TextureLoader extends Thread {
         try {
             return ImageIO.read(new File(path));
         } catch (IOException e) {
-            logExit(1, "Critical error at buffered image encoder: '" + e + "', path: '" + path + "'", true);
+            printException("Error at buffered image encoder, path: " + path, e);
+            logExit(1);
         }
 
         return null;
@@ -98,28 +98,14 @@ public class TextureLoader extends Thread {
     }
 
     public static void preLoadTextures() {
-        int texturesCount = 0;
+        if (Config.getFromConfig("PreloadResources").equals("true")) {
+            String[] textures = ArrayUtils.getAllFile(defPath + "\\src\\assets", ".png");
 
-        if (Config.getFromConfig("PreloadTextures").equals("true")) {
-            Stack<File> stack = new Stack<>();
-            stack.push(new File(defPath + "\\src\\assets"));
-
-            while (!stack.isEmpty()) {
-                File folder = stack.pop();
-                File[] files = folder.listFiles();
-
-                if (files != null) {
-                    for (File file : files) {
-                        if (file.isDirectory()) {
-                            stack.push(file);
-                        } else if (file.getName().toLowerCase().endsWith(".png")) {
-                            texturesCount++;
-                            bindTexture(file.getAbsolutePath());
-                        }
-                    }
-                }
+            for (String texture : textures) {
+                bindTexture(texture);
             }
-            log("Texture loader: load '" + texturesCount + "' textures");
+
+            log("Texture loader: load '" + textures.length + "' textures");
         }
     }
 

@@ -4,18 +4,19 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Properties;
 import static core.EventHandling.Logging.Logger.logExit;
+import static core.EventHandling.Logging.Logger.printException;
 import static core.Window.defPath;
 
 public class Config {
     private static final HashMap<String, Properties> props = new HashMap<>(3);
-    private static final HashMap<String, String> values = new HashMap<>();
+    private static final HashMap<String, Object> values = new HashMap<>();
 
-    private static String getFromProp(String path, String key) {
-        if (values.containsKey(key)) {
+    public static Object getFromProp(String path, String key) {
+        if (values.get(key) != null) {
             return values.get(key);
         }
 
-        String value = getProperties(path).getProperty(key);
+        Object value = getProperties(path).getProperty(key);
         values.put(key, value);
 
         return value;
@@ -27,19 +28,19 @@ public class Config {
             try {
                 props.get(path).load(new FileInputStream(path));
             } catch (IOException e) {
-                throw new RuntimeException("Error when get properties, file: '" + path + "', error: " + e);
+                throw new RuntimeException("Error when get properties, file: " + path, e);
             }
         }
         return props.get(path);
     }
 
     public static String getFromConfig(String key) {
-        return getFromProp(defPath + "\\src\\assets\\Config.properties", key);
+        return (String) getFromProp(defPath + "\\src\\assets\\config.properties", key);
     }
 
     //fast commands
     public static String getFromFC(String key) {
-        return getFromProp(defPath + "\\src\\assets\\fastCommands.properties", key);
+        return (String) getFromProp(defPath + "\\src\\assets\\fastCommands.properties", key);
     }
 
     public static void updateConfig(String key, String value) {
@@ -53,7 +54,8 @@ public class Config {
             values.put(key, value);
 
         } catch (Exception e) {
-            logExit(1, "Error at update config: '" + e + "' at path: '" + defPath + "\\src\\assets\\Config.properties', key: '" + key + "' value: '" + value + "'", true);
+            printException("Error at update config: '" + e.getMessage() + "' at path: '" + defPath + "\\src\\assets\\Config.properties', key: '" + key + "' value: '" + value + "'", e);
+            logExit(1);
         }
     }
 }

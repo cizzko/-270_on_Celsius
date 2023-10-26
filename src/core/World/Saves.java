@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
-import static core.EventHandling.Logging.Logger.log;
+import static core.EventHandling.Logging.Logger.printException;
 import static core.UI.GUI.CreateElement.buttons;
 import static core.Window.defPath;
 
@@ -40,7 +40,7 @@ public class Saves {
             fos.write(compressedBytes);
             fos.close();
         } catch (Exception e) {
-            log("Error at serialization (saving) world: " + e);
+            printException("Error when serialization (saving) world", e);
         }
     }
 
@@ -52,7 +52,7 @@ public class Saves {
 
             data = (HashMap<String, Object>) ois.readObject();
         } catch (Exception e) {
-            log("Error at load world save: '" + e + "', path: " + path);
+            printException("Error when load world save, path: " + path, e);
         }
 
         StaticWorldObjects[] objects = (StaticWorldObjects[]) data.get("StaticWorldObjects");
@@ -67,16 +67,6 @@ public class Saves {
     }
 
     public static String[] loadWorldSaves() {
-        File directory = new File(defPath + "\\src\\assets\\World\\Saves\\WorldSaves");
-        File[] files = directory.listFiles();
-
-        if (files != null) {
-            String[] fileNames = new String[files.length];
-            for (int i = 0; i < files.length; i++) {
-                fileNames[i] = files[i].getName();
-            }
-            return fileNames;
-        }
-        return new String[0];
+      return ArrayUtils.getAllFile(defPath + "\\src\\assets\\World\\Saves\\WorldSaves", null);
     }
 }

@@ -243,7 +243,7 @@ public class EventHandler extends Thread {
     }
 
     private static void updateDebug() {
-        if (Config.getFromConfig("Debug").equals("true") && System.currentTimeMillis() - lastSecond >= 1000) {
+        if (Integer.parseInt(Config.getFromConfig("Debug")) > 0 && System.currentTimeMillis() - lastSecond >= 1000) {
             lastSecond = System.currentTimeMillis();
 
             if (start) {

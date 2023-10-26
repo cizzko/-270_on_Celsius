@@ -158,7 +158,7 @@ public class Settings {
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException e) {
-                            Logger.log("Error when stop otter: " + e);
+                            Logger.printException("Error when stop otter", e);
                         }
                         out = true;
                     }
