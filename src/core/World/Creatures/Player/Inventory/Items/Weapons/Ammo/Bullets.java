@@ -9,16 +9,17 @@ import core.World.HitboxMap;
 import core.World.Textures.DynamicWorldObjects;
 import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+
 import static core.EventHandling.EventHandler.getMousePos;
 import static core.Window.defPath;
-import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.destroyObject;
 import static core.World.Textures.TextureDrawing.drawTexture;
 import static core.World.WorldGenerator.*;
 
 public class Bullets {
     public float bulletSpeed, damage, angle, x, y;
-    public static Bullets[] bullets = new Bullets[2000];
-    private static int lastCreatedCell = 0, bulletCount = 0;
+    public static ArrayList<Bullets> bullets = new ArrayList<>();
 
     private Bullets(float x, float y, float bulletSpeed, float damage, float angle) {
         this.x = x;
@@ -29,20 +30,7 @@ public class Bullets {
     }
 
     public static void createBullet(float x, float y, float bulletSpeed, float damage, float angle) {
-        if (lastCreatedCell + 1 < bullets.length && bullets[lastCreatedCell + 1] == null) {
-            bullets[lastCreatedCell] = new Bullets(x, y, bulletSpeed, damage, angle);
-            lastCreatedCell++;
-            bulletCount++;
-            return;
-        }
-        for (int i = 0; i < bullets.length; i++) {
-            if (bullets[i] == null) {
-                bullets[i] = new Bullets(x, y, bulletSpeed, damage, angle);
-                lastCreatedCell = i;
-                bulletCount++;
-                return;
-            }
-        }
+        bullets.add(new Bullets(x, y, bulletSpeed, damage, angle));
     }
 
     public static void updateBullets() {
@@ -56,28 +44,30 @@ public class Bullets {
             }
         }
 
-        if (bulletCount > 0) {
-            for (int i = 0; i < bullets.length; i++) {
-                Bullets bullet = bullets[i];
+        Iterator<Bullets> bulletsIter = bullets.iterator();
+        while (bulletsIter.hasNext()) {
+            Bullets bullet = bulletsIter.next();
 
-                if (bullet != null) {
-                    float deltaX = (float) (bullet.bulletSpeed * Math.cos(Math.toRadians(bullet.angle)));
-                    float deltaY = (float) (bullet.bulletSpeed * Math.sin(Math.toRadians(bullet.angle)));
-                    float x = bullet.x - deltaX;
-                    float y = bullet.y + deltaY;
+            if (bullet != null) {
+                float deltaX = (float) (bullet.bulletSpeed * Math.cos(Math.toRadians(bullet.angle)));
+                float deltaY = (float) (bullet.bulletSpeed * Math.sin(Math.toRadians(bullet.angle)));
+                float x = bullet.x - deltaX;
+                float y = bullet.y + deltaY;
 
-                    bullet.x -= deltaX;
-                    bullet.y += deltaY;
-                    bullet.damage -= 0.01f;
+                bullet.x -= deltaX;
+                bullet.y += deltaY;
+                bullet.damage -= 0.01f;
 
-                    Point staticObjectPoint = HitboxMap.checkIntersInside(x, y, 8, 8);
+                Point staticObjectPoint = HitboxMap.checkIntersInside(x, y, 8, 8);
+
+                if (staticObjectPoint != null) {
                     short staticObject = getObject(staticObjectPoint.x, staticObjectPoint.y);
                     DynamicWorldObjects dynamicObject = HitboxMap.checkIntersectionsDynamic(x, y, 8, 8);
 
                     if (staticObject > 0) {
                         float hp = StaticWorldObjects.getHp(staticObject);
                         setObject(staticObjectPoint.x, staticObjectPoint.y, StaticWorldObjects.decrementHp(staticObject, (int) bullet.damage));
-                        bullets[i].damage -= hp;
+                        bulletsIter.next().damage -= hp;
 
                         if (getObject(staticObjectPoint.x, staticObjectPoint.y) <= 0) {
                             destroyObject(staticObjectPoint.x, staticObjectPoint.y);
@@ -91,10 +81,9 @@ public class Bullets {
                             DynamicObjects.remove(dynamicObject);
                         }
                     }
-                    if (bullet.damage <= 0 || bullet.x < 0 || bullet.y < 0 || bullet.x / 16 > SizeX || bullet.y / 16 > SizeY) {
-                        bullets[i] = null;
-                        bulletCount--;
-                    }
+                }
+                if (bullet.damage <= 0 || bullet.x < 0 || bullet.y < 0 || bullet.x / 16 > SizeX || bullet.y / 16 > SizeY) {
+                    bulletsIter.remove();
                 }
             }
         }
