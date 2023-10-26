@@ -1,14 +1,13 @@
 package core.World.Creatures.Player.Inventory.Items;
 
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.Placeable.PlaceableItems;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
 import static core.World.Textures.TextureLoader.getSize;
 
 public class Items {
     public Weapons weapon;
-    public PlaceableItems placeable;
+    public short placeable;
     public Tools tool;
     public Details detail;
     public int id, countInCell;
@@ -19,9 +18,8 @@ public class Items {
     public enum Types {
         TOOL,
         WEAPON,
-        PLACEABLE_FACTORY,
-        DETAIL,
-        PLACEABLE_BLOCK
+        PLACEABLE,
+        DETAIL
     }
 
     public Items(Weapons weapon, String path, String description) {
@@ -44,13 +42,13 @@ public class Items {
         this.description = description;
     }
 
-    public Items(PlaceableItems placeable, Types type, String description) {
+    public Items(short placeable, String description) {
         this.placeable = placeable;
-        this.id = placeable.factoryObject != null ? placeable.factoryObject.id : placeable.staticWorldObject;
-        this.path = placeable.factoryObject != null ? placeable.factoryObject.path : StaticWorldObjects.getPath(placeable.staticWorldObject);
+        this.id = StaticWorldObjects.getId(placeable);
+        this.path = StaticWorldObjects.getPath(placeable);
         this.zoom = findZoom(path);
         this.countInCell = Inventory.findCountID(id);
-        this.type = type;
+        this.type = Types.PLACEABLE;
         this.description = description;
     }
 

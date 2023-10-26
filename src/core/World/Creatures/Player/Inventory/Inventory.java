@@ -1,20 +1,16 @@
 package core.World.Creatures.Player.Inventory;
 
 import core.EventHandling.EventHandler;
+import core.EventHandling.Logging.Config;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Items.Details;
 import core.World.Creatures.Player.Inventory.Items.Items;
-import core.World.Creatures.Player.Inventory.Items.Placeable.Factories;
 import core.World.Creatures.Player.Inventory.Items.Tools;
-import core.World.Creatures.Player.Inventory.Items.Placeable.PlaceableItems;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.Creatures.Player.Player;
 import core.World.Textures.SimpleColor;
 import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
-import core.World.WorldGenerator;
-import org.lwjgl.system.linux.Stat;
-
 import java.awt.*;
 import java.util.Arrays;
 import static core.Window.defPath;
@@ -94,14 +90,17 @@ public class Inventory {
             if ((inventoryOpen || current.x > 6)) {
                 drawTexture(defPath + "\\src\\assets\\UI\\GUI\\inventory\\inventoryCurrent.png", 1488 + current.x * 54, 756 + current.y * 54f, 1, true);
             }
-            if (currentObjectType == Items.Types.PLACEABLE_BLOCK || currentObjectType == Items.Types.PLACEABLE_FACTORY) {
-                int blockX = Player.getBlockUnderMousePoint().x;
-                int blockY = Player.getBlockUnderMousePoint().y;
-                boolean isDeclined = Player.getDistanceUMB() > 8 || (StaticWorldObjects.getType(WorldGenerator.getObject(blockX, blockY)) != StaticObjectsConst.Types.GAS || !(StaticWorldObjects.getType(WorldGenerator.getObject(blockX, blockY + 1)) == StaticObjectsConst.Types.GAS || StaticWorldObjects.getType(WorldGenerator.getObject(blockX, blockY - 1)) == StaticObjectsConst.Types.GAS || StaticWorldObjects.getType(WorldGenerator.getObject(blockX + 1, blockY)) == StaticObjectsConst.Types.GAS || StaticWorldObjects.getType(WorldGenerator.getObject(blockX - 1, blockY)) == StaticObjectsConst.Types.GAS));
-                SimpleColor color = new SimpleColor(isDeclined ? 255 : 100, 100, !isDeclined ? 255 : 100, 255);
+            short placeable = inventoryObjects[current.x][current.y].placeable;
+            int blockX = Player.getBlockUnderMousePoint().x;
+            int blockY = Player.getBlockUnderMousePoint().y;
 
-                if (inventoryObjects[current.x][current.y] != null) {
-                    drawTexture(inventoryObjects[current.x][current.y].path, blockX * 16, blockY * 16, 3, color, false, false);
+            if (placeable != 0) {
+                boolean isDeclined = Player.getDistanceUMB() < 8 && Player.canPlace(placeable, blockX, blockY);
+
+                if (StaticObjectsConst.getConst(StaticWorldObjects.getId(placeable)).optionalTiles == null) {
+                    Player.drawBlock(blockX, blockY, placeable, isDeclined);
+                } else if (StaticObjectsConst.getConst(StaticWorldObjects.getId(placeable)).optionalTiles != null) {
+                    Player.drawStructure(blockX, blockY, isDeclined, placeable, StaticObjectsConst.getConst(StaticWorldObjects.getId(placeable)).optionalTiles);
                 }
             }
         }
@@ -123,16 +122,34 @@ public class Inventory {
     }
 
     public static void createElementPlaceable(short object, String description) {
-        if ((short) findCountID(object) > 1) {
-            Point cell = findItemByID(object);
+        byte id = StaticWorldObjects.getId(object);
+        if (findCountID(id) > 1) {
+            Point cell = findItemByID(id);
             inventoryObjects[cell.x][cell.y].countInCell++;
             return;
         }
 
         Point cell = findFreeCell();
         if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = new Items(new PlaceableItems(object), Items.Types.PLACEABLE_BLOCK, description);
+            inventoryObjects[cell.x][cell.y] = new Items((short) ((((byte) StaticWorldObjects.getMaxHp(id) & 0xFF) << 8) | (id & 0xFF)), description);
         }
+    }
+
+    public static void createElementPlaceable(String rootName, short[][] tiles, String description) {
+        int maxHp;
+        short object;
+        byte id = StaticWorldObjects.generateId(rootName);
+
+        if (StaticObjectsConst.getConst(id) == null) {
+            maxHp = Integer.parseInt((String) Config.getProperties(defPath + "\\src\\assets\\World\\ItemsCharacteristics\\" + rootName + ".properties").get("MaxHp"));
+        } else {
+            maxHp = (int) StaticObjectsConst.getConst(id).maxHp;
+        }
+
+        object = (short) ((((byte) maxHp & 0xFF) << 8) | (id & 0xFF));
+
+        StaticObjectsConst.setConst(rootName, id, tiles);
+        Inventory.createElementPlaceable(object, description);
     }
 
     public static void createElementDetail(Details object, String description) {
@@ -147,21 +164,6 @@ public class Inventory {
         Point cell = findFreeCell();
         if (cell != null) {
             inventoryObjects[cell.x][cell.y] = new Items(new Details(object.name, object.path), description);
-        }
-    }
-
-    public static void createElementFactory(Factories factory, String description) {
-        int id = factory.id;
-
-        if (findCountID(id) > 1) {
-            Point cell = findItemByID(id);
-            inventoryObjects[cell.x][cell.y].countInCell++;
-            return;
-        }
-
-        Point cell = findFreeCell();
-        if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = new Items(new PlaceableItems(factory), Items.Types.PLACEABLE_FACTORY, description);
         }
     }
 

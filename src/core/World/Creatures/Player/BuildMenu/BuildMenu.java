@@ -47,8 +47,7 @@ public class BuildMenu {
                     case TOOL -> Inventory.createElementTool(currentItem.tool, currentItem.path, currentItem.description);
                     case DETAIL -> Inventory.createElementDetail(currentItem.detail, currentItem.description);
                     case WEAPON -> Inventory.createElementWeapon(currentItem.weapon, currentItem.path, currentItem.description);
-                    case PLACEABLE_BLOCK -> Inventory.createElementPlaceable(currentItem.placeable.staticWorldObject, currentItem.description);
-                    case PLACEABLE_FACTORY -> Inventory.createElementFactory(currentItem.placeable.factoryObject, currentItem.description);
+                    case PLACEABLE -> Inventory.createElementPlaceable(currentItem.placeable, currentItem.description);
                 }
             }
         }
