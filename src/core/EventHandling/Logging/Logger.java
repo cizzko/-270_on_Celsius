@@ -27,65 +27,93 @@ public class Logger extends PrintStream {
     public void write(byte[] buf, int off, int len) {
         if (!Arrays.equals(buf, lastErrBuf)) {
             lastErrBuf = buf;
-            log("Some error: " + new String(buf, off, len));
+            log("Intercepted message from `System.out`: " + new String(buf, off, len));
         }
     }
 
+    public static void printException(String message, Throwable exception) {
+        StackTraceElement[] stackTrace = exception.getStackTrace();
+        StringBuilder stackTraceMessage = new StringBuilder();
+
+        if (Integer.parseInt(getFromConfig("Debug")) == 2) {
+            stackTraceMessage.append("\n-------- Error detected -------- \nMessage: '").append(message);
+            stackTraceMessage.append("', exception message: '").append(exception.getMessage());
+            stackTraceMessage.append("', cause: '").append(exception.getCause());
+            stackTraceMessage.append("', total stack trace length: '").append(stackTrace.length);
+            stackTraceMessage.append("', stack trace: ");
+
+            for (StackTraceElement stackTraceElement : stackTrace) {
+                stackTraceMessage.append("\nClass name: ").append(stackTraceElement.getClassName());
+                stackTraceMessage.append("\nMethod name: ").append(stackTraceElement.getMethodName());
+                stackTraceMessage.append("\nLine: ").append(stackTraceElement.getLineNumber());
+                stackTraceMessage.append("\nIs native: ").append(stackTraceElement.isNativeMethod());
+            }
+            stackTraceMessage.append("-------- Error end --------");
+
+        } else if (Integer.parseInt(getFromConfig("Debug")) == 1) {
+            stackTraceMessage.append("\nError message: '").append(message);
+            stackTraceMessage.append("', exception message: '").append(exception.getMessage()).append("' ");
+        }
+
+        log(stackTraceMessage.toString());
+    }
+
     public static void log(String message) {
-        if (getFromConfig("Debug").equals("true")) {
+        if (Integer.parseInt(getFromConfig("Debug")) > 0) {
             System.out.println(message);
 
             if (!cleanup) {
-                try {
-                    cleanup = true;
-                    PrintWriter printWriter = new PrintWriter(new FileWriter(defPath + "\\log.txt"));
-
+                try (PrintWriter printWriter = new PrintWriter(new FileWriter(defPath + "\\log.txt"))) {
                     printWriter.print("");
-                    printWriter.close();
+                    cleanup = true;
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    printException("Error when cleanup log", e);
                 }
             }
-            try {
-                PrintWriter printWriter = new PrintWriter(new FileWriter(defPath + "\\log.txt", true));
 
+            try (PrintWriter printWriter = new PrintWriter(new FileWriter(defPath + "\\log.txt", true))) {
                 printWriter.println(message);
-                printWriter.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                printException("Error when print to log", e);
             }
         }
     }
 
     public static void logExit(int status, String reason, boolean exitOnProgram) {
-        String exit;
-
-        if (reason != null) {
-            log("\nExit reason: " + reason);
-        } else {
-            reason = "none";
-        }
-
-        switch (status) {
-            case 0 -> exit = " (normal)";
-            case 1 -> exit = " (critical error)";
-            case 1863 -> exit = " (sudden closure)";
-            case 6553 -> exit = " (glfw error)";
-            default -> exit = " (unknown state)";
-        }
-
-        for (GarbageCollectorMXBean gcBean : ManagementFactory.getGarbageCollectorMXBeans()) {
-            log("\nName GC: " + gcBean.getName() + "\nFull collection cycles GC: " + gcBean.getCollectionCount() + "\nFull time GC (ms): " + gcBean.getCollectionTime() + "\nRAM use: " + ManagementFactory.getMemoryMXBean().getHeapMemoryUsage());
-            break;
-        }
-
-        AnonymousStatistics.sendStateMessage("Session '" + sessionId + "' exit, time: '" + LocalDateTime.now() + "', reason: '" + reason + "', status: " + status + exit);
-        log("\nProgram exit at: " + LocalDateTime.now() + "\nExit code: " + status + exit + "\nGame time: " + Sun.currentTime +  "\n-------- Log ended --------");
+        StringBuilder exitMessage = getExitMessage(status, reason);
+        AnonymousStatistics.sendStateMessage("Session '" + sessionId + "' ended, " + exitMessage);
+        log(exitMessage.toString());
 
         if (exitOnProgram) {
             glfwDestroyWindow(glfwWindow);
             System.exit(status);
         }
+    }
+
+    private static StringBuilder getExitMessage(int status, String reason) {
+        StringBuilder exitMessage = new StringBuilder();
+
+        String exitStatus = switch (status) {
+            case 0 -> " (normal)";
+            case 1 -> " (critical error)";
+            case 1863 -> " (sudden closure)";
+            case 6553 -> " (glfw error)";
+            default -> " (unknown state)";
+        };
+
+        for (GarbageCollectorMXBean gcBean : ManagementFactory.getGarbageCollectorMXBeans()) {
+            exitMessage.append("\nName GC: ").append(gcBean.getName());
+            exitMessage.append("\nFull collection cycles GC: ").append(gcBean.getCollectionCount());
+            exitMessage.append("\nFull time GC (ms): ").append(gcBean.getCollectionTime());
+            exitMessage.append("\nRAM use: ").append(ManagementFactory.getMemoryMXBean().getHeapMemoryUsage());
+            break;
+        }
+        exitMessage.append("\nProgram exit at: ").append(LocalDateTime.now());
+        exitMessage.append("\nExit code: ").append(status).append(exitStatus).append(", reason: ").append(reason);
+        exitMessage.append("\nGame time: ").append(Sun.currentTime);
+        exitMessage.append("\n-------- Log ended --------");
+
+        return exitMessage;
     }
 
     public static void logExit(int status) {
@@ -96,17 +124,37 @@ public class Logger extends PrintStream {
         System.setErr(new Logger());
         Json.detectLanguage();
 
-        String computerInfo = String.format(" | Разрешение экрана: %d x %d | Процессор: %s | Количество потоков: %s | Количество ОЗУ: %d MB", Toolkit.getDefaultToolkit().getScreenSize().width, Toolkit.getDefaultToolkit().getScreenSize().height, System.getenv("PROCESSOR_IDENTIFIER"), Runtime.getRuntime().availableProcessors(), ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getTotalMemorySize() / (1024 * 1024));
-        String system = System.getProperty("os.name").toLowerCase();
-        String message =
-                !system.contains("windows 10") ? "Warning: " + System.getProperty("os.name") + " not supported!\n" : "" +
-                "\nGLFW version: " + glfwGetVersionString() + "\nGame version: " + Window.version +
-                "\nStart time: " + LocalDateTime.now() + "\n\nPreload textures: " + getFromConfig("PreloadTextures") +
-                "\nVertical sync: " + Config.getFromConfig("VerticalSync") + " (" + verticalSync + ")" +
-                "\nCurrent language: " + getFromConfig("Language") + "\nAvailable languages: " +
-                Json.getAllLanguages().replace(" ", ", ") + "\n";
+        StringBuilder message = getStartMessage();
+        StringBuilder computerInfo = getComputerInfo();
 
-        AnonymousStatistics.sendStateMessageThread("Session '" + sessionId + "' started, time: '" + LocalDateTime.now() + "', system info: " + system + computerInfo);
-        log(message);
+        AnonymousStatistics.sendStateMessageThread("Session '" + sessionId + "' started\n" + message + computerInfo);
+        log(message.toString() + computerInfo);
+    }
+
+    private static StringBuilder getComputerInfo() {
+        StringBuilder computerInfo = new StringBuilder();
+
+        computerInfo.append("\nComputer info: ");
+        computerInfo.append("\nScreen resolution: ").append(Toolkit.getDefaultToolkit().getScreenSize().width).append(" x ").append(Toolkit.getDefaultToolkit().getScreenSize().height);
+        computerInfo.append("\nCPU: ").append(System.getenv("PROCESSOR_IDENTIFIER"));
+        computerInfo.append("\nCPU threads count:" ).append(Runtime.getRuntime().availableProcessors());
+        computerInfo.append("\nRAM: ").append(ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getTotalMemorySize() / (1024 * 1024)).append("\n");
+
+        return computerInfo;
+    }
+
+    private static StringBuilder getStartMessage() {
+        StringBuilder message = new StringBuilder();
+
+        message.append(!System.getProperty("os.name").toLowerCase().contains("windows 10") ? "Warning: " + System.getProperty("os.name") + " not supported!\n" : "");
+        message.append("\nGLFW version: ").append(glfwGetVersionString());
+        message.append("\nGame version: " + Window.version);
+        message.append("\nStart time: ").append(LocalDateTime.now());
+        message.append("\n\nPreload textures: ").append(getFromConfig("PreloadTextures"));
+        message.append("\nVertical sync: ").append(Config.getFromConfig("VerticalSync")).append(" (").append(verticalSync).append(")");
+        message.append("\nCurrent language: ").append(getFromConfig("Language"));
+        message.append("\nAvailable languages: ").append(Json.getAllLanguages().replace(" ", ", ")).append("\n");
+
+        return message;
     }
 }
