@@ -8,11 +8,12 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Fonts {
     private static final int fontSize = 18;
-    public static ConcurrentHashMap<Character, ByteBuffer> chars = new ConcurrentHashMap<>();
+    private static final HashMap<Character, ByteBuffer> chars = new HashMap<>();
     public static ConcurrentHashMap<Character, Dimension> letterSize = new ConcurrentHashMap<>();
 
     public static void generateFont(String pathTTF) {
@@ -22,43 +23,49 @@ public class Fonts {
             //default 12
             font = font.deriveFont(Font.PLAIN, (float) (fontSize * Toolkit.getDefaultToolkit().getScreenResolution() / 72.0));
         } catch (IOException | FontFormatException e) {
-            Logger.logExit(1, "Error at generate font: " + e, true);
-        }
-        FontRenderContext fontRenderContext = new FontRenderContext(null, true, true);
-
-        String allChars = "";
-        for (char c = 0; c < Character.MAX_VALUE; c++) {
-            if (font.canDisplay(c) && font.createGlyphVector(fontRenderContext, Character.toString(c)).getGlyphCode(0) != 0) {
-                allChars += c;
-            }
+            Logger.printException("Error when generate font", e);
+            Logger.logExit(1);
         }
 
-        for (char c : allChars.toCharArray()) {
-            if (font.canDisplay(c)) {
-                String str = Character.toString(c);
-                LineMetrics lm = font.getLineMetrics(str, fontRenderContext);
+        if (font != null) {
+            FontRenderContext fontRenderContext = new FontRenderContext(null, true, true);
 
-                if (font.getStringBounds(str, fontRenderContext).getWidth() == 0 || lm.getHeight() == 0) {
-                    continue;
+            StringBuilder allChars = new StringBuilder();
+            for (char c = 0; c < Character.MAX_VALUE; c++) {
+                if (font.canDisplay(c) && font.createGlyphVector(fontRenderContext, Character.toString(c)).getGlyphCode(0) != 0) {
+                    allChars.append(c);
                 }
+            }
 
-                int charWidth = (int) font.getStringBounds(str, fontRenderContext).getWidth();
-                int charHeight = (int) lm.getHeight();
+            for (int a = 0; a < allChars.length(); a++) {
+                char c = allChars.charAt(a);
 
-                BufferedImage charImage = new BufferedImage(charWidth, charHeight, BufferedImage.TYPE_INT_ARGB);
-                Graphics graphics = charImage.getGraphics();
+                if (font.canDisplay(c)) {
+                    String str = Character.toString(c);
+                    LineMetrics lm = font.getLineMetrics(str, fontRenderContext);
 
-                graphics.setColor(Color.WHITE);
-                graphics.setFont(font);
-                graphics.drawString(str, 0, charHeight - (int) lm.getDescent());
+                    if (font.getStringBounds(str, fontRenderContext).getWidth() == 0 || lm.getHeight() == 0) {
+                        continue;
+                    }
 
-                graphics.dispose();
+                    int charWidth = (int) font.getStringBounds(str, fontRenderContext).getWidth();
+                    int charHeight = (int) lm.getHeight();
 
-                letterSize.put(c, new Dimension(charWidth, charHeight));
-                chars.put(c, TextureLoader.ByteBufferEncoder(charImage));
+                    BufferedImage charImage = new BufferedImage(charWidth, charHeight, BufferedImage.TYPE_INT_ARGB);
+                    Graphics graphics = charImage.getGraphics();
 
-            } else {
-                Logger.log("Charter '" + c + "' cannot displayed, file: '" + pathTTF + "'");
+                    graphics.setColor(Color.WHITE);
+                    graphics.setFont(font);
+                    graphics.drawString(str, 0, charHeight - (int) lm.getDescent());
+
+                    graphics.dispose();
+
+                    letterSize.put(c, new Dimension(charWidth, charHeight));
+                    chars.put(c, TextureLoader.ByteBufferEncoder(charImage));
+
+                } else {
+                    Logger.log("Charter '" + c + "' cannot displayed, file: '" + pathTTF + "'");
+                }
             }
         }
     }

@@ -3,7 +3,6 @@ package core;
 import core.EventHandling.Logging.Logger;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
-import java.io.File;
 import java.lang.reflect.Method;
 
 public class ImportClassMethod {
@@ -43,12 +42,8 @@ public class ImportClassMethod {
             }
 
         } catch (Exception e) {
-            Logger.log("Some error at start method, class path: '" + classPath + "', method: '" + methodName + "', exception: '" + e + "'");
+            Logger.printException("Some error at start method, class path: '" + classPath + "', method: '" + methodName, e);
         }
         return null;
-    }
-
-    public static void deleteFile(String path) {
-        new File(path).delete();
     }
 }

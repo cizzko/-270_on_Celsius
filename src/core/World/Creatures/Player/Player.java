@@ -4,14 +4,12 @@ import core.EventHandling.EventHandler;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
-import core.World.Creatures.Player.Inventory.Items.Placeable.Factories;
-import core.World.Creatures.Player.Inventory.Items.Placeable.PlaceableItems;
 import core.World.Creatures.Player.Inventory.Items.Tools;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
-import core.World.HitboxMap;
 import core.World.Textures.*;
 import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
+import core.World.WorldGenerator;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import static core.EventHandling.EventHandler.getMousePos;
@@ -68,7 +66,7 @@ public class Player {
     }
 
     private static void updatePlaceableInteraction() {
-        if ((currentObjectType == Items.Types.PLACEABLE_BLOCK || currentObjectType == Items.Types.PLACEABLE_FACTORY) && EventHandler.getMousePress()) {
+        if (currentObjectType == Items.Types.PLACEABLE && EventHandler.getMousePress()) {
             if (getMousePos().x > (Inventory.inventoryOpen ? 1488 : 1866) && getMousePos().y > 756) {
                 return;
             }
@@ -79,82 +77,148 @@ public class Player {
                 int blockY = blockUMB.y;
 
                 if (currentObject != null) {
-                    PlaceableItems placeable = inventoryObjects[currentObject.x][currentObject.y].placeable;
-
-                    updatePlaceableFactory(placeable, blockX, blockY);
+                    short placeable = inventoryObjects[currentObject.x][currentObject.y].placeable;
                     updatePlaceableBlock(placeable, blockX, blockY);
                 }
             }
         }
     }
 
-    private static void updatePlaceableFactory(PlaceableItems placeable, int blockX, int blockY) {
-        if (placeable.factoryObject != null) {
-            short obj = HitboxMap.checkIntersInsideAll(blockX * 16, blockY * 16, TextureLoader.getSize(placeable.factoryObject.path).width, TextureLoader.getSize(placeable.factoryObject.path).height);
-
-            if (obj == 0 || getType(obj) != StaticObjectsConst.Types.SOLID) {
-                Factories factory = placeable.factoryObject;
-                factory.x = blockX * 16;
-                factory.y = blockY * 16;
-
-                Factories.factories.add(placeable.factoryObject);
-                if (currentObject != null) {
-                    decrementItem(currentObject.x, currentObject.y);
-                }
-            }
+    private static void updatePlaceableBlock(short placeable, int blockX, int blockY) {
+        if (canPlace(placeable, blockX, blockY)) {
+            decrementItem(currentObject.x, currentObject.y);
+            setObject(blockX, blockY, placeable);
+            ShadowMap.update();
         }
     }
 
-    private static void updatePlaceableBlock(PlaceableItems placeable, int blockX, int blockY) {
-        if (getType(getObject(blockX, blockY)) == StaticObjectsConst.Types.GAS && (getType(getObject(blockX, blockY + 1)) == StaticObjectsConst.Types.SOLID || getType(getObject(blockX, blockY - 1)) == StaticObjectsConst.Types.SOLID || getType(getObject(blockX + 1, blockY)) == StaticObjectsConst.Types.SOLID || getType(getObject(blockX - 1, blockY)) == StaticObjectsConst.Types.SOLID)) {
-            decrementItem(currentObject.x, currentObject.y);
-            setObject(blockX, blockY, placeable.staticWorldObject);
-            ShadowMap.update();
+    public static boolean canPlace(short placeable, int blockX, int blockY) {
+        if (StaticObjectsConst.getConst(getId(placeable)).optionalTiles == null && getType(getObject(blockX, blockY)) == StaticObjectsConst.Types.GAS && (getType(getObject(blockX, blockY + 1)) == StaticObjectsConst.Types.SOLID || getType(getObject(blockX, blockY - 1)) == StaticObjectsConst.Types.SOLID || getType(getObject(blockX + 1, blockY)) == StaticObjectsConst.Types.SOLID || getType(getObject(blockX - 1, blockY)) == StaticObjectsConst.Types.SOLID)) {
+            return true;
+        } else if (StaticObjectsConst.getConst(getId(placeable)).optionalTiles != null && getType(getObject(blockX, blockY - 1)) == StaticObjectsConst.Types.SOLID && getType(getObject(blockX, blockY)) == StaticObjectsConst.Types.GAS) {
+            short[][] tiles = StaticObjectsConst.getConst(getId(placeable)).optionalTiles;
+
+            for (int x = 0; x < tiles.length; x++) {
+                for (int y = 0; y < tiles[0].length; y++) {
+                    if (getType(getObject(x + blockX, y + blockY)) == StaticObjectsConst.Types.SOLID && getType(tiles[x][y]) == StaticObjectsConst.Types.SOLID) {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
+        return false;
     }
 
     private static void updateToolInteraction() {
         if (currentObjectType == Items.Types.TOOL && currentObject != null) {
             Tools tool = inventoryObjects[currentObject.x][currentObject.y].tool;
-
             Point blockUMB = getBlockUnderMousePoint();
             int blockX = blockUMB.x;
             int blockY = blockUMB.y;
             short object = getObject(blockX, blockY);
 
-            if (object > 0 && getPath(object) != null) {
-                if (getDistanceUMB() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
-                    drawBlock(blockX, blockY, object, true);
+            if (object != 0 && getPath(object) != null && !StaticObjectsConst.getConst(getId(object)).hasMotherBlock && StaticObjectsConst.getConst(getId(object)).optionalTiles == null) {
+                updateNonStructure(blockX, blockY, object, tool);
+            } else if (StaticObjectsConst.getConst(getId(object)).hasMotherBlock || StaticObjectsConst.getConst(getId(object)).optionalTiles != null) {
+                updateStructure(blockX, blockY, object, tool);
+            }
+        }
+    }
 
-                    if (EventHandler.getMousePress() && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
-                        tool.lastHitTime = System.currentTimeMillis();
+    private static void updateNonStructure(int blockX, int blockY, short object, Tools tool) {
+        if (getDistanceUMB() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
+            drawBlock(blockX, blockY, object, true);
 
-                        if (getHp(decrementHp(object, (int) tool.damage)) <= 0) {
-                            createElementPlaceable(object, "none");
-                            destroyObject(blockX, blockY);
-                        } else {
-                            setObject(blockX, blockY, decrementHp(object, (int) tool.damage));
-                        }
-                    }
+            if (EventHandler.getMousePress() && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
+                tool.lastHitTime = System.currentTimeMillis();
+
+                if (getHp(decrementHp(object, (int) tool.damage)) <= 0) {
+                    createElementPlaceable(object, "none");
+                    destroyObject(blockX, blockY);
                 } else {
-                    drawBlock(blockX, blockY, object, false);
+                    setObject(blockX, blockY, decrementHp(object, (int) tool.damage));
+                }
+            }
+        } else {
+            drawBlock(blockX, blockY, object, false);
+        }
+    }
+
+    private static void updateStructure(int blockX, int blockY, short object, Tools tool) {
+        Point root = findRoot(blockX, blockY);
+
+        if (root != null) {
+            blockX = root.x;
+            blockY = root.y;
+
+            if (getDistanceUMB() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
+                drawStructure(blockX, blockY, true, getObject(root.x, root.y), StaticObjectsConst.getConst(StaticWorldObjects.getId(getObject(blockX, blockY))).optionalTiles);
+
+                if (EventHandler.getMousePress() && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
+                    tool.lastHitTime = System.currentTimeMillis();
+                    decrementHpMulti(blockX, blockY, (int) tool.damage);
+                }
+            } else {
+                drawStructure(blockX, blockY, false, getObject(root.x, root.y), StaticObjectsConst.getConst(StaticWorldObjects.getId(getObject(blockX, blockY))).optionalTiles);
+            }
+        }
+    }
+
+    public static void drawStructure(int blockX, int blockY, boolean breakable, short root, short[][] tiles) {
+        drawBlock(blockX, blockY, root, breakable);
+        for (int x = 0; x < tiles.length; x++) {
+            for (int y = 0; y < tiles[0].length; y++) {
+
+                if (tiles[x][y] != 0) {
+                    drawBlock(x + blockX, y + blockY, tiles[x][y], breakable);
                 }
             }
         }
     }
 
-    private static void drawBlock(int cellX, int cellY, short obj, boolean breakable) {
+    public static Point findRoot(int cellX, int cellY) {
+        int maxCellsX = 4;
+        int maxCellsY = 4;
+
+        for (int blockX = 0; blockX < maxCellsX; blockX++) {
+            for (int blockY = 0; blockY < maxCellsY; blockY++) {
+                if (StaticObjectsConst.getConst(getId(WorldGenerator.getObject(cellX - blockX, cellY - blockY))).optionalTiles != null) {
+                    return new Point(cellX - blockX, cellY - blockY);
+                }
+            }
+        }
+        return null;
+    }
+
+    private static void decrementHpMulti(int cellX, int cellY, int hp) {
+        Point root = findRoot(cellX, cellY);
+
+        if (root != null && getObject(root.x, root.y) != 0) {
+            short rootObj = getObject(root.x, root.y);
+
+            for (int x = -(cellX - root.x); x < StaticObjectsConst.getConst(getId(rootObj)).optionalTiles.length - (cellX - root.x); x++) {
+                for (int y = -(cellY - root.y); y < StaticObjectsConst.getConst(getId(rootObj)).optionalTiles[0].length - (cellY - root.y); y++) {
+                    short object = getObject(x + cellX, y + cellY);
+
+                    if (getHp(decrementHp(object, hp)) <= 0 && getType(object) != StaticObjectsConst.Types.GAS) {
+                        createElementPlaceable(rootObj, "");
+                        destroyObject(cellX, cellY);
+                        break;
+                    } else if (getType(object) != StaticObjectsConst.Types.GAS) {
+                        StaticObjects[(x + cellX) + SizeX * (y + cellY)] = decrementHp(object, hp);
+                    }
+                }
+            }
+        }
+    }
+
+    public static void drawBlock(int cellX, int cellY, short obj, boolean breakable) {
         SimpleColor color = ShadowMap.getColor(cellX, cellY);
-        SimpleColor blockColor;
         int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
+        SimpleColor blockColor = breakable ? new SimpleColor(Math.max(0, a - 150), Math.max(0, a - 150), a, 255) : new SimpleColor(a, Math.max(0, a - 150), Math.max(0, a - 150), 255);
         int xBlock = cellX * 16;
         int yBlock = cellY * 16;
-
-        if (breakable) {
-            blockColor = new SimpleColor(Math.max(0, a - 150), Math.max(0, a - 150), a, 255);
-        } else {
-            blockColor = new SimpleColor(a, Math.max(0, a - 150), Math.max(0, a - 150), 255);
-        }
 
         if (getHp(obj) > getMaxHp(obj) / 1.5f) {
             TextureDrawing.drawTexture(getPath(obj), xBlock, yBlock, 3f, blockColor, false, false);
@@ -165,6 +229,16 @@ public class Player {
         } else {
             TextureDrawing.drawMultiTexture(getPath(obj), defPath + "\\src\\assets\\World\\Blocks\\damaged0.png", xBlock, yBlock, 3f, blockColor, false, false);
         }
+    }
+
+    public static void drawBlock(int cellX, int cellY, String path, boolean breakable) {
+        SimpleColor color = ShadowMap.getColor(cellX, cellY);
+        int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
+        SimpleColor blockColor = breakable ? new SimpleColor(Math.max(0, a - 150), Math.max(0, a - 150), a, 255) : new SimpleColor(a, Math.max(0, a - 150), Math.max(0, a - 150), 255);
+        int xBlock = cellX * 16;
+        int yBlock = cellY * 16;
+
+        TextureDrawing.drawTexture(path, xBlock, yBlock, 3f, blockColor, false, false);
     }
 
     public static Point getBlockUnderMousePoint() {
