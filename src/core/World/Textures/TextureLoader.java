@@ -1,7 +1,7 @@
 package core.World.Textures;
 
 import core.EventHandling.Logging.Config;
-import core.World.ArrayUtils;
+import core.Utils.ArrayUtils;
 import org.lwjgl.BufferUtils;
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -97,9 +97,9 @@ public class TextureLoader extends Thread {
         return ByteBufferEncoder(mergedImage);
     }
 
-    public static void preLoadTextures() {
+    public static void preLoadResources() {
         if (Config.getFromConfig("PreloadResources").equals("true")) {
-            String[] textures = ArrayUtils.getAllFile(defPath + "\\src\\assets", ".png");
+            String[] textures = ArrayUtils.getAllFiles(defPath + "\\src\\assets", ".png");
 
             for (String texture : textures) {
                 bindTexture(texture);

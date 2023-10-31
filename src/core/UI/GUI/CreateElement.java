@@ -4,9 +4,8 @@ import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.PanelObject;
 import core.UI.GUI.Objects.SliderObject;
 import core.UI.GUI.Objects.TextObject;
-import core.World.Textures.SimpleColor;
+import core.Utils.SimpleColor;
 import core.World.Textures.TextureLoader;
-import java.awt.*;
 import java.util.concurrent.ConcurrentHashMap;
 import static core.World.Textures.TextureLoader.getSize;
 

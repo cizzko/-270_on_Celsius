@@ -1,4 +1,4 @@
-package core.World;
+package core.Utils;
 
 import java.io.File;
 import java.util.*;
@@ -24,7 +24,7 @@ public class ArrayUtils {
         return (int) Arrays.stream(array).filter(Objects::nonNull).distinct().count();
     }
 
-    public static String[] getAllFile(String directory, String filesExtension) {
+    public static String[] getAllFiles(String directory, String filesExtension) {
         ArrayList<String> fileList = new ArrayList<>();
         Stack<File> stack = new Stack<>();
         stack.push(new File(directory));

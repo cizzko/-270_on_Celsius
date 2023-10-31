@@ -1,6 +1,6 @@
 package core.UI.GUI.Menu;
 
-import core.World.Textures.SimpleColor;
+import core.Utils.SimpleColor;
 import core.World.WorldGenerator;
 import static core.EventHandling.Logging.Json.getName;
 import static core.UI.GUI.CreateElement.*;

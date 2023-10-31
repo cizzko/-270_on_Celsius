@@ -1,7 +1,7 @@
 package core.UI.GUI.Menu;
 
 import core.EventHandling.Logging.Logger;
-import core.World.Textures.SimpleColor;
+import core.Utils.SimpleColor;
 import static core.EventHandling.Logging.Json.getName;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.start;

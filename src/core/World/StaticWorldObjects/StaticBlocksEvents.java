@@ -1,4 +1,4 @@
-package core.World.Textures.StaticWorldObjects;
+package core.World.StaticWorldObjects;
 
 public interface StaticBlocksEvents {
     void placeStatic(int cellX, int cellY, short id);

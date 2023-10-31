@@ -1,10 +1,11 @@
 package core.World.Textures;
 
-import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
+import core.Utils.SimpleColor;
+import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.WorldGenerator;
 import java.util.*;
 import static core.Window.start;
-import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.getType;
+import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.WorldGenerator.*;
 
 public class ShadowMap {

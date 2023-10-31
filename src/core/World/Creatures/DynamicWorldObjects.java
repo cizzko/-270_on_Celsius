@@ -1,8 +1,9 @@
-package core.World.Textures;
+package core.World.Creatures;
 
 import core.World.HitboxMap;
-import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
-import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
+import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.World.Textures.TextureLoader;
 import java.awt.geom.Point2D;
 import java.io.Serializable;
 import static core.World.WorldGenerator.*;

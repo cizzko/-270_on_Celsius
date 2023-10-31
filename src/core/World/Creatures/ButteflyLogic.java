@@ -11,7 +11,7 @@ public class ButteflyLogic {
         if (System.currentTimeMillis() - deltaTime > 100) {
             deltaTime = System.currentTimeMillis();
 
-            for (core.World.Textures.DynamicWorldObjects dynamicObject : DynamicObjects) {
+            for (DynamicWorldObjects dynamicObject : DynamicObjects) {
                 if (dynamicObject != null && dynamicObject.path.contains("butterfly") && dynamicObject.animSpeed != 0) {
                     int randX = (int) (Math.random() * 60) - 30;
                     int randY = (int) (Math.random() * 60) - 30;

@@ -5,7 +5,7 @@ import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.CreateElement;
-import core.World.Textures.SimpleColor;
+import core.Utils.SimpleColor;
 import java.awt.*;
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.EventHandling.Logging.Json.getName;
@@ -37,7 +37,7 @@ public class Settings {
 
     public static void createGraphicsSett() {
         createSwapButton(310, 980, 32, 32, getName("InterpolateSunset"), getName("InterpolateSunsetPrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("InterpolateSunset")), "SettingsGraphicsSwap");
-        createSwapButton(310, 910, 32, 32, getName("PreloadTextures"), getName("PreloadTexturesPrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("PreloadTextures")), "SettingsGraphicsSwap");
+        createSwapButton(310, 910, 32, 32, getName("PreloadResources"), getName("PreloadResourcesPrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("PreloadResources")), "SettingsGraphicsSwap");
         createSwapButton(310, 840, 32, 32, getName("VerticalSync"), getName("VerticalSyncPrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("VerticalSync")), "SettingsGraphicsSwap");
     }
 

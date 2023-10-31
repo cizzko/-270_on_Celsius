@@ -1,4 +1,4 @@
-package core.World.Textures;
+package core.Utils;
 
 public class SimpleColor {
     int value;

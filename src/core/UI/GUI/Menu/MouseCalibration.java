@@ -3,7 +3,7 @@ package core.UI.GUI.Menu;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
-import core.World.Textures.SimpleColor;
+import core.Utils.SimpleColor;
 import java.awt.*;
 import static core.EventHandling.Logging.Logger.printException;
 import static core.UI.GUI.CreateElement.*;

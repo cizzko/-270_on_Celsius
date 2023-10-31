@@ -1,7 +1,7 @@
 package core.World.Weather;
 
 import core.World.Textures.ShadowMap;
-import core.World.Textures.SimpleColor;
+import core.Utils.SimpleColor;
 import core.World.WorldGenerator;
 
 import static core.EventHandling.Logging.Config.getFromConfig;

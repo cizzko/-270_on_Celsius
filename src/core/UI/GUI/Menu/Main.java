@@ -2,7 +2,7 @@ package core.UI.GUI.Menu;
 
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.CreateElement;
-import core.World.Textures.SimpleColor;
+import core.Utils.SimpleColor;
 import java.awt.*;
 import java.net.URI;
 import static core.EventHandling.Logging.Json.getName;

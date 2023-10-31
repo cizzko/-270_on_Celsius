@@ -1,7 +1,6 @@
 package core.World.Creatures;
 
 import core.EventHandling.Logging.Logger;
-import core.World.Textures.DynamicWorldObjects;
 import static core.Window.defPath;
 import static core.Window.glfwWindow;
 import static core.World.WorldGenerator.*;

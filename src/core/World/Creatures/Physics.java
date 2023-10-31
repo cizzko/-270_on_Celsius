@@ -5,16 +5,15 @@ import core.UI.GUI.Menu.Pause;
 import core.UI.GUI.Menu.Settings;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
-import core.World.Textures.DynamicWorldObjects;
-import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
+import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.TextureLoader;
 import java.util.ArrayList;
 import static core.Window.*;
-import static core.World.Creatures.Player.Inventory.Items.Placeable.Factories.updateFactoriesOutput;
+import static core.World.StaticWorldObjects.Structures.Factories.updateFactoriesOutput;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.HitboxMap.*;
-import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.getResistance;
-import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.getType;
+import static core.World.StaticWorldObjects.StaticWorldObjects.getResistance;
+import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -110,7 +109,7 @@ public class Physics extends Thread {
         updatePlayerMove();
         updatePlayerJump();
 
-        for (core.World.Textures.DynamicWorldObjects dynamicObject : dynamicObj) {
+        for (DynamicWorldObjects dynamicObject : dynamicObj) {
             if (dynamicObject != null) {
                 updateHorizontalSpeed(dynamicObject);
 

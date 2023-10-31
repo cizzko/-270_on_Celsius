@@ -1,11 +1,11 @@
 package core.World;
 
-import core.World.Textures.DynamicWorldObjects;
-import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
+import core.World.Creatures.DynamicWorldObjects;
+import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.TextureLoader;
 import java.awt.*;
-import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.getResistance;
-import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.getType;
+import static core.World.StaticWorldObjects.StaticWorldObjects.getResistance;
+import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.WorldGenerator.*;
 
 public class HitboxMap {

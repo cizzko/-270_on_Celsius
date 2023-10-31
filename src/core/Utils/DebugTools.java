@@ -1,17 +1,16 @@
-package core;
+package core.Utils;
 
-//start core.DebugTools.startUpdate
-//modify core.DebugTools.selectionBlocksCopy true
-//modify core.DebugTools.selectionBlocksDelete true
+//start core.Utils.DebugTools.startUpdate
+//modify core.Utils.DebugTools.selectionBlocksCopy true
+//modify core.Utils.DebugTools.selectionBlocksDelete true
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.CreateElement;
 import core.World.Creatures.Player.Player;
 import core.World.Textures.ShadowMap;
-import core.World.Textures.SimpleColor;
-import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
-import core.World.Textures.StaticWorldObjects.Structures;
+import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.WorldGenerator;
 import java.awt.*;
 import java.io.ByteArrayOutputStream;
@@ -21,7 +20,7 @@ import java.util.zip.DeflaterOutputStream;
 import static core.EventHandling.Logging.Logger.printException;
 import static core.Window.defPath;
 import static core.Window.glfwWindow;
-import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.*;
+import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.WorldGenerator.destroyObject;
 import static core.World.WorldGenerator.getObject;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;

@@ -1,7 +1,7 @@
 package core.EventHandling.Logging;
 
 import com.sun.management.OperatingSystemMXBean;
-import core.AnonymousStatistics;
+import core.Utils.AnonymousStatistics;
 import core.Window;
 import core.World.Weather.Sun;
 import java.awt.*;
@@ -27,32 +27,35 @@ public class Logger extends PrintStream {
     public void write(byte[] buf, int off, int len) {
         if (!Arrays.equals(buf, lastErrBuf)) {
             lastErrBuf = buf;
-            log("Intercepted message from `System.out`: " + new String(buf, off, len));
+            printStackTrace(Thread.currentThread().getStackTrace(), "none", "none", new String(buf, off, len), "System.err");
         }
     }
 
     public static void printException(String message, Throwable exception) {
-        StackTraceElement[] stackTrace = exception.getStackTrace();
+        printStackTrace(exception.getStackTrace(), exception.getMessage(), String.valueOf(exception.getCause()), message, "Error");
+    }
+
+    private static void printStackTrace(StackTraceElement[] stackTrace, String exceptionMessage, String exceptionCause, String message, String whatDetected) {
         StringBuilder stackTraceMessage = new StringBuilder();
 
         if (Integer.parseInt(getFromConfig("Debug")) == 2) {
-            stackTraceMessage.append("\n-------- Error detected -------- \nMessage: '").append(message);
-            stackTraceMessage.append("', exception message: '").append(exception.getMessage());
-            stackTraceMessage.append("', cause: '").append(exception.getCause());
+            stackTraceMessage.append("\n-------- ").append(whatDetected).append(" detected -------- \nMessage: '").append(message);
+            stackTraceMessage.append("', exception message: '").append(exceptionMessage);
+            stackTraceMessage.append("', cause: '").append(exceptionCause);
             stackTraceMessage.append("', total stack trace length: '").append(stackTrace.length);
             stackTraceMessage.append("', stack trace: ");
 
-            for (StackTraceElement stackTraceElement : stackTrace) {
-                stackTraceMessage.append("\nClass name: ").append(stackTraceElement.getClassName());
-                stackTraceMessage.append("\nMethod name: ").append(stackTraceElement.getMethodName());
-                stackTraceMessage.append("\nLine: ").append(stackTraceElement.getLineNumber());
-                stackTraceMessage.append("\nIs native: ").append(stackTraceElement.isNativeMethod());
+            for (int i = 0; i < stackTrace.length && i < Integer.parseInt(Config.getFromConfig("MaxStackTraceLength")); i++) {
+                stackTraceMessage.append("\n\nClass name: ").append(stackTrace[i].getClassName());
+                stackTraceMessage.append("\nMethod name: ").append(stackTrace[i].getMethodName());
+                stackTraceMessage.append("\nLine: ").append(stackTrace[i].getLineNumber());
+                stackTraceMessage.append("\nIs native: ").append(stackTrace[i].isNativeMethod());
             }
-            stackTraceMessage.append("-------- Error end --------");
+            stackTraceMessage.append("\n-------- Error end --------\n");
 
         } else if (Integer.parseInt(getFromConfig("Debug")) == 1) {
-            stackTraceMessage.append("\nError message: '").append(message);
-            stackTraceMessage.append("', exception message: '").append(exception.getMessage()).append("' ");
+            stackTraceMessage.append("\n").append(whatDetected).append(" message: '").append(message);
+            stackTraceMessage.append("', exception message: '").append(exceptionMessage).append("' ");
         }
 
         log(stackTraceMessage.toString());
@@ -150,7 +153,7 @@ public class Logger extends PrintStream {
         message.append("\nGLFW version: ").append(glfwGetVersionString());
         message.append("\nGame version: " + Window.version);
         message.append("\nStart time: ").append(LocalDateTime.now());
-        message.append("\n\nPreload textures: ").append(getFromConfig("PreloadTextures"));
+        message.append("\n\nPreload resources: ").append(getFromConfig("PreloadResources"));
         message.append("\nVertical sync: ").append(Config.getFromConfig("VerticalSync")).append(" (").append(verticalSync).append(")");
         message.append("\nCurrent language: ").append(getFromConfig("Language"));
         message.append("\nAvailable languages: ").append(Json.getAllLanguages().replace(" ", ", ")).append("\n");

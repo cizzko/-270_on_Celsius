@@ -2,7 +2,7 @@ package core.World.Creatures.Player.Inventory.Items;
 
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
-import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
+import core.World.StaticWorldObjects.StaticWorldObjects;
 import static core.World.Textures.TextureLoader.getSize;
 
 public class Items {

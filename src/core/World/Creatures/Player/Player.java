@@ -1,14 +1,15 @@
 package core.World.Creatures.Player;
 
 import core.EventHandling.EventHandler;
+import core.Utils.SimpleColor;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Inventory.Items.Tools;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
 import core.World.Textures.*;
-import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
-import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
+import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.WorldGenerator;
 import java.awt.*;
 import java.awt.geom.Point2D;
@@ -17,7 +18,7 @@ import static core.Window.defPath;
 import static core.Window.start;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
 import static core.World.HitboxMap.*;
-import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.*;
+import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.*;
 

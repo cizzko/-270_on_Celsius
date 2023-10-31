@@ -1,6 +1,6 @@
 package core.UI.GUI.Objects;
 
-import core.World.Textures.SimpleColor;
+import core.Utils.SimpleColor;
 import java.util.Arrays;
 
 public class DropMenuObject {

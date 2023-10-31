@@ -1,4 +1,4 @@
-package core;
+package core.Utils;
 
 import core.EventHandling.Logging.Logger;
 import javax.tools.JavaCompiler;

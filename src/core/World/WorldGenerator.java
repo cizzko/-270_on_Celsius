@@ -2,25 +2,24 @@ package core.World;
 
 import core.EventHandling.Logging.Json;
 import core.UI.GUI.Menu.CreatePlanet;
+import core.Utils.ArrayUtils;
 import core.Window;
 import core.World.Creatures.CreaturesGenerate;
 import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Items.Details;
-import core.World.Creatures.Player.Inventory.Items.Placeable.Factories;
+import core.World.StaticWorldObjects.Structures.Factories;
 import core.World.Creatures.Player.Player;
-import core.World.Textures.DynamicWorldObjects;
+import core.World.Creatures.DynamicWorldObjects;
 import core.World.Textures.ShadowMap;
-import core.World.Textures.SimpleColor;
-import core.World.Textures.StaticWorldObjects.StaticBlocksEvents;
-import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
-import core.World.Textures.StaticWorldObjects.Structures;
+import core.Utils.SimpleColor;
+import core.World.StaticWorldObjects.StaticBlocksEvents;
+import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.Weather.Sun;
 import java.awt.*;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.zip.InflaterInputStream;
@@ -29,13 +28,13 @@ import static core.EventHandling.Logging.Logger.printException;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.*;
 import static core.World.Creatures.Player.Inventory.Inventory.createElementDetail;
-import static core.World.Textures.StaticWorldObjects.StaticWorldObjects.*;
+import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 
 public class WorldGenerator {
     public static int SizeX, SizeY, dayCount = 0;
     public static float temperatureDecrement = 0.04f, currentWorldTemperature = 23;
     public static short[] StaticObjects;
-    private static CopyOnWriteArrayList<StaticBlocksEvents> listeners = new CopyOnWriteArrayList<>();
+    private static final CopyOnWriteArrayList<StaticBlocksEvents> listeners = new CopyOnWriteArrayList<>();
     public static ArrayList<DynamicWorldObjects> DynamicObjects = new ArrayList<>();
     private static final HashMap<String, Structures> structures = new HashMap<>();
 
@@ -174,7 +173,11 @@ public class WorldGenerator {
     }
 
     private static void loadAllStructures() {
-        ArrayUtils.getAllFile(defPath + "\\src\\assets\\World\\Saves", null);
+        String[] paths = ArrayUtils.getAllFiles(defPath + "\\src\\assets\\World\\Saves", ".properties");
+
+        for (String path : paths) {
+            loadStructure(path);
+        }
     }
 
     private static void loadStructure(String path) {

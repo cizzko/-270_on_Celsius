@@ -1,9 +1,10 @@
 package core.World;
 
 import core.EventHandling.Logging.Json;
-import core.World.Textures.DynamicWorldObjects;
+import core.Utils.ArrayUtils;
+import core.World.Creatures.DynamicWorldObjects;
 import core.World.Textures.ShadowMap;
-import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
+import core.World.StaticWorldObjects.StaticWorldObjects;
 import java.io.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import static core.Window.defPath;
 
 public class Saves {
 
+    @Deprecated
     public static void createWorldSave() {
         try {
             HashMap<String, Object> objects = new HashMap<>();
@@ -44,6 +46,7 @@ public class Saves {
         }
     }
 
+    @Deprecated
     public static void loadWorldSave(String path) {
         HashMap<String, Object> data = new HashMap<>();
         try (FileInputStream fis = new FileInputStream(path);
@@ -67,6 +70,6 @@ public class Saves {
     }
 
     public static String[] loadWorldSaves() {
-      return ArrayUtils.getAllFile(defPath + "\\src\\assets\\World\\Saves\\WorldSaves", null);
+      return ArrayUtils.getAllFiles(defPath + "\\src\\assets\\World\\Saves\\WorldSaves", null);
     }
 }

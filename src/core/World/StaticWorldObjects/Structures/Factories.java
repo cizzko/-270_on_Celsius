@@ -1,22 +1,22 @@
-package core.World.Creatures.Player.Inventory.Items.Placeable;
+package core.World.StaticWorldObjects.Structures;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.UI.Sounds.Sound;
-import core.World.ArrayUtils;
+import core.Utils.ArrayUtils;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Player;
-import core.World.Textures.SimpleColor;
-import core.World.Textures.StaticWorldObjects.StaticBlocksEvents;
-import core.World.Textures.StaticWorldObjects.StaticObjectsConst;
-import core.World.Textures.StaticWorldObjects.StaticWorldObjects;
+import core.Utils.SimpleColor;
+import core.World.StaticWorldObjects.StaticBlocksEvents;
+import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
 import java.awt.*;
 import java.util.*;
 import static core.Window.defPath;
-import static core.World.ArrayUtils.findEqualsObjects;
+import static core.Utils.ArrayUtils.findEqualsObjects;
 
 public class Factories implements StaticBlocksEvents {
     public float productionSpeed, needEnergy, currentHp, currentEnergy, maxHp, timeSinceBreakdown, x, y;
@@ -26,12 +26,12 @@ public class Factories implements StaticBlocksEvents {
     public breaking breakingType;
     public Items[] outputObjects, outputStoredObjects, inputObjects, inputStoredObjects;
     private static boolean mouseGrabbedItem = false;
-    private static HashMap<String, Factories> factoriesConst = new HashMap<>();
-    private static HashSet<Point> factories = new HashSet<>();
+    private static final HashMap<String, Factories> factoriesConst = new HashMap<>();
+    private static final HashSet<Point> factories = new HashSet<>();
 
     @Override
     public void placeStatic(int cellX, int cellY, short id) {
-        if (id != 0 && StaticWorldObjects.getPath(id).substring(defPath.length()).toLowerCase().contains("factory")) {
+        if (id != 0 && Objects.requireNonNull(StaticWorldObjects.getPath(id)).substring(defPath.length()).toLowerCase().contains("factory")) {
             createFactory(StaticWorldObjects.getFileName(id), StaticObjectsConst.getConst(StaticWorldObjects.getId(id)).optionalTiles);
             factories.add(new Point(cellX, cellY));
         }
@@ -39,7 +39,7 @@ public class Factories implements StaticBlocksEvents {
 
     @Override
     public void destroyStatic(int cellX, int cellY, short id) {
-        if (id != 0 && StaticWorldObjects.getPath(id).substring(defPath.length()).toLowerCase().contains("factory")) {
+        if (id != 0 && Objects.requireNonNull(StaticWorldObjects.getPath(id)).substring(defPath.length()).toLowerCase().contains("factory")) {
             factories.remove(new Point(cellX, cellY));
         }
     }

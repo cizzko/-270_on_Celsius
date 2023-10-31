@@ -22,8 +22,8 @@
     "SettingsGraphics": "Graphics",
     "InterpolateSunset": "Interpolate sunset",
     "InterpolateSunsetPrompt": "Smoothing the sunset gradient, it becomes softer and smoother\\nIts may slightly affect performance",
-    "PreloadTextures": "Preload textures",
-    "PreloadTexturesPrompt": "May slightly improve performance and remove micro-lags\\nbut taking longer to load and using more memory",
+    "PreloadResources": "Preload resources",
+    "PreloadResourcesPrompt": "May slightly improve performance and remove micro-lags\\nbut taking longer to load and using more memory",
     "VerticalSync": "Vertical sync",
     "VerticalSyncPrompt": "Synchronizes FPS with screen refresh rate, helps eliminate visual tearing image",
 
@@ -65,8 +65,8 @@
     "SettingsGraphics": "Графика",
     "InterpolateSunset": "Интерполяция заката",
     "InterpolateSunsetPrompt": "Сглаживание градиента заката, он становится мягче и плавнее\\nЭто может незначительно влиять на производительность",
-    "PreloadTextures": "Предзагрузка текстур",
-    "PreloadTexturesPrompt": "Может незначительно повысить производительность и убрать микролаги\\nоднако возрастет потребление памяти и время загрузки",
+    "PreloadResources": "Предзагрузка ресурсов",
+    "PreloadResourcesPrompt": "Может незначительно повысить производительность и убрать микролаги\\nоднако возрастет потребление памяти и время загрузки",
     "VerticalSync": "Вертикальная синхронизация",
     "VerticalSyncPrompt": "Синхронизирует фпс с частотой обновления экрана, позволяет устранить визуальные разрывы изображения",
 
@@ -108,8 +108,8 @@
     "SettingsGraphics": "Графіка",
     "InterpolateSunset": "Интерполяція заходу сонця",
     "InterpolateSunsetPrompt": "Згладжування градієнта заходу сонця, він стає м'якшим і плавнішим\\nЦе може незначно впливати на продуктивність.",
-    "PreloadTextures": "Передзавантаження текстур",
-    "PreloadTexturesPrompt": "Може незначно підвищити продуктивність та прибрати мікролаги\\nоднак зросте споживання пам'яті та час завантаження",
+    "PreloadResources": "Передзавантаження ресурсів",
+    "PreloadResourcesPrompt": "Може незначно підвищити продуктивність та прибрати мікролаги\\nоднак зросте споживання пам'яті та час завантаження",
     "VerticalSync": "Вертикальная синхронизация",
     "VerticalSyncPrompt": "Синхронізує фпс із частотою оновлення екрана, дозволяє уникнути візуальних розрививів зображення",
 

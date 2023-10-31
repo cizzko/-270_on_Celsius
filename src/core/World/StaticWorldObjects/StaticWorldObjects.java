@@ -1,4 +1,4 @@
-package core.World.Textures.StaticWorldObjects;
+package core.World.StaticWorldObjects;
 
 import core.EventHandling.Logging.Logger;
 import java.io.Serializable;

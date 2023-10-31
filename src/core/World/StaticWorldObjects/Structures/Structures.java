@@ -1,4 +1,4 @@
-package core.World.Textures.StaticWorldObjects;
+package core.World.StaticWorldObjects.Structures;
 
 import java.io.Serializable;
 
