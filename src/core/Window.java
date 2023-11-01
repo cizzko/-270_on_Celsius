@@ -19,7 +19,7 @@ import static org.lwjgl.opengl.GL13.*;
 public class Window {
     public final static String defPath = Paths.get("").toAbsolutePath().toString();
     public static int width = 1920, height = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0, fps = 0;
-    public static final String version = "alpha 0.0.2 (non stable)";
+    public static final String version = "alpha 0.0.21 (non stable)";
     public static boolean start = false;
     public static long glfwWindow;
 
@@ -59,7 +59,7 @@ public class Window {
         glMatrixMode(GL_MODELVIEW);
 
         Fonts.generateFont(defPath + "\\src\\assets\\UI\\arial.ttf");
-        TextureLoader.preLoadTextures();
+        TextureLoader.preLoadResources();
         TextureLoader.bindChars();
         Main.create();
 
