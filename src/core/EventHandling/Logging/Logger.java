@@ -124,7 +124,7 @@ public class Logger extends PrintStream {
     }
 
     public static void logStart() {
-        //System.setErr(new Logger());
+        System.setErr(new Logger());
         Json.detectLanguage();
 
         StringBuilder message = getStartMessage();
