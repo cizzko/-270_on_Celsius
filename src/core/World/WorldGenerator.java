@@ -173,7 +173,7 @@ public class WorldGenerator {
     }
 
     private static void loadAllStructures() {
-        String[] paths = ArrayUtils.getAllFiles(defPath + "\\src\\assets\\World\\Saves", ".properties");
+        String[] paths = ArrayUtils.getAllFiles(defPath + "\\src\\assets\\World\\Saves", ".ser");
 
         for (String path : paths) {
             loadStructure(path);

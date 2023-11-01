@@ -44,9 +44,9 @@ public class Config {
     }
 
     public static void updateConfig(String key, String value) {
-        try (FileInputStream fis = new FileInputStream(defPath + "\\src\\assets\\Config.properties");
-             FileOutputStream fos = new FileOutputStream(defPath + "\\src\\assets\\Config.properties")) {
-            Properties configProp = props.get(defPath + "\\src\\assets\\Config.properties");
+        try (FileInputStream fis = new FileInputStream(defPath + "\\src\\assets\\config.properties");
+             FileOutputStream fos = new FileOutputStream(defPath + "\\src\\assets\\config.properties")) {
+            Properties configProp = props.get(defPath + "\\src\\assets\\config.properties");
 
             configProp.load(fis);
             configProp.setProperty(key, value);
@@ -54,7 +54,7 @@ public class Config {
             values.put(key, value);
 
         } catch (Exception e) {
-            printException("Error at update config: '" + e.getMessage() + "' at path: '" + defPath + "\\src\\assets\\Config.properties', key: '" + key + "' value: '" + value + "'", e);
+            printException("Error at update config: '" + e.getMessage() + "' at path: '" + defPath + "\\src\\assets\\config.properties', key: '" + key + "' value: '" + value + "'", e);
             logExit(1);
         }
     }

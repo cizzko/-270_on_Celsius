@@ -51,7 +51,7 @@ public class Logger extends PrintStream {
                 stackTraceMessage.append("\nLine: ").append(stackTrace[i].getLineNumber());
                 stackTraceMessage.append("\nIs native: ").append(stackTrace[i].isNativeMethod());
             }
-            stackTraceMessage.append("\n-------- Error end --------\n");
+            stackTraceMessage.append("\n-------- ").append(whatDetected).append(" end --------\n");
 
         } else if (Integer.parseInt(getFromConfig("Debug")) == 1) {
             stackTraceMessage.append("\n").append(whatDetected).append(" message: '").append(message);
@@ -124,7 +124,7 @@ public class Logger extends PrintStream {
     }
 
     public static void logStart() {
-        System.setErr(new Logger());
+        //System.setErr(new Logger());
         Json.detectLanguage();
 
         StringBuilder message = getStartMessage();
@@ -140,7 +140,7 @@ public class Logger extends PrintStream {
         computerInfo.append("\nComputer info: ");
         computerInfo.append("\nScreen resolution: ").append(Toolkit.getDefaultToolkit().getScreenSize().width).append(" x ").append(Toolkit.getDefaultToolkit().getScreenSize().height);
         computerInfo.append("\nCPU: ").append(System.getenv("PROCESSOR_IDENTIFIER"));
-        computerInfo.append("\nCPU threads count:" ).append(Runtime.getRuntime().availableProcessors());
+        computerInfo.append("\nCPU threads count: " ).append(Runtime.getRuntime().availableProcessors());
         computerInfo.append("\nRAM: ").append(ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getTotalMemorySize() / (1024 * 1024)).append("\n");
 
         return computerInfo;
