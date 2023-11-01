@@ -35,7 +35,7 @@ public class Logger extends PrintStream {
         printStackTrace(exception.getStackTrace(), exception.getMessage(), String.valueOf(exception.getCause()), message, "Error");
     }
 
-    private static void printStackTrace(StackTraceElement[] stackTrace, String exceptionMessage, String exceptionCause, String message, String whatDetected) {
+    public static void printStackTrace(StackTraceElement[] stackTrace, String exceptionMessage, String exceptionCause, String message, String whatDetected) {
         StringBuilder stackTraceMessage = new StringBuilder();
 
         if (Integer.parseInt(getFromConfig("Debug")) == 2) {

@@ -59,6 +59,10 @@ public class DebugTools {
         }).start();
     }
 
+    public static void printLastTrace() {
+        Logger.printStackTrace(Thread.currentThread().getStackTrace(), "none", "none", "stack trace from debug tools", "System.err");
+    }
+
     private static void copy() {
         int lowestSolidBlock = -1;
         int startX = lastMousePosBlocks.x;
