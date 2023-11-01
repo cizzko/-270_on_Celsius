@@ -1,11 +1,14 @@
 package core.EventHandling.Logging;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
+
 import static core.EventHandling.Logging.Logger.logExit;
 import static core.EventHandling.Logging.Logger.printException;
-import static core.Window.defPath;
+import static core.Window.assetsDir;
 
 public class Config {
     private static final HashMap<String, Properties> props = new HashMap<>(3);
@@ -35,18 +38,19 @@ public class Config {
     }
 
     public static String getFromConfig(String key) {
-        return (String) getFromProp(defPath + "\\src\\assets\\config.properties", key);
+        return (String) getFromProp(assetsDir("config.properties"), key);
     }
 
     //fast commands
     public static String getFromFC(String key) {
-        return (String) getFromProp(defPath + "\\src\\assets\\fastCommands.properties", key);
+        return (String) getFromProp(assetsDir("fastCommands.properties"), key);
     }
 
     public static void updateConfig(String key, String value) {
-        try (FileInputStream fis = new FileInputStream(defPath + "\\src\\assets\\config.properties");
-             FileOutputStream fos = new FileOutputStream(defPath + "\\src\\assets\\config.properties")) {
-            Properties configProp = props.get(defPath + "\\src\\assets\\config.properties");
+        String configFile = assetsDir("config.properties");
+        try (FileInputStream fis = new FileInputStream(configFile);
+             FileOutputStream fos = new FileOutputStream(configFile)) {
+            Properties configProp = props.get(configFile);
 
             configProp.load(fis);
             configProp.setProperty(key, value);
@@ -54,7 +58,7 @@ public class Config {
             values.put(key, value);
 
         } catch (Exception e) {
-            printException("Error at update config: '" + e.getMessage() + "' at path: '" + defPath + "\\src\\assets\\config.properties', key: '" + key + "' value: '" + value + "'", e);
+            printException("Error at update config: '" + e.getMessage() + "' at path: '" + configFile + "', key: '" + key + "' value: '" + value + "'", e);
             logExit(1);
         }
     }

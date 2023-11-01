@@ -1,7 +1,7 @@
 package core.World.Textures;
 
 public class TextureData {
-    int id, width, height;
+    public int id, width, height;
 
     public TextureData(int id, int width, int height) {
         this.id = id;

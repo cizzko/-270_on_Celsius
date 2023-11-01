@@ -1,8 +1,8 @@
 package core.World.Creatures;
 
 import core.EventHandling.Logging.Logger;
-import static core.Window.defPath;
-import static core.Window.glfwWindow;
+
+import static core.Window.*;
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
@@ -40,12 +40,12 @@ public class CreaturesGenerate extends Thread {
     }
 
     public static void generateButterfly() {
-        DynamicObjects.add( new DynamicWorldObjects(false, true, 0.00002f, 2, 0.1f, (float) (Math.random() * (SizeX * 16)), 15, defPath + "\\src\\assets\\World\\Creatures\\butterfly"));
+        DynamicObjects.add(new DynamicWorldObjects(false, true, 0.00002f, 2, 0.1f, (float) (Math.random() * (SizeX * 16)), 15, assetsDir("World/Creatures/butterfly")));
         count++;
     }
 
     public static void generateBird() {
-        DynamicObjects.add(new DynamicWorldObjects(false, true, 0.0001f, 2, 0.1f, 24, SizeY * 13, defPath + "\\src\\assets\\World\\Creatures\\bird"));
+        DynamicObjects.add(new DynamicWorldObjects(false, true, 0.0001f, 2, 0.1f, 24, SizeY * 13, assetsDir("World/Creatures/bird")));
         count++;
     }
 }

@@ -8,7 +8,8 @@ import core.World.StaticWorldObjects.Structures.Factories;
 import core.Utils.SimpleColor;
 import core.World.Textures.TextureDrawing;
 import java.awt.*;
-import static core.Window.defPath;
+
+import static core.Window.assetsDir;
 import static core.World.Creatures.Player.Inventory.Inventory.inventoryObjects;
 import static core.World.Textures.TextureDrawing.*;
 
@@ -105,7 +106,7 @@ public class BuildMenu {
 
     public static void draw() {
         if (create && isOpen) {
-            drawTexture(defPath + "\\src\\assets\\UI\\GUI\\buildMenu\\menuOpen.png", 1650, 0, 1, true);
+            drawTexture(assetsDir("UI/GUI/buildMenu/menuOpen.png"), 1650, 0, 1, true);
 
             for (int x = 0; x < items.length; x++) {
                 for (int y = 0; y < items[x].length; y++) {
@@ -127,7 +128,7 @@ public class BuildMenu {
                 float yCoord = 47 + scroll + (items[currentObject.x][currentObject.y].item.type.ordinal() * 20) + currentObject.y * 54;
 
                 if (yCoord < 105 && yCoord > -60) {
-                    drawTexture(defPath + "\\src\\assets\\UI\\GUI\\inventory\\inventoryCurrent.png", 1650 + currentObject.x * 54, yCoord, 1, true);
+                    drawTexture(assetsDir("UI/GUI/inventory/inventoryCurrent.png"), 1650 + currentObject.x * 54, yCoord, 1, true);
                 }
             }
             drawRectangle(1915, (int) Math.abs(scroll / 2f) - 5, 4, 20, new SimpleColor(0, 0, 0, 200));
@@ -135,13 +136,13 @@ public class BuildMenu {
             drawRequirements(1663, 156);
 
         } else if (!isOpen) {
-            drawTexture(defPath + "\\src\\assets\\UI\\GUI\\buildMenu\\menuClosed.png", 1650, 0, 1, true);
+            drawTexture(assetsDir("UI/GUI/buildMenu/menuClosed.png"), 1650, 0, 1, true);
         }
 
         if (infoCreated && currentObject != null && items[currentObject.x][currentObject.y] != null) {
             TextureDrawing.drawRectangle(0, 0, 1920, 1080, new SimpleColor(0, 0, 0, 50));
             TextureDrawing.drawRectangle(560, 0, 800, 1080, new SimpleColor(0, 0, 0, 50));
-            TextureDrawing.drawTexture(defPath + "\\src\\assets\\UI\\GUI\\buildMenu\\exitBtn.png", 605, 989, 1, true);
+            TextureDrawing.drawTexture(assetsDir("UI/GUI/buildMenu/exitBtn.png"), 605, 989, 1, true);
             TextureDrawing.drawText(694, 730, items[currentObject.x][currentObject.y].item.description);
             Inventory.drawInventoryItem(694, 915, items[currentObject.x][currentObject.y].item.path);
 
@@ -155,13 +156,13 @@ public class BuildMenu {
 
             drawText((int) x, (int) (y + 130), item.name);
             if (item.inputObjects != null) {
-                Factories.drawObjects(x, y + 82, item.inputObjects, defPath + "\\src\\assets\\UI\\GUI\\buildMenu\\factoryIn.png");
+                Factories.drawObjects(x, y + 82, item.inputObjects, assetsDir("UI/GUI/buildMenu/factoryIn.png"));
             }
             if (item.outputObjects != null) {
-                Factories.drawObjects(x, y + 41, item.outputObjects, defPath + "\\src\\assets\\UI\\GUI\\buildMenu\\factoryOut.png");
+                Factories.drawObjects(x, y + 41, item.outputObjects, assetsDir("UI/GUI/buildMenu/factoryOut.png"));
             }
             if (item.requiredForBuild != null) {
-                Factories.drawObjects(x, y, item.requiredForBuild, defPath + "\\src\\assets\\UI\\GUI\\buildMenu\\build.png");
+                Factories.drawObjects(x, y, item.requiredForBuild, assetsDir("UI/GUI/buildMenu/build.png"));
             }
         }
     }

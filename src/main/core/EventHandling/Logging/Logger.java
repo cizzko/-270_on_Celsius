@@ -13,6 +13,7 @@ import java.util.Arrays;
 import java.util.Random;
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Window.*;
+import static core.Window.pathTo;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Logger extends PrintStream {
@@ -66,7 +67,7 @@ public class Logger extends PrintStream {
             System.out.println(message);
 
             if (!cleanup) {
-                try (PrintWriter printWriter = new PrintWriter(new FileWriter(defPath + "\\log.txt"))) {
+                try (PrintWriter printWriter = new PrintWriter(new FileWriter(pathTo("/log.txt")))) {
                     printWriter.print("");
                     cleanup = true;
                 } catch (IOException e) {
@@ -74,7 +75,7 @@ public class Logger extends PrintStream {
                 }
             }
 
-            try (PrintWriter printWriter = new PrintWriter(new FileWriter(defPath + "\\log.txt", true))) {
+            try (PrintWriter printWriter = new PrintWriter(new FileWriter(pathTo("/log.txt"), true))) {
                 printWriter.println(message);
             } catch (IOException e) {
                 printException("Error when print to log", e);

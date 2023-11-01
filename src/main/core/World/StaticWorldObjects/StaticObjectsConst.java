@@ -3,7 +3,10 @@ package core.World.StaticWorldObjects;
 import core.EventHandling.Logging.Config;
 import java.io.File;
 import java.util.HashMap;
-import static core.Window.defPath;
+import java.util.Objects;
+import java.util.Properties;
+
+import static core.Window.*;
 
 public class StaticObjectsConst {
     private static final HashMap<Byte, StaticObjectsConst> constants = new HashMap<>();
@@ -48,21 +51,26 @@ public class StaticObjectsConst {
     }
 
     public static void setConst(String name, byte id, short[][] optionalTiles) {
+        Objects.requireNonNull(name, "id: " + id); // TODO случается
+
         if (constants.get(id) == null) {
             String originalName = name;
-            name = defPath + "\\src\\assets\\World\\ItemsCharacteristics\\" + name + ".properties";
+            name = assetsDir("World/ItemsCharacteristics/" + name + ".properties");
 
-            if (getStorageFolder(name).toLowerCase().contains("blocks")) {
-                boolean hasMotherBlock = Config.getProperties(name).get("HasMotherBlock") != null && Config.getProperties(name).get("HasMotherBlock").equals("true");
-                float density = Float.parseFloat((String) Config.getProperties(name).get("Density"));
-                float resistance = Float.parseFloat((String) Config.getProperties(name).get("Resistance"));
-                int lightTransmission = Integer.parseInt((String) Config.getProperties(name).get("LightTransmission"));
-                int maxHp = Integer.parseInt((String) Config.getProperties(name).get("MaxHp"));
-                String path = (String) Config.getProperties(name).get("Path");
-                String enumType = (String) Config.getProperties(name).get("Type");
-                String objectName = (String) Config.getProperties(name).get("Name");
+            if (originalName.contains("Blocks")) {
+                Properties props = Config.getProperties(name);
+                boolean hasMotherBlock = props.get("HasMotherBlock") != null && props.get("HasMotherBlock").equals("true");
+                float density = Float.parseFloat((String) props.get("Density"));
+                float resistance = Float.parseFloat((String) props.get("Resistance"));
+                int lightTransmission = Integer.parseInt((String) props.get("LightTransmission"));
+                int maxHp = Integer.parseInt((String) props.get("MaxHp"));
+                String path = (String) props.get("Path");
+                String enumType = (String) props.get("Type");
+                String objectName = (String) props.get("Name");
 
-                constants.put(id, new StaticObjectsConst(hasMotherBlock, maxHp, density, resistance, lightTransmission, path == null ? null : defPath + path, objectName, originalName, optionalTiles, Enum.valueOf(Types.class, enumType.toUpperCase())));
+                constants.put(id, new StaticObjectsConst(hasMotherBlock, maxHp, density, resistance, lightTransmission,
+                        path == null ? null : pathTo(path), objectName, originalName,
+                        optionalTiles, Types.valueOf(enumType.toUpperCase())));
             } else {
                 setConstStructures(name, id, optionalTiles);
             }
@@ -71,17 +79,18 @@ public class StaticObjectsConst {
 
     public static void setConstStructures(String path, byte id, short[][] optionalTiles) {
         if (constants.get(id) == null) {
-            boolean hasMotherBlock = Config.getProperties(path).get("HasMotherBlock") != null && Config.getProperties(path).get("HasMotherBlock").equals("true");
+            Properties props = Config.getProperties(path);
+            boolean hasMotherBlock = props.get("HasMotherBlock") != null && props.get("HasMotherBlock").equals("true");
             float density = 1;
             float resistance = 0;
             int lightTransmission = 100;
-            int maxHp = Integer.parseInt((String) Config.getProperties(path).get("MaxHp"));
-            String texturePath = (String) Config.getProperties(path).get("Path");
-            String objectName = (String) Config.getProperties(path).get("Name");
+            int maxHp = Integer.parseInt((String) props.get("MaxHp"));
+            String texturePath = (String) props.get("Path");
+            String objectName = (String) props.get("Name");
             String fileName = new File(path).getName();
             Types type = Types.SOLID;
 
-            constants.put(id, new StaticObjectsConst(hasMotherBlock, maxHp, density, resistance, lightTransmission, defPath + texturePath, objectName, fileName.substring(0, fileName.indexOf(".")), optionalTiles, type));
+            constants.put(id, new StaticObjectsConst(hasMotherBlock, maxHp, density, resistance, lightTransmission, pathTo(texturePath), objectName, fileName.substring(0, fileName.indexOf(".")), optionalTiles, type));
         }
     }
 

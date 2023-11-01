@@ -13,7 +13,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import static core.EventHandling.Logging.Logger.printException;
 import static core.UI.GUI.CreateElement.buttons;
-import static core.Window.defPath;
+import static core.Window.assetsDir;
 
 public class Saves {
 
@@ -38,7 +38,7 @@ public class Saves {
             dos.close();
             byte[] compressedBytes = compressed.toByteArray();
 
-            FileOutputStream fos = new FileOutputStream(defPath + "\\src\\assets\\World\\Saves\\WorldSaves\\Saves" + LocalDate.now() + ".ser");
+            FileOutputStream fos = new FileOutputStream(assetsDir("World/Saves/WorldSaves/Saves" + LocalDate.now() + ".ser"));
             fos.write(compressedBytes);
             fos.close();
         } catch (Exception e) {
@@ -70,6 +70,6 @@ public class Saves {
     }
 
     public static String[] loadWorldSaves() {
-      return ArrayUtils.getAllFiles(defPath + "\\src\\assets\\World\\Saves\\WorldSaves", null);
+      return ArrayUtils.getAllFiles(assetsDir("World/Saves/WorldSaves"), null);
     }
 }

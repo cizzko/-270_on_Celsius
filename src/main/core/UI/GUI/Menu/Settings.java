@@ -10,8 +10,7 @@ import java.awt.*;
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.EventHandling.Logging.Json.getName;
 import static core.UI.GUI.CreateElement.*;
-import static core.Window.defPath;
-import static core.Window.start;
+import static core.Window.*;
 
 public class Settings {
     public static boolean createdSettings = false, needUpdateCount = true;
@@ -45,7 +44,7 @@ public class Settings {
         createDropMenu(780, 950, 240, 65, Json.getAllLanguagesArray(), Json.lang, Json.getName("Language"), new SimpleColor(255, 80, 0, 55), "SettingsBasicDrop");
         createSwapButton(310, 980, 32, 32, getName("ShowPrompts"), getName("ShowPromptsPrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("ShowPrompts")), "SettingsBasicSwap");
         createSwapButton(310, 910, 32, 32, getName("DetectLanguage"), getName("DetectLanguagePrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("DetectLanguage")), "SettingsBasicSwap");
-        createPicture(745, 965, 1, "languageIcon", defPath + "\\src\\assets\\UI\\GUI\\languageIcon.png", "SettingsBasic");
+        createPicture(745, 965, 1, "languageIcon", assetsDir("UI/GUI/languageIcon.png"), "SettingsBasic");
     }
 
     public static void createOtherSett() {
@@ -149,7 +148,7 @@ public class Settings {
                 }
                 if (crawlingOut && System.currentTimeMillis() - lastPosSwap >= 7) {
                     lastPosSwap = System.currentTimeMillis();
-                    CreateElement.createPicture(pos.x, pos.y, 0, "otter", defPath + "\\src\\assets\\UI\\comeOutOtter.png", "Settings");
+                    CreateElement.createPicture(pos.x, pos.y, 0, "otter", assetsDir("UI/comeOutOtter.png"), "Settings");
 
                     if (!out && pos.x > 1770 && pos.y < -90) {
                         pos.x -= 1;
