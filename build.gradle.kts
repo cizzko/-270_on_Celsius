@@ -42,6 +42,8 @@ repositories {
 
 dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation("org.jcodec:jcodec:0.2.5")
+    implementation("org.jcodec:jcodec-javase:0.2.5")
 
     implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
     implementation("org.lwjgl", "lwjgl")
