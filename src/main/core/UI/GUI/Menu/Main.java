@@ -8,15 +8,14 @@ import java.net.URI;
 import static core.EventHandling.Logging.Json.getName;
 import static core.EventHandling.Logging.Logger.printException;
 import static core.UI.GUI.CreateElement.*;
-import static core.Window.defPath;
-import static core.Window.start;
+import static core.Window.*;
 
 public class Main {
     public static void create() {
         //default coordinate system - full hd
         createPanel(0, 965, 1920, 115, "defPan", true, "MainMenu");
 
-        CreateElement.createPictureButton(1830, 990, defPath + "\\src\\assets\\UI\\discordIcon.png", "DiscordButton", "MainMenu", Main::discordBtn);
+        CreateElement.createPictureButton(1830, 990, assetsDir("UI/discordIcon.png"), "DiscordButton", "MainMenu", Main::discordBtn);
         createButton(822, 990, 240, 65, getName("Exit"), null, false, new SimpleColor(236, 236, 236, 55), "MainMenu", Main::exitBtn);
         createButton(548, 990, 240, 65, getName("Settings"), null, false, new SimpleColor(236, 236, 236, 55), "MainMenu", Main::settingsBtn);
         createButton(46, 990, 240, 65, getName("Play"), null, false, new SimpleColor(255, 80, 0, 55), "MainMenu", Main::playBtn);

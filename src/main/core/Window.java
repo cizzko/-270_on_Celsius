@@ -2,22 +2,36 @@ package core;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
+import core.EventHandling.Logging.Logger;
 import core.EventHandling.MouseScrollCallback;
 import core.UI.GUI.Fonts;
 import core.UI.GUI.Menu.Main;
-import core.EventHandling.Logging.Logger;
 import core.World.Textures.TextureLoader;
 import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.opengl.GL;
-import java.nio.file.Paths;
+
+import java.nio.file.Path;
+
 import static core.EventHandling.Logging.Logger.log;
 import static core.World.Textures.TextureDrawing.*;
+import static core.World.Textures.TextureLoader.BufferedImageEncoder;
+import static core.World.Textures.TextureLoader.readImage;
 import static java.sql.Types.NULL;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL13.*;
 
 public class Window {
-    public final static String defPath = Paths.get("").toAbsolutePath().toString();
+    private static final String defPath = Path.of("").toAbsolutePath().toString();
+
+    public static String assetsDir(String path) {
+        return defPath + "/src/assets/" + path.replace('\\', '/');
+    }
+
+    public static String pathTo(String path) {
+        return defPath + path.replace('\\', '/');
+    }
+
     public static int width = 1920, height = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0, fps = 0;
     public static final String version = "alpha 0.0.21 (non stable)";
     public static boolean start = false;
@@ -41,11 +55,16 @@ public class Window {
 
         glfwInit();
         glfwWindow = glfwCreateWindow(width, height, "-270 on Celsius", glfwGetPrimaryMonitor(), NULL);
-        glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         glfwMakeContextCurrent(glfwWindow);
         glfwSetScrollCallback(glfwWindow, new MouseScrollCallback());
+
+        var cursorImage = readImage(BufferedImageEncoder(assetsDir("World/Other/cursorDefault.png")));
+        var glfwImg = GLFWImage.create()
+                .set(cursorImage.width(), cursorImage.height(), cursorImage.data());
+        long cursorPtr = glfwCreateCursor(glfwImg, 0, 0);
+        glfwSetCursor(glfwWindow, cursorPtr);
 
         //vsync
         glfwSwapInterval(verticalSync);
@@ -58,7 +77,7 @@ public class Window {
         glOrtho(0, width, 0, height, 1, -1);
         glMatrixMode(GL_MODELVIEW);
 
-        Fonts.generateFont(defPath + "\\src\\assets\\UI\\arial.ttf");
+        Fonts.generateFont(assetsDir("UI/arial.ttf"));
         TextureLoader.preLoadResources();
         TextureLoader.bindChars();
         Main.create();
@@ -78,10 +97,9 @@ public class Window {
                 updateStaticObj();
                 updateDynamicObj();
             } else {
-                drawTexture(defPath + "\\src\\assets\\World\\Other\\background.png", 0, 0, 1, true);
+                drawTexture(assetsDir("World/Other/background.png"), 0, 0, 1, true);
             }
             updateGUI();
-            drawCursor();
 
             glfwSwapBuffers(glfwWindow);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

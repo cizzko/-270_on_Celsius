@@ -62,7 +62,7 @@ public class TextureDrawing {
 
         glColor4f(color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f, color.getAlpha() / 255.0f);
 
-        if (Window.start && !isStatic) {
+        if (start && !isStatic) {
             glTranslatef(-playerX * zoom + Window.width / 2f - 32, -playerY * zoom + Window.height / 2f - 200, 0); // Смещение относительно нужной точки
         }
 //            glTranslatef(x * zoom + (width / 2f), y * zoom + (height / 2f), 0.0f);
@@ -134,7 +134,7 @@ public class TextureDrawing {
 
         glColor4f(color.getRed() / 255.0f, color.getGreen() / 255.0f, color.getBlue() / 255.0f, color.getAlpha() / 255.0f);
 
-        if (Window.start && !isStatic) {
+        if (start && !isStatic) {
             glTranslatef(-playerX * zoom + Window.width / 2f - 32, -playerY * zoom + Window.height / 2f - 200, 0); // Смещение относительно нужной точки
         }
 
@@ -223,10 +223,6 @@ public class TextureDrawing {
         glPopMatrix();
 
         glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
-    public static void drawCursor() {
-        drawTexture(defPath + "\\src\\assets\\World\\Other\\cursorDefault.png", EventHandler.getMousePos().x, getMousePos().y - 20, 1, true);
     }
 
     public static void drawText(int x, int y, String text, SimpleColor color) {
@@ -492,10 +488,10 @@ public class TextureDrawing {
                         drawTexture(getPath(obj), xBlock, yBlock, 3f, color, false, false);
 
                     } else if (getHp(obj) < getMaxHp(obj) / 3) {
-                        drawMultiTexture(getPath(obj), defPath + "\\src\\assets\\World\\Blocks\\damaged1.png", xBlock, yBlock, 3f, color, false, false);
+                        drawMultiTexture(getPath(obj), assetsDir("World/Blocks/damaged1.png"), xBlock, yBlock, 3f, color, false, false);
 
                     } else {
-                        drawMultiTexture(getPath(obj), defPath + "\\src\\assets\\World\\Blocks\\damaged0.png", xBlock, yBlock, 3f, color, false, false);
+                        drawMultiTexture(getPath(obj), assetsDir("World/Blocks/damaged0.png"), xBlock, yBlock, 3f, color, false, false);
                     }
                 }
             }
@@ -601,7 +597,7 @@ public class TextureDrawing {
                 drawText(button.x + 20, (int) (button.y + button.height / 2.8), button.name);
 
                 if (button.isClicked) {
-                    drawTexture(defPath + "\\src\\assets\\UI\\GUI\\openDrop.png", button.x + button.width - 42, button.y + button.height / 3.f, 1, true);
+                    drawTexture(assetsDir("UI/GUI/openDrop.png"), button.x + button.width - 42, button.y + button.height / 3.f, 1, true);
                     ButtonObject[] dropButtons = dropMenu.get(button.name);
 
                     for (ButtonObject dropButton : dropButtons) {
@@ -609,7 +605,7 @@ public class TextureDrawing {
 
                         if (dropButton.simple && dropButton.swapButton && dropButton.isClicked) {
                             drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
-                            drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", dropButton.x + dropButton.width / 1.3f, dropButton.y + dropButton.height / 3f, 1, true);
+                            drawTexture(assetsDir("UI/GUI/checkMarkTrue.png"), dropButton.x + dropButton.width / 1.3f, dropButton.y + dropButton.height / 3f, 1, true);
                             drawText(dropButton.x + 20, dropButton.y + dropButton.height / 3, dropButton.name);
                         } else if (dropButton.simple && dropButton.swapButton) {
                             drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
@@ -617,7 +613,7 @@ public class TextureDrawing {
                         }
                     }
                 } else {
-                    drawTexture(defPath + "\\src\\assets\\UI\\GUI\\closedDrop.png", button.x + button.width - 42, button.y + button.height / 3.5f, 1, true);
+                    drawTexture(assetsDir("UI/GUI/closedDrop.png"), button.x + button.width - 42, button.y + button.height / 3.5f, 1, true);
                 }
             }
         }
@@ -633,7 +629,7 @@ public class TextureDrawing {
 
                 if (button.simple && button.isClicked) {
                     drawRectangle(button.x, button.y, button.width, button.height, button.color);
-                    drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", button.x + button.width / 1.3f, button.y + button.height / 3f, 1, true);
+                    drawTexture(assetsDir("UI/GUI/checkMarkTrue.png"), button.x + button.width / 1.3f, button.y + button.height / 3f, 1, true);
                     drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
                 } else if (button.simple) {
                     drawRectangle(button.x, button.y, button.width, button.height, button.color);
@@ -642,11 +638,11 @@ public class TextureDrawing {
                     //if swap and not simple
                     if (button.isClicked) {
                         drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
-                        drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkTrue.png", button.x, button.y, 1, true);
+                        drawTexture(assetsDir("UI/GUI/checkMarkTrue.png"), button.x, button.y, 1, true);
                         drawText(button.width + button.x + 24, button.y, button.name);
                     } else {
                         drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
-                        drawTexture(defPath + "\\src\\assets\\UI\\GUI\\checkMarkFalse.png", button.x, button.y, 1, true);
+                        drawTexture(assetsDir("UI/GUI/checkMarkFalse.png"), button.x, button.y, 1, true);
                         drawText(button.width + button.x + 24, button.y, button.name);
                     }
                 }

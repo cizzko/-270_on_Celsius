@@ -5,7 +5,7 @@ import core.Utils.SimpleColor;
 import core.World.WorldGenerator;
 
 import static core.EventHandling.Logging.Config.getFromConfig;
-import static core.Window.*;
+import static core.Window.assetsDir;
 import static core.World.Textures.TextureDrawing.*;
 import static core.World.WorldGenerator.DynamicObjects;
 
@@ -53,7 +53,7 @@ public class Sun {
 
             updateNightBackground();
             updateGradient();
-            drawTexture(defPath + "\\src\\assets\\World\\Sun\\Sun.png", 580, y, 1, new SimpleColor(255, green, 40, 220), true, false);
+            drawTexture(assetsDir("World/Sun/sun.png"), 580, y, 1, new SimpleColor(255, green, 40, 220), true, false);
         }
     }
 
@@ -68,7 +68,7 @@ public class Sun {
         int aGradient = (int) (250 * alpha);
         aGradient = Math.max(0, Math.min(250, aGradient));
 
-        drawTexture(defPath + "\\src\\assets\\World\\Sun\\" + (getFromConfig("InterpolateSunset").equals("true") ? "" : "non") + "InterpolatedSunset.png", 0, 0, 1, new SimpleColor(aGradient, 0, 20, aGradient), true, false);
+        drawTexture(assetsDir("World/Sun/" + (getFromConfig("InterpolateSunset").equals("true") ? "" : "non") + "InterpolatedSunset.png"), 0, 0, 1, new SimpleColor(aGradient, 0, 20, aGradient), true, false);
     }
 
     private static void updateNightBackground() {
@@ -86,7 +86,7 @@ public class Sun {
         ShadowMap.deleteAllColor(new SimpleColor(deleteGradient, deleteGradient, deleteGradient, 0));
         ShadowMap.deleteAllColorDynamic(new SimpleColor(deleteGradient, deleteGradient, deleteGradient, 0));
 
-        drawTexture(defPath + "\\src\\assets\\World\\Sky\\skyBackground0.png", 0, 0, 1, new SimpleColor(255, 255, 255, backGradient), true, false);
+        drawTexture(assetsDir("World/Sky/skyBackground0.png"), 0, 0, 1, new SimpleColor(255, 255, 255, backGradient), true, false);
     }
 
     private static double Lerp(double a, double b, double t) {

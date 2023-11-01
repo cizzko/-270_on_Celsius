@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import static core.EventHandling.EventHandler.getMousePos;
-import static core.Window.defPath;
+import static core.Window.assetsDir;
 import static core.World.Textures.TextureDrawing.drawTexture;
 import static core.World.WorldGenerator.*;
 
@@ -93,7 +93,7 @@ public class Bullets {
         for (Bullets bullet : bullets) {
             //TODO: дописать пути нормальные
             if (bullet != null && !(bullet.x > DynamicObjects.get(0).x + 350 || bullet.x < DynamicObjects.get(0).x - 350)) {
-                drawTexture(defPath + "\\src\\assets\\World\\Items\\someBullet.png", bullet.x, bullet.y, 3, false);
+                drawTexture(assetsDir("World/Items/someBullet.png"), bullet.x, bullet.y, 3, false);
             }
         }
     }

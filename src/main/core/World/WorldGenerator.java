@@ -88,7 +88,7 @@ public class WorldGenerator {
 
             //TODO: костыль
             if (getName(id).toLowerCase().contains("trunk") && Math.random() * 100 < 30) {
-                createElementDetail(new Details("Stick", defPath + "\\src\\assets\\World\\Items\\stick.png"), "");
+                createElementDetail(new Details("Stick", assetsDir("World/Items/stick.png")), "");
             }
 
             for (StaticBlocksEvents listener : listeners) {
@@ -164,16 +164,16 @@ public class WorldGenerator {
         for (int x = 0; x < SizeX; x++) {
             for (int y = 0; y < SizeY; y++) {
                 if (y > SizeY / 1.5f) {
-                    setObject(x, y, createStatic("Blocks\\Air"));
+                    setObject(x, y, createStatic("Blocks/air"));
                 } else {
-                    setObject(x, y, createStatic("Blocks\\Grass"));
+                    setObject(x, y, createStatic("Blocks/grass"));
                 }
             }
         }
     }
 
     private static void loadAllStructures() {
-        String[] paths = ArrayUtils.getAllFiles(defPath + "\\src\\assets\\World\\Saves", ".ser");
+        String[] paths = ArrayUtils.getAllFiles(assetsDir("World/Saves"), ".ser");
 
         for (String path : paths) {
             loadStructure(path);
@@ -206,7 +206,7 @@ public class WorldGenerator {
                     randGrass += y / (mountainHeight * SizeY);
 
                     if ((getType(getObject(x + 1, y)) == StaticObjectsConst.Types.SOLID || getType(getObject(x - 1, y)) == StaticObjectsConst.Types.SOLID || getType(getObject(x, y + 1)) == StaticObjectsConst.Types.SOLID || getType(getObject(x, y - 1)) == StaticObjectsConst.Types.SOLID) && Math.random() * randGrass < 1) {
-                        setObject(x, y, createStatic("Blocks\\Grass"));
+                        setObject(x, y, createStatic("Blocks/grass"));
                     } else if (Math.random() * randAir < 1) {
                         destroyObject(x, y);
                     }
@@ -242,10 +242,10 @@ public class WorldGenerator {
 
         for (int x = 1; x < SizeX - 1; x++) {
             for (int y = 1; y < SizeY - 1; y++) {
-                if ((getType(getObject(x, y)) != StaticObjectsConst.Types.GAS && getType(getObject(x + 1, y)) == StaticObjectsConst.Types.SOLID && getType(getObject(x - 1, y)) == StaticObjectsConst.Types.SOLID && getType(getObject(x, y - 1)) == StaticObjectsConst.Types.SOLID) || (getType(getObject(x + 1, y + 1)) == StaticObjectsConst.Types.SOLID && getType(getObject(x - 1, y - 1)) == StaticObjectsConst.Types.SOLID) || (getType(getObject(x - 1, y + 1)) == StaticObjectsConst.Types.SOLID && getType(getObject(x + 1, y - 1)) == StaticObjectsConst.Types.SOLID && Math.random() * smoothingChance < 1)) {
-                    setObject(x, y, createStatic("Blocks\\Grass"));
+                if ((getType(getObject(x, y)) != StaticObjectsConst.Types.GAS && getType(getObject(x + 1, y)) == StaticObjectsConst.Types.SOLID && getType(getObject(x - 1, y)) == StaticObjectsConst.Types.SOLID && getType(getObject(x, y - 1)) == StaticObjectsConst.Types.SOLID) || (getType(getObject(x + 1, y + 1)) == StaticObjectsConst.Types.SOLID && getType(getObject(x - 1, y - 1)) == StaticObjectsConst.Types.SOLID) || getType(getObject(x - 1, y + 1)) == StaticObjectsConst.Types.SOLID && getType(getObject(x + 1, y - 1)) == StaticObjectsConst.Types.SOLID && Math.random() * smoothingChance < 1) {
+                    setObject(x, y, createStatic("Blocks/grass"));
                 } else if ((getType(getObject(x, y + 1)) == StaticObjectsConst.Types.SOLID && getType(getObject(x, y - 1)) == StaticObjectsConst.Types.SOLID) || (getType(getObject(x + 1, y)) == StaticObjectsConst.Types.SOLID && getType(getObject(x - 1, y)) == StaticObjectsConst.Types.SOLID) && Math.random() * smoothingChance < 1) {
-                    setObject(x, y, createStatic("Blocks\\Grass"));
+                    setObject(x, y, createStatic("Blocks/grass"));
                 }
             }
         }
@@ -309,7 +309,7 @@ public class WorldGenerator {
         for (int[] coord : area) {
             int x = coord[0];
             int y = coord[1];
-            setObject(x, y, createStatic("Blocks\\Grass"));
+            setObject(x, y, createStatic("Blocks/grass"));
         }
     }
 
@@ -347,7 +347,7 @@ public class WorldGenerator {
         for (int x = 0; x < forests.length; x++) {
             if (forests[x] > 0) {
                 for (int i = 0; i < forests[x]; i++) {
-                    final String path = defPath + "\\src\\assets\\World\\Saves\\Structures\\tree" + (int) (Math.random() * 2) + ".ser";
+                    final String path = assetsDir("World/Saves/Structures/tree" + (int) (Math.random() * 2) + ".ser");
                     int distance = (int) ((Math.random() * 8) + 4);
                     int xTree = x + (i * distance);
                     int yTree = findFreeVerticalCell(x + (i * distance));
@@ -368,7 +368,7 @@ public class WorldGenerator {
                 int y = findFreeVerticalCell(x);
 
                 if (y - 1 > 0 && getType(getObject(x, y - 1)) == StaticObjectsConst.Types.SOLID && getResistance(getObject(x, y - 1)) == 100) {
-                    createStructure(x, y, defPath + "\\src\\assets\\World\\Saves\\Structures\\decorStone.ser");
+                    createStructure(x, y, assetsDir("World/Saves/Structures/decorStone.ser"));
                 }
             }
         }
@@ -408,20 +408,20 @@ public class WorldGenerator {
         for (int x = 0; x < SizeX; x++) {
             for (int y = 0; y < SizeY; y++) {
                 if (getType(getObject(x, y + 1)) != StaticObjectsConst.Types.GAS) { // Генерация земли под блоками травы
-                    setObject(x, y, createStatic("Blocks\\Dirt"));
+                    setObject(x, y, createStatic("Blocks/dirt"));
                 }
 
                 if (ShadowMap.getDegree(x, y) >= 3) { // Генерация камня
-                    setObject(x, y, createStatic("Blocks\\Stone"));
+                    setObject(x, y, createStatic("Blocks/stone"));
                 }
 
                 if (PerlinNoiseGenerator.noise[x][y] && ShadowMap.getDegree(x, y) >= 3) { // Генерация руды
-                    setObject(x, y, createStatic("Blocks\\IronOre"));
+                    setObject(x, y, createStatic("Blocks/ironOre"));
                 }
 
                 if (ShadowMap.getDegree(x, y) == 2) { // Генерация перехода между землёй и камнем
-                    if (!getFileName(getObject(x, y + 1)).equals("Blocks\\DirtStone")) {
-                        setObject(x, y, createStatic("Blocks\\DirtStone"));
+                    if (!getFileName(getObject(x, y + 1)).equals("Blocks/dirtStone")) {
+                        setObject(x, y, createStatic("Blocks/dirtStone"));
                     }
                 }
             }
@@ -429,8 +429,10 @@ public class WorldGenerator {
     }
 
     public static void generateDynamicsObjects(boolean randomSpawn) {
-        DynamicObjects.add(new DynamicWorldObjects(true, false, 0.003f, 4, 0, randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f, 100, defPath + "\\src\\assets\\World\\Creatures\\playerRight\\player"));
-        DynamicObjects.set(0, new DynamicWorldObjects(true, false, 0.003f, 4, 0, randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f, 100, defPath + "\\src\\assets\\World\\Creatures\\playerRight\\player"));}
+        String path = assetsDir("World/Creatures/playerRight/player");
+        DynamicObjects.add(new DynamicWorldObjects(true, false, 0.003f, 4, 0, randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f, 100, path));
+        DynamicObjects.set(0, new DynamicWorldObjects(true, false, 0.003f, 4, 0, randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f, 100, path));
+    }
 
     public static void start(boolean generateCreatures) {
         CreatePlanet.delete();

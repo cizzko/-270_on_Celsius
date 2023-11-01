@@ -2,15 +2,19 @@ package core.EventHandling.Logging;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+
 import java.io.FileReader;
 import java.util.HashMap;
 import java.util.Locale;
+
 import static core.EventHandling.Logging.Logger.printException;
-import static core.Window.defPath;
+import static core.Window.assetsDir;
 
 public class Json {
     private static final HashMap<String, String> words = new HashMap<>(), keys = new HashMap<>();
-    public static String lang, allLanguages, translateFile = defPath + "\\src\\assets\\Translate.jsonc";
+    private static final String translateFile = assetsDir("Translate.jsonc");
+
+    public static String lang, allLanguages;
 
     public static String getName(String key) {
         if (words.get(key) == null) {

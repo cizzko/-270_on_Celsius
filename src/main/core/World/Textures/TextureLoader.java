@@ -3,6 +3,7 @@ package core.World.Textures;
 import core.EventHandling.Logging.Config;
 import core.Utils.ArrayUtils;
 import org.lwjgl.BufferUtils;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -10,10 +11,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
+
 import static core.EventHandling.Logging.Logger.*;
 import static core.UI.GUI.Fonts.getCharBuffer;
 import static core.UI.GUI.Fonts.letterSize;
-import static core.Window.defPath;
+import static core.Window.pathTo;
 import static core.World.Textures.TextureDrawing.bindTexture;
 import static org.lwjgl.opengl.GL11.*;
 
@@ -31,15 +33,14 @@ public class TextureLoader extends Thread {
         return null;
     }
 
-    public static ByteBuffer ByteBufferEncoder(String path) {
-        ByteBuffer buffer;
-        BufferedImage image = BufferedImageEncoder(path);
+    public record ImageData(int width, int height, ByteBuffer data) {}
 
+    public static ImageData readImage(BufferedImage image) {
         //декодирует картинку в ргба, и загружает каждый байт в буффер
         int BYTES_PER_PIXEL = 4;
         int[] pixels = new int[image.getWidth() * image.getHeight()];
         image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
-        buffer = BufferUtils.createByteBuffer(image.getWidth() * image.getHeight() * BYTES_PER_PIXEL); //4 байта на пиксель для ргба, 3 под ргб
+        ByteBuffer buffer = BufferUtils.createByteBuffer(image.getWidth() * image.getHeight() * BYTES_PER_PIXEL); //4 байта на пиксель для ргба, 3 под ргб
 
         //загрузка пикселей
         for (int y = 0; y < image.getHeight(); y++) {
@@ -52,39 +53,26 @@ public class TextureLoader extends Thread {
             }
         }
 
-        return buffer.flip();
+        return new ImageData(image.getWidth(), image.getHeight(), buffer.flip());
+    }
+
+    public static ByteBuffer ByteBufferEncoder(String path) {
+        return readImage(BufferedImageEncoder(path)).data;
     }
 
     public static ByteBuffer ByteBufferEncoder(BufferedImage image) {
-        ByteBuffer buffer;
-
-        //декодирует картинку в ргба, и загружает каждый байт в буффер
-        int BYTES_PER_PIXEL = 4;
-        int[] pixels = new int[image.getWidth() * image.getHeight()];
-        image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
-        buffer = ByteBuffer.allocateDirect(image.getWidth() * image.getHeight() * BYTES_PER_PIXEL); //4 байта на пиксель для ргба, 3 под ргб
-
-        //загрузка пикселей
-        for (int y = 0; y < image.getHeight(); y++) {
-            for (int x = 0; x < image.getWidth(); x++) {
-                int pixel = pixels[y * image.getWidth() + x];
-                buffer.put((byte) ((pixel >> 16) & 0xFF));     // красный компонент картинки
-                buffer.put((byte) ((pixel >> 8) & 0xFF));      // зеленый компонент картинки
-                buffer.put((byte) (pixel & 0xFF));             // синий компонент картинки
-                buffer.put((byte) ((pixel >> 24) & 0xFF));     // альфа компонент, используется в ргба и обозначает степень прозрачности пикселя
-            }
-        }
-
-        return buffer.flip();
+        return readImage(image).data;
     }
 
     public static Dimension getSize(String path) {
         path += path.endsWith(".png") ? "" : "1.png";
 
-        if (sizes.get(path) == null) {
-            sizes.put(path, new Dimension(BufferedImageEncoder(path).getWidth(), BufferedImageEncoder(path).getHeight()));
+        Dimension size = sizes.get(path);
+        if (size == null) {
+            var encoder = BufferedImageEncoder(path);
+            sizes.put(path, size = new Dimension(encoder.getWidth(), encoder.getHeight()));
         }
-        return sizes.get(path);
+        return size;
     }
 
     public static ByteBuffer uniteTextures(String mainTexture, String secondTexture) {
@@ -99,7 +87,7 @@ public class TextureLoader extends Thread {
 
     public static void preLoadResources() {
         if (Config.getFromConfig("PreloadResources").equals("true")) {
-            String[] textures = ArrayUtils.getAllFiles(defPath + "\\src\\assets", ".png");
+            String[] textures = ArrayUtils.getAllFiles(pathTo("src/assets"), ".png");
 
             for (String texture : textures) {
                 bindTexture(texture);

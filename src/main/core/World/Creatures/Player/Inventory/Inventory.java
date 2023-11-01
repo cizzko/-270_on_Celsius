@@ -2,6 +2,7 @@ package core.World.Creatures.Player.Inventory;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
+import core.Window;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Items.Details;
 import core.World.Creatures.Player.Inventory.Items.Items;
@@ -13,7 +14,8 @@ import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import java.awt.*;
 import java.util.Arrays;
-import static core.Window.defPath;
+
+import static core.Window.assetsDir;
 import static core.World.Textures.TextureDrawing.*;
 
 public class Inventory {
@@ -36,7 +38,7 @@ public class Inventory {
     }
 
     private static void drawInventory() {
-        drawTexture(defPath + "\\src\\assets\\UI\\GUI\\inventory\\inventory" + (inventoryOpen ? "Open" : "Closed") + ".png", inventoryOpen ? 1488 : 1866, 756, 1, true);
+        drawTexture(assetsDir("UI/GUI/inventory/inventory" + (inventoryOpen ? "Open" : "Closed") + ".png"), inventoryOpen ? 1488 : 1866, 756, 1, true);
 
         for (int x = inventoryOpen ? 0 : 7; x < inventoryObjects.length; x++) {
             for (int y = 0; y < inventoryObjects[x].length; y++) {
@@ -88,7 +90,7 @@ public class Inventory {
 
         if (current != null) {
             if ((inventoryOpen || current.x > 6)) {
-                drawTexture(defPath + "\\src\\assets\\UI\\GUI\\inventory\\inventoryCurrent.png", 1488 + current.x * 54, 756 + current.y * 54f, 1, true);
+                drawTexture(assetsDir("UI/GUI/inventory/inventoryCurrent.png"), 1488 + current.x * 54, 756 + current.y * 54f, 1, true);
             }
             short placeable = inventoryObjects[current.x][current.y].placeable;
             int blockX = Player.getBlockUnderMousePoint().x;
@@ -140,10 +142,11 @@ public class Inventory {
         short object;
         byte id = StaticWorldObjects.generateId(rootName);
 
-        if (StaticObjectsConst.getConst(id) == null) {
-            maxHp = Integer.parseInt((String) Config.getProperties(defPath + "\\src\\assets\\World\\ItemsCharacteristics\\" + rootName + ".properties").get("MaxHp"));
+        StaticObjectsConst objectConst = StaticObjectsConst.getConst(id);
+        if (objectConst == null) {
+            maxHp = Integer.parseInt((String) Config.getProperties(assetsDir("World/ItemsCharacteristics/" + rootName + ".properties")).get("MaxHp"));
         } else {
-            maxHp = (int) StaticObjectsConst.getConst(id).maxHp;
+            maxHp = (int) objectConst.maxHp;
         }
 
         object = (short) ((((byte) maxHp & 0xFF) << 8) | (id & 0xFF));

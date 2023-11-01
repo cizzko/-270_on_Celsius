@@ -18,8 +18,7 @@ import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
 import java.util.zip.DeflaterOutputStream;
 import static core.EventHandling.Logging.Logger.printException;
-import static core.Window.defPath;
-import static core.Window.glfwWindow;
+import static core.Window.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.WorldGenerator.destroyObject;
 import static core.World.WorldGenerator.getObject;
@@ -114,7 +113,7 @@ public class DebugTools {
             dos.close();
             byte[] compressedBytes = compressed.toByteArray();
 
-            FileOutputStream fos = new FileOutputStream(defPath + "\\src\\assets\\World\\Saves\\Structures\\structure" + time + ".ser");
+            FileOutputStream fos = new FileOutputStream(assetsDir("World/Saves/Structures/structure" + time + ".ser"));
             fos.write(compressedBytes);
             fos.close();
         } catch (Exception e) {

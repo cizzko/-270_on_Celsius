@@ -7,12 +7,11 @@ import core.UI.GUI.CreateElement;
 import core.UI.GUI.Menu.*;
 import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.SliderObject;
-import core.Window;
 import core.World.Creatures.Player.Player;
 import core.Utils.SimpleColor;
 import core.World.WorldGenerator;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWKeyCallback;
+import org.lwjgl.glfw.*;
+
 import java.awt.*;
 import java.util.Arrays;
 import static core.Utils.Commandline.updateLine;
@@ -24,14 +23,35 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class EventHandler extends Thread {
     public static long lastMouseMovedTime = System.currentTimeMillis(), lastSecond = System.currentTimeMillis();
-    private static Point lastMousePos;
+    private static final Point lastMousePos = new Point();
     public static boolean mouseNotMoved = false, keyLogging = false;
     public static String keyLoggingText = "";
     private static final boolean[] pressedButtons = new boolean[349];
     private static int handlerUpdates = 0;
 
+    public static int width, height; // TODO масштабирование
+
     public EventHandler() {
         log("Thread: Event handling started");
+
+        glfwSetCursorPosCallback(glfwWindow, new GLFWCursorPosCallback() {
+            @Override
+            public void invoke(long window, double xpos, double ypos) {
+                double mouseX = xpos * MouseCalibration.xMultiplier;
+                double mouseY = ypos / MouseCalibration.yMultiplier;
+                double invertedY = height - mouseY;
+
+                lastMouseMovedTime = System.currentTimeMillis();
+                lastMousePos.setLocation(mouseX, invertedY);
+            }
+        });
+        glfwSetWindowSizeCallback(glfwWindow, new GLFWWindowSizeCallback() {
+            @Override
+            public void invoke(long window, int width, int height) {
+                EventHandler.width = width;
+                EventHandler.height = height;
+            }
+        });
         glfwSetKeyCallback(glfwWindow, new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
@@ -52,11 +72,7 @@ public class EventHandler extends Thread {
     }
 
     public static Point getMousePos() {
-        double mouseX = MouseInfo.getPointerInfo().getLocation().getX() * MouseCalibration.xMultiplier;
-        double mouseY = MouseInfo.getPointerInfo().getLocation().getY() / MouseCalibration.yMultiplier;
-        int invertedY = Window.height - (int) mouseY;
-
-        return new Point((int) mouseX, invertedY);
+        return lastMousePos;
     }
 
     public static boolean getKey(int key) {
@@ -182,7 +198,7 @@ public class EventHandler extends Thread {
             } else {
                 pic = "planetMini.png";
             }
-            panels.get("planet").options = defPath + "\\src\\assets\\World\\WorldGenerator\\" + pic;
+            panels.get("planet").options = assetsDir("World/WorldGenerator/" + pic);
         }
     }
 
@@ -216,18 +232,6 @@ public class EventHandler extends Thread {
                     }
                 }
             }
-        }
-    }
-
-    private static void updateMouseMoveTimer() {
-        Point currentMousePos = getMousePos();
-
-        if (!currentMousePos.equals(lastMousePos)) {
-            lastMouseMovedTime = System.currentTimeMillis();
-            lastMousePos = currentMousePos;
-            mouseNotMoved = false;
-        } else if (System.currentTimeMillis() - lastMouseMovedTime > 1000) {
-            mouseNotMoved = true;
         }
     }
 
@@ -268,7 +272,6 @@ public class EventHandler extends Thread {
             updateKeyLogging();
             updateDropMenu();
             updateSliders();
-            updateMouseMoveTimer();
             updateHotkeys();
             updateLine();
             updateDebug();

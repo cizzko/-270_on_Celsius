@@ -10,11 +10,10 @@ import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
 import core.World.Textures.*;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
-import core.World.WorldGenerator;
 import java.awt.*;
 import java.awt.geom.Point2D;
 import static core.EventHandling.EventHandler.getMousePos;
-import static core.Window.defPath;
+import static core.Window.assetsDir;
 import static core.Window.start;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
 import static core.World.HitboxMap.*;
@@ -35,12 +34,12 @@ public class Player {
         float increment = noClip ? 0.5f : 0.1f;
 
         if (EventHandler.getKeyClick(GLFW_KEY_Q) && DynamicObjects.get(0).animSpeed == 0) {
-            DynamicObjects.get(0).path = defPath + "\\src\\assets\\World\\Creatures\\playerLeft\\player";
+            DynamicObjects.get(0).path = assetsDir("World/Creatures/playerLeft/player");
             DynamicObjects.get(0).animSpeed = 0.03f;
             setObject((int) ((DynamicObjects.get(0).x - 1) / 16), (int) (DynamicObjects.get(0).y / 16 + 1), StaticWorldObjects.decrementHp(getObject((int) ((DynamicObjects.get(0).x - 1) / 16), (int) (DynamicObjects.get(0).y / 16 + 1)), 10));
         }
         if (EventHandler.getKeyClick(GLFW_KEY_E) && DynamicObjects.get(0).animSpeed == 0) {
-            DynamicObjects.get(0).path = defPath + "\\src\\assets\\World\\Creatures\\playerRight\\player";
+            DynamicObjects.get(0).path = assetsDir("World/Creatures/playerRight/player");
             DynamicObjects.get(0).animSpeed = 0.03f;
             setObject((int) (DynamicObjects.get(0).x / 16 + 2), (int) (DynamicObjects.get(0).y / 16 + 1), StaticWorldObjects.decrementHp(getObject((int) (DynamicObjects.get(0).x / 16 + 2), (int) (DynamicObjects.get(0).y / 16 + 1)), 10));
         }
@@ -184,7 +183,8 @@ public class Player {
 
         for (int blockX = 0; blockX < maxCellsX; blockX++) {
             for (int blockY = 0; blockY < maxCellsY; blockY++) {
-                if (StaticObjectsConst.getConst(getId(WorldGenerator.getObject(cellX - blockX, cellY - blockY))).optionalTiles != null) {
+                StaticObjectsConst objConst = StaticObjectsConst.getConst(getId(getObject(cellX - blockX, cellY - blockY)));
+                if (objConst != null && objConst.optionalTiles != null) {
                     return new Point(cellX - blockX, cellY - blockY);
                 }
             }
@@ -225,10 +225,10 @@ public class Player {
             TextureDrawing.drawTexture(getPath(obj), xBlock, yBlock, 3f, blockColor, false, false);
 
         } else if (getHp(obj) < getMaxHp(obj) / 3) {
-            TextureDrawing.drawMultiTexture(getPath(obj), defPath + "\\src\\assets\\World\\Blocks\\damaged1.png", xBlock, yBlock, 3f, blockColor, false, false);
+            TextureDrawing.drawMultiTexture(getPath(obj), assetsDir("World/Blocks/damaged1.png"), xBlock, yBlock, 3f, blockColor, false, false);
 
         } else {
-            TextureDrawing.drawMultiTexture(getPath(obj), defPath + "\\src\\assets\\World\\Blocks\\damaged0.png", xBlock, yBlock, 3f, blockColor, false, false);
+            TextureDrawing.drawMultiTexture(getPath(obj), assetsDir("World/Blocks/damaged0.png"), xBlock, yBlock, 3f, blockColor, false, false);
         }
     }
 

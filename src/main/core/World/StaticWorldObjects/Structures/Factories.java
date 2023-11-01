@@ -15,8 +15,9 @@ import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
 import java.awt.*;
 import java.util.*;
-import static core.Window.defPath;
 import static core.Utils.ArrayUtils.findEqualsObjects;
+import static core.Window.assetsDir;
+import static core.Window.pathTo;
 
 public class Factories implements StaticBlocksEvents {
     public float productionSpeed, needEnergy, currentHp, currentEnergy, maxHp, timeSinceBreakdown, x, y;
@@ -31,7 +32,7 @@ public class Factories implements StaticBlocksEvents {
 
     @Override
     public void placeStatic(int cellX, int cellY, short id) {
-        if (id != 0 && Objects.requireNonNull(StaticWorldObjects.getPath(id)).substring(defPath.length()).toLowerCase().contains("factory")) {
+        if (id != 0 && Objects.requireNonNull(StaticWorldObjects.getPath(id)).toLowerCase().contains("factory")) {
             createFactory(StaticWorldObjects.getFileName(id), StaticObjectsConst.getConst(StaticWorldObjects.getId(id)).optionalTiles);
             factories.add(new Point(cellX, cellY));
         }
@@ -39,7 +40,7 @@ public class Factories implements StaticBlocksEvents {
 
     @Override
     public void destroyStatic(int cellX, int cellY, short id) {
-        if (id != 0 && Objects.requireNonNull(StaticWorldObjects.getPath(id)).substring(defPath.length()).toLowerCase().contains("factory")) {
+        if (id != 0 && Objects.requireNonNull(StaticWorldObjects.getPath(id)).toLowerCase().contains("factory")) {
             factories.remove(new Point(cellX, cellY));
         }
     }
@@ -75,21 +76,24 @@ public class Factories implements StaticBlocksEvents {
 
     public static void createFactory(String name, short[][] tiles) {
         String originalName = name;
-        name = defPath + "\\src\\assets\\World\\ItemsCharacteristics\\Factories\\" + name + ".properties";
+        name = assetsDir("World/ItemsCharacteristics/Factories/" + name + ".properties");
 
         if (factoriesConst.get(name) == null) {
             byte id = StaticWorldObjects.generateId(name);
-            int productionSpeed = Integer.parseInt((String) Config.getProperties(name).get("ProductionSpeed"));
-            int needEnergy = Integer.parseInt((String) Config.getProperties(name).get("NeedEnergy"));
-            int maxHp = Integer.parseInt((String) Config.getProperties(name).get("MaxHp"));
-            short maxStoredObjects = Short.parseShort((String) Config.getProperties(name).get("MaxStoredObjects"));
-            String path = (String) Config.getProperties(name).get("Path");
-            String sound = (String) Config.getProperties(name).get("Sound");
-            String factoryName = (String) Config.getProperties(name).get("Name");
-            Items[] outputObjects = transformItems((String) Config.getProperties(name).get("OutputObjects"));
-            Items[] inputObjects = transformItems((String) Config.getProperties(name).get("InputObjects"));
+            Properties props = Config.getProperties(name);
+            int productionSpeed = Integer.parseInt((String) props.get("ProductionSpeed"));
+            int needEnergy = Integer.parseInt((String) props.get("NeedEnergy"));
+            int maxHp = Integer.parseInt((String) props.get("MaxHp"));
+            short maxStoredObjects = Short.parseShort((String) props.get("MaxStoredObjects"));
+            String path = (String) props.get("Path");
+            String sound = (String) props.get("Sound");
+            String factoryName = (String) props.get("Name");
+            Items[] outputObjects = transformItems((String) props.get("OutputObjects"));
+            Items[] inputObjects = transformItems((String) props.get("InputObjects"));
 
-            factoriesConst.put(originalName, new Factories(productionSpeed, needEnergy, maxHp, maxStoredObjects, (short) ((((byte) maxHp & 0xFF) << 8) | (id & 0xFF)), defPath + path, sound, factoryName, outputObjects, inputObjects));
+            factoriesConst.put(originalName, new Factories(productionSpeed, needEnergy, maxHp,
+                    maxStoredObjects, (short) ((((byte) maxHp & 0xFF) << 8) | (id & 0xFF)), pathTo(path),
+                    sound, factoryName, outputObjects, inputObjects));
             StaticObjectsConst.setConstStructures(name, id, tiles);
         }
     }
@@ -137,13 +141,13 @@ public class Factories implements StaticBlocksEvents {
 
                 if (input && ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0) {
                     TextureDrawing.drawRectangle((int) xMouse, (int) yMouse, ArrayUtils.findDistinctObjects(factory.inputStoredObjects) * 54 + 24, 64, new SimpleColor(40, 40, 40, 240));
-                    drawObjects(xMouse, yMouse, factory.inputStoredObjects, defPath + "\\src\\assets\\UI\\GUI\\buildMenu\\factoryIn.png");
+                    drawObjects(xMouse, yMouse, factory.inputStoredObjects, assetsDir("UI/GUI/buildMenu/factoryIn.png"));
                 }
                 if (output && ArrayUtils.findFreeCell(factory.outputStoredObjects) != 0) {
                     xMouse += (ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0 ? 78 : 0);
 
                     TextureDrawing.drawRectangle((int) xMouse, (int) yMouse, ArrayUtils.findDistinctObjects(factory.outputStoredObjects) * 54 + 24, 64, new SimpleColor(40, 40, 40, 240));
-                    drawObjects(xMouse, yMouse, factory.outputStoredObjects, defPath + "\\src\\assets\\UI\\GUI\\buildMenu\\factoryOut.png");
+                    drawObjects(xMouse, yMouse, factory.outputStoredObjects, assetsDir("UI/GUI/buildMenu/factoryOut.png"));
                 }
             }
         }
