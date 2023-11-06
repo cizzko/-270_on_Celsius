@@ -1,6 +1,7 @@
 package core.World.Creatures.Player;
 
 import core.EventHandling.EventHandler;
+import core.EventHandling.Logging.Config;
 import core.Utils.SimpleColor;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Inventory;
@@ -10,7 +11,7 @@ import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
 import core.World.Textures.*;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
-import java.awt.*;
+import java.awt.Point;
 import java.awt.geom.Point2D;
 import static core.EventHandling.EventHandler.getMousePos;
 import static core.Window.assetsDir;
@@ -23,6 +24,10 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class Player {
     public static boolean noClip = false;
+    private static int transparencyHPline = Config.getFromConfig("AlwaysOnPlayerHPline").equals("true") ? 220 : 0;
+    public static int lastDamage = 0;
+    public static long lastDamageTime = System.currentTimeMillis();
+    private static long lastChangeTransparency = System.currentTimeMillis(), lastChangeLengthDamage = System.currentTimeMillis();
 
     public static void updatePlayerJump() {
         if (EventHandler.getKey(GLFW_KEY_SPACE)) {
@@ -72,7 +77,7 @@ public class Player {
             }
             Point blockUMB = getBlockUnderMousePoint();
 
-            if (getType(getObject(blockUMB.x, blockUMB.y)) == StaticObjectsConst.Types.GAS && Player.getDistanceUMB() < 9) {
+            if (getType(getObject(blockUMB.x, blockUMB.y)) == StaticObjectsConst.Types.GAS && Player.getDistanceUnderMouse() < 9) {
                 int blockX = blockUMB.x;
                 int blockY = blockUMB.y;
 
@@ -127,7 +132,7 @@ public class Player {
     }
 
     private static void updateNonStructure(int blockX, int blockY, short object, Tools tool) {
-        if (getDistanceUMB() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
+        if (getDistanceUnderMouse() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
             drawBlock(blockX, blockY, object, true);
 
             if (EventHandler.getMousePress() && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
@@ -152,7 +157,7 @@ public class Player {
             blockX = root.x;
             blockY = root.y;
 
-            if (getDistanceUMB() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
+            if (getDistanceUnderMouse() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
                 drawStructure(blockX, blockY, true, getObject(root.x, root.y), StaticObjectsConst.getConst(StaticWorldObjects.getId(getObject(blockX, blockY))).optionalTiles);
 
                 if (EventHandler.getMousePress() && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
@@ -256,7 +261,7 @@ public class Player {
         return new Point2D.Float(blockX, blockY);
     }
 
-    public static int getDistanceUMB() {
+    public static int getDistanceUnderMouse() {
         return (int) Math.abs((DynamicObjects.get(0).x / 16 - getBlockUnderMousePoint().x) + (DynamicObjects.get(0).y / 16 - getBlockUnderMousePoint().y));
     }
 
@@ -266,12 +271,43 @@ public class Player {
             Bullets.drawBullets();
             BuildMenu.draw();
             updateToolInteraction();
+            drawCurrentHP();
         }
     }
 
     public static void updatePlayerGUILogic() {
         if (start) {
             BuildMenu.updateLogic();
+        }
+    }
+
+    public static void playerMaxHP() {
+        DynamicObjects.get(0).currentHp = DynamicObjects.get(0).maxHp;
+    }
+
+    public static void playerKill() {
+        DynamicObjects.get(0).currentHp = 0;
+    }
+
+    private static void drawCurrentHP() {
+        if (DynamicObjects.get(0).currentHp == DynamicObjects.get(0).maxHp && transparencyHPline > 0 && System.currentTimeMillis() - lastChangeTransparency >= 10 && !Config.getFromConfig("AlwaysOnPlayerHPline").equals("true")) {
+            lastChangeTransparency = System.currentTimeMillis();
+            transparencyHPline--;
+        } else if (DynamicObjects.get(0).currentHp != DynamicObjects.get(0).maxHp) {
+            transparencyHPline = 220;
+        }
+        if (lastDamage > 0 && System.currentTimeMillis() - lastChangeLengthDamage >= 15 && System.currentTimeMillis() - lastDamageTime >= 300) {
+            lastChangeLengthDamage = System.currentTimeMillis();
+            lastDamage--;
+        }
+
+        if (transparencyHPline > 0) {
+            TextureDrawing.drawRectangleBorder(30, 30, 200, 35, 1, new SimpleColor(10, 10, 10, transparencyHPline));
+            TextureDrawing.drawRectangle(31, 31, (int) (DynamicObjects.get(0).currentHp * 2) - 2, 33, new SimpleColor(150, 0, 20, transparencyHPline));
+
+            if (lastDamage > 0) {
+                TextureDrawing.drawRectangle(31 + (int) (DynamicObjects.get(0).currentHp * 2) - 2, 31, Math.min(lastDamage * 2, 200), 33, new SimpleColor(252, 161, 3, transparencyHPline));
+            }
         }
     }
 }
