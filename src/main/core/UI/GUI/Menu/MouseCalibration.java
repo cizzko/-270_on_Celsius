@@ -4,7 +4,7 @@ import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
 import core.Utils.SimpleColor;
-import java.awt.*;
+import java.awt.Robot;
 import static core.EventHandling.Logging.Logger.printException;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.glfwWindow;

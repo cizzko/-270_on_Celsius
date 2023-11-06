@@ -4,8 +4,12 @@ import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
 import core.EventHandling.MouseScrollCallback;
+import core.UI.GUI.CreateElement;
 import core.UI.GUI.Fonts;
 import core.UI.GUI.Menu.Main;
+import core.Utils.SimpleColor;
+import core.World.Creatures.Player.Inventory.Inventory;
+import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureLoader;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
@@ -22,7 +26,11 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL13.*;
 
 public class Window {
-    private static final String defPath = Path.of("").toAbsolutePath().toString();
+    public static final String defPath = Path.of("").toAbsolutePath().toString().replace('\\', '/');
+    public static int width = 1920, height = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0, fps = 0;
+    public static final String version = "alpha 0.0.23 (non stable)";
+    public static boolean start = false;
+    public static long glfwWindow;
 
     public static String assetsDir(String path) {
         return defPath + "/src/assets/" + path.replace('\\', '/');
@@ -31,11 +39,6 @@ public class Window {
     public static String pathTo(String path) {
         return defPath + path.replace('\\', '/');
     }
-
-    public static int width = 1920, height = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0, fps = 0;
-    public static final String version = "alpha 0.0.21 (non stable)";
-    public static boolean start = false;
-    public static long glfwWindow;
 
     public void run() {
         init();
@@ -61,16 +64,14 @@ public class Window {
         glfwSetScrollCallback(glfwWindow, new MouseScrollCallback());
 
         var cursorImage = readImage(BufferedImageEncoder(assetsDir("World/Other/cursorDefault.png")));
-        var glfwImg = GLFWImage.create()
-                .set(cursorImage.width(), cursorImage.height(), cursorImage.data());
-        long cursorPtr = glfwCreateCursor(glfwImg, 0, 0);
-        glfwSetCursor(glfwWindow, cursorPtr);
+        GLFWImage glfwImg = GLFWImage.create().set(cursorImage.width(), cursorImage.height(), cursorImage.data());
+        glfwSetCursor(glfwWindow, glfwCreateCursor(glfwImg, 0, 0));
 
         //vsync
         glfwSwapInterval(verticalSync);
-        //настройка отображения
+        //display settings
         glfwShowWindow(glfwWindow);
-        //подключает инструменты библиотеки
+        //connects library tools
         GL.createCapabilities();
 
         glMatrixMode(GL_PROJECTION);
@@ -79,7 +80,6 @@ public class Window {
 
         Fonts.generateFont(assetsDir("UI/arial.ttf"));
         TextureLoader.preLoadResources();
-        TextureLoader.bindChars();
         Main.create();
 
         log("Init status: true\n");

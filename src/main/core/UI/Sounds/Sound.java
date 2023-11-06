@@ -35,7 +35,7 @@ public class Sound {
                     AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File(path));
                     AudioFormat format = inputStream.getFormat();
 
-                    // преобразовать формат в PCM
+                    //to PCM
                     if (format.getEncoding() != AudioFormat.Encoding.PCM_SIGNED) {
                         format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, format.getSampleRate(), format.getSampleSizeInBits() * 2, format.getChannels(), format.getFrameSize() * 2, format.getFrameRate(), true);
                         inputStream = AudioSystem.getAudioInputStream(format, inputStream);

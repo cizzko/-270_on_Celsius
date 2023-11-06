@@ -7,8 +7,7 @@ import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.StaticWorldObjects.Structures.Factories;
 import core.Utils.SimpleColor;
 import core.World.Textures.TextureDrawing;
-import java.awt.*;
-
+import java.awt.Point;
 import static core.Window.assetsDir;
 import static core.World.Creatures.Player.Inventory.Inventory.inventoryObjects;
 import static core.World.Textures.TextureDrawing.*;

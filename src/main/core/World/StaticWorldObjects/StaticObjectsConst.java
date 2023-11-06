@@ -51,8 +51,6 @@ public class StaticObjectsConst {
     }
 
     public static void setConst(String name, byte id, short[][] optionalTiles) {
-        Objects.requireNonNull(name, "id: " + id); // TODO случается
-
         if (constants.get(id) == null) {
             String originalName = name;
             name = assetsDir("World/ItemsCharacteristics/" + name + ".properties");
@@ -95,7 +93,7 @@ public class StaticObjectsConst {
     }
 
     private static String getStorageFolder(String path) {
-        return path.substring(path.lastIndexOf("\\", path.lastIndexOf("\\") - 1) + 1, path.lastIndexOf("\\"));
+        return path.substring(path.lastIndexOf("/", path.lastIndexOf("/") - 1) + 1, path.lastIndexOf("/"));
     }
 
     public static void setConst(String name, byte id) {

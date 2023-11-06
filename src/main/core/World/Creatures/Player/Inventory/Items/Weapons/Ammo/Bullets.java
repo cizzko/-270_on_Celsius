@@ -8,7 +8,7 @@ import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.HitboxMap;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticWorldObjects;
-import java.awt.*;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -91,7 +91,7 @@ public class Bullets {
 
     public static void drawBullets() {
         for (Bullets bullet : bullets) {
-            //TODO: дописать пути нормальные
+            //TODO: add paths
             if (bullet != null && !(bullet.x > DynamicObjects.get(0).x + 350 || bullet.x < DynamicObjects.get(0).x - 350)) {
                 drawTexture(assetsDir("World/Items/someBullet.png"), bullet.x, bullet.y, 3, false);
             }

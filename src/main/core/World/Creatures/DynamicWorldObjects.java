@@ -8,7 +8,7 @@ import java.awt.geom.Point2D;
 import java.io.Serializable;
 import static core.World.WorldGenerator.*;
 
-//динамические объекты, могут иметь любые координаты внутри мира и быть перемещены когда угодно
+//dynamic objects, can have any coordinates within the world and be moved at any time
 public class DynamicWorldObjects implements Serializable {
     public int framesCount, currentFrame;
     public float x, y, animSpeed, weight, currentHp, maxHp;
@@ -46,7 +46,7 @@ public class DynamicWorldObjects implements Serializable {
         this.weight = weight;
 
         float y = 1;
-        int sizeX = (int) Math.ceil(TextureLoader.getSize(path).width / 16f);
+        int sizeX = (int) Math.ceil(TextureLoader.getSize(path).width() / 16f);
         sizeX += 1;
 
         for (int worldX = 0; worldX < sizeX; worldX++) {
@@ -59,7 +59,7 @@ public class DynamicWorldObjects implements Serializable {
                 }
             }
         }
-        if (HitboxMap.checkIntersInsideAll(x, y, TextureLoader.getSize(path).width + 10, TextureLoader.getSize(path).height + 10) > 0) {
+        if (HitboxMap.checkIntersInsideAll(x, y, TextureLoader.getSize(path).width() + 10, TextureLoader.getSize(path).height() + 10) > 0) {
             y += 16;
         }
 
@@ -67,7 +67,7 @@ public class DynamicWorldObjects implements Serializable {
     }
 
     public void jump(float impulse) {
-        if (HitboxMap.checkIntersStaticD(x, y, TextureLoader.getSize(path).width, TextureLoader.getSize(path).height) && motionVector.y == 0) {
+        if (HitboxMap.checkIntersStaticD(x, y, TextureLoader.getSize(path).width(), TextureLoader.getSize(path).height()) && motionVector.y == 0) {
             motionVector.y += impulse;
         }
     }

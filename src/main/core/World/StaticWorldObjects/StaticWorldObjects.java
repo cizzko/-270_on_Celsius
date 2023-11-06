@@ -5,8 +5,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 public abstract class StaticWorldObjects implements Serializable {
-    private static HashMap<String, Byte> ids = new HashMap<>();
-    private static byte lastId = -127;
+    private static final HashMap<String, Byte> ids = new HashMap<>();
 
     public static short createStatic(String name) {
         byte id = generateId(name);
@@ -16,24 +15,28 @@ public abstract class StaticWorldObjects implements Serializable {
     }
 
     public static byte generateId(String name) {
-        byte id;
-
-        if (ids.get(name) != null) {
-            id = ids.get(name);
-        } else {
-            lastId++;
-            if (lastId == -128) {
-                Logger.log("Number of id's static objects exceeded, errors will occur");
-            }
-            if (lastId == -1) {
-                lastId = 1;
-            }
-
-            ids.put(name, lastId);
-            id = lastId;
+        if (name == null) {
+            return 0;
         }
+        if (ids.get(name) != null) {
+            return ids.get(name);
+        } else {
+            for (byte i = -127; i < 127; i++) {
+                if (i != -1 && i != 0 && !ids.containsValue(i)) {
+                    ids.put(name, i);
+                    return i;
+                }
+                if (i == 126) {
+                    Logger.log("Number of id's static objects exceeded, errors will occur");
+                }
+            }
+        }
+        return 0;
+    }
 
-        return id;
+    //dont use 0 && -1 id, because 0 - air, -1 returned when querying a cell outside the array
+    public static void reserveId(String name, byte id) {
+        ids.putIfAbsent(name, id);
     }
 
     public static float getMaxHp(short id) {
@@ -50,11 +53,6 @@ public abstract class StaticWorldObjects implements Serializable {
 
     public static String getName(short id) {
         return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).objectName : "";
-    }
-
-    public static String getNameWithoutPath(short id) {
-        String name = StaticObjectsConst.getConst(getId(id)).objectName;
-        return StaticObjectsConst.checkIsHere(getId(id)) ? name.substring(name.lastIndexOf("\\") + 1) : "";
     }
 
     public static String getFileName(short id) {

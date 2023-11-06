@@ -3,10 +3,10 @@ package core.World.StaticWorldObjects.Structures;
 import java.io.Serializable;
 
 public class Structures implements Serializable {
-    public short[][] blocks;
+    public String[][] blocks;
     public int lowestSolidBlock;
 
-    public Structures(int lowestSolidBlock, short[][] blocks) {
+    public Structures(int lowestSolidBlock, String[][] blocks) {
         this.lowestSolidBlock = lowestSolidBlock;
         this.blocks = blocks;
     }

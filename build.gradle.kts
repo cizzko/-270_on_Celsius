@@ -13,7 +13,7 @@ sourceSets {
     }
 }
 
-// Сгенерировано с помощью:
+// Generated with:
 // https://www.lwjgl.org/customize
 
 val lwjglVersion = "3.3.3"

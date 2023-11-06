@@ -2,7 +2,6 @@ package core.World.Creatures.Player.Inventory;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
-import core.Window;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Items.Details;
 import core.World.Creatures.Player.Inventory.Items.Items;
@@ -12,7 +11,7 @@ import core.World.Creatures.Player.Player;
 import core.Utils.SimpleColor;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
-import java.awt.*;
+import java.awt.Point;
 import java.util.Arrays;
 
 import static core.Window.assetsDir;
@@ -97,7 +96,7 @@ public class Inventory {
             int blockY = Player.getBlockUnderMousePoint().y;
 
             if (placeable != 0) {
-                boolean isDeclined = Player.getDistanceUMB() < 8 && Player.canPlace(placeable, blockX, blockY);
+                boolean isDeclined = Player.getDistanceUnderMouse() < 8 && Player.canPlace(placeable, blockX, blockY);
 
                 if (StaticObjectsConst.getConst(StaticWorldObjects.getId(placeable)).optionalTiles == null) {
                     Player.drawBlock(blockX, blockY, placeable, isDeclined);

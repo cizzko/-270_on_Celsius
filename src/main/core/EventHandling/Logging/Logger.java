@@ -4,7 +4,7 @@ import com.sun.management.OperatingSystemMXBean;
 import core.Utils.AnonymousStatistics;
 import core.Window;
 import core.World.Weather.Sun;
-import java.awt.*;
+import java.awt.Toolkit;
 import java.io.*;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -28,7 +28,9 @@ public class Logger extends PrintStream {
     public void write(byte[] buf, int off, int len) {
         if (!Arrays.equals(buf, lastErrBuf)) {
             lastErrBuf = buf;
-            printStackTrace(Thread.currentThread().getStackTrace(), "none", "none", new String(buf, off, len), "System.err");
+            StackTraceElement[] elements = Thread.currentThread().getStackTrace();
+
+            printStackTrace(Arrays.copyOfRange(elements, Integer.parseInt(Config.getFromConfig("TrimSystemErrStackTraceElements")), elements.length), "none", "none", new String(buf, off, len), "System.err");
         }
     }
 
@@ -125,7 +127,7 @@ public class Logger extends PrintStream {
     }
 
     public static void logStart() {
-        System.setErr(new Logger());
+        //System.setErr(new Logger());
         Json.detectLanguage();
 
         StringBuilder message = getStartMessage();

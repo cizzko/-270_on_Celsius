@@ -39,7 +39,7 @@ public class ArrayUtils {
                     }
                 }
             } else if (filesExtension == null || currentFile.getName().endsWith(filesExtension)) {
-                fileList.add(currentFile.getAbsolutePath());
+                fileList.add(currentFile.getAbsolutePath().replace('\\', '/'));
             }
         }
         return fileList.toArray(new String[0]);
@@ -59,7 +59,7 @@ public class ArrayUtils {
                     }
                 }
             } else if (currentFile.getName().equals(fileName)) {
-                return currentFile.getAbsolutePath();
+                return currentFile.getAbsolutePath().replace('\\', '/');
             }
         }
         return null;

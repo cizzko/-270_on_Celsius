@@ -6,7 +6,7 @@ import core.EventHandling.Logging.Json;
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.CreateElement;
 import core.Utils.SimpleColor;
-import java.awt.*;
+import java.awt.Point;
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.EventHandling.Logging.Json.getName;
 import static core.UI.GUI.CreateElement.*;
@@ -15,6 +15,7 @@ import static core.Window.*;
 public class Settings {
     public static boolean createdSettings = false, needUpdateCount = true;
     public static int pressedCount = 0;
+    private static String newLang = Json.lang;
 
     public static void create() {
         createPanel(20, 20, 1880, 1040, "defaultPanSettings", false, "Settings");
@@ -41,7 +42,8 @@ public class Settings {
     }
 
     public static void createBasicSett() {
-        createDropMenu(780, 950, 240, 65, Json.getAllLanguagesArray(), Json.lang, Json.getName("Language"), new SimpleColor(255, 80, 0, 55), "SettingsBasicDrop");
+        String[] langs = Json.getAllLanguagesArray();
+        createDropButton(780, 950, 240, 65, langs, Json.getName("Language"), new SimpleColor(255, 80, 0, 55), "SettingsBasicDrop", langButton(langs));
         createSwapButton(310, 980, 32, 32, getName("ShowPrompts"), getName("ShowPromptsPrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("ShowPrompts")), "SettingsBasicSwap");
         createSwapButton(310, 910, 32, 32, getName("DetectLanguage"), getName("DetectLanguagePrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("DetectLanguage")), "SettingsBasicSwap");
         createPicture(745, 965, 1, "languageIcon", assetsDir("UI/GUI/languageIcon.png"), "SettingsBasic");
@@ -76,8 +78,7 @@ public class Settings {
 
     public static void updateConfigAll() {
         buttons.values().stream().filter(button -> button.group.contains("Swap") && button.visible).forEach(button -> Config.updateConfig(Json.getKey(button.name), String.valueOf(button.isClicked)));
-        buttons.values().stream().filter(button -> button.group.contains("Drop") && button.visible).forEach(button -> Config.updateConfig(Json.getKey(button.name), EventHandler.getDropMenuClicks(button.name)));
-        buttons.values().stream().filter(button -> button.group.contains("Drop") && button.visible).forEach(button -> button.isClicked = false);
+        Config.updateConfig("Language", newLang);
     }
 
     private static void exitBtn() {
@@ -172,5 +173,18 @@ public class Settings {
                 }
             }
         }).start();
+    }
+
+    private static Runnable[] langButton(String[] buttonNames) {
+        Runnable[] tasks = new Runnable[buttonNames.length];
+
+        for (int i = 0; i < tasks.length; i++) {
+            int finalI = i;
+            tasks[i] = () -> {
+              Settings.newLang = buttonNames[finalI];
+              buttons.get(getName("Language")).taskOnClick.run();
+            };
+        }
+        return tasks;
     }
 }

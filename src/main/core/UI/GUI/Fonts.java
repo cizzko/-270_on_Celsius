@@ -1,7 +1,12 @@
 package core.UI.GUI;
 import core.EventHandling.Logging.Logger;
 import core.World.Textures.TextureLoader;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.Toolkit;
+import java.awt.Graphics;
+import java.awt.Color;
+import java.awt.FontFormatException;
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
 import java.awt.image.BufferedImage;
@@ -9,12 +14,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class Fonts {
     private static final int fontSize = 18;
     private static final HashMap<Character, ByteBuffer> chars = new HashMap<>();
-    public static ConcurrentHashMap<Character, Dimension> letterSize = new ConcurrentHashMap<>();
+    public static HashMap<Character, Dimension> letterSize = new HashMap<>();
 
     public static void generateFont(String pathTTF) {
         Font font = null;

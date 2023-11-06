@@ -14,7 +14,7 @@ public class ShadowMap {
     private static SimpleColor deletedColor = new SimpleColor(0, 0, 0, 0), deletedColorDynamic = new SimpleColor(0, 0, 0, 0);
     private static SimpleColor addedColor = new SimpleColor(0, 0, 0, 0), addedColorDynamic = new SimpleColor(0, 0, 0, 0);
 
-    //TODO: переписать генерацию и апдейт
+    //TODO: rewrite generation n update
 
     public static SimpleColor getShadow(int x, int y) {
         return shadows[x + SizeX * y];

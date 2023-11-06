@@ -5,7 +5,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Properties;
-
 import static core.EventHandling.Logging.Logger.logExit;
 import static core.EventHandling.Logging.Logger.printException;
 import static core.Window.assetsDir;
@@ -14,6 +13,7 @@ public class Config {
     private static final HashMap<String, Properties> props = new HashMap<>(3);
     private static final HashMap<String, Object> values = new HashMap<>();
 
+    //if need caching values && prop
     public static Object getFromProp(String path, String key) {
         if (values.get(key) != null) {
             return values.get(key);
@@ -25,6 +25,7 @@ public class Config {
         return value;
     }
 
+    //if need caching only prop
     public static Properties getProperties(String path) {
         if (props.get(path) == null) {
             props.put(path, new Properties());
@@ -48,6 +49,7 @@ public class Config {
 
     public static void updateConfig(String key, String value) {
         String configFile = assetsDir("config.properties");
+
         try (FileInputStream fis = new FileInputStream(configFile);
              FileOutputStream fos = new FileOutputStream(configFile)) {
             Properties configProp = props.get(configFile);
@@ -58,7 +60,7 @@ public class Config {
             values.put(key, value);
 
         } catch (Exception e) {
-            printException("Error at update config: '" + e.getMessage() + "' at path: '" + configFile + "', key: '" + key + "' value: '" + value + "'", e);
+            printException("Error when updating config at path: '" + configFile + "', key: '" + key + "' value: '" + value + "'", e);
             logExit(1);
         }
     }

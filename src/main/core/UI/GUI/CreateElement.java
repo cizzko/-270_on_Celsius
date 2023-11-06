@@ -13,43 +13,28 @@ public class CreateElement {
     public static ConcurrentHashMap<String, ButtonObject> buttons = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, SliderObject> sliders = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, PanelObject> panels = new ConcurrentHashMap<>();
-    public static ConcurrentHashMap<String, ButtonObject[]> dropMenu = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, TextObject> texts = new ConcurrentHashMap<>();
 
     public static void createButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, SimpleColor color, String group, Runnable taskOnClick) {
         buttons.put(name, new ButtonObject(simple, false, x, y, btnHeight, btnWidth, name, prompt, color, group, taskOnClick));
     }
 
-    public static void createDropMenu(int x, int y, int menuWidth, int menuHeight, String[] btnNames, String pressedButton, String menuName, SimpleColor color, String group) {
-        ButtonObject[] dropButtons = new ButtonObject[btnNames.length];
-        buttons.put(menuName, new ButtonObject(true, false, x, y, menuHeight, menuWidth, menuName, null, color, group, null));
+    public static void createDropButton(int x, int y, int btnWidth, int btnHeight, String[] btnNames, String btnName, SimpleColor color, String group, Runnable[] tasks) {
+        buttons.put(btnName, new ButtonObject(false, false, x, y, btnHeight, btnWidth, btnName, null, color, group, ButtonObject.onClickDropButton(btnName, btnNames)));
 
         for (int i = 0; i < btnNames.length; i++) {
-            if (i == 0) {
-                dropButtons[i] = new ButtonObject(true, true, x, y - menuHeight, menuHeight, menuWidth, btnNames[i], null, color, group, null);
-            } else {
-                dropButtons[i] = new ButtonObject(true, true, x, dropButtons[i - 1].y - menuHeight, menuHeight, menuWidth, btnNames[i], null, color, group, null);
-            }
-            dropButtons[i].visible = false;
-
-            if (dropButtons[i].name.equals(pressedButton)) {
-                dropButtons[i].isClicked = true;
-            }
+            buttons.put(btnNames[i], new ButtonObject(false, false, x, y - (btnHeight * (i + 1)) + (i * 6) + 6, btnHeight, btnWidth, btnNames[i], null, color, group, tasks == null ? null : tasks[i]));
+            buttons.get(btnNames[i]).visible = false;
         }
-        dropMenu.put(menuName, dropButtons);
     }
 
     public static void createPictureButton(int x, int y, String path, String name, String group, Runnable taskOnClick) {
-        buttons.put(name, new ButtonObject(true, false, x, y, TextureLoader.getSize(path).height, TextureLoader.getSize(path).width, name, null, new SimpleColor(255, 255, 255, 255), group, taskOnClick));
+        buttons.put(name, new ButtonObject(true, false, x, y, TextureLoader.getSize(path).height(), TextureLoader.getSize(path).width(), name, null, new SimpleColor(255, 255, 255, 255), group, taskOnClick));
         buttons.get(name).path = path;
     }
 
     public static void createSwapButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, SimpleColor color, boolean isClicked, String group) {
-        if (simple) {
-            buttons.put(name, new ButtonObject(simple, true, x, y, btnHeight, btnWidth, name, prompt, color, group, null));
-        } else {
-            buttons.put(name, new ButtonObject(simple, true, x, y, 44, 44, name, prompt, color, group, null));
-        }
+        buttons.put(name, new ButtonObject(simple, true, x, y, simple ? btnHeight : 44, simple ? btnWidth : 44, name, prompt, color, group, null));
         if (isClicked) {
             buttons.get(name).isClicked = true;
         }
@@ -79,6 +64,6 @@ public class CreateElement {
     }
 
     public static void createPicture(int x, int y, int layer, String name, String path, String group) {
-        panels.put(name, new PanelObject(x, y, getSize(path).width, getSize(path).height, layer, name, true, path, group, new SimpleColor(255, 255, 255, 255)));
+        panels.put(name, new PanelObject(x, y, getSize(path).width(), getSize(path).height(), layer, name, true, path, group, new SimpleColor(255, 255, 255, 255)));
     }
 }

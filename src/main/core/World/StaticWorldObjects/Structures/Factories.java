@@ -13,7 +13,7 @@ import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
-import java.awt.*;
+import java.awt.Point;
 import java.util.*;
 import static core.Utils.ArrayUtils.findEqualsObjects;
 import static core.Window.assetsDir;
@@ -46,11 +46,11 @@ public class Factories implements StaticBlocksEvents {
     }
 
     public enum breaking {
-        WEAK_SLOW, //медленная работа
-        WEAK_OVERCONSUMPTION, //большое потребление
-        AVERAGE_STOP, //остановка работы
-        AVERAGE_MISWORKING, //неправильная выработка
-        CRITICAL //полная остановка работы, нужно перестроить
+        WEAK_SLOW, //slow working
+        WEAK_OVERCONSUMPTION, //high consumption
+        AVERAGE_STOP, //stop working
+        AVERAGE_MISWORKING, //misworking
+        CRITICAL //full stop working, need rebuild
     }
 
     public Factories() {}
@@ -256,7 +256,7 @@ public class Factories implements StaticBlocksEvents {
 //
 //            Factories factory = factoriesConst.get(StaticWorldObjects.getFileName(WorldGenerator.getObject(x, y)));
 //
-//            if (factory != null && Player.getWorldMousePoint().x > (x * 16) && Player.getWorldMousePoint().y > (y * 16) && Player.getWorldMousePoint().x < (x * 16) + TextureLoader.getSize(factory.path).width && Player.getWorldMousePoint().y < (y * 16) + TextureLoader.getSize(factory.path).height) {
+//            if (factory != null && Player.getWorldMousePoint().x > (x * 16) && Player.getWorldMousePoint().y > (y * 16) && Player.getWorldMousePoint().x < (x * 16) + TextureLoader.getSize(factory.path).width && Player.getWorldMousePoint().y < (y * 16) + TextureLoader.getSize(factory.path).height()) {
 //                return factory;
 //            }
 //        }

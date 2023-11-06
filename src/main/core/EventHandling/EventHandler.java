@@ -11,9 +11,7 @@ import core.World.Creatures.Player.Player;
 import core.Utils.SimpleColor;
 import core.World.WorldGenerator;
 import org.lwjgl.glfw.*;
-
-import java.awt.*;
-import java.util.Arrays;
+import java.awt.Point;
 import static core.Utils.Commandline.updateLine;
 import static core.EventHandling.Logging.Logger.log;
 import static core.UI.GUI.CreateElement.*;
@@ -22,14 +20,14 @@ import static core.World.Creatures.Physics.updates;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class EventHandler extends Thread {
-    public static long lastMouseMovedTime = System.currentTimeMillis(), lastSecond = System.currentTimeMillis();
-    private static final Point lastMousePos = new Point();
-    public static boolean mouseNotMoved = false, keyLogging = false;
+    public static long lastMouseMovedTime = System.currentTimeMillis();
+    private static long lastSecond = System.currentTimeMillis();
+    private static final Point lastMousePos = new Point(0, 0);
+    private static boolean keyLogging = false;
     public static String keyLoggingText = "";
     private static final boolean[] pressedButtons = new boolean[349];
     private static int handlerUpdates = 0;
-
-    public static int width, height; // TODO масштабирование
+    public static int width, height; // TODO: scaling
 
     public EventHandler() {
         log("Thread: Event handling started");
@@ -101,19 +99,6 @@ public class EventHandler extends Thread {
         return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 && getMousePress();
     }
 
-    public static String getDropMenuClicks(String menuName) {
-        if (dropMenu.get(menuName) != null) {
-            for (int x = 0; x < dropMenu.get(menuName).length; x++) {
-                ButtonObject obj = dropMenu.get(menuName)[x];
-
-                if (obj.isClicked) {
-                    return obj.name;
-                }
-            }
-        }
-        return null;
-    }
-
     private static void updateSliders() {
         for (SliderObject slider : sliders.values()) {
             if (!slider.visible) {
@@ -134,7 +119,7 @@ public class EventHandler extends Thread {
                 continue;
             }
 
-            if (button.swapButton || dropMenu.get(button.name) != null) {
+            if (button.swapButton) {
                 if (System.currentTimeMillis() - button.lastClickTime >= 150 && EventHandler.getRectanglePress(button.x, button.y, button.width + button.x, button.height + button.y)) {
                     button.isClicked = !button.isClicked;
                     button.lastClickTime = System.currentTimeMillis();
@@ -202,39 +187,6 @@ public class EventHandler extends Thread {
         }
     }
 
-    private static void updateDropMenu() {
-        for (ButtonObject button : buttons.values()) {
-            if (!button.visible || !button.isClickable || dropMenu.get(button.name) == null) {
-                continue;
-            }
-
-            ButtonObject[] dropButtons = dropMenu.get(button.name);
-            int lastClickedIndex = 0;
-
-            for (int i = 0; i < dropButtons.length; i++) {
-                if (button.isClicked) {
-                    ButtonObject dropButton = dropButtons[i];
-
-                    if (System.currentTimeMillis() - dropButton.lastClickTime >= 150 && EventHandler.getRectanglePress(dropButton.x, dropButton.y, dropButton.width + dropButton.x, dropButton.height + dropButton.y)) {
-                        dropButton.isClicked = !dropButton.isClicked;
-                        dropButton.lastClickTime = System.currentTimeMillis();
-
-                        if (dropButton.isClicked) {
-                            lastClickedIndex = i;
-                        }
-                    }
-                }
-            }
-            if (Arrays.stream(dropButtons).filter(buttons -> buttons.isClicked).count() > 1) {
-                for (int i = 0; i < dropButtons.length; i++) {
-                    if (i != lastClickedIndex) {
-                        dropButtons[i].isClicked = false;
-                    }
-                }
-            }
-        }
-    }
-
     private static void updateHotkeys() {
         if (getKeyClick(GLFW_KEY_ESCAPE) && start) {
             if (!Pause.created) {
@@ -270,7 +222,6 @@ public class EventHandler extends Thread {
             updateButtons();
             updateClicks();
             updateKeyLogging();
-            updateDropMenu();
             updateSliders();
             updateHotkeys();
             updateLine();

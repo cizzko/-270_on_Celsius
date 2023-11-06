@@ -12,7 +12,7 @@ import core.World.Textures.ShadowMap;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.WorldGenerator;
-import java.awt.*;
+import java.awt.Point;
 import java.io.ByteArrayOutputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectOutputStream;
@@ -24,7 +24,6 @@ import static core.World.WorldGenerator.destroyObject;
 import static core.World.WorldGenerator.getObject;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
-//сделан по принципу автономного модуля, который можно удалить без последствий
 public class DebugTools {
     public static boolean selectionBlocksCopy = false, selectionBlocksDelete = false, mousePressed = false;
     private static Point lastMousePosBlocks = new Point(0, 0), lastMousePos = new Point(0, 0);
@@ -69,15 +68,15 @@ public class DebugTools {
         int targetX = Player.getBlockUnderMousePoint().x;
         int targetY = Player.getBlockUnderMousePoint().y;
 
-        short[][] objects = new short[targetX - startX][targetY - startY];
+        String[][] objects = new String[targetX - startX][targetY - startY];
 
         for (int x = startX; x < targetX; x++) {
             for (int y = startY; y < targetY; y++) {
                 if (x < WorldGenerator.SizeX && y < WorldGenerator.SizeY && x > 0 && y > 0 && getObject(x, y) > 0 && getId(getObject(x, y)) != 0) {
                     ShadowMap.setShadow(x, y, new SimpleColor(0, 0, 255, 255));
-                    objects[x - startX][y - startY] = getObject(x, y);
+                    objects[x - startX][y - startY] = getFileName(getObject(x, y));
 
-                    if (lowestSolidBlock == -1 && y == startY && getType(objects[x - startX][y - startY]) == StaticObjectsConst.Types.SOLID) {
+                    if (lowestSolidBlock == -1 && y == startY && getType(getObject(x, y)) == StaticObjectsConst.Types.SOLID) {
                         lowestSolidBlock = x - startX;
                     }
                 }

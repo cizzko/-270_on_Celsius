@@ -22,7 +22,6 @@ public class Sun {
     public static void updateSun() {
         if (visible) {
             if (System.currentTimeMillis() - lastTime >= 900) {
-                WorldGenerator.currentWorldTemperature -= WorldGenerator.temperatureDecrement;
                 lastTime = System.currentTimeMillis();
                 currentTime++;
 

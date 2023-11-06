@@ -1,5 +1,6 @@
 package core.UI.GUI.Objects;
 
+import core.UI.GUI.CreateElement;
 import core.Utils.SimpleColor;
 
 public class ButtonObject {
@@ -31,5 +32,16 @@ public class ButtonObject {
         this.color = color;
         this.lastClickTime = System.currentTimeMillis();
         this.taskOnClick = taskOnClick;
+    }
+
+    public static Runnable onClickDropButton(String buttonName, String[] names) {
+        return () -> {
+            if (System.currentTimeMillis() - CreateElement.buttons.get(buttonName).lastClickTime >= 150) {
+                for (String s : names) {
+                    CreateElement.buttons.get(s).visible = !CreateElement.buttons.get(s).visible;
+                }
+                CreateElement.buttons.get(buttonName).lastClickTime = System.currentTimeMillis();
+            }
+        };
     }
 }

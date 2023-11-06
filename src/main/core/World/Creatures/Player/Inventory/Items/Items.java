@@ -63,8 +63,8 @@ public class Items {
     }
 
     public static float findZoom(String path) {
-        int width = getSize(path).width;
-        int height = getSize(path).height;
+        int width = getSize(path).width();
+        int height = getSize(path).height();
 
         return 32f / (Math.max(width, height));
     }

@@ -5,7 +5,7 @@ import java.util.Collections;
 import static core.World.WorldGenerator.DynamicObjects;
 
 public class BirdLogic {
-    //длительность парения
+    //soar time
     private static final ArrayList<Integer> birdFlying = new ArrayList<>(Collections.nCopies(10, 0));
     private static long deltaTime = System.currentTimeMillis();
     private static long deltaTime1 = System.currentTimeMillis();
