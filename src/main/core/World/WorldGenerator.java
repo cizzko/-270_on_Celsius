@@ -7,6 +7,7 @@ import core.Window;
 import core.World.Creatures.CreaturesGenerate;
 import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Items.Details;
+import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.StaticWorldObjects.Structures.Factories;
 import core.World.Creatures.Player.Player;
 import core.World.Creatures.DynamicWorldObjects;
@@ -16,8 +17,10 @@ import core.World.StaticWorldObjects.StaticBlocksEvents;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.Weather.Sun;
-import java.awt.*;
+import java.awt.Point;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.*;
 import java.util.List;
@@ -32,7 +35,7 @@ import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 
 public class WorldGenerator {
     public static int SizeX, SizeY, dayCount = 0;
-    public static float temperatureDecrement = 0.04f, currentWorldTemperature = 23;
+    public static float temperatureDecrement = 0.04f, currentWorldTemperature = 23, intersDamageMultiplier = 40f, minVectorIntersDamage = 0.6f;
     public static short[] StaticObjects;
     private static final CopyOnWriteArrayList<StaticBlocksEvents> listeners = new CopyOnWriteArrayList<>();
     public static ArrayList<DynamicWorldObjects> DynamicObjects = new ArrayList<>();
@@ -86,7 +89,7 @@ public class WorldGenerator {
                 ShadowMap.update();
             }
 
-            //TODO: костыль
+            //TODO: rewrite
             if (getName(id).toLowerCase().contains("trunk") && Math.random() * 100 < 30) {
                 createElementDetail(new Details("Stick", assetsDir("World/Items/stick.png")), "");
             }
@@ -173,7 +176,7 @@ public class WorldGenerator {
     }
 
     private static void loadAllStructures() {
-        String[] paths = ArrayUtils.getAllFiles(assetsDir("World/Saves"), ".ser");
+        String[] paths = ArrayUtils.getAllFiles(assetsDir("World/Saves/Structures"), ".ser");
 
         for (String path : paths) {
             loadStructure(path);
@@ -181,13 +184,16 @@ public class WorldGenerator {
     }
 
     private static void loadStructure(String path) {
-        try (FileInputStream fis = new FileInputStream(path);
-             InflaterInputStream iis = new InflaterInputStream(fis);
-             ObjectInputStream ois = new ObjectInputStream(iis)) {
+        if (new File(path).exists()) {
+            try (FileInputStream fis = new FileInputStream(path); InflaterInputStream iis = new InflaterInputStream(fis); ObjectInputStream ois = new ObjectInputStream(iis)) {
+                Structures struct = (Structures) ois.readObject();
 
-            structures.put(path, (Structures) ois.readObject());
-        } catch (Exception e) {
-            printException("Error when load structure, path: " + path, e);
+                structures.put(path, struct);
+            } catch (Exception e) {
+                printException("Error when load structure, path: " + path, e);
+            }
+        } else {
+            printException("Error when load structure, path: " + path, new IOException("File not found"));
         }
     }
 
@@ -195,10 +201,10 @@ public class WorldGenerator {
         log("World generator: generating mountains");
         createText(42, 140, "generateMountainsText", "Generating mountains", new SimpleColor(210, 210, 210, 255), "WorldGeneratorState");
 
-        float randGrass = 2f;           //шанс появления неровности, выше число - ниже шанс
-        float randAir = 3.5f;           //шанс появления воздуха вместо блока, выше число - ниже шанс
-        float iterations = 3f;          //количество итераций генерации
-        float mountainHeight = 24000f;  //шанс появления высоких гор, выше число - выше шанс
+        float randGrass = 2f;           //chance of unevenness, the higher the number - the lower the chance
+        float randAir = 3.5f;           //chance of air appearing instead of a block, higher number - lower chance
+        float iterations = 3f;          //iterations of generations
+        float mountainHeight = 24000f;  //chance of high mountains appearing, higher number - higher chance
 
         for (int i = 0; i < iterations; i++) {
             for (int x = 1; x < SizeX - 1; x++) {
@@ -238,7 +244,7 @@ public class WorldGenerator {
         log("World generator: smoothing world");
         createText(42, 110, "smoothWorldText", "Smoothing world", new SimpleColor(210, 210, 210, 255), "WorldGeneratorState");
 
-        float smoothingChance = 3f; //шанс сглаживания, выше число - меньше шанс
+        float smoothingChance = 3f; //chance of smoothing, higher number - lower chance
 
         for (int x = 1; x < SizeX - 1; x++) {
             for (int y = 1; y < SizeY - 1; y++) {
@@ -290,7 +296,7 @@ public class WorldGenerator {
 
     public static void createStructure(int cellX, int cellY, String path) {
         if (structures.get(path) != null) {
-            short[][] objects = structures.get(path).blocks;
+            short[][] objects = bindStructures(structures.get(path).blocks);
 
             for (int x = 0; x < objects.length; x++) {
                 for (int y = 0; y < objects[x].length; y++) {
@@ -303,6 +309,17 @@ public class WorldGenerator {
             loadStructure(path);
             createStructure(cellX, cellY, path);
         }
+    }
+
+    private static short[][] bindStructures(String[][] blocks) {
+        short[][] bindedBlocks = new short[blocks.length][blocks[0].length];
+
+        for (int x = 0; x < blocks.length; x++) {
+            for (int y = 0; y < blocks[x].length; y++) {
+                bindedBlocks[x][y] = StaticWorldObjects.createStatic(blocks[x][y]);
+            }
+        }
+        return bindedBlocks;
     }
 
     private static void fillAreaWithGrass(List<int[]> area) {
@@ -329,12 +346,12 @@ public class WorldGenerator {
         float lastForest = 0;
         float lastForestSize = 0;
 
-        //(максимальный размер + минимальный) не должны превышать 127
+        //(maximum size + minimum) should not exceed 127
         float chance = 80;
         float maxForestSize = 20;
         float minForestSize = 2;
 
-        //первый этап - сажает семечки для лесов и задает размер
+        //the first stage - plants seeds for the forests and sets the size
         for (int x = 0; x < SizeX; x++) {
             if (Math.random() * chance < 1 && lastForest != x && lastForest + lastForestSize < x) {
                 forests[x] = (byte) ((Math.random() * maxForestSize) + minForestSize);
@@ -343,7 +360,7 @@ public class WorldGenerator {
             }
         }
 
-        //второй этап - сажает деревья по семечкам
+        //second stage - plants trees by seeds
         for (int x = 0; x < forests.length; x++) {
             if (forests[x] > 0) {
                 for (int i = 0; i < forests[x]; i++) {
@@ -377,7 +394,7 @@ public class WorldGenerator {
     private static boolean checkInterInsideSolid(int xCell, int yCell, String path) {
         int width = structures.get(path).blocks.length;
         int height = structures.get(path).blocks[0].length;
-        short[][] objects = structures.get(path).blocks;
+        short[][] objects = bindStructures(structures.get(path).blocks);
 
         for (int x = xCell; x < xCell + width; x++) {
             for (int y = yCell; y < yCell + height; y++) {
@@ -407,19 +424,19 @@ public class WorldGenerator {
 
         for (int x = 0; x < SizeX; x++) {
             for (int y = 0; y < SizeY; y++) {
-                if (getType(getObject(x, y + 1)) != StaticObjectsConst.Types.GAS) { // Генерация земли под блоками травы
+                if (getType(getObject(x, y + 1)) != StaticObjectsConst.Types.GAS) { //Generating ground under grass blocks
                     setObject(x, y, createStatic("Blocks/dirt"));
                 }
 
-                if (ShadowMap.getDegree(x, y) >= 3) { // Генерация камня
+                if (ShadowMap.getDegree(x, y) >= 3) { //Generating stone
                     setObject(x, y, createStatic("Blocks/stone"));
                 }
 
-                if (PerlinNoiseGenerator.noise[x][y] && ShadowMap.getDegree(x, y) >= 3) { // Генерация руды
+                if (PerlinNoiseGenerator.noise[x][y] && ShadowMap.getDegree(x, y) >= 3) { //Generating ore
                     setObject(x, y, createStatic("Blocks/ironOre"));
                 }
 
-                if (ShadowMap.getDegree(x, y) == 2) { // Генерация перехода между землёй и камнем
+                if (ShadowMap.getDegree(x, y) == 2) { //Generation of transitions between earth and stone
                     if (!getFileName(getObject(x, y + 1)).equals("Blocks/dirtStone")) {
                         setObject(x, y, createStatic("Blocks/dirtStone"));
                     }
