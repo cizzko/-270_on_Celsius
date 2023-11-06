@@ -550,7 +550,6 @@ public class TextureDrawing {
         updatePanels();
         updateSwapButtons();
         updateButtons();
-        //updateDropMenu();
         updateSliders();
         updateTexts();
     }
@@ -583,118 +582,76 @@ public class TextureDrawing {
         }
     }
 
-//    private static void updateDropMenu() {
-//        if (!buttons.isEmpty()) {
-//            for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
-//                ButtonObject button = entry.getValue();
-//                if (!button.visible || dropMenu.get(button.name) == null) {
-//                    continue;
-//                }
-//
-//                drawRectangle(button.x, button.y, button.width, button.height, button.color);
-//                drawText(button.x + 20, (int) (button.y + button.height / 2.8), button.name);
-//
-//                if (button.isClicked) {
-//                    drawTexture(assetsDir("UI/GUI/openDrop.png"), button.x + button.width - 42, button.y + button.height / 3.f, 1, true);
-//                    ButtonObject[] dropButtons = dropMenu.get(button.name);
-//
-//                    for (ButtonObject dropButton : dropButtons) {
-//                        drawRectangle(dropButton.x, dropButton.y, dropButton.width, 5, new SimpleColor(10, 10, 10, 255));
-//
-//                        if (dropButton.simple && dropButton.swapButton && dropButton.isClicked) {
-//                            drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
-//                            drawTexture(assetsDir("UI/GUI/checkMarkTrue.png"), dropButton.x + dropButton.width / 1.3f, dropButton.y + dropButton.height / 3f, 1, true);
-//                            drawText(dropButton.x + 20, dropButton.y + dropButton.height / 3, dropButton.name);
-//                        } else if (dropButton.simple && dropButton.swapButton) {
-//                            drawRectangle(dropButton.x, dropButton.y, dropButton.width, dropButton.height, dropButton.color);
-//                            drawText(dropButton.x + 20, dropButton.y + dropButton.height / 3, dropButton.name);
-//                        }
-//                    }
-//                } else {
-//                    drawTexture(assetsDir("UI/GUI/closedDrop.png"), button.x + button.width - 42, button.y + button.height / 3.5f, 1, true);
-//                }
-//            }
-//        }
-//    }
-
     private static void updateSwapButtons() {
-        if (!buttons.isEmpty()) {
-            for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
-                ButtonObject button = entry.getValue();
-                if (!button.visible || !button.swapButton) {
-                    continue;
-                }
-
-                if (button.simple && button.isClicked) {
-                    drawRectangle(button.x, button.y, button.width, button.height, button.color);
-                    drawTexture(assetsDir("UI/GUI/checkMarkTrue.png"), button.x + button.width / 1.3f, button.y + button.height / 3f, 1, true);
-                    drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
-                } else if (button.simple) {
-                    drawRectangle(button.x, button.y, button.width, button.height, button.color);
-                    drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
-                } else {
-                    //if swap and not simple
-                    if (button.isClicked) {
-                        drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
-                        drawTexture(assetsDir("UI/GUI/checkMarkTrue.png"), button.x, button.y, 1, true);
-                        drawText(button.width + button.x + 24, button.y, button.name);
-                    } else {
-                        drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
-                        drawTexture(assetsDir("UI/GUI/checkMarkFalse.png"), button.x, button.y, 1, true);
-                        drawText(button.width + button.x + 24, button.y, button.name);
-                    }
-                }
-                drawPrompt(button);
+        for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
+            ButtonObject button = entry.getValue();
+            if (!button.visible || !button.swapButton) {
+                continue;
             }
+
+            if (button.simple && button.isClicked) {
+                drawRectangle(button.x, button.y, button.width, button.height, button.color);
+                drawTexture(assetsDir("UI/GUI/checkMarkTrue.png"), button.x + button.width / 1.3f, button.y + button.height / 3f, 1, true);
+                drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
+            } else if (button.simple) {
+                drawRectangle(button.x, button.y, button.width, button.height, button.color);
+                drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
+            } else {
+                //if swap and not simple
+                if (button.isClicked) {
+                    drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
+                    drawTexture(assetsDir("UI/GUI/checkMarkTrue.png"), button.x, button.y, 1, true);
+                    drawText(button.width + button.x + 24, button.y, button.name);
+                } else {
+                    drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
+                    drawTexture(assetsDir("UI/GUI/checkMarkFalse.png"), button.x, button.y, 1, true);
+                    drawText(button.width + button.x + 24, button.y, button.name);
+                }
+            }
+            drawPrompt(button);
         }
     }
 
     private static void updateButtons() {
-        if (!buttons.isEmpty()) {
-            for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
-                ButtonObject button = entry.getValue();
-                if (!button.visible || button.swapButton) {
-                    continue;
-                }
-
-                if (button.path != null) {
-                    drawTexture(button.path, button.x, button.y, 1, true);
-                    continue;
-                }
-                if (button.simple) {
-                    drawRectangle(button.x, button.y, button.width, button.height, button.color);
-                } else {
-                    drawRectangleBorder(button.x, button.y, button.width, button.height, 6, button.color);
-                }
-                if (!button.isClickable) {
-                    drawRectangle(button.x, button.y, button.width, button.height, new SimpleColor(0, 0, 0, 123));
-                }
-                drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
-                drawPrompt(button);
+        for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
+            ButtonObject button = entry.getValue();
+            if (!button.visible || button.swapButton) {
+                continue;
             }
+
+            if (button.path != null) {
+                drawTexture(button.path, button.x, button.y, 1, true);
+                continue;
+            }
+            if (button.simple) {
+                drawRectangle(button.x, button.y, button.width, button.height, button.color);
+            } else {
+                drawRectangleBorder(button.x, button.y, button.width, button.height, 6, button.color);
+            }
+            if (!button.isClickable) {
+                drawRectangle(button.x, button.y, button.width, button.height, new SimpleColor(0, 0, 0, 123));
+            }
+            drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
+            drawPrompt(button);
         }
     }
 
     private static void updateSliders() {
-        if (!sliders.isEmpty()) {
-            for (SliderObject slider : sliders.values()) {
-                if (!slider.visible) {
-                    continue;
-                }
-                drawRectangle(slider.x, slider.y, slider.width, slider.height, slider.sliderColor);
-                drawCircle(slider.sliderPos, slider.y + slider.height / 2, slider.height / 1.1f, slider.dotColor);
+        for (SliderObject slider : sliders.values()) {
+            if (!slider.visible) {
+                continue;
             }
+            drawRectangle(slider.x, slider.y, slider.width, slider.height, slider.sliderColor);
+            drawCircle(slider.sliderPos, slider.y + slider.height / 2, slider.height / 1.1f, slider.dotColor);
         }
     }
 
     private static void updateTexts() {
-        if (!texts.isEmpty()) {
-            for (TextObject text : texts.values()) {
-                if (!text.visible) {
-                    continue;
-                }
-                drawText(text.x, text.y, text.text, text.color);
+        for (TextObject text : texts.values()) {
+            if (!text.visible) {
+                continue;
             }
+            drawText(text.x, text.y, text.text, text.color);
         }
 
         if (Commandline.created) {
@@ -702,6 +659,7 @@ public class TextureDrawing {
             drawRectangleText(-10, 810, 630, EventHandler.keyLoggingText, true, new SimpleColor(0, 0, 0, 0));
         }
     }
+
 
     public static void bindTexture(String path) {
         ByteBuffer buffer = ByteBufferEncoder(path);
