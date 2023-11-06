@@ -114,8 +114,10 @@ public class EventHandler extends Thread {
 
     private static void updateButtons() {
         for (ButtonObject button : buttons.values()) {
-            if (!button.visible || !button.isClickable) {
-                button.isClicked = false;
+            if (button == null || !button.visible || !button.isClickable) {
+                if (button != null) {
+                    button.isClicked = false;
+                }
                 continue;
             }
 
