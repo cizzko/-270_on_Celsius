@@ -5,11 +5,12 @@ import core.UI.GUI.Menu.Pause;
 import core.UI.GUI.Menu.Settings;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
-import core.World.Creatures.Player.Player;
 import core.World.HitboxMap;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureLoader;
+import core.World.WorldGenerator;
+import java.awt.*;
 import java.util.ArrayList;
 import static core.Window.*;
 import static core.World.StaticWorldObjects.Structures.Factories.updateFactoriesOutput;
@@ -20,7 +21,7 @@ import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.*;
 
-//version 1.3
+//version 1.5
 public class Physics extends Thread {
     //default 400
     public static int physicsSpeed = 400, updates = 0;
@@ -71,12 +72,12 @@ public class Physics extends Thread {
             dynamicObject.motionVector.y -= dynamicObject.weight;
         }
         if (intersD && dynamicObject.motionVector.y < 0) {
-            decrementHp(dynamicObject, dynamicObject.motionVector.y);
+            decrementHp(dynamicObject);
             dynamicObject.motionVector.y = 0;
         }
 
         if (dynamicObject.motionVector.y > 0 && intersU) {
-            decrementHp(dynamicObject, dynamicObject.motionVector.y);
+            decrementHp(dynamicObject);
             dynamicObject.motionVector.y = 0;
         }
 
@@ -96,33 +97,45 @@ public class Physics extends Thread {
                 dynamicObject.motionVector.x = 0;
             }
         } else if (intersR) {
-            decrementHp(dynamicObject, dynamicObject.motionVector.x);
+            decrementHp(dynamicObject);
             dynamicObject.motionVector.x = 0;
         }
 
         if (!intersL && dynamicObject.motionVector.x < 0) {
             dynamicObject.motionVector.x += dynamicObject.weight;
         } else if (intersL) {
-            decrementHp(dynamicObject, dynamicObject.motionVector.x);
+            decrementHp(dynamicObject);
             dynamicObject.motionVector.x = 0;
         }
 
         dynamicObject.x += dynamicObject.motionVector.x;
     }
 
-    private static void decrementHp(DynamicWorldObjects object, float vector) {
-        if (vector > minVectorIntersDamage || vector < -minVectorIntersDamage) {
-            short staticObject = HitboxMap.checkIntersInsideAll(object.x, object.y, TextureLoader.getSize(object.path).width(), TextureLoader.getSize(object.path).height());
-            float damage = (((StaticWorldObjects.getResistance(staticObject) / 100) * StaticWorldObjects.getDensity(staticObject)) + (object.weight + (Math.abs(vector) - minVectorIntersDamage)) * intersDamageMultiplier);
-            object.currentHp -= damage;
+    private static void decrementHp(DynamicWorldObjects object) {
+        float vectorX = object.motionVector.x;
+        float vectorY = object.motionVector.y;
 
-            //TODO: rewrite
-            if (object.path.toLowerCase().contains("player")) {
-                lastDamage = (int) damage;
-                lastDamageTime = System.currentTimeMillis();
-            }
-            if (object.currentHp <= 0) {
-                DynamicObjects.remove(object);
+        if (vectorX > minVectorIntersDamage || vectorX < -minVectorIntersDamage || vectorY > minVectorIntersDamage || vectorY < -minVectorIntersDamage) {
+            Point[] staticObjectPoint = HitboxMap.checkIntersOutside(object.x + vectorX * 2, object.y + vectorY, TextureLoader.getSize(object.path).width(), TextureLoader.getSize(object.path).height() + 4);
+
+            if (staticObjectPoint != null) {
+                float damage = 0;
+                for (Point point : staticObjectPoint) {
+                    short staticObject = WorldGenerator.getObject(point.x, point.y);
+                    float currentDamage = ((((StaticWorldObjects.getResistance(staticObject) / 100) * StaticWorldObjects.getDensity(staticObject)) + (object.weight + (Math.max(Math.abs(vectorY), Math.abs(vectorX)) - minVectorIntersDamage)) * intersDamageMultiplier)) / staticObjectPoint.length;
+                    damage += currentDamage;
+                    WorldGenerator.setObject(point.x, point.y, StaticWorldObjects.decrementHp(staticObject, (int) (currentDamage + (getResistance(staticObject) / 100) * StaticWorldObjects.getDensity(staticObject)) / staticObjectPoint.length));
+                }
+                object.currentHp -= damage;
+
+                //TODO: костыль
+                if (object.path.toLowerCase().contains("player")) {
+                    lastDamage = (int) damage;
+                    lastDamageTime = System.currentTimeMillis();
+                }
+                if (object.currentHp <= 0 && !object.path.toLowerCase().contains("player")) {
+                    DynamicObjects.remove(object);
+                }
             }
         }
     }

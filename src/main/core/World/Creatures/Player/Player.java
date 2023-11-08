@@ -24,7 +24,7 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class Player {
     public static boolean noClip = false;
-    private static int transparencyHPline = Config.getFromConfig("AlwaysOnPlayerHPline").equals("true") ? 220 : 0;
+    private static int transparencyHPline = Config.getFromConfig("AlwaysOnPlayerHPLine").equals("true") ? 220 : 0;
     public static int lastDamage = 0;
     public static long lastDamageTime = System.currentTimeMillis();
     private static long lastChangeTransparency = System.currentTimeMillis(), lastChangeLengthDamage = System.currentTimeMillis();
@@ -290,7 +290,7 @@ public class Player {
     }
 
     private static void drawCurrentHP() {
-        if (DynamicObjects.get(0).currentHp == DynamicObjects.get(0).maxHp && transparencyHPline > 0 && System.currentTimeMillis() - lastChangeTransparency >= 10 && !Config.getFromConfig("AlwaysOnPlayerHPline").equals("true")) {
+        if (DynamicObjects.get(0).currentHp == DynamicObjects.get(0).maxHp && transparencyHPline > 0 && System.currentTimeMillis() - lastChangeTransparency >= 10 && !Config.getFromConfig("AlwaysOnPlayerHPLine").equals("true")) {
             lastChangeTransparency = System.currentTimeMillis();
             transparencyHPline--;
         } else if (DynamicObjects.get(0).currentHp != DynamicObjects.get(0).maxHp) {
