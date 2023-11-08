@@ -1,17 +1,57 @@
 package core.EventHandling.Logging;
 
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Properties;
 import static core.EventHandling.Logging.Logger.logExit;
 import static core.EventHandling.Logging.Logger.printException;
 import static core.Window.assetsDir;
+import static core.Window.pathTo;
 
 public class Config {
+    private static boolean configCheckMark = false;
     private static final HashMap<String, Properties> props = new HashMap<>(3);
     private static final HashMap<String, Object> values = new HashMap<>();
+
+    public static void checkConfig() {
+        if (!configCheckMark) {
+            Properties prop = getProperties(assetsDir("config.properties"));
+
+            if (prop == null || prop.isEmpty() || prop.keys() == null) {
+                try (PrintWriter printWriter = new PrintWriter(new FileWriter(pathTo("/log.txt")))) {
+                    printWriter.println("Config empty or keys not found, it will be reset to default values");
+                    resetConfig();
+                } catch (IOException e) {
+                    printException("Error when print to log", e);
+                }
+            }
+            configCheckMark = true;
+        }
+    }
+
+    private static void resetConfig() {
+        try (FileInputStream config = new FileInputStream(assetsDir("config.properties"));
+             FileInputStream configDefault = new FileInputStream(assetsDir("configDefault.properties"));
+             FileOutputStream out = new FileOutputStream(assetsDir("config.properties"))) {
+
+            Properties configProp = new Properties();
+            Properties defaultConfig = new Properties();
+
+            configProp.load(config);
+            defaultConfig.load(configDefault);
+
+            String[] defaultKeys = defaultConfig.values().toArray(new String[0]);
+            String[] defaultValues = defaultConfig.keySet().toArray(new String[0]);
+
+            for (int i = 0; i < defaultValues.length; i++) {
+                configProp.setProperty(defaultValues[i], defaultKeys[i]);
+            }
+            configProp.store(out, null);
+
+        } catch (Exception e) {
+            System.out.println("Error when reset config: " + e);
+        }
+    }
 
     //if need caching values && prop
     public static Object getFromProp(String path, String key) {
@@ -39,6 +79,7 @@ public class Config {
     }
 
     public static String getFromConfig(String key) {
+        checkConfig();
         return (String) getFromProp(assetsDir("config.properties"), key);
     }
 
