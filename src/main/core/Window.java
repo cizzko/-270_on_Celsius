@@ -4,19 +4,12 @@ import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
 import core.EventHandling.MouseScrollCallback;
-import core.UI.GUI.CreateElement;
-import core.UI.GUI.Fonts;
 import core.UI.GUI.Menu.Main;
-import core.Utils.SimpleColor;
-import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureLoader;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.opengl.GL;
-
 import java.nio.file.Path;
-
 import static core.EventHandling.Logging.Logger.log;
 import static core.World.Textures.TextureDrawing.*;
 import static core.World.Textures.TextureLoader.BufferedImageEncoder;
