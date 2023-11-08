@@ -1,9 +1,9 @@
 package core.World.Textures;
 
 import core.EventHandling.Logging.Config;
+import core.UI.GUI.Fonts;
 import core.Utils.ArrayUtils;
 import org.lwjgl.BufferUtils;
-
 import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
@@ -11,10 +11,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
-
 import static core.EventHandling.Logging.Logger.*;
 import static core.UI.GUI.Fonts.getCharBuffer;
 import static core.UI.GUI.Fonts.letterSize;
+import static core.Window.assetsDir;
 import static core.Window.pathTo;
 import static core.World.Textures.TextureDrawing.bindTexture;
 import static org.lwjgl.opengl.GL11.*;
@@ -115,6 +115,7 @@ public class TextureLoader extends Thread {
     }
 
     public static void preLoadResources() {
+        Fonts.generateFont(assetsDir("UI/arial.ttf"));
         if (Config.getFromConfig("PreloadResources").equals("true")) {
             String[] textures = ArrayUtils.getAllFiles(pathTo("src/assets"), ".png");
 

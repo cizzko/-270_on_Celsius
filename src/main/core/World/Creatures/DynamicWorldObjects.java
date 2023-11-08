@@ -59,7 +59,7 @@ public class DynamicWorldObjects implements Serializable {
                 }
             }
         }
-        if (HitboxMap.checkIntersInsideAll(x, y, TextureLoader.getSize(path).width() + 10, TextureLoader.getSize(path).height() + 10) > 0) {
+        if (HitboxMap.checkIntersInside(x, y, TextureLoader.getSize(path).width() + 10, TextureLoader.getSize(path).height() + 10) != null) {
             y += 16;
         }
 

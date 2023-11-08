@@ -37,7 +37,7 @@ public class Sun {
                     double t = (currentTime - 2400) / (1 - 2400);
                     y = (float) (endYSun * (1 - t) + startYSun * t);
                 }
-
+                
                 if (currentTime >= startDay || (currentTime >= 0 && currentTime <= endSunset)) {
                     WorldGenerator.currentWorldTemperature += WorldGenerator.temperatureDecrement / 3.29f;
                 } else {
