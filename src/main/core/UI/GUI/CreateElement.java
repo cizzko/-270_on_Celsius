@@ -29,7 +29,7 @@ public class CreateElement {
     }
 
     public static void createPictureButton(int x, int y, String path, String name, String group, Runnable taskOnClick) {
-        buttons.put(name, new ButtonObject(true, false, x, y, TextureLoader.getSize(path).height(), TextureLoader.getSize(path).width(), name, null, new SimpleColor(255, 255, 255, 255), group, taskOnClick));
+        buttons.put(name, new ButtonObject(true, false, x, y, TextureLoader.getSize(path).height(), TextureLoader.getSize(path).width(), name, null, SimpleColor.WHITE, group, taskOnClick));
         buttons.get(name).path = path;
     }
 
@@ -64,6 +64,6 @@ public class CreateElement {
     }
 
     public static void createPicture(int x, int y, int layer, String name, String path, String group) {
-        panels.put(name, new PanelObject(x, y, getSize(path).width(), getSize(path).height(), layer, name, true, path, group, new SimpleColor(255, 255, 255, 255)));
+        panels.put(name, new PanelObject(x, y, getSize(path).width(), getSize(path).height(), layer, name, true, path, group, SimpleColor.WHITE));
     }
 }

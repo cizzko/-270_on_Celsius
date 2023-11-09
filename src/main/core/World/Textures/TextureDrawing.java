@@ -41,7 +41,7 @@ public class TextureDrawing {
         if (color != null && color.getAlpha() == 0) {
             return;
         } else if (color == null) {
-            color = new SimpleColor(255, 255, 255, 255);
+            color = SimpleColor.WHITE;
         }
 
         int textureId = path.hashCode();
@@ -113,7 +113,7 @@ public class TextureDrawing {
         if (color != null && color.getAlpha() == 0) {
             return;
         } else if (color == null) {
-            color = new SimpleColor(255, 255, 255, 255);
+            color = SimpleColor.WHITE;
         }
 
         int textureId = (pathMain + pathSecond).hashCode();
@@ -179,7 +179,7 @@ public class TextureDrawing {
     }
 
     public static void drawTexture(String path, float x, float y, float zoom, boolean isStatic) {
-        drawTexture(path, x, y, zoom, new SimpleColor(255, 255, 255, 255), isStatic, false);
+        drawTexture(path, x, y, zoom, SimpleColor.WHITE, isStatic, false);
     }
 
     //for video, text, etc
@@ -440,7 +440,7 @@ public class TextureDrawing {
                         video.frame = 1;
                     }
                     if (byteBuffer.get(name) != null && !byteBuffer.get(name).equals(buff)) {
-                        drawTexture(video.x, video.y, video.width, video.height, null, byteBuffer.get(name), new SimpleColor(255, 255, 255, 255), 1);
+                        drawTexture(video.x, video.y, video.width, video.height, null, byteBuffer.get(name), SimpleColor.WHITE, 1);
                         buff = byteBuffer.get(name);
                     }
                 }
@@ -656,7 +656,7 @@ public class TextureDrawing {
 
         if (Commandline.created) {
             drawRectangle(20, 800, 650, 260, new SimpleColor(0, 0, 0, 220));
-            drawRectangleText(-10, 810, 630, EventHandler.keyLoggingText, true, new SimpleColor(0, 0, 0, 0));
+            drawRectangleText(-10, 810, 630, EventHandler.keyLoggingText, true, SimpleColor.BLACK);
         }
     }
 
