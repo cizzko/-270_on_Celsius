@@ -11,8 +11,8 @@ import static core.World.WorldGenerator.*;
 public class ShadowMap {
     private static SimpleColor[] shadows;
     private static ArrayList<SimpleColor> shadowsDynamic = new ArrayList<>(10);
-    private static SimpleColor deletedColor = new SimpleColor(0, 0, 0, 0), deletedColorDynamic = new SimpleColor(0, 0, 0, 0);
-    private static SimpleColor addedColor = new SimpleColor(0, 0, 0, 0), addedColorDynamic = new SimpleColor(0, 0, 0, 0);
+    private static SimpleColor deletedColor = SimpleColor.BLACK, deletedColorDynamic = SimpleColor.BLACK;
+    private static SimpleColor addedColor = SimpleColor.BLACK, addedColorDynamic = SimpleColor.BLACK;
 
     //TODO: rewrite generation n update
 
@@ -31,7 +31,7 @@ public class ShadowMap {
 
     public static void generate() {
         shadows = new SimpleColor[(WorldGenerator.SizeX + 1) * (WorldGenerator.SizeY + 1)];
-        Arrays.fill(shadows, new SimpleColor(255, 255, 255, 255));
+        Arrays.fill(shadows, SimpleColor.WHITE);
 
         generateShadows();
     }
@@ -42,7 +42,7 @@ public class ShadowMap {
                 if (checkHasGasAround(x, y, 1)) {
                     setShadow(x, y, new SimpleColor(165, 165, 165, 255));
                 } else {
-                    setShadow(x, y, new SimpleColor(255, 255, 255, 255));
+                    setShadow(x, y, SimpleColor.WHITE);
                 }
             }
         }
@@ -71,7 +71,7 @@ public class ShadowMap {
                     if (checkHasGasAround(x, y, 1)) {
                         setShadow(x, y, new SimpleColor(165, 165, 165, 255));
                     } else {
-                        setShadow(x, y, new SimpleColor(255, 255, 255, 255));
+                        setShadow(x, y, SimpleColor.WHITE);
                     }
                 }
             }
@@ -148,9 +148,9 @@ public class ShadowMap {
 
             return new SimpleColor(r, g, b, a);
         }
-        shadowsDynamic.add(new SimpleColor(255, 255, 255, 255));
+        shadowsDynamic.add(SimpleColor.WHITE);
 
-        return new SimpleColor(255, 255, 255, 255);
+        return SimpleColor.WHITE;
     }
 
     public static void addAllColor(SimpleColor color) {
@@ -185,7 +185,7 @@ public class ShadowMap {
     }
 
     public static int checkColor(int SimpleColor) {
-        return Math.min(Math.max(SimpleColor, 0), 255);
+        return Math.clamp(SimpleColor, 0, 255);
     }
 
     private static SimpleColor checkColor(SimpleColor color) {

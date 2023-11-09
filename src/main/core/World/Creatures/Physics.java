@@ -32,7 +32,7 @@ public class Physics extends Thread {
         physicsSpeed = 400;
         updates = 0;
         stop = false;
-        new Thread(new Physics()).start();
+        new Physics().start();
 
         Logger.log("Thread: Physics restarted");
     }
