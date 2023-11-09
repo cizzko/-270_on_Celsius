@@ -9,12 +9,13 @@ import core.World.Textures.TextureLoader;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.system.MemoryUtil;
+
 import java.nio.file.Path;
 import static core.EventHandling.Logging.Logger.log;
 import static core.World.Textures.TextureDrawing.*;
 import static core.World.Textures.TextureLoader.BufferedImageEncoder;
 import static core.World.Textures.TextureLoader.readImage;
-import static java.sql.Types.NULL;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL13.*;
 
@@ -50,7 +51,7 @@ public class Window {
         });
 
         glfwInit();
-        glfwWindow = glfwCreateWindow(width, height, "-270 on Celsius", glfwGetPrimaryMonitor(), NULL);
+        glfwWindow = glfwCreateWindow(width, height, "-270 on Celsius", glfwGetPrimaryMonitor(), MemoryUtil.NULL);
 
         glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         glfwMakeContextCurrent(glfwWindow);
