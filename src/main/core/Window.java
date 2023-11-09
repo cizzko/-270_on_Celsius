@@ -81,7 +81,7 @@ public class Window {
         log("Thread: Main thread started drawing");
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
-        new Thread(new EventHandler()).start();
+        new EventHandler().start();
 
         while (!glfwWindowShouldClose(glfwWindow)) {
             updateVideo();

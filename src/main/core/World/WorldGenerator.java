@@ -454,9 +454,9 @@ public class WorldGenerator {
     public static void start(boolean generateCreatures) {
         CreatePlanet.delete();
 
-        new Thread(new Physics()).start();
+        new Physics().start();
         if (generateCreatures) {
-            new Thread(new CreaturesGenerate()).start();
+            new CreaturesGenerate().start();
         }
         Window.start = true;
     }
