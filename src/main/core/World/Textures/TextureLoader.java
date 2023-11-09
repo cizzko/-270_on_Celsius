@@ -3,6 +3,7 @@ package core.World.Textures;
 import core.EventHandling.Logging.Config;
 import core.UI.GUI.Fonts;
 import core.Utils.ArrayUtils;
+import core.Utils.SimpleColor;
 import org.lwjgl.BufferUtils;
 import javax.imageio.ImageIO;
 import java.awt.Graphics2D;
@@ -45,11 +46,8 @@ public class TextureLoader extends Thread {
         //load pixels
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
-                int pixel = pixels[y * image.getWidth() + x];
-                buffer.put((byte) ((pixel >> 16) & 0xFF));     // red
-                buffer.put((byte) ((pixel >> 8) & 0xFF));      // green
-                buffer.put((byte) (pixel & 0xFF));             // blue
-                buffer.put((byte) ((pixel >> 24) & 0xFF));     // alpha, used in RGBA and provides the degree of transparency of a pixel.
+                int color = pixels[y * image.getWidth() + x]; // argb
+                buffer.putInt(SimpleColor.argbToRgba(color));
             }
         }
 
