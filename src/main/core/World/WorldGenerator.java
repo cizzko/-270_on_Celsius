@@ -46,6 +46,8 @@ public class WorldGenerator {
     }
 
     public static void setObject(int x, int y, short object) {
+        assert object != -1;
+
         StaticObjects[x + SizeX * y] = object;
 
         if (StaticObjectsConst.getConst(getId(object)).optionalTiles != null) {
@@ -62,8 +64,10 @@ public class WorldGenerator {
             }).start();
         }
 
-        for (StaticBlocksEvents listener : listeners) {
-            listener.placeStatic(x, y, object);
+        if (start) {
+            for (StaticBlocksEvents listener : listeners) {
+                listener.placeStatic(x, y, object);
+            }
         }
     }
 
@@ -94,8 +98,10 @@ public class WorldGenerator {
                 createElementDetail(new Details("Stick", assetsDir("World/Items/stick.png")), "");
             }
 
-            for (StaticBlocksEvents listener : listeners) {
-                listener.destroyStatic(cellX, cellY, id);
+            if (start) {
+                for (StaticBlocksEvents listener : listeners) {
+                    listener.destroyStatic(cellX, cellY, id);
+                }
             }
         }
     }
@@ -176,6 +182,7 @@ public class WorldGenerator {
     }
 
     private static void loadAllStructures() {
+        log("World generator: loading all structures");
         String[] paths = ArrayUtils.getAllFiles(assetsDir("World/Saves/Structures"), ".ser");
 
         for (String path : paths) {
@@ -185,7 +192,10 @@ public class WorldGenerator {
 
     private static void loadStructure(String path) {
         if (new File(path).exists()) {
-            try (FileInputStream fis = new FileInputStream(path); InflaterInputStream iis = new InflaterInputStream(fis); ObjectInputStream ois = new ObjectInputStream(iis)) {
+            try (FileInputStream fis = new FileInputStream(path);
+                 InflaterInputStream iis = new InflaterInputStream(fis);
+                 ObjectInputStream ois = new ObjectInputStream(iis)) {
+
                 Structures struct = (Structures) ois.readObject();
 
                 structures.put(path, struct);
@@ -198,7 +208,7 @@ public class WorldGenerator {
     }
 
     private static void generateMountains() {
-        log("World generator: generating mountains");
+        log("World generator: generating mountain");
         createText(42, 140, "generateMountainsText", "Generating mountains", new SimpleColor(210, 210, 210, 255), "WorldGeneratorState");
 
         float randGrass = 2f;           //chance of unevenness, the higher the number - the lower the chance
@@ -342,6 +352,8 @@ public class WorldGenerator {
     }
 
     private static void generateTrees() {
+        log("World generator: generating trees");
+
         byte[] forests = new byte[SizeX];
         float lastForest = 0;
         float lastForestSize = 0;
@@ -378,8 +390,9 @@ public class WorldGenerator {
     }
 
     private static void generateDecorStones() {
-        float chance = 40;
+        log("World generator: generating decor stones");
 
+        float chance = 40;
         for (int x = 0; x < SizeX; x++) {
             if (Math.random() * chance < 1) {
                 int y = findFreeVerticalCell(x);
@@ -454,9 +467,9 @@ public class WorldGenerator {
     public static void start(boolean generateCreatures) {
         CreatePlanet.delete();
 
-        new Physics().start();
+        Physics.initPhysics();
         if (generateCreatures) {
-            new CreaturesGenerate().start();
+            CreaturesGenerate.initGenerating();
         }
         Window.start = true;
     }

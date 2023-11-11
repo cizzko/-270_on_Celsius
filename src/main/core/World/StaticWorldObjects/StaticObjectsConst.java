@@ -70,12 +70,12 @@ public class StaticObjectsConst {
                         path == null ? null : pathTo(path), objectName, originalName,
                         optionalTiles, Types.valueOf(enumType.toUpperCase())));
             } else {
-                setConstStructures(name, id, optionalTiles);
+                setConstDefaultParam(name, id, optionalTiles);
             }
         }
     }
 
-    public static void setConstStructures(String path, byte id, short[][] optionalTiles) {
+    public static void setConstDefaultParam(String path, byte id, short[][] optionalTiles) {
         if (constants.get(id) == null) {
             Properties props = Config.getProperties(path);
             boolean hasMotherBlock = props.get("HasMotherBlock") != null && props.get("HasMotherBlock").equals("true");

@@ -19,7 +19,7 @@ import static core.Window.*;
 import static core.World.Creatures.Physics.updates;
 import static org.lwjgl.glfw.GLFW.*;
 
-public class EventHandler extends Thread {
+public class EventHandler {
     public static long lastMouseMovedTime = System.currentTimeMillis();
     private static long lastSecond = System.currentTimeMillis();
     private static final Point lastMousePos = new Point(0, 0);
@@ -217,20 +217,21 @@ public class EventHandler extends Thread {
         }
     }
 
-    @Override
-    public void run() {
-        while (!glfwWindowShouldClose(glfwWindow)) {
-            Player.updatePlayerGUILogic();
-            updateButtons();
-            updateClicks();
-            updateKeyLogging();
-            updateSliders();
-            updateHotkeys();
-            updateLine();
-            updateDebug();
+    public static void initHandler() {
+        new Thread(() -> {
+            while (!glfwWindowShouldClose(glfwWindow)) {
+                Player.updatePlayerGUILogic();
+                updateButtons();
+                updateClicks();
+                updateKeyLogging();
+                updateSliders();
+                updateHotkeys();
+                updateLine();
+                updateDebug();
 
-            handlerUpdates++;
-        }
+                handlerUpdates++;
+            }
+        }).start();
     }
 }
 

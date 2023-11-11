@@ -102,7 +102,6 @@ public class Config {
 
         } catch (Exception e) {
             printException("Error when updating config at path: '" + configFile + "', key: '" + key + "' value: '" + value + "'", e);
-            logExit(1);
         }
     }
 }

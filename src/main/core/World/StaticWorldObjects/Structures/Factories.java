@@ -16,8 +16,7 @@ import core.World.WorldGenerator;
 import java.awt.Point;
 import java.util.*;
 import static core.Utils.ArrayUtils.findEqualsObjects;
-import static core.Window.assetsDir;
-import static core.Window.pathTo;
+import static core.Window.*;
 
 public class Factories implements StaticBlocksEvents {
     public float productionSpeed, needEnergy, currentHp, currentEnergy, maxHp, timeSinceBreakdown, x, y;
@@ -32,7 +31,7 @@ public class Factories implements StaticBlocksEvents {
 
     @Override
     public void placeStatic(int cellX, int cellY, short id) {
-        if (id != 0 && Objects.requireNonNull(StaticWorldObjects.getPath(id)).toLowerCase().contains("factory")) {
+        if (id != 0 && id != -1 && StaticWorldObjects.getPath(id) != null && StaticWorldObjects.getPath(id).toLowerCase().contains("factory")) {
             createFactory(StaticWorldObjects.getFileName(id), StaticObjectsConst.getConst(StaticWorldObjects.getId(id)).optionalTiles);
             factories.add(new Point(cellX, cellY));
         }
@@ -40,7 +39,7 @@ public class Factories implements StaticBlocksEvents {
 
     @Override
     public void destroyStatic(int cellX, int cellY, short id) {
-        if (id != 0 && Objects.requireNonNull(StaticWorldObjects.getPath(id)).toLowerCase().contains("factory")) {
+        if (id != 0 && id != -1 && StaticWorldObjects.getPath(id) != null && StaticWorldObjects.getPath(id).toLowerCase().contains("factory")) {
             factories.remove(new Point(cellX, cellY));
         }
     }
@@ -94,7 +93,7 @@ public class Factories implements StaticBlocksEvents {
             factoriesConst.put(originalName, new Factories(productionSpeed, needEnergy, maxHp,
                     maxStoredObjects, (short) ((((byte) maxHp & 0xFF) << 8) | (id & 0xFF)), pathTo(path),
                     sound, factoryName, outputObjects, inputObjects));
-            StaticObjectsConst.setConstStructures(name, id, tiles);
+            StaticObjectsConst.setConstDefaultParam(name, id, tiles);
         }
     }
 
@@ -164,7 +163,7 @@ public class Factories implements StaticBlocksEvents {
                 Point current = Inventory.currentObject;
 
                 if (cell != -1 && current != null) {
-                    factoryUM.inputStoredObjects[cell] = Inventory.inventoryObjects[current.x][current.y];
+                    factoryUM.inputStoredObjects[cell] = Inventory.getCurrent();
                     Inventory.decrementItem(current.x, current.y);
                 }
             }

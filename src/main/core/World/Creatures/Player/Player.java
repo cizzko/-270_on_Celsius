@@ -82,7 +82,7 @@ public class Player {
                 int blockY = blockUMB.y;
 
                 if (currentObject != null) {
-                    short placeable = inventoryObjects[currentObject.x][currentObject.y].placeable;
+                    short placeable = Inventory.getCurrent().placeable;
                     updatePlaceableBlock(placeable, blockX, blockY);
                 }
             }
@@ -98,26 +98,28 @@ public class Player {
     }
 
     public static boolean canPlace(short placeable, int blockX, int blockY) {
-        if (StaticObjectsConst.getConst(getId(placeable)).optionalTiles == null && getType(getObject(blockX, blockY)) == StaticObjectsConst.Types.GAS && (getType(getObject(blockX, blockY + 1)) == StaticObjectsConst.Types.SOLID || getType(getObject(blockX, blockY - 1)) == StaticObjectsConst.Types.SOLID || getType(getObject(blockX + 1, blockY)) == StaticObjectsConst.Types.SOLID || getType(getObject(blockX - 1, blockY)) == StaticObjectsConst.Types.SOLID)) {
-            return true;
-        } else if (StaticObjectsConst.getConst(getId(placeable)).optionalTiles != null && getType(getObject(blockX, blockY - 1)) == StaticObjectsConst.Types.SOLID && getType(getObject(blockX, blockY)) == StaticObjectsConst.Types.GAS) {
-            short[][] tiles = StaticObjectsConst.getConst(getId(placeable)).optionalTiles;
+        if (underMouseItem == null) {
+            if (StaticObjectsConst.getConst(getId(placeable)).optionalTiles == null && getType(getObject(blockX, blockY)) == StaticObjectsConst.Types.GAS && (getType(getObject(blockX, blockY + 1)) == StaticObjectsConst.Types.SOLID || getType(getObject(blockX, blockY - 1)) == StaticObjectsConst.Types.SOLID || getType(getObject(blockX + 1, blockY)) == StaticObjectsConst.Types.SOLID || getType(getObject(blockX - 1, blockY)) == StaticObjectsConst.Types.SOLID)) {
+                return true;
+            } else if (StaticObjectsConst.getConst(getId(placeable)).optionalTiles != null && getType(getObject(blockX, blockY - 1)) == StaticObjectsConst.Types.SOLID && getType(getObject(blockX, blockY)) == StaticObjectsConst.Types.GAS) {
+                short[][] tiles = StaticObjectsConst.getConst(getId(placeable)).optionalTiles;
 
-            for (int x = 0; x < tiles.length; x++) {
-                for (int y = 0; y < tiles[0].length; y++) {
-                    if (getType(getObject(x + blockX, y + blockY)) == StaticObjectsConst.Types.SOLID && getType(tiles[x][y]) == StaticObjectsConst.Types.SOLID) {
-                        return false;
+                for (int x = 0; x < tiles.length; x++) {
+                    for (int y = 0; y < tiles[0].length; y++) {
+                        if (getType(getObject(x + blockX, y + blockY)) == StaticObjectsConst.Types.SOLID && getType(tiles[x][y]) == StaticObjectsConst.Types.SOLID) {
+                            return false;
+                        }
                     }
                 }
+                return true;
             }
-            return true;
         }
         return false;
     }
 
     private static void updateToolInteraction() {
         if (currentObjectType == Items.Types.TOOL && currentObject != null) {
-            Tools tool = inventoryObjects[currentObject.x][currentObject.y].tool;
+            Tools tool = Inventory.getCurrent().tool;
             Point blockUMB = getBlockUnderMousePoint();
             int blockX = blockUMB.x;
             int blockY = blockUMB.y;

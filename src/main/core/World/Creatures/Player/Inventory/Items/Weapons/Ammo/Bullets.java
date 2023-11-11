@@ -35,7 +35,7 @@ public class Bullets {
 
     public static void updateBullets() {
         if (Inventory.currentObjectType == Items.Types.WEAPON) {
-            Weapons weapon = Inventory.inventoryObjects[Inventory.currentObject.x][Inventory.currentObject.y].weapon;
+            Weapons weapon = Inventory.getCurrent().weapon;
 
             if (EventHandler.getMousePress() && System.currentTimeMillis() - weapon.lastShootTime >= weapon.fireRate) {
                 weapon.lastShootTime = System.currentTimeMillis();

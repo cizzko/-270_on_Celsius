@@ -22,7 +22,7 @@ import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 //version 1.5
-public class Physics extends Thread {
+public class Physics {
     //default 400
     public static int physicsSpeed = 400, updates = 0;
     private static boolean stop = false;
@@ -32,34 +32,36 @@ public class Physics extends Thread {
         physicsSpeed = 400;
         updates = 0;
         stop = false;
-        new Physics().start();
+        initPhysics();
 
         Logger.log("Thread: Physics restarted");
     }
 
-    public void run() {
-        Logger.log("Thread: Physics started");
-        Inventory.create();
+    public static void initPhysics() {
+        new Thread(() -> {
+            Logger.log("Thread: Physics started");
+            Inventory.create();
 
-        long lastUpdateTime = System.nanoTime();
+            long lastUpdateTime = System.nanoTime();
 
-        while (!glfwWindowShouldClose(glfwWindow)) {
-            if (System.nanoTime() - lastUpdateTime >= 1.0 / physicsSpeed * 1000000000) {
-                updatePhys();
-                updateWorldInteractions();
+            while (!glfwWindowShouldClose(glfwWindow)) {
+                if (System.nanoTime() - lastUpdateTime >= 1.0 / physicsSpeed * 1000000000) {
+                    updatePhys();
+                    updateWorldInteractions();
 
-                updates++;
-                lastUpdateTime = System.nanoTime();
+                    updates++;
+                    lastUpdateTime = System.nanoTime();
+                }
+                if ((Settings.createdSettings || Pause.created) && !stop) {
+                    lastSpeed = physicsSpeed;
+                    physicsSpeed = 1;
+                    stop = true;
+                } else if (!Settings.createdSettings && !Pause.created && stop) {
+                    physicsSpeed = lastSpeed;
+                    stop = false;
+                }
             }
-            if ((Settings.createdSettings || Pause.created) && !stop) {
-                lastSpeed = physicsSpeed;
-                physicsSpeed = 1;
-                stop = true;
-            } else if (!Settings.createdSettings && !Pause.created && stop) {
-                physicsSpeed = lastSpeed;
-                stop = false;
-            }
-        }
+        }).start();
     }
 
     public static void updateVerticalSpeed(DynamicWorldObjects dynamicObject) {

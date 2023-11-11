@@ -10,7 +10,6 @@ import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryUtil;
-
 import java.nio.file.Path;
 import static core.EventHandling.Logging.Logger.log;
 import static core.World.Textures.TextureDrawing.*;
@@ -72,6 +71,7 @@ public class Window {
         glOrtho(0, width, 0, height, 1, -1);
         glMatrixMode(GL_MODELVIEW);
 
+        EventHandler.initHandler();
         TextureLoader.preLoadResources();
         Main.create();
 
@@ -82,8 +82,6 @@ public class Window {
         log("Thread: Main thread started drawing");
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
-        new EventHandler().start();
-
         while (!glfwWindowShouldClose(glfwWindow)) {
             updateVideo();
             if (start) {
