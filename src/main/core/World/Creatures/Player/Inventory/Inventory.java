@@ -11,9 +11,9 @@ import core.World.Creatures.Player.Player;
 import core.Utils.SimpleColor;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
-import java.awt.Point;
+import java.awt.*;
+import java.util.ArrayList;
 import java.util.Arrays;
-
 import static core.Window.assetsDir;
 import static core.World.Textures.TextureDrawing.*;
 
@@ -21,8 +21,19 @@ public class Inventory {
     public static boolean inventoryOpen = false, create = false;
     public static final Items[][] inventoryObjects = new Items[8][6];
     public static Point currentObject;
+    public static Point underMouseItem;
     public static Items.Types currentObjectType;
     private static long lastOpen = System.currentTimeMillis();
+    private static ArrayList<InventoryEvents> listeners = new ArrayList<>();
+
+    public static Items getCurrent() {
+        Point current = currentObject;
+        if (currentObject != null) {
+            return inventoryObjects[current.x][current.y];
+        }
+
+        return null;
+    }
 
     public static void create() {
         create = true;
@@ -42,18 +53,23 @@ public class Inventory {
         for (int x = inventoryOpen ? 0 : 7; x < inventoryObjects.length; x++) {
             for (int y = 0; y < inventoryObjects[x].length; y++) {
                 if (inventoryObjects[x][y] != null) {
-                    float xCoord = 1498 + x * 54;
-                    float yCoord = 766 + y * 54f;
-
-                    drawInventoryItem(xCoord, yCoord, inventoryObjects[x][y].countInCell, inventoryObjects[x][y].path);
-
-                    if (EventHandler.getRectanglePress((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
-                        currentObjectType = inventoryObjects[x][y] == null ? null : inventoryObjects[x][y].type;
-                        currentObject = new Point(x, y);
-                    }
+                    drawInventoryItem(1498 + x * 54, 766 + y * 54f, inventoryObjects[x][y].countInCell, inventoryObjects[x][y].path);
                 }
             }
         }
+    }
+
+    private static Point getObjectUnderMouse() {
+        Point mousePos = EventHandler.getMousePos();
+        int x = mousePos.x;
+        int y = mousePos.y;
+
+        if (x > 1488 && y > 756) {
+            x -= 1488;
+            y -= 756;
+            return new Point(x / 54, y / 54);
+        }
+        return null;
     }
 
     public static void drawInventoryItem(float x, float y, int countInCell, String path) {
@@ -81,6 +97,9 @@ public class Inventory {
     }
 
     private static void updateCurrentItem() {
+        updateUnderMouse();
+        updateDropItem();
+
         if (EventHandler.getRectanglePress(1875, 1035, 1920, 1080) && System.currentTimeMillis() - lastOpen > 150) {
             inventoryOpen = !inventoryOpen;
             lastOpen = System.currentTimeMillis();
@@ -88,6 +107,12 @@ public class Inventory {
         Point current = currentObject;
 
         if (current != null) {
+            Point mousePos = EventHandler.getMousePos();
+
+            if (underMouseItem != null) {
+                float zoom = inventoryObjects[underMouseItem.x][underMouseItem.y].zoom;
+                drawTexture(inventoryObjects[underMouseItem.x][underMouseItem.y].path, (mousePos.x - 15) / zoom, (mousePos.y - 15) / zoom, zoom, true);
+            }
             if ((inventoryOpen || current.x > 6)) {
                 drawTexture(assetsDir("UI/GUI/inventory/inventoryCurrent.png"), 1488 + current.x * 54, 756 + current.y * 54f, 1, true);
             }
@@ -95,7 +120,7 @@ public class Inventory {
             int blockX = Player.getBlockUnderMousePoint().x;
             int blockY = Player.getBlockUnderMousePoint().y;
 
-            if (placeable != 0) {
+            if (placeable != 0 && underMouseItem == null && !new Rectangle(1488, 756, 500, 500).contains(mousePos)) {
                 boolean isDeclined = Player.getDistanceUnderMouse() < 8 && Player.canPlace(placeable, blockX, blockY);
 
                 if (StaticObjectsConst.getConst(StaticWorldObjects.getId(placeable)).optionalTiles == null) {
@@ -104,6 +129,36 @@ public class Inventory {
                     Player.drawStructure(blockX, blockY, isDeclined, placeable, StaticObjectsConst.getConst(StaticWorldObjects.getId(placeable)).optionalTiles);
                 }
             }
+        }
+    }
+
+    private static void updateUnderMouse() {
+        Point underMouse = getObjectUnderMouse();
+        if (EventHandler.getRectanglePress(1488, 756, 1919, 1079) && underMouse != null && currentObject != underMouse && inventoryObjects[underMouse.x][underMouse.y] != null) {
+            currentObject = underMouse;
+            currentObjectType = inventoryObjects[underMouse.x][underMouse.y].type;
+
+            if (EventHandler.getMousePress()) {
+                underMouseItem = underMouse;
+            }
+        }
+    }
+
+    private static void updateDropItem() {
+        if (!EventHandler.getMousePress() && underMouseItem != null) {
+            Point hasItemsMouse = getObjectUnderMouse();
+
+            if (hasItemsMouse != null && inventoryObjects[hasItemsMouse.x][hasItemsMouse.y] == null) {
+                inventoryObjects[hasItemsMouse.x][hasItemsMouse.y] = inventoryObjects[underMouseItem.x][underMouseItem.y];
+                inventoryObjects[underMouseItem.x][underMouseItem.y] = null;
+                currentObject = hasItemsMouse;
+            } else {
+                for (InventoryEvents listener : listeners) {
+                    Point mousePos = Player.getBlockUnderMousePoint();
+                    listener.itemDropped(mousePos.x, mousePos.y, inventoryObjects[underMouseItem.x][underMouseItem.y]);
+                }
+            }
+            underMouseItem = null;
         }
     }
 
@@ -125,7 +180,7 @@ public class Inventory {
     public static void createElementPlaceable(short object, String description) {
         byte id = StaticWorldObjects.getId(object);
         if (findCountID(id) > 1) {
-            Point cell = findItemByID(id);
+           Point cell = findItemByID(id);
             inventoryObjects[cell.x][cell.y].countInCell++;
             return;
         }
