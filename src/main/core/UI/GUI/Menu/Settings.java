@@ -129,6 +129,19 @@ public class Settings {
         Settings.needUpdateCount = true;
     }
 
+    private static Runnable[] langButton(String[] buttonNames) {
+        Runnable[] tasks = new Runnable[buttonNames.length];
+
+        for (int i = 0; i < tasks.length; i++) {
+            int finalI = i;
+            tasks[i] = () -> {
+              Settings.newLang = buttonNames[finalI];
+              buttons.get(getName("Language")).taskOnClick.run();
+            };
+        }
+        return tasks;
+    }
+
     private static void otter() {
         new Thread(() -> {
             boolean crawlingOut = false;
@@ -173,18 +186,5 @@ public class Settings {
                 }
             }
         }).start();
-    }
-
-    private static Runnable[] langButton(String[] buttonNames) {
-        Runnable[] tasks = new Runnable[buttonNames.length];
-
-        for (int i = 0; i < tasks.length; i++) {
-            int finalI = i;
-            tasks[i] = () -> {
-              Settings.newLang = buttonNames[finalI];
-              buttons.get(getName("Language")).taskOnClick.run();
-            };
-        }
-        return tasks;
     }
 }

@@ -3,9 +3,10 @@
     "Language": "Language",
     "Play": "Play",
     "Settings": "Settings",
-
     "Exit": "Exit",
     "Continue": "Continue",
+
+    "SaveWorld": "Save world",
     "GenerateWorld": "Generate world",
     "GenerateSimpleWorld": "Simplified generation",
     "GenerateSimpleWorldPrompt": "Generation without any relief",
@@ -47,8 +48,9 @@
     "Play": "Начать",
     "Settings": "Настройки",
     "Exit": "Выход",
-
     "Continue": "Продолжить",
+
+    "SaveWorld": "Сохранить мир",
     "GenerateWorld": "Создать мир",
     "GenerateSimpleWorld": "Упрощенная генерация",
     "GenerateSimpleWorldPrompt": "Генерация без рельефа",
@@ -90,9 +92,10 @@
     "Play": "Начати",
     "Settings": "Налаштування",
     "Exit": "Выхід",
-
     "Continue": "Продовжити",
-    "GenerateWorld": "Создати мир ",
+
+    "SaveWorld": "Зберегти світ",
+    "GenerateWorld": "Создати мир",
     "GenerateSimpleWorld": "Спрощенна генерація",
     "GenerateSimpleWorldPrompt": "Генерація без рельефу",
     "GenerateCreatures": "Генерація сутностей",

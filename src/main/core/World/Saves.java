@@ -19,25 +19,32 @@ import static core.EventHandling.Logging.Logger.printException;
 import static core.Window.assetsDir;
 
 public class Saves {
+    private static boolean saving = false;
     public static void createWorldSave() {
-        try {
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ObjectOutputStream oos = new ObjectOutputStream(baos);
-            oos.writeObject(WorldGenerator.getWorldData());
-            oos.close();
-            byte[] bytes = baos.toByteArray();
+        if (!saving) {
+            try {
+                saving = true;
 
-            ByteArrayOutputStream compressed = new ByteArrayOutputStream();
-            DeflaterOutputStream dos = new DeflaterOutputStream(compressed);
-            dos.write(bytes);
-            dos.close();
-            byte[] compressedBytes = compressed.toByteArray();
+                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                ObjectOutputStream oos = new ObjectOutputStream(baos);
+                oos.writeObject(WorldGenerator.getWorldData());
+                oos.close();
+                byte[] bytes = baos.toByteArray();
 
-            FileOutputStream fos = new FileOutputStream(assetsDir("\\World\\Saves\\WorldSaves\\save" + LocalDate.now() + "|" + Window.versionStamp + ".ser"));
-            fos.write(compressedBytes);
-            fos.close();
-        } catch (Exception e) {
-            printException("Error when serialization (saving) world", e);
+                ByteArrayOutputStream compressed = new ByteArrayOutputStream();
+                DeflaterOutputStream dos = new DeflaterOutputStream(compressed);
+                dos.write(bytes);
+                dos.close();
+                byte[] compressedBytes = compressed.toByteArray();
+
+                FileOutputStream fos = new FileOutputStream(assetsDir("\\World\\Saves\\WorldSaves\\save" + System.currentTimeMillis() + "," + Window.versionStamp + ".ser"));
+                fos.write(compressedBytes);
+                fos.close();
+            } catch (Exception e) {
+                printException("Error when serialization (saving) world", e);
+            } finally {
+                saving = false;
+            }
         }
     }
 
