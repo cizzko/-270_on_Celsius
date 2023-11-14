@@ -3,9 +3,10 @@ package core.World.Creatures.Player.Inventory.Items;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.StaticWorldObjects.StaticWorldObjects;
+import java.io.Serializable;
 import static core.World.Textures.TextureLoader.getSize;
 
-public class Items {
+public class Items implements Serializable {
     public Weapons weapon;
     public short placeable;
     public Tools tool;

@@ -19,7 +19,7 @@ import static core.World.Textures.TextureDrawing.*;
 
 public class Inventory {
     public static boolean inventoryOpen = false, create = false;
-    public static final Items[][] inventoryObjects = new Items[8][6];
+    public static Items[][] inventoryObjects = new Items[8][6];
     public static Point currentObject;
     public static Point underMouseItem;
     public static Items.Types currentObjectType;
@@ -134,7 +134,7 @@ public class Inventory {
 
     private static void updateUnderMouse() {
         Point underMouse = getObjectUnderMouse();
-        if (EventHandler.getRectanglePress(1488, 756, 1919, 1079) && underMouse != null && currentObject != underMouse && inventoryObjects[underMouse.x][underMouse.y] != null) {
+        if (underMouseItem == null && EventHandler.getRectanglePress(1488, 756, 1919, 1079) && underMouse != null && currentObject != underMouse && inventoryObjects[underMouse.x][underMouse.y] != null) {
             currentObject = underMouse;
             currentObjectType = inventoryObjects[underMouse.x][underMouse.y].type;
 

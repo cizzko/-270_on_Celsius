@@ -1,6 +1,8 @@
 package core.World.Creatures.Player.Inventory.Items;
 
-public class Tools {
+import java.io.Serializable;
+
+public class Tools implements Serializable {
     public float maxHp, currentHp, damage, secBetweenHits, maxInteractionRange;
     public String name;
     public long lastHitTime = System.currentTimeMillis();

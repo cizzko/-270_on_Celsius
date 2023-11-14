@@ -6,6 +6,7 @@ import core.Utils.ArrayUtils;
 import core.Window;
 import core.World.Creatures.CreaturesGenerate;
 import core.World.Creatures.Physics;
+import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Details;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.StaticWorldObjects.Structures.Factories;
@@ -40,6 +41,36 @@ public class WorldGenerator {
     private static final CopyOnWriteArrayList<StaticBlocksEvents> listeners = new CopyOnWriteArrayList<>();
     public static ArrayList<DynamicWorldObjects> DynamicObjects = new ArrayList<>();
     private static final HashMap<String, Structures> structures = new HashMap<>();
+
+    public static HashMap<String, Object> getWorldData() {
+        HashMap<String, Object> objects = new HashMap<>();
+
+        objects.put("StaticWorldObjects", convertNames(StaticObjects));
+        objects.put("DynamicWorldObjects", DynamicObjects);
+        objects.put("ShadowsData", ShadowMap.getShadowData());
+        objects.put("Inventory", Inventory.inventoryObjects);
+
+        objects.put("WorldSizeX", SizeX);
+        objects.put("WorldSizeY", SizeY);
+        objects.put("WorldTemperatureDecrement", temperatureDecrement);
+        objects.put("WorldCurrentTemperature", currentWorldTemperature);
+        objects.put("WorldIntersDamageMultiplier", intersDamageMultiplier);
+        objects.put("WorldMinVectorIntersDamage", minVectorIntersDamage);
+        objects.put("WorldDayCount", dayCount);
+        objects.put("WorldCurrentTime", Sun.currentTime);
+        objects.put("WorldGenerateCreatures", buttons.get(Json.getName("GenerateCreatures")).isClicked);
+
+        return objects;
+    }
+
+    private static String[] convertNames(short[] blocks) {
+        String[] names = new String[blocks.length];
+
+        for (int i = 0; i < names.length; i++) {
+            names[i] = StaticWorldObjects.getFileName(blocks[i]);
+        }
+        return names;
+    }
 
     public static void registerListener(StaticBlocksEvents listener) {
         listeners.add(listener);
@@ -139,11 +170,9 @@ public class WorldGenerator {
         generateBlocks(simple);
         generateDynamicsObjects(randomSpawn);
 
-        WorldGenerator.registerListener(new Factories());
         log("World generator: generating done!\n");
         createText(42, 50, "generatingDone", "Done! Starting world..", new SimpleColor(147, 51, 0, 255), "WorldGeneratorState");
 
-        Sun.createSun();
         start(creatures);
     }
 
@@ -467,6 +496,8 @@ public class WorldGenerator {
     public static void start(boolean generateCreatures) {
         CreatePlanet.delete();
 
+        WorldGenerator.registerListener(new Factories());
+        Sun.createSun();
         Physics.initPhysics();
         if (generateCreatures) {
             CreaturesGenerate.initGenerating();

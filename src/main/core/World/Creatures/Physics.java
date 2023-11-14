@@ -42,15 +42,15 @@ public class Physics {
             Logger.log("Thread: Physics started");
             Inventory.create();
 
-            long lastUpdateTime = System.nanoTime();
+            long lastUpdate = System.nanoTime();
 
             while (!glfwWindowShouldClose(glfwWindow)) {
-                if (System.nanoTime() - lastUpdateTime >= 1.0 / physicsSpeed * 1000000000) {
+                if (System.nanoTime() - lastUpdate >= 1.0 / physicsSpeed * 1000000000) {
                     updatePhys();
                     updateWorldInteractions();
 
                     updates++;
-                    lastUpdateTime = System.nanoTime();
+                    lastUpdate = System.nanoTime();
                 }
                 if ((Settings.createdSettings || Pause.created) && !stop) {
                     lastSpeed = physicsSpeed;
@@ -130,7 +130,7 @@ public class Physics {
                 }
                 object.currentHp -= damage;
 
-                //TODO: костыль
+                //TODO: rewrite
                 if (object.path.toLowerCase().contains("player")) {
                     lastDamage = (int) damage;
                     lastDamageTime = System.currentTimeMillis();

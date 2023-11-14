@@ -32,26 +32,19 @@ public class Commandline {
             }
             if (target.startsWith("output:")) {
                 keyLoggingText = target.substring(7);
-                return;
+            }
+        } else {
+            keyLoggingText = "Command not found";
+        }
+
+        switch (target.trim().split("\\s+")[0]) {
+            case "modify" -> modifyField(target.substring(7));
+            case "start" -> startMethod(target.substring(6));
+            case "eval" -> {
+                final String[] targetMethod = target.split(" ");
+                new Thread(() -> EventHandler.keyLoggingText = ImportClassMethod.startMethod(targetMethod[1], targetMethod[targetMethod.length - 1], null, null)).start();
             }
         }
-
-        if (target.startsWith("modify")) {
-            target = target.substring(7);
-            modifyField(target);
-            return;
-
-        } else if (target.startsWith("start")) {
-            target = target.substring(6);
-            startMethod(target);
-            return;
-
-        } else if (target.startsWith("eval")) {
-            final String[] targetMethod = target.split(" ");
-            new Thread(() -> EventHandler.keyLoggingText = ImportClassMethod.startMethod(targetMethod[1], targetMethod[targetMethod.length - 1], null, null)).start();
-            return;
-        }
-        keyLoggingText = "Command not found";
     }
 
     private static void modifyField(String target) {
@@ -119,26 +112,21 @@ public class Commandline {
     }
 
     private static Object convertToType(String arg) {
-        if (arg.endsWith("l")) {
-            arg = arg.substring(0, arg.length() - 1);
-            return Long.parseLong(arg.substring(0, arg.length() - 1));
+        arg = arg.trim();
 
-        } else if (arg.endsWith("d")) {
+        if (Character.isDigit(arg.charAt(arg.length() - 2))) {
+            char type = arg.charAt(arg.length() - 1);
             arg = arg.substring(0, arg.length() - 1);
-            return Double.parseDouble(arg.substring(0, arg.length() - 1));
 
-        } else if (arg.endsWith("f")) {
-            arg = arg.substring(0, arg.length() - 1);
-            return Float.parseFloat(arg.substring(0, arg.length() - 1));
-
-        } else if (arg.equals("true") || arg.equals("false")) {
-            return Boolean.parseBoolean(arg);
-
-        } else if (arg.endsWith("i")) {
-            arg = arg.substring(0, arg.length() - 1);
-            return Integer.parseInt(arg);
+            switch (type) {
+                case 'l' -> { return Long.parseLong(arg);     }
+                case 'd' -> { return Double.parseDouble(arg); }
+                case 'f' -> { return Float.parseFloat(arg);   }
+                case 'i' -> { return Integer.parseInt(arg);   }
+            }
         }
-        return arg;
+
+        return (arg.equals("true") || arg.equals("false")) ? Boolean.parseBoolean(arg) : arg;
     }
 
     public static void createLine() {

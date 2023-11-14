@@ -1,6 +1,8 @@
 package core.Utils;
 
-public final class SimpleColor {
+import java.io.Serializable;
+
+public final class SimpleColor implements Serializable {
     public static final SimpleColor WHITE = fromRGBA(255, 255, 255, 255);
     public static final SimpleColor BLACK = fromRGBA(0, 0, 0, 0);
 

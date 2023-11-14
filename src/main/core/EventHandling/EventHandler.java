@@ -29,7 +29,7 @@ public class EventHandler {
     private static int handlerUpdates = 0;
     public static int width, height; // TODO: scaling
 
-    public EventHandler() {
+    private static void initCallbacks() {
         log("Thread: Event handling started");
 
         glfwSetCursorPosCallback(glfwWindow, new GLFWCursorPosCallback() {
@@ -219,6 +219,8 @@ public class EventHandler {
 
     public static void initHandler() {
         new Thread(() -> {
+            initCallbacks();
+
             while (!glfwWindowShouldClose(glfwWindow)) {
                 Player.updatePlayerGUILogic();
                 updateButtons();

@@ -214,7 +214,7 @@ public class ShadowMap {
         return getDegree(x - radius, y) > 0 && getDegree(x + radius, y) > 0 && getDegree(x, y + radius) > 0 && getDegree(x, y - radius) > 0;
     }
 
-    public static HashMap<String, Object> getAllData() {
+    public static HashMap<String, Object> getShadowData() {
         HashMap<String, Object> data = new HashMap<>();
 
         data.put("Shadows", shadows);

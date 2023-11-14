@@ -2,7 +2,9 @@ package core.World.Creatures.Player.Inventory.Items.Weapons;
 
 import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
 
-public class Weapons {
+import java.io.Serializable;
+
+public class Weapons implements Serializable {
     public int magazineSize, currentAmmo;
     public float fireRate, damage, ammoSpeed, reloadTime, bulletSpread;
     public long lastShootTime = System.currentTimeMillis();

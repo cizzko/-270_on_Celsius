@@ -1,6 +1,8 @@
 package core.World.Creatures.Player.Inventory.Items;
 
-public class Details {
+import java.io.Serializable;
+
+public class Details implements Serializable {
     public String path, name;
 
     public Details(String name, String path) {
