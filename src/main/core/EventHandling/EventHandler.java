@@ -205,7 +205,7 @@ public class EventHandler {
             lastSecond = System.currentTimeMillis();
 
             if (start) {
-                CreateElement.createText(5, 980, "PlayerPos", "Player pos: x - " + (int) WorldGenerator.DynamicObjects.get(0).x + "(" + (int) WorldGenerator.DynamicObjects.get(0).x / 16 + ") y - " + (int) WorldGenerator.DynamicObjects.get(0).y + "(" + (int) WorldGenerator.DynamicObjects.get(0).y / 16 + ")", new SimpleColor(25, 25, 25, 255), null);
+                CreateElement.createText(5, 980, "PlayerPos", "Player pos: x - " + (int) WorldGenerator.DynamicObjects.get(0).getX() + "(" + (int) WorldGenerator.DynamicObjects.get(0).getX() / 16 + ") y - " + (int) WorldGenerator.DynamicObjects.get(0).getX() + "(" + (int) WorldGenerator.DynamicObjects.get(0).getY() / 16 + ")", new SimpleColor(25, 25, 25, 255), null);
                 CreateElement.createText(5, 1005, "PhysicsFPS", "Physics FPS: " + updates, new SimpleColor(25, 25, 25, 255), null);
             }
             CreateElement.createText(5, 1030, "HandlerFPS", "Handler FPS: " + handlerUpdates, new SimpleColor(25, 25, 25, 255), null);

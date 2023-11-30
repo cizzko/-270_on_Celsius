@@ -66,8 +66,11 @@ public class ShadowMap {
 
     public static void update() {
         if (start) {
-            for (int x = (int) (DynamicObjects.get(0).x / 16) - 20; x < DynamicObjects.get(0).x / 16 + 21; x++) {
-                for (int y = (int) (DynamicObjects.get(0).y / 16) - 8; y < DynamicObjects.get(0).y / 16 + 16; y++) {
+            int xPos = (int) DynamicObjects.get(0).getX();
+            int yPos = (int) DynamicObjects.get(0).getY();
+
+            for (int x = xPos / 16 - 20; x < xPos / 16 + 21; x++) {
+                for (int y = yPos / 16 - 8; y < yPos / 16 + 16; y++) {
                     if (checkHasGasAround(x, y, 1)) {
                         setShadow(x, y, new SimpleColor(165, 165, 165, 255));
                     } else {
@@ -75,15 +78,15 @@ public class ShadowMap {
                     }
                 }
             }
-            for (int x = (int) (DynamicObjects.get(0).x / 16) - 20; x < DynamicObjects.get(0).x / 16 + 21; x++) {
-                for (int y = (int) (DynamicObjects.get(0).y / 16) - 8; y < DynamicObjects.get(0).y / 16 + 16; y++) {
+            for (int x = xPos / 16 - 20; x < xPos / 16 + 21; x++) {
+                for (int y = yPos / 16 - 8; y < yPos / 16 + 16; y++) {
                     if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
                         setShadow(x, y, new SimpleColor(85, 85, 85, 255));
                     }
                 }
             }
-            for (int x = (int) (DynamicObjects.get(0).x / 16) - 20; x < DynamicObjects.get(0).x / 16 + 21; x++) {
-                for (int y = (int) (DynamicObjects.get(0).y / 16) - 8; y < DynamicObjects.get(0).y / 16 + 16; y++) {
+            for (int x = xPos / 16 - 20; x < xPos / 16 + 21; x++) {
+                for (int y = yPos / 16 - 8; y < yPos / 16 + 16; y++) {
                     if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
                         setShadow(x, y, new SimpleColor(5, 5, 5, 255));
                     }

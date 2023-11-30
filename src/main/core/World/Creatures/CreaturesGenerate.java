@@ -33,7 +33,7 @@ public class CreaturesGenerate {
     private static void updateLogic() {
         for (DynamicWorldObjects object : DynamicObjects) {
             if (object != null) {
-                if (object.x - 960 > SizeX * 16 || object.y - 540 > SizeY * 16 || object.x + 960 < 0 || object.y + 540 < 0) {
+                if (object.getX() - 960 > SizeX * 16 || object.getY() - 540 > SizeY * 16 || object.getX() + 960 < 0 || object.getY() + 540 < 0) {
                     DynamicObjects.remove(object);
                     continue;
                 }
@@ -45,18 +45,18 @@ public class CreaturesGenerate {
 
     public static void generate() {
         switch ((int) (Math.random() * 2)) {
-            case 0 -> generateBird();
+            //case 0 -> generateBird();
             case 1 -> generateButterfly();
         }
     }
 
     private static void generateButterfly() {
-        DynamicObjects.add(new DynamicWorldObjects(false, true, 0.00002f, 2, 0.1f, (float) (Math.random() * (SizeX * 16)), 15, assetsDir("World/Creatures/butterfly")));
+        DynamicObjects.add(DynamicWorldObjects.createDynamic("butterfly", (float) (Math.random() * (SizeX * 16))));
         currentCreaturesCount++;
     }
 
     private static void generateBird() {
-        DynamicObjects.add(new DynamicWorldObjects(false, true, 0.0001f, 2, 0.1f, 24, SizeY * 13, assetsDir("World/Creatures/bird")));
+        DynamicObjects.add(DynamicWorldObjects.createDynamic("bird", 100));
         currentCreaturesCount++;
     }
 }

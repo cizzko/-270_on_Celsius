@@ -39,7 +39,7 @@ public class Bullets {
 
             if (EventHandler.getMousePress() && System.currentTimeMillis() - weapon.lastShootTime >= weapon.fireRate) {
                 weapon.lastShootTime = System.currentTimeMillis();
-                Bullets.createBullet(DynamicObjects.get(0).x, DynamicObjects.get(0).y, weapon.ammoSpeed, weapon.damage, Math.abs((float) Math.toDegrees(Math.atan2(getMousePos().y - 540, getMousePos().x - 960)) - 180));
+                Bullets.createBullet(DynamicObjects.get(0).getX(), DynamicObjects.get(0).getY(), weapon.ammoSpeed, weapon.damage, Math.abs((float) Math.toDegrees(Math.atan2(getMousePos().y - 540, getMousePos().x - 960)) - 180));
                 Sound.SoundPlay(weapon.sound, Sound.types.EFFECT, false);
             }
         }
@@ -73,11 +73,11 @@ public class Bullets {
                             destroyObject(staticObjectPoint.x, staticObjectPoint.y);
                         }
                     } else if (dynamicObject != null) {
-                        float hp = dynamicObject.currentHp;
-                        dynamicObject.currentHp -= bullet.damage;
+                        float hp = dynamicObject.getCurrentHP();
+                        dynamicObject.incrementCurrentHP(-bullet.damage);
                         bullet.damage -= hp;
 
-                        if (dynamicObject.currentHp <= 0) {
+                        if (dynamicObject.getCurrentHP() <= 0) {
                             DynamicObjects.remove(dynamicObject);
                         }
                     }
@@ -92,7 +92,7 @@ public class Bullets {
     public static void drawBullets() {
         for (Bullets bullet : bullets) {
             //TODO: add paths
-            if (bullet != null && !(bullet.x > DynamicObjects.get(0).x + 350 || bullet.x < DynamicObjects.get(0).x - 350)) {
+            if (bullet != null && !(bullet.x > DynamicObjects.get(0).getX() + 350 || bullet.x < DynamicObjects.get(0).getX() - 350)) {
                 drawTexture(assetsDir("World/Items/someBullet.png"), bullet.x, bullet.y, 3, false);
             }
         }

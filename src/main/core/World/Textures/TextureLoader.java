@@ -92,14 +92,13 @@ public class TextureLoader extends Thread {
 //    }
 
     public static Size getSizeStatic(String path) {
-        if (sizes.get(path) != null) {
-            return sizes.get(path);
-        } else {
+        Size size = sizes.getOrDefault(path, null);
+        if (size == null) {
             BufferedImage encoder = BufferedImageEncoder(path);
-            Size size = new Size(encoder.getWidth(), encoder.getHeight());
+            size = new Size(encoder.getWidth(), encoder.getHeight());
             sizes.put(path, size);
-            return size;
         }
+        return size;
     }
 
     public static ByteBuffer uniteTextures(String mainTexture, String secondTexture) {

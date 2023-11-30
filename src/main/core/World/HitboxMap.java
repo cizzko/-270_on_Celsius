@@ -177,7 +177,7 @@ public class HitboxMap {
     public static DynamicWorldObjects checkIntersectionsDynamic(float x, float y, int sizeX, int sizeY) {
         for (DynamicWorldObjects dynamicObject : DynamicObjects) {
             if (dynamicObject != null) {
-                if ((x + sizeX > dynamicObject.x && x < dynamicObject.x + TextureLoader.getSize(dynamicObject.path).width()) || (y + sizeY > dynamicObject.y && y < dynamicObject.y + TextureLoader.getSize(dynamicObject.path).height())) {
+                if ((x + sizeX > dynamicObject.getX() && x < dynamicObject.getX() + TextureLoader.getSize(dynamicObject.getPath()).width()) || (y + sizeY > dynamicObject.getY() && y < dynamicObject.getY() + TextureLoader.getSize(dynamicObject.getPath()).height())) {
                     return dynamicObject;
                 }
             }

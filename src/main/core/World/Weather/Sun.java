@@ -1,5 +1,6 @@
 package core.World.Weather;
 
+import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
 import core.Utils.SimpleColor;
 import core.World.WorldGenerator;
@@ -10,7 +11,7 @@ import static core.World.Textures.TextureDrawing.*;
 import static core.World.WorldGenerator.DynamicObjects;
 
 public class Sun {
-    private static final int startSunset = 140, endSunset = 1200, startDay = 1900, endDay = 1350, startYSun = 1400, endYSun = -1670;
+    public static final int startSunset = 140, endSunset = 1200, endDay = 1350, startDay = 1900, startYSun = 1400, endYSun = -1670;
     public static float currentTime = (float) (Math.random() * 2400), x, y = endYSun * (1 -  (currentTime - 2400) / (1 - 2400)) + startYSun * (currentTime - 2400) / (1 - 2400);
     public static boolean visible = false;
     private static long lastTime = System.currentTimeMillis();
@@ -29,7 +30,7 @@ public class Sun {
                     WorldGenerator.dayCount++;
                     currentTime = 0;
                 }
-                x = DynamicObjects.get(0).x;
+                x = DynamicObjects.get(0).getX();
 
                 if (currentTime >= 2400 || currentTime < 1) {
                     y = endYSun;
@@ -37,12 +38,7 @@ public class Sun {
                     double t = (currentTime - 2400) / (1 - 2400);
                     y = (float) (endYSun * (1 - t) + startYSun * t);
                 }
-                
-                if (currentTime >= startDay || (currentTime >= 0 && currentTime <= endSunset)) {
-                    WorldGenerator.currentWorldTemperature += WorldGenerator.temperatureDecrement / 3.29f;
-                } else {
-                    WorldGenerator.currentWorldTemperature -= WorldGenerator.temperatureDecrement;
-                }
+                TemperatureMap.update();
             }
             final int minGreen = 85;
             final int maxGreen = 255;
