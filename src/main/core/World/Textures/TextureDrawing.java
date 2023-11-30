@@ -12,6 +12,7 @@ import core.Window;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.Structures.Factories;
 import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.World.StaticWorldObjects.TemperatureMap;
 import java.awt.Rectangle;
 import java.awt.Dimension;
 import java.nio.ByteBuffer;
@@ -449,8 +450,8 @@ public class TextureDrawing {
     }
 
     public static void updatePlayerPos() {
-        playerX = DynamicObjects.get(0).x;
-        playerY = DynamicObjects.get(0).y;
+        playerX = DynamicObjects.get(0).getX();
+        playerY = DynamicObjects.get(0).getY();
     }
 
     public static void updateStaticObj() {
@@ -477,11 +478,19 @@ public class TextureDrawing {
 
                 if (isOnCamera(xBlock, yBlock, 16, 16)) {
                     SimpleColor color = ShadowMap.getColor(x, y);
-                    if (currentWorldTemperature <= 0) {
-                        int r = ShadowMap.checkColor((int) (color.getRed() + Math.max(currentWorldTemperature / 2, -75)));
-                        int g = ShadowMap.checkColor((int) (color.getGreen() + Math.max(currentWorldTemperature / 2, -75)));
+                    int upperLimit = 100;
+                    int lowestLimit = -20;
+                    int maxColor = 65;
+                    float temp = TemperatureMap.getTemp(x, y);
 
-                        color = new SimpleColor(r, g, color.getBlue(), color.getAlpha());
+                    int a;
+                    if (temp > upperLimit) {
+                        a = (int) Math.min(maxColor, Math.abs((temp - upperLimit) / 3));
+                        color = new SimpleColor(color.getRed(), color.getGreen() - (a / 2), color.getBlue() - a, color.getAlpha());
+
+                    } else if (temp < lowestLimit) {
+                        a = (int) Math.min(maxColor, Math.abs((temp + lowestLimit) / 3));
+                        color = new SimpleColor(color.getRed() - a, color.getGreen() - (a / 2), color.getBlue(), color.getAlpha());
                     }
 
                     if (getHp(obj) > getMaxHp(obj) / 1.5f) {
@@ -500,10 +509,12 @@ public class TextureDrawing {
     }
 
     public static boolean isOnCamera(float x, float y, float xSize, float ySize) {
-        float left = DynamicObjects.get(0).x - (1920 / 5.5f) - (32 + xSize);
-        float right = DynamicObjects.get(0).x + (1920 / 5.5f) + (32 - xSize);
-        float bottom = DynamicObjects.get(0).y - (1080 / 16f) - (32 + ySize); //lower dividet number - higher drawing
-        float top = DynamicObjects.get(0).y + (1080 / 4.5f) + (32 - ySize);
+        DynamicWorldObjects player = DynamicObjects.get(0);
+
+        float left = player.getX() - (1920 / 5.5f) - (32 + xSize);
+        float right = player.getX() + (1920 / 5.5f) + (32 - xSize);
+        float bottom = player.getY() - (1080 / 16f) - (32 + ySize); //lower dividet number - higher drawing
+        float top = player.getY() + (1080 / 4.5f) + (32 - ySize);
 
         return !(x + 16 < left) && !(x > right) && !(y + 16 < bottom) && !(y > top);
     }
@@ -511,34 +522,23 @@ public class TextureDrawing {
     public static void updateDynamicObj() {
         for (int x = 0; x < DynamicObjects.size(); x++) {
             DynamicWorldObjects dynamicObject = DynamicObjects.get(x);
+            DynamicWorldObjects player = DynamicObjects.get(0);
 
-            if (dynamicObject != null && !dynamicObject.notForDrawing) {
-                float left = DynamicObjects.get(0).x - (1920 / 5.5f) - (48);
-                float right = DynamicObjects.get(0).x + (1920 / 5.5f) + (48);
-                float bottom = DynamicObjects.get(0).y - (1080 / 16f) - (48); //lower dividet number - higher drawing
-                float top = DynamicObjects.get(0).y + (1080 / 5f) + (48);
+            if (dynamicObject != null) {
+                float left = player.getX() - (1920 / 5.5f) - (48);
+                float right = player.getX() + (1920 / 5.5f) + (48);
+                float bottom = player.getY() - (1080 / 16f) - (48); //lower dividet number - higher drawing
+                float top = player.getY() + (1080 / 5f) + (48);
+                float xBlock = dynamicObject.getX();
+                float yBlock = dynamicObject.getY();
 
-                float xBlock = dynamicObject.x;
-                float yBlock = dynamicObject.y;
+                dynamicObject.incrementCurrentFrame();
 
-                if (dynamicObject.animSpeed != 0) {
-                    if (dynamicObject.currentFrame != dynamicObject.framesCount && System.currentTimeMillis() - dynamicObject.lastFrameTime >= dynamicObject.animSpeed * 1000) {
-                        dynamicObject.currentFrame++;
-                        dynamicObject.lastFrameTime = System.currentTimeMillis();
-                    } else if (dynamicObject.currentFrame == dynamicObject.framesCount && System.currentTimeMillis() - dynamicObject.lastFrameTime >= dynamicObject.animSpeed * 1000) {
-                        dynamicObject.currentFrame = 0;
-                        dynamicObject.lastFrameTime = System.currentTimeMillis();
-
-                        if (dynamicObject.oneoffAnimation) {
-                            dynamicObject.animSpeed = 0;
-                        }
-                    }
-                }
                 if (!(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top)) {
-                    if (dynamicObject.framesCount == 0) {
-                        drawTexture(dynamicObject.path, dynamicObject.x, dynamicObject.y, 3, ShadowMap.getColorDynamic(x), false, dynamicObject.mirrored);
+                    if (dynamicObject.getFramesCount() == 0) {
+                        drawTexture(dynamicObject.getPath(), dynamicObject.getX(), dynamicObject.getY(), 3, ShadowMap.getColorDynamic(x), false, false);
                     } else {
-                        drawTexture(dynamicObject.path + dynamicObject.currentFrame + ".png", dynamicObject.x, dynamicObject.y, 3, ShadowMap.getColorDynamic(x), false, dynamicObject.mirrored);
+                        drawTexture(dynamicObject.getPath() + dynamicObject.getCurrentFrame() + ".png", dynamicObject.getX(), dynamicObject.getY(), 3, ShadowMap.getColorDynamic(x), false, false);
                     }
                 }
             }

@@ -19,9 +19,8 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL13.*;
 
 public class Window {
-    public static final String defPath = Path.of("").toAbsolutePath().toString().replace('\\', '/');
+    public static final String defPath = Path.of("").toAbsolutePath().toString().replace('\\', '/'), versionStamp = "0.0.3", version = "alpha " + versionStamp + " (non stable)";
     public static int width = 1920, height = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0, fps = 0;
-    public static final String version = "alpha 0.0.23 (non stable)";
     public static boolean start = false;
     public static long glfwWindow;
 

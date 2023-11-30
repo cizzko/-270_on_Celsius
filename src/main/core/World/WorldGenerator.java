@@ -12,6 +12,7 @@ import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.StaticWorldObjects.Structures.Factories;
 import core.World.Creatures.Player.Player;
 import core.World.Creatures.DynamicWorldObjects;
+import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
 import core.Utils.SimpleColor;
 import core.World.StaticWorldObjects.StaticBlocksEvents;
@@ -36,14 +37,14 @@ import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 
 public class WorldGenerator {
     public static int SizeX, SizeY, dayCount = 0;
-    public static float temperatureDecrement = 0.04f, currentWorldTemperature = 23, intersDamageMultiplier = 40f, minVectorIntersDamage = 0.6f;
+    public static float intersDamageMultiplier = 40f, minVectorIntersDamage = 0.6f;
     public static short[] StaticObjects;
     private static final CopyOnWriteArrayList<StaticBlocksEvents> listeners = new CopyOnWriteArrayList<>();
     public static ArrayList<DynamicWorldObjects> DynamicObjects = new ArrayList<>();
     private static final HashMap<String, Structures> structures = new HashMap<>();
 
     public static HashMap<String, Object> getWorldData() {
-        HashMap<String, Object> objects = new HashMap<>();
+        HashMap<String, Object> objects = TemperatureMap.getTemperatures();
 
         objects.put("StaticWorldObjects", convertNames(StaticObjects));
         objects.put("DynamicWorldObjects", DynamicObjects);
@@ -52,8 +53,6 @@ public class WorldGenerator {
 
         objects.put("WorldSizeX", SizeX);
         objects.put("WorldSizeY", SizeY);
-        objects.put("WorldTemperatureDecrement", temperatureDecrement);
-        objects.put("WorldCurrentTemperature", currentWorldTemperature);
         objects.put("WorldIntersDamageMultiplier", intersDamageMultiplier);
         objects.put("WorldMinVectorIntersDamage", minVectorIntersDamage);
         objects.put("WorldDayCount", dayCount);
@@ -168,6 +167,7 @@ public class WorldGenerator {
         WorldGenerator.SizeY = SizeY;
 
         generateBlocks(simple);
+        TemperatureMap.create();
         generateDynamicsObjects(randomSpawn);
 
         log("World generator: generating done!\n");
@@ -487,10 +487,28 @@ public class WorldGenerator {
         }
     }
 
+    //jabadoc
+    // Looks for the topmost solid block in the strip.
+    // Checks each `period` block, and if it is solid, searches for air above it.
+    // This increases the search speed by a factor of `period`,
+    // but decreases the chance of finding single blocks in the strip by the same amount
+    // return -1 if not found
+    public static int findTopmostSolidBlock(int cellX, int period) {
+        for (int y = SizeY; y > 0; y -= period) {
+            if (StaticWorldObjects.getType(getObject(cellX, y)) == StaticObjectsConst.Types.SOLID) {
+                for (int i = y; i < y + period; i++) {
+                    if (StaticWorldObjects.getType(getObject(cellX, i + 1)) == StaticObjectsConst.Types.GAS && StaticWorldObjects.getType(getObject(cellX, i)) == StaticObjectsConst.Types.SOLID) {
+                        return i;
+                    }
+                }
+            }
+        }
+        return -1;
+    }
+
     public static void generateDynamicsObjects(boolean randomSpawn) {
-        String path = assetsDir("World/Creatures/playerRight/player");
-        DynamicObjects.add(new DynamicWorldObjects(true, false, 0.003f, 4, 0, randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f, 100, path));
-        DynamicObjects.set(0, new DynamicWorldObjects(true, false, 0.003f, 4, 0, randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f, 100, path));
+        DynamicObjects.add(DynamicWorldObjects.createDynamic("player", randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f));
+        DynamicObjects.set(0, DynamicWorldObjects.createDynamic("player", randomSpawn ? (int) (Math.random() * (SizeX * 16)) : SizeX * 8f));
     }
 
     public static void start(boolean generateCreatures) {

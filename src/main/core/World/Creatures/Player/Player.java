@@ -3,11 +3,13 @@ package core.World.Creatures.Player;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.Utils.SimpleColor;
+import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Inventory.Items.Tools;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
+import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.*;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
@@ -38,30 +40,29 @@ public class Player {
     public static void updatePlayerMove() {
         float increment = noClip ? 0.5f : 0.1f;
 
-        if (EventHandler.getKeyClick(GLFW_KEY_Q) && DynamicObjects.get(0).animSpeed == 0) {
-            DynamicObjects.get(0).path = assetsDir("World/Creatures/playerLeft/player");
-            DynamicObjects.get(0).animSpeed = 0.03f;
-            setObject((int) ((DynamicObjects.get(0).x - 1) / 16), (int) (DynamicObjects.get(0).y / 16 + 1), StaticWorldObjects.decrementHp(getObject((int) ((DynamicObjects.get(0).x - 1) / 16), (int) (DynamicObjects.get(0).y / 16 + 1)), 10));
-        }
-        if (EventHandler.getKeyClick(GLFW_KEY_E) && DynamicObjects.get(0).animSpeed == 0) {
-            DynamicObjects.get(0).path = assetsDir("World/Creatures/playerRight/player");
-            DynamicObjects.get(0).animSpeed = 0.03f;
-            setObject((int) (DynamicObjects.get(0).x / 16 + 2), (int) (DynamicObjects.get(0).y / 16 + 1), StaticWorldObjects.decrementHp(getObject((int) (DynamicObjects.get(0).x / 16 + 2), (int) (DynamicObjects.get(0).y / 16 + 1)), 10));
-        }
+//        if (EventHandler.getKeyClick(GLFW_KEY_Q) && DynamicObjects.get(0).getAnimationSpeed() == 0) {
+//            DynamicObjects.get(0).setPath(assetsDir("World/Creatures/playerLeft/player"));
+//            DynamicObjects.get(0).setAnimationSpeed(30);
+//            setObject((int) ((DynamicObjects.get(0).getX() - 1) / 16), (int) (DynamicObjects.get(0).getY() / 16 + 1), StaticWorldObjects.decrementHp(getObject((int) ((DynamicObjects.get(0).getX() - 1) / 16), (int) (DynamicObjects.get(0).getY() / 16 + 1)), 10));
+//        }
+//        if (EventHandler.getKeyClick(GLFW_KEY_E) && DynamicObjects.get(0).getAnimationSpeed() == 0) {
+//            DynamicObjects.get(0).setPath(assetsDir("World/Creatures/playerRight/player"));
+//            DynamicObjects.get(0).setAnimationSpeed(30);
+//            setObject((int) (DynamicObjects.get(0).getX() / 16 + 2), (int) (DynamicObjects.get(0).getY() / 16 + 1), StaticWorldObjects.decrementHp(getObject((int) (DynamicObjects.get(0).getX() / 16 + 2), (int) (DynamicObjects.get(0).getY() / 16 + 1)), 10));
+//        }
 
-        if (EventHandler.getKey(GLFW_KEY_D) && DynamicObjects.get(0).x + 24 < SizeX * 16 && (noClip || !checkIntersStaticR(DynamicObjects.get(0).x + 0.1f, DynamicObjects.get(0).y, 24, 24))) {
-            DynamicObjects.get(0).motionVector.x = increment;
+        if (EventHandler.getKey(GLFW_KEY_D) && DynamicObjects.get(0).getX() + 24 < SizeX * 16 && (noClip || !checkIntersStaticR(DynamicObjects.get(0).getX() + 0.1f, DynamicObjects.get(0).getY(), 24, 24))) {
+            DynamicObjects.get(0).setMotionVectorX(increment);
         }
-        if (EventHandler.getKey(GLFW_KEY_A) && DynamicObjects.get(0).x > 0 && (noClip || !checkIntersStaticL(DynamicObjects.get(0).x - 0.1f, DynamicObjects.get(0).y, 24))) {
-            DynamicObjects.get(0).motionVector.x = -increment;
+        if (EventHandler.getKey(GLFW_KEY_A) && DynamicObjects.get(0).getX() > 0 && (noClip || !checkIntersStaticL(DynamicObjects.get(0).getX() - 0.1f, DynamicObjects.get(0).getY(), 24))) {
+            DynamicObjects.get(0).setMotionVectorX(-increment);
         }
         if (noClip && EventHandler.getKey(GLFW_KEY_S)) {
-            DynamicObjects.get(0).motionVector.y = -increment;
+            DynamicObjects.get(0).setMotionVectorY(-increment);
         }
         if (noClip && EventHandler.getKey(GLFW_KEY_W)) {
-            DynamicObjects.get(0).motionVector.y = increment;
+            DynamicObjects.get(0).setMotionVectorY(increment);
         }
-        DynamicObjects.get(0).notForDrawing = noClip;
     }
 
     public static void updateInventoryInteraction() {
@@ -257,20 +258,21 @@ public class Player {
     }
 
     public static Point2D.Float getWorldMousePoint() {
-        float blockX = ((getMousePos().x - 960) / 3f + 16) + DynamicObjects.get(0).x;
-        float blockY = ((getMousePos().y - 540) / 3f + 64) + DynamicObjects.get(0).y;
+        float blockX = ((getMousePos().x - 960) / 3f + 16) + DynamicObjects.get(0).getX();
+        float blockY = ((getMousePos().y - 540) / 3f + 64) + DynamicObjects.get(0).getY();
 
         return new Point2D.Float(blockX, blockY);
     }
 
     public static int getDistanceUnderMouse() {
-        return (int) Math.abs((DynamicObjects.get(0).x / 16 - getBlockUnderMousePoint().x) + (DynamicObjects.get(0).y / 16 - getBlockUnderMousePoint().y));
+        return (int) Math.abs((DynamicObjects.get(0).getX() / 16 - getBlockUnderMousePoint().x) + (DynamicObjects.get(0).getY() / 16 - getBlockUnderMousePoint().y));
     }
 
     public static void updatePlayerGUI() {
         if (start) {
-            Inventory.update();
             Bullets.drawBullets();
+            updateTemperatureEffect();
+            Inventory.update();
             BuildMenu.draw();
             updateToolInteraction();
             drawCurrentHP();
@@ -283,19 +285,42 @@ public class Player {
         }
     }
 
+    private static void updateTemperatureEffect() {
+        DynamicWorldObjects player = DynamicObjects.get(0);
+        int temp = (int) TemperatureMap.getAverageTempAroundDynamic(player.getX(), player.getY(), player.getPath());
+        int upperLimit = 100;
+        int lowestLimit = -20;
+        int maxColor = 90;
+
+        int a = 0;
+        if (temp > upperLimit) {
+            a = Math.min(maxColor, Math.abs((temp - upperLimit) / 3));
+        } else if (temp < lowestLimit) {
+            a = Math.min(maxColor, Math.abs((temp + lowestLimit) / 3));
+        }
+
+        int r = temp > 0 ? a : 0;
+        int b = temp > 0 ? 0 : a;
+
+        TextureDrawing.drawTexture(assetsDir("\\UI\\GUI\\modifiedTemperature.png"), 0, 0, 1, new SimpleColor(r, (int) (b / 2f), b, a), true, false);
+    }
+
     public static void playerMaxHP() {
-        DynamicObjects.get(0).currentHp = DynamicObjects.get(0).maxHp;
+        DynamicObjects.get(0).setCurrentHp(DynamicObjects.get(0).getMaxHp());
     }
 
     public static void playerKill() {
-        DynamicObjects.get(0).currentHp = 0;
+        DynamicObjects.get(0).setCurrentHp(0);
     }
 
     private static void drawCurrentHP() {
-        if (DynamicObjects.get(0).currentHp == DynamicObjects.get(0).maxHp && transparencyHPline > 0 && System.currentTimeMillis() - lastChangeTransparency >= 10 && !Config.getFromConfig("AlwaysOnPlayerHPLine").equals("true")) {
+        int currentHp = (int) DynamicObjects.get(0).getCurrentHP();
+        int maxHp = (int) DynamicObjects.get(0).getMaxHp();
+
+        if (currentHp == maxHp && transparencyHPline > 0 && System.currentTimeMillis() - lastChangeTransparency >= 10 && !Config.getFromConfig("AlwaysOnPlayerHPLine").equals("true")) {
             lastChangeTransparency = System.currentTimeMillis();
             transparencyHPline--;
-        } else if (DynamicObjects.get(0).currentHp != DynamicObjects.get(0).maxHp) {
+        } else if (currentHp != maxHp) {
             transparencyHPline = 220;
         }
         if (lastDamage > 0 && System.currentTimeMillis() - lastChangeLengthDamage >= 15 && System.currentTimeMillis() - lastDamageTime >= 300) {
@@ -305,10 +330,10 @@ public class Player {
 
         if (transparencyHPline > 0) {
             TextureDrawing.drawRectangleBorder(30, 30, 200, 35, 1, new SimpleColor(10, 10, 10, transparencyHPline));
-            TextureDrawing.drawRectangle(31, 31, (int) (DynamicObjects.get(0).currentHp * 2) - 2, 33, new SimpleColor(150, 0, 20, transparencyHPline));
+            TextureDrawing.drawRectangle(31, 31, currentHp * 2 - 2, 33, new SimpleColor(150, 0, 20, transparencyHPline));
 
             if (lastDamage > 0) {
-                TextureDrawing.drawRectangle(31 + (int) (DynamicObjects.get(0).currentHp * 2) - 2, 31, Math.min(lastDamage * 2, 200), 33, new SimpleColor(252, 161, 3, transparencyHPline));
+                TextureDrawing.drawRectangle(29 + currentHp * 2, 31, Math.min(lastDamage * 2, 200), 33, new SimpleColor(252, 161, 3, transparencyHPline));
             }
         }
     }
