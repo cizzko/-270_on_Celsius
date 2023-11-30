@@ -93,7 +93,7 @@ public class Factories implements StaticBlocksEvents {
             factoriesConst.put(originalName, new Factories(productionSpeed, needEnergy, maxHp,
                     maxStoredObjects, (short) ((((byte) maxHp & 0xFF) << 8) | (id & 0xFF)), pathTo(path),
                     sound, factoryName, outputObjects, inputObjects));
-            StaticObjectsConst.setConstDefaultParam(name, id, tiles);
+            StaticObjectsConst.setConst(name, id, tiles);
         }
     }
 

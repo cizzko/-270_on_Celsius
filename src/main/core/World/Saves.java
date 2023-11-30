@@ -1,5 +1,6 @@
 package core.World;
 
+import core.EventHandling.Logging.Logger;
 import core.Utils.ArrayUtils;
 import core.Window;
 import core.World.Creatures.DynamicWorldObjects;
@@ -7,10 +8,12 @@ import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
 import core.World.Weather.Sun;
 import java.io.*;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.zip.DeflaterOutputStream;
@@ -20,14 +23,16 @@ import static core.Window.assetsDir;
 
 public class Saves {
     private static boolean saving = false;
-    public static void createWorldSave() {
+    public static long lastSaved = System.currentTimeMillis();
+
+    private static void createWorldSave(String name) {
         if (!saving) {
             try {
                 saving = true;
 
                 ByteArrayOutputStream baos = new ByteArrayOutputStream();
                 ObjectOutputStream oos = new ObjectOutputStream(baos);
-                oos.writeObject(WorldGenerator.getWorldData());
+                oos.writeObject(addMeta(WorldGenerator.getWorldData()));
                 oos.close();
                 byte[] bytes = baos.toByteArray();
 
@@ -37,15 +42,32 @@ public class Saves {
                 dos.close();
                 byte[] compressedBytes = compressed.toByteArray();
 
-                FileOutputStream fos = new FileOutputStream(assetsDir("\\World\\Saves\\WorldSaves\\save" + System.currentTimeMillis() + "," + Window.versionStamp + ".ser"));
+                FileOutputStream fos = new FileOutputStream(assetsDir("\\World\\Saves\\WorldSaves\\" + name + ".ser"));
                 fos.write(compressedBytes);
                 fos.close();
             } catch (Exception e) {
                 printException("Error when serialization (saving) world", e);
             } finally {
+                lastSaved = System.currentTimeMillis();
                 saving = false;
             }
         }
+    }
+
+    private static HashMap<String, Object> addMeta(HashMap<String, Object> map) {
+        map.put("VersionCreation", Window.versionStamp);
+        map.put("DateCreation", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH:mm")));
+
+        return map;
+    }
+
+    public static void createWorldSave() {
+        //TODO: here need name
+        createWorldSave("WorldSave" + (int) (Math.random() * 10000));
+    }
+
+    public static void createWorldBackup() {
+        createWorldSave("WorldBackup");
     }
 
     public static void loadWorldSave(String path) {
@@ -59,6 +81,10 @@ public class Saves {
             printException("Error when load world save, path: " + path, e);
         }
 
+        if (!data.get("VersionCreation").equals(Window.versionStamp)) {
+            Logger.log("Save: '" + path + "' maybe deprecated, current game version: '" + Window.versionStamp + "', game version at save: '" + data.get("VersionCreation") + "'");
+        }
+
         ShadowMap.setAllData((HashMap<String, Object>) data.get("ShadowsData"));
         Inventory.inventoryObjects = (Items[][]) data.get("Inventory");
         Sun.currentTime = (float) data.get("WorldCurrentTime");
@@ -66,12 +92,11 @@ public class Saves {
         WorldGenerator.DynamicObjects = (ArrayList<DynamicWorldObjects>) data.get("DynamicWorldObjects");
         WorldGenerator.SizeX = (int) data.get("WorldSizeX");
         WorldGenerator.SizeY = (int) data.get("WorldSizeY");
-        WorldGenerator.temperatureDecrement = (float) data.get("WorldTemperatureDecrement");
-        WorldGenerator.currentWorldTemperature = (float) data.get("WorldCurrentTemperature");
         WorldGenerator.intersDamageMultiplier = (float) data.get("WorldIntersDamageMultiplier");
         WorldGenerator.minVectorIntersDamage = (float) data.get("WorldMinVectorIntersDamage");
         WorldGenerator.dayCount = (int) data.get("WorldDayCount");
 
+        TemperatureMap.setData(data);
         StaticObjectsConst.setDestroyed();
         setBlocks((String[]) data.get("StaticWorldObjects"));
         WorldGenerator.start(data.get("WorldGenerateCreatures").equals("true"));

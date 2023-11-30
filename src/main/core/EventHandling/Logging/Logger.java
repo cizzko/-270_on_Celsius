@@ -20,6 +20,7 @@ public class Logger extends PrintStream {
     private static final long sessionId = (long) (new Random().nextDouble() * Long.MAX_VALUE);
     public static boolean cleanup = false;
     private static byte[] lastErrBuf;
+
     public Logger() {
         super(System.err);
     }

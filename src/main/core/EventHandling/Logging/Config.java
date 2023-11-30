@@ -72,7 +72,7 @@ public class Config {
             try {
                 props.get(path).load(new FileInputStream(path));
             } catch (IOException e) {
-                throw new RuntimeException("Error when get properties, file: " + path, e);
+                Logger.printException("Error when get properties, file: " + path, e);
             }
         }
         return props.get(path);

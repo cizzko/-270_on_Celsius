@@ -4,14 +4,14 @@ import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
 import javax.sound.sampled.*;
 import java.io.File;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.HashSet;
 
 public class Sound {
     private static final int effectVolume = Integer.parseInt(Config.getFromConfig("EffectsVolume"));
     private static final int musicVolume = Integer.parseInt(Config.getFromConfig("SoundsVolume"));
     private static int volume;
     private static boolean suppVolumeLevel = true, error = false;
-    public static ConcurrentHashMap<String, Boolean> sounds = new ConcurrentHashMap<>();
+    public static HashSet<String> sounds = new HashSet<>();
 
     public enum types {
         SOUND,
@@ -20,7 +20,7 @@ public class Sound {
 
     //only wav, dev 0.0.0.2
     public static void SoundPlay(String path, types type, boolean limitAmount) {
-        if (path != null && (sounds.get(path) == null || !sounds.get(path) || !limitAmount)) {
+        if (path != null && (!sounds.contains(path) || !limitAmount)) {
             if (!suppVolumeLevel && !error) {
                 error = true;
                 Logger.log("this device not supported volume level");
@@ -30,7 +30,7 @@ public class Sound {
                 volume = type == types.EFFECT ? effectVolume : musicVolume;
 
                 try {
-                    sounds.put(path, true);
+                    sounds.add(path);
 
                     AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File(path));
                     AudioFormat format = inputStream.getFormat();
@@ -71,7 +71,7 @@ public class Sound {
                 } catch (Exception e) {
                     Logger.printException("Error during sound playback, file: " + path, e);
                 } finally {
-                    sounds.put(path, false);
+                    sounds.remove(path);
                 }
             }).start();
         }

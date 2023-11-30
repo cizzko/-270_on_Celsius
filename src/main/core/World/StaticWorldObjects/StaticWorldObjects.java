@@ -18,8 +18,9 @@ public abstract class StaticWorldObjects implements Serializable {
         if (name == null) {
             return 0;
         }
-        if (ids.get(name) != null) {
-            return ids.get(name);
+        byte id = ids.getOrDefault(name, (byte) 0);
+        if (id != 0) {
+            return id;
         } else {
             for (byte i = -127; i < 127; i++) {
                 if (i != -1 && i != 0 && !ids.containsValue(i)) {
@@ -32,11 +33,6 @@ public abstract class StaticWorldObjects implements Serializable {
             }
         }
         return 0;
-    }
-
-    //dont use 0 && -1 id, because 0 - air, -1 returned when querying a cell outside the array
-    public static void reserveId(String name, byte id) {
-        ids.putIfAbsent(name, id);
     }
 
     public static float getMaxHp(short id) {

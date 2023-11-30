@@ -1,9 +1,8 @@
 package core.World.StaticWorldObjects;
 
 import core.EventHandling.Logging.Config;
-import java.io.File;
+import core.Window;
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.Properties;
 
 import static core.Window.*;
@@ -55,40 +54,17 @@ public class StaticObjectsConst {
             String originalName = name;
             name = assetsDir("World/ItemsCharacteristics/" + name + ".properties");
 
-            if (originalName.contains("Blocks")) {
-                Properties props = Config.getProperties(name);
-                boolean hasMotherBlock = props.get("HasMotherBlock") != null && props.get("HasMotherBlock").equals("true");
-                float density = Float.parseFloat((String) props.get("Density"));
-                float resistance = Float.parseFloat((String) props.get("Resistance"));
-                int lightTransmission = Integer.parseInt((String) props.get("LightTransmission"));
-                int maxHp = Integer.parseInt((String) props.get("MaxHp"));
-                String path = (String) props.get("Path");
-                String enumType = (String) props.get("Type");
-                String objectName = (String) props.get("Name");
+            Properties props = Config.getProperties(name);
+            boolean hasMotherBlock = Boolean.parseBoolean((String) props.getOrDefault("HasMotherBlock", "false"));
+            float density = Float.parseFloat((String) props.getOrDefault("Density", "1"));
+            float resistance = Float.parseFloat((String) props.getOrDefault("Resistance", "100"));
+            int lightTransmission = Integer.parseInt((String) props.getOrDefault("LightTransmission", "100"));
+            int maxHp = Integer.parseInt((String) props.getOrDefault("MaxHp", "100"));
+            String path = Window.assetsDir((String) props.getOrDefault("Path", "\\World\\textureNotFound.png"));
+            String enumType = (String) props.getOrDefault("Type", Types.SOLID.toString());
+            String objectName = (String) props.getOrDefault("Name", "notFound");
 
-                constants.put(id, new StaticObjectsConst(hasMotherBlock, maxHp, density, resistance, lightTransmission,
-                        path == null ? null : pathTo(path), objectName, originalName,
-                        optionalTiles, Types.valueOf(enumType.toUpperCase())));
-            } else {
-                setConstDefaultParam(name, id, optionalTiles);
-            }
-        }
-    }
-
-    public static void setConstDefaultParam(String path, byte id, short[][] optionalTiles) {
-        if (constants.get(id) == null) {
-            Properties props = Config.getProperties(path);
-            boolean hasMotherBlock = props.get("HasMotherBlock") != null && props.get("HasMotherBlock").equals("true");
-            float density = 1;
-            float resistance = 0;
-            int lightTransmission = 100;
-            int maxHp = Integer.parseInt((String) props.get("MaxHp"));
-            String texturePath = (String) props.get("Path");
-            String objectName = (String) props.get("Name");
-            String fileName = new File(path).getName();
-            Types type = Types.SOLID;
-
-            constants.put(id, new StaticObjectsConst(hasMotherBlock, maxHp, density, resistance, lightTransmission, pathTo(texturePath), objectName, fileName.substring(0, fileName.indexOf(".")), optionalTiles, type));
+            constants.put(id, new StaticObjectsConst(hasMotherBlock, maxHp, density, resistance, lightTransmission, path, objectName, originalName, optionalTiles, Types.valueOf(enumType.toUpperCase())));
         }
     }
 
