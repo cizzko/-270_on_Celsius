@@ -9,15 +9,17 @@ import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Player;
 import core.Utils.SimpleColor;
 import core.World.StaticWorldObjects.StaticBlocksEvents;
-import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
+import core.World.WorldUtils;
 import java.awt.Point;
 import java.util.*;
 import static core.Utils.ArrayUtils.findEqualsObjects;
 import static core.Window.*;
+import static core.World.Creatures.Player.Player.playerSize;
 
+//there is no need to put them manually, they are automatically added to the array if the placed static block is in the factories folder
 public class Factories implements StaticBlocksEvents {
     public float productionSpeed, needEnergy, currentHp, currentEnergy, maxHp, timeSinceBreakdown, x, y;
     public long lastProductionTime;
@@ -32,7 +34,7 @@ public class Factories implements StaticBlocksEvents {
     @Override
     public void placeStatic(int cellX, int cellY, short id) {
         if (id != 0 && id != -1 && StaticWorldObjects.getPath(id) != null && StaticWorldObjects.getPath(id).toLowerCase().contains("factory")) {
-            createFactory(StaticWorldObjects.getFileName(id), StaticObjectsConst.getConst(StaticWorldObjects.getId(id)).optionalTiles);
+            setFactoryConst(StaticWorldObjects.getFileName(id));
             factories.add(new Point(cellX, cellY));
         }
     }
@@ -73,9 +75,9 @@ public class Factories implements StaticBlocksEvents {
         this.name = name;
     }
 
-    public static void createFactory(String name, short[][] tiles) {
+    public static void setFactoryConst(String name) {
         String originalName = name;
-        name = assetsDir("World/ItemsCharacteristics/Factories/" + name + ".properties");
+        name = assetsDir("World/ItemsCharacteristics/BuildMenu/Factories/" + name + ".properties");
 
         if (factoriesConst.get(name) == null) {
             byte id = StaticWorldObjects.generateId(name);
@@ -93,8 +95,12 @@ public class Factories implements StaticBlocksEvents {
             factoriesConst.put(originalName, new Factories(productionSpeed, needEnergy, maxHp,
                     maxStoredObjects, (short) ((((byte) maxHp & 0xFF) << 8) | (id & 0xFF)), pathTo(path),
                     sound, factoryName, outputObjects, inputObjects));
-            StaticObjectsConst.setConst(name, id, tiles);
+            Structures.bindStructure("\\BuildMenu\\Factories\\" + name);
         }
+    }
+
+    public static Factories getFactoryConst(String name) {
+        return factoriesConst.getOrDefault(name, null);
     }
 
     private static Items[] transformItems(String items) {
@@ -102,7 +108,7 @@ public class Factories implements StaticBlocksEvents {
         Items[] outItems = new Items[inItems.length];
 
         for (int i = 0; i < inItems.length; i++) {
-            outItems[i] = new Items(StaticWorldObjects.createStatic(inItems[i]), "");
+            outItems[i] = Items.createPlaceable(StaticWorldObjects.createStatic(inItems[i]));
         }
         return outItems;
     }
@@ -139,13 +145,13 @@ public class Factories implements StaticBlocksEvents {
                 boolean output = factory.outputStoredObjects != null;
 
                 if (input && ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0) {
-                    TextureDrawing.drawRectangle((int) xMouse, (int) yMouse, ArrayUtils.findDistinctObjects(factory.inputStoredObjects) * 54 + 24, 64, new SimpleColor(40, 40, 40, 240));
+                    TextureDrawing.drawRectangle((int) xMouse, (int) yMouse, ArrayUtils.findDistinctObjects(factory.inputStoredObjects) * 54 + playerSize, 64, new SimpleColor(40, 40, 40, 240));
                     drawObjects(xMouse, yMouse, factory.inputStoredObjects, assetsDir("UI/GUI/buildMenu/factoryIn.png"));
                 }
                 if (output && ArrayUtils.findFreeCell(factory.outputStoredObjects) != 0) {
                     xMouse += (ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0 ? 78 : 0);
 
-                    TextureDrawing.drawRectangle((int) xMouse, (int) yMouse, ArrayUtils.findDistinctObjects(factory.outputStoredObjects) * 54 + 24, 64, new SimpleColor(40, 40, 40, 240));
+                    TextureDrawing.drawRectangle((int) xMouse, (int) yMouse, ArrayUtils.findDistinctObjects(factory.outputStoredObjects) * 54 + playerSize, 64, new SimpleColor(40, 40, 40, 240));
                     drawObjects(xMouse, yMouse, factory.outputStoredObjects, assetsDir("UI/GUI/buildMenu/factoryOut.png"));
                 }
             }
@@ -172,11 +178,11 @@ public class Factories implements StaticBlocksEvents {
 
     public static void drawObjects(float x, float y, Items[] items, String iconPath) {
         if (items != null && ArrayUtils.findFreeCell(items) != 0) {
-            TextureDrawing.drawTexture(iconPath, x, y + 16, 1, true);
+            TextureDrawing.drawTexture(x, y + 16, true, iconPath);
 
             for (int i = 0; i < ArrayUtils.findDistinctObjects(items); i++) {
                 if (items[i] != null) {
-                    Inventory.drawInventoryItem((x + (i * 54)) + 24, y + 10, findEqualsObjects(items, items[i]), items[i].path);
+                    Inventory.drawInventoryItem((x + (i * 54)) + playerSize, y + 10, findEqualsObjects(items, items[i]), items[i].path);
                 }
             }
         }
@@ -238,7 +244,7 @@ public class Factories implements StaticBlocksEvents {
     }
 
     private static Factories findFactoryUnderMouse() {
-        Point blockUnderMouse = Player.getBlockUnderMousePoint();
+        Point blockUnderMouse = WorldUtils.getBlockUnderMousePoint();
 
         if (WorldGenerator.getObject(blockUnderMouse.x, blockUnderMouse.y) != -1) {
             Point root = Player.findRoot(blockUnderMouse.x, blockUnderMouse.y);
@@ -248,17 +254,5 @@ public class Factories implements StaticBlocksEvents {
             }
         }
         return null;
-
-//        for (Point factories : factories) {
-//            int x = factories.x;
-//            int y = factories.y;
-//
-//            Factories factory = factoriesConst.get(StaticWorldObjects.getFileName(WorldGenerator.getObject(x, y)));
-//
-//            if (factory != null && Player.getWorldMousePoint().x > (x * 16) && Player.getWorldMousePoint().y > (y * 16) && Player.getWorldMousePoint().x < (x * 16) + TextureLoader.getSize(factory.path).width && Player.getWorldMousePoint().y < (y * 16) + TextureLoader.getSize(factory.path).height()) {
-//                return factory;
-//            }
-//        }
-//        return null;
     }
 }

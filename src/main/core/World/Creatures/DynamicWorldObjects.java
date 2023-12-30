@@ -2,6 +2,7 @@ package core.World.Creatures;
 
 import core.EventHandling.Logging.Logger;
 import core.World.HitboxMap;
+import core.World.Textures.TextureDrawing;
 import core.World.Textures.TextureLoader;
 import core.World.WorldGenerator;
 import java.io.Serializable;
@@ -13,7 +14,8 @@ import java.util.HashMap;
 public class DynamicWorldObjects implements Serializable {
     private static final HashMap<String, Byte> ids = new HashMap<>();
     private final byte id;
-    private short currentFrame, lastFrameTime, motionVectorX, motionVectorY; //last frame time here - ms
+    private short currentFrame, motionVectorX, motionVectorY;
+    private long lastFrameTime = System.currentTimeMillis();
     private float x, y, currentHp;
 
     private DynamicWorldObjects(byte id, float x, float y, float maxHp) {
@@ -24,7 +26,6 @@ public class DynamicWorldObjects implements Serializable {
         this.currentHp = maxHp;
         this.motionVectorX = 0;
         this.motionVectorY = 0;
-        this.lastFrameTime = 0;
     }
 
     public static DynamicWorldObjects createDynamic(String name, float x) {
@@ -32,11 +33,11 @@ public class DynamicWorldObjects implements Serializable {
         DynamicObjectsConst.bindDynamic(name, id);
         ArrayList<Integer> topmostBlocks = new ArrayList<>(4);
 
-        for (int xSize = 0; xSize < (int) Math.ceil(TextureLoader.getSize(DynamicObjectsConst.getConst(id).path).width() / 16f) + 1; xSize++) {
-            topmostBlocks.add(WorldGenerator.findTopmostSolidBlock((int) ((x / 16) + xSize), 5));
+        for (int xSize = 0; xSize < (int) Math.ceil(TextureLoader.getSize(DynamicObjectsConst.getConst(id).path).width() / TextureDrawing.blockSize) + 1; xSize++) {
+            topmostBlocks.add(WorldGenerator.findTopmostSolidBlock((int) ((x / TextureDrawing.blockSize) + xSize), 5));
         }
 
-        return new DynamicWorldObjects(generateId(name), x, (Collections.max(topmostBlocks) + 1) * 16, DynamicObjectsConst.getConst(id).maxHp);
+        return new DynamicWorldObjects(generateId(name), x, (Collections.max(topmostBlocks) + 1) * TextureDrawing.blockSize, DynamicObjectsConst.getConst(id).maxHp);
     }
 
     public static DynamicWorldObjects createDynamic(String name, float x, float y) {
@@ -116,11 +117,14 @@ public class DynamicWorldObjects implements Serializable {
 
     public void incrementCurrentFrame() {
         DynamicObjectsConst dynamicConst = DynamicObjectsConst.getConst(id);
-        if (dynamicConst.animSpeed != 0 && dynamicConst.framesCount != 1 && System.currentTimeMillis() - lastFrameTime >= System.currentTimeMillis() + dynamicConst.animSpeed) {
+
+        if (dynamicConst.animSpeed != 0 && dynamicConst.framesCount != 0 && System.currentTimeMillis() - lastFrameTime >= dynamicConst.animSpeed) {
             if (currentFrame >= dynamicConst.framesCount) {
                 currentFrame = 0;
+                lastFrameTime = System.currentTimeMillis();
+                return;
             }
-            lastFrameTime = (short) ((System.currentTimeMillis() + lastFrameTime) - System.currentTimeMillis());
+            lastFrameTime = System.currentTimeMillis();
             currentFrame++;
         }
     }

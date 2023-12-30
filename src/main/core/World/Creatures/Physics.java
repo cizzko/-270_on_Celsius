@@ -10,16 +10,16 @@ import core.World.HitboxMap;
 import core.World.Saves;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.World.Textures.TextureDrawing;
 import core.World.Textures.TextureLoader;
 import core.World.WorldGenerator;
 import java.awt.*;
-import java.util.ArrayList;
+import java.util.Iterator;
 import static core.Window.*;
+import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.StaticWorldObjects.Structures.Factories.updateFactoriesOutput;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.HitboxMap.*;
-import static core.World.StaticWorldObjects.StaticWorldObjects.getResistance;
-import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -67,7 +67,7 @@ public class Physics {
     }
 
     private static void updateVerticalSpeed(DynamicWorldObjects dynamicObject, TextureLoader.Size size) {
-        dynamicObject.setY(dynamicObject.getY() * (1 - (getTotalResistanceInside(dynamicObject) / 100f)));
+        dynamicObject.setMotionVectorY(dynamicObject.getMotionVectorY() * (1 - (getTotalResistanceInside(dynamicObject) / 100f)));
 
         boolean intersD = checkIntersStaticD(dynamicObject.getX(), dynamicObject.getY() + dynamicObject.getMotionVectorY(), size.width(), size.height());
         boolean intersU = checkIntersStaticU(dynamicObject.getX(), dynamicObject.getY() + dynamicObject.getMotionVectorY(), size.width(), size.height());
@@ -84,10 +84,10 @@ public class Physics {
     }
 
     private static void updateHorizontalSpeed(DynamicWorldObjects dynamicObject, TextureLoader.Size size) {
-        dynamicObject.setX(dynamicObject.getX() * (1 - (getTotalResistanceInside(dynamicObject) / 100f)));
+        dynamicObject.setMotionVectorX(dynamicObject.getMotionVectorX() * (1 - (getTotalResistanceInside(dynamicObject) / 100f)));
 
-        boolean intersR = checkIntersStaticR(dynamicObject.getX() + dynamicObject.getMotionVectorX() * 2, dynamicObject.getY(), size.width(), size.height());
-        boolean intersL = checkIntersStaticL(dynamicObject.getX() + dynamicObject.getMotionVectorX() * 2, dynamicObject.getY(), size.height());
+        boolean intersR = checkIntersStaticR(dynamicObject.getX() + dynamicObject.getMotionVectorX() * 60, dynamicObject.getY(), size.width(), size.height());
+        boolean intersL = checkIntersStaticL(dynamicObject.getX() + dynamicObject.getMotionVectorX(), dynamicObject.getY(), size.height());
 
         if (!intersR && dynamicObject.getMotionVectorX() > 0) {
             if (dynamicObject.getMotionVectorX() - dynamicObject.getWeight() > 0) {
@@ -140,12 +140,14 @@ public class Physics {
     }
 
     private static void updatePhys() {
-        ArrayList<DynamicWorldObjects> dynamicObj = DynamicObjects;
+        Iterator<DynamicWorldObjects> dynamicIterator = DynamicObjects.iterator();
         updatePlayerMove();
         updatePlayerJump();
         updateWorldSave();
 
-        for (DynamicWorldObjects dynamicObject : dynamicObj) {
+        while (dynamicIterator.hasNext()) {
+            DynamicWorldObjects dynamicObject = dynamicIterator.next();
+
             if (dynamicObject != null) {
                 TextureLoader.Size size = TextureLoader.getSize(dynamicObject.getPath());
                 updateHorizontalSpeed(dynamicObject, size);
@@ -158,10 +160,10 @@ public class Physics {
     }
 
     public static float getTotalResistanceInside(DynamicWorldObjects dynamicObject) {
-        int tarX = (int) (dynamicObject.getX() / 16);
-        int tarY = (int) (dynamicObject.getY() / 16);
-        int tarYSize = (int) Math.ceil(TextureLoader.getSize(dynamicObject.getPath()).height() / 16f);
-        int tarXSize = (int) Math.ceil(TextureLoader.getSize(dynamicObject.getPath()).width() / 16f);
+        int tarX = (int) (dynamicObject.getX() / TextureDrawing.blockSize);
+        int tarY = (int) (dynamicObject.getY() / TextureDrawing.blockSize);
+        int tarYSize = (int) Math.ceil(TextureLoader.getSize(dynamicObject.getPath()).height() / TextureDrawing.blockSize);
+        int tarXSize = (int) Math.ceil(TextureLoader.getSize(dynamicObject.getPath()).width() / TextureDrawing.blockSize);
         float totalResistance = 0;
 
         for (int xPos = 0; xPos < tarXSize; xPos++) {

@@ -9,6 +9,7 @@ import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.SliderObject;
 import core.World.Creatures.Player.Player;
 import core.Utils.SimpleColor;
+import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
 import org.lwjgl.glfw.*;
 import java.awt.Point;
@@ -205,7 +206,7 @@ public class EventHandler {
             lastSecond = System.currentTimeMillis();
 
             if (start) {
-                CreateElement.createText(5, 980, "PlayerPos", "Player pos: x - " + (int) WorldGenerator.DynamicObjects.get(0).getX() + "(" + (int) WorldGenerator.DynamicObjects.get(0).getX() / 16 + ") y - " + (int) WorldGenerator.DynamicObjects.get(0).getX() + "(" + (int) WorldGenerator.DynamicObjects.get(0).getY() / 16 + ")", new SimpleColor(25, 25, 25, 255), null);
+                CreateElement.createText(5, 980, "PlayerPos", "Player pos: x - " + (int) WorldGenerator.DynamicObjects.getFirst().getX() + "(" + (int) WorldGenerator.DynamicObjects.getFirst().getX() / TextureDrawing.blockSize + ") y - " + (int) WorldGenerator.DynamicObjects.getFirst().getX() + "(" + (int) WorldGenerator.DynamicObjects.getFirst().getY() / TextureDrawing.blockSize + ")", new SimpleColor(25, 25, 25, 255), null);
                 CreateElement.createText(5, 1005, "PhysicsFPS", "Physics FPS: " + updates, new SimpleColor(25, 25, 25, 255), null);
             }
             CreateElement.createText(5, 1030, "HandlerFPS", "Handler FPS: " + handlerUpdates, new SimpleColor(25, 25, 25, 255), null);
