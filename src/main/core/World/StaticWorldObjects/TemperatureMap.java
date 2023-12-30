@@ -1,5 +1,6 @@
 package core.World.StaticWorldObjects;
 
+import core.World.Textures.TextureDrawing;
 import core.World.Textures.TextureLoader;
 import core.World.Weather.Sun;
 import core.World.WorldGenerator;
@@ -72,9 +73,9 @@ public class TemperatureMap {
         float totalTemp = 0;
         var size = TextureLoader.getSize(path);
 
-        for (int x = 0; x < Math.ceil(size.width()) / 16; x++) {
-            for (int y = 0; y < Math.ceil(size.height()) / 16; y++) {
-                totalTemp += getTemp((int) (xPos / 16 + x), (int) (yPos / 16 + y));
+        for (int x = 0; x < Math.ceil(size.width()) / TextureDrawing.blockSize; x++) {
+            for (int y = 0; y < Math.ceil(size.height()) / TextureDrawing.blockSize; y++) {
+                totalTemp += getTemp((int) (xPos / TextureDrawing.blockSize + x), (int) (yPos / TextureDrawing.blockSize + y));
                 count++;
             }
         }

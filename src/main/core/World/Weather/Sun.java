@@ -30,7 +30,7 @@ public class Sun {
                     WorldGenerator.dayCount++;
                     currentTime = 0;
                 }
-                x = DynamicObjects.get(0).getX();
+                x = DynamicObjects.getFirst().getX();
 
                 if (currentTime >= 2400 || currentTime < 1) {
                     y = endYSun;
@@ -40,15 +40,15 @@ public class Sun {
                 }
                 TemperatureMap.update();
             }
-            final int minGreen = 85;
-            final int maxGreen = 255;
+            int minGreen = 85;
+            int maxGreen = 255;
 
             double ratio = (double) (maxGreen - minGreen) / (2400 - minGreen);
             int green = (int) (maxGreen - (currentTime * ratio));
 
             updateNightBackground();
             updateGradient();
-            drawTexture(assetsDir("World/Sun/sun.png"), 580, y, 1, new SimpleColor(255, green, 40, 220), true, false);
+            drawTexture(580, y, 1, true, false, assetsDir("World/Sun/sun.png"), new SimpleColor(255, green, 40, 220));
         }
     }
 
@@ -63,7 +63,7 @@ public class Sun {
         int aGradient = (int) (250 * alpha);
         aGradient = Math.max(0, Math.min(250, aGradient));
 
-        drawTexture(assetsDir("World/Sun/" + (getFromConfig("InterpolateSunset").equals("true") ? "" : "non") + "InterpolatedSunset.png"), 0, 0, 1, new SimpleColor(aGradient, 0, 20, aGradient), true, false);
+        drawTexture(0, 0, 1, true, false, assetsDir("World/Sun/" + (getFromConfig("InterpolateSunset").equals("true") ? "" : "non") + "InterpolatedSunset.png"), new SimpleColor(aGradient, 0, 20, aGradient));
     }
 
     private static void updateNightBackground() {
@@ -81,7 +81,7 @@ public class Sun {
         ShadowMap.deleteAllColor(new SimpleColor(deleteGradient, deleteGradient, deleteGradient, 0));
         ShadowMap.deleteAllColorDynamic(new SimpleColor(deleteGradient, deleteGradient, deleteGradient, 0));
 
-        drawTexture(assetsDir("World/Sky/skyBackground0.png"), 0, 0, 1, new SimpleColor(255, 255, 255, backGradient), true, false);
+        drawTexture(0, 0, 1, true, false, assetsDir("World/Sky/skyBackground0.png"), new SimpleColor(255, 255, 255, backGradient));
     }
 
     private static double Lerp(double a, double b, double t) {

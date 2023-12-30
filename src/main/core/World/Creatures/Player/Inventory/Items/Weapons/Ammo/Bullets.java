@@ -8,10 +8,10 @@ import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.HitboxMap;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.World.Textures.TextureDrawing;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Iterator;
-
 import static core.EventHandling.EventHandler.getMousePos;
 import static core.Window.assetsDir;
 import static core.World.Textures.TextureDrawing.drawTexture;
@@ -39,7 +39,7 @@ public class Bullets {
 
             if (EventHandler.getMousePress() && System.currentTimeMillis() - weapon.lastShootTime >= weapon.fireRate) {
                 weapon.lastShootTime = System.currentTimeMillis();
-                Bullets.createBullet(DynamicObjects.get(0).getX(), DynamicObjects.get(0).getY(), weapon.ammoSpeed, weapon.damage, Math.abs((float) Math.toDegrees(Math.atan2(getMousePos().y - 540, getMousePos().x - 960)) - 180));
+                Bullets.createBullet(DynamicObjects.getFirst().getX(), DynamicObjects.getFirst().getY(), weapon.ammoSpeed, weapon.damage, Math.abs((float) Math.toDegrees(Math.atan2(getMousePos().y - 540, getMousePos().x - 960)) - 180));
                 Sound.SoundPlay(weapon.sound, Sound.types.EFFECT, false);
             }
         }
@@ -82,7 +82,7 @@ public class Bullets {
                         }
                     }
                 }
-                if (bullet.damage <= 0 || bullet.x < 0 || bullet.y < 0 || bullet.x / 16 > SizeX || bullet.y / 16 > SizeY) {
+                if (bullet.damage <= 0 || bullet.x < 0 || bullet.y < 0 || bullet.x / TextureDrawing.blockSize > SizeX || bullet.y / TextureDrawing.blockSize > SizeY) {
                     bulletsIter.remove();
                 }
             }
@@ -92,8 +92,8 @@ public class Bullets {
     public static void drawBullets() {
         for (Bullets bullet : bullets) {
             //TODO: add paths
-            if (bullet != null && !(bullet.x > DynamicObjects.get(0).getX() + 350 || bullet.x < DynamicObjects.get(0).getX() - 350)) {
-                drawTexture(assetsDir("World/Items/someBullet.png"), bullet.x, bullet.y, 3, false);
+            if (bullet != null && !(bullet.x > DynamicObjects.getFirst().getX() + 350 || bullet.x < DynamicObjects.getFirst().getX() - 350)) {
+                drawTexture(bullet.x, bullet.y, false, assetsDir("World/Items/someBullet.png"));
             }
         }
     }

@@ -49,7 +49,7 @@ public class Config {
             configProp.store(out, null);
 
         } catch (Exception e) {
-            System.out.println("Error when reset config: " + e);
+            Logger.printException("Error when reset config: ", e);
         }
     }
 

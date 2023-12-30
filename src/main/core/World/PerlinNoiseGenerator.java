@@ -24,13 +24,10 @@ public class PerlinNoiseGenerator {
     }
 
     public void generateNoise() {
-        float[][] baseNoise = generateBaseNoise();
-        float[][] smoothedNoise;
+        float[][] smoothedNoise = generateBaseNoise();
 
         if (smoothness > 0) {
-            smoothedNoise = smoothNoise(baseNoise);
-        } else {
-            smoothedNoise = baseNoise;
+            smoothedNoise = smoothNoise(smoothedNoise);
         }
 
         float[][] perlinNoise = new float[width][height];

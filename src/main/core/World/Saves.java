@@ -14,7 +14,7 @@ import core.World.Weather.Sun;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
@@ -89,7 +89,7 @@ public class Saves {
         Inventory.inventoryObjects = (Items[][]) data.get("Inventory");
         Sun.currentTime = (float) data.get("WorldCurrentTime");
 
-        WorldGenerator.DynamicObjects = (ArrayList<DynamicWorldObjects>) data.get("DynamicWorldObjects");
+        WorldGenerator.DynamicObjects = (ArrayDeque<DynamicWorldObjects>) data.get("DynamicWorldObjects");
         WorldGenerator.SizeX = (int) data.get("WorldSizeX");
         WorldGenerator.SizeY = (int) data.get("WorldSizeY");
         WorldGenerator.intersDamageMultiplier = (float) data.get("WorldIntersDamageMultiplier");
