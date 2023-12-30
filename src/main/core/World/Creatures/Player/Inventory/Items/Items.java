@@ -79,10 +79,10 @@ public class Items implements Serializable {
         int id = fileName.hashCode();
         float zoom = findZoom(defaultValues.path);
         float fireRate = Float.parseFloat((String) weapon.getOrDefault("FireRate", "100"));
-        float damage = Float.parseFloat((String) weapon.getOrDefault("FireRate", "100"));
-        float ammoSpeed = Float.parseFloat((String) weapon.getOrDefault("FireRate", "100"));
-        float reloadTime = Float.parseFloat((String) weapon.getOrDefault("FireRate", "100"));
-        float bulletSpread = Float.parseFloat((String) weapon.getOrDefault("FireRate", "100"));
+        float damage = Float.parseFloat((String) weapon.getOrDefault("Damage", "100"));
+        float ammoSpeed = Float.parseFloat((String) weapon.getOrDefault("AmmoSpeed", "100"));
+        float reloadTime = Float.parseFloat((String) weapon.getOrDefault("ReloadTime", "100"));
+        float bulletSpread = Float.parseFloat((String) weapon.getOrDefault("BulletSpread", "0"));
         int magazineSize = Integer.parseInt((String) weapon.getOrDefault("MagazineSize", "10"));
         String sound = Window.assetsDir((String) weapon.getOrDefault("Sound", null));
         String bulletPath = Window.assetsDir((String) weapon.getOrDefault("BulletPath", "World/Items/someBullet.png"));

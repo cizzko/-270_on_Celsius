@@ -551,7 +551,7 @@ public class TextureDrawing {
                 //todo проверить правильность настройки камеры
                 if (isOnCamera((int) dynamicObject.getX(), (int) dynamicObject.getY())) {
                     if (dynamicObject.getFramesCount() == 0) {
-                        drawTexture(dynamicObject.getX(), dynamicObject.getY(), 1, false, false, dynamicObject.getPath(), ShadowMap.getColorDynamic());
+                        drawTexture(dynamicObject.getX(), dynamicObject.getY(), 1, false, false, dynamicObject.getPath(), ShadowMap.getColorDynamic(dynamicObject));
                     } else {
                         //todo дописать
                         //drawTexture(dynamicObject.getPath() + dynamicObject.getCurrentFrame() + ".png", dynamicObject.getX(), dynamicObject.getY(), ShadowMap.getColorDynamic(), false, false);

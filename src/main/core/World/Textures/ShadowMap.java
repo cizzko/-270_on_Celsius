@@ -1,7 +1,7 @@
 package core.World.Textures;
 
-import core.EventHandling.Logging.Logger;
 import core.Utils.SimpleColor;
+import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.WorldGenerator;
 import java.util.*;
@@ -11,8 +11,8 @@ import static core.World.WorldGenerator.*;
 
 public class ShadowMap {
     private static int[] shadows;
-    private static ArrayList<SimpleColor> shadowsDynamic = new ArrayList<>(10);
-    private static SimpleColor deletedColor = SimpleColor.BLACK, deletedColorDynamic = SimpleColor.BLACK, addedColor = SimpleColor.BLACK, addedColorDynamic = SimpleColor.WHITE;
+    private static HashMap<DynamicWorldObjects, SimpleColor> shadowsDynamic = new HashMap<>();
+    private static SimpleColor deletedColor = SimpleColor.BLACK, deletedColorDynamic = SimpleColor.BLACK, addedColor = SimpleColor.BLACK, addedColorDynamic = SimpleColor.BLACK;
 
     //TODO: rewrite generation n update
 
@@ -116,12 +116,18 @@ public class ShadowMap {
         return new SimpleColor(r, g, b, a);
     }
 
-    public static SimpleColor getColorDynamic() {
-        //todo использовать ArrayList shadowsDynamic
-        int r = checkColor(addedColorDynamic.getRed() - deletedColorDynamic.getRed());
-        int g = checkColor(addedColorDynamic.getGreen() - deletedColorDynamic.getGreen());
-        int b = checkColor(addedColorDynamic.getBlue() - deletedColorDynamic.getBlue());
-        int a = checkColor(addedColorDynamic.getAlpha() - deletedColorDynamic.getAlpha());
+    public static SimpleColor getColorDynamic(DynamicWorldObjects object) {
+        SimpleColor color = shadowsDynamic.getOrDefault(object, null);
+
+        if (color == null) {
+            shadowsDynamic.put(object, SimpleColor.WHITE);
+            color = SimpleColor.WHITE;
+        }
+
+        int r = checkColor(color.getRed() + addedColorDynamic.getRed() - deletedColorDynamic.getRed());
+        int g = checkColor(color.getGreen() + addedColorDynamic.getGreen() - deletedColorDynamic.getGreen());
+        int b = checkColor(color.getBlue() + addedColorDynamic.getBlue() - deletedColorDynamic.getBlue());
+        int a = checkColor(color.getAlpha() + addedColorDynamic.getAlpha() - deletedColorDynamic.getAlpha());
 
         return new SimpleColor(r, g, b, a);
     }
@@ -202,7 +208,7 @@ public class ShadowMap {
 
     public static void setAllData(HashMap<String, Object> data) {
         shadows = (int[]) data.get("Shadows");
-        shadowsDynamic = (ArrayList<SimpleColor>) data.get("ShadowsDynamic");
+        shadowsDynamic = (HashMap<DynamicWorldObjects, SimpleColor>) data.get("ShadowsDynamic");
         deletedColor = (SimpleColor) data.get("DeletedColor");
         deletedColorDynamic = (SimpleColor) data.get("DeletedColorDynamic");
         addedColor = (SimpleColor) data.get("AddedColor");

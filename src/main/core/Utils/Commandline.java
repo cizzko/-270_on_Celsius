@@ -23,7 +23,7 @@ public class Commandline {
             keyLoggingText = "Prefix: " + prefix + ", write '" + prefix + " help'";
             return;
         }
-        if (target.startsWith(prefix)) {
+        if (target.startsWith(prefix) && target.trim().length() > prefix.length()) {
             target = Config.getFromFC(target.substring(prefix.length() + 1));
 
             if (target == null || target.equals("null") || target.contains("sendStateMessage")) {
