@@ -464,11 +464,11 @@ public class TextureDrawing {
                     continue;
                 }
 
-                float xBlock = findX(x, y);
-                float yBlock = findY(x, y);
+                int xBlock = findX(x, y);
+                int yBlock = findY(x, y);
 
                 //todo настроить камеру
-                if (true) {
+                if (isOnCamera(xBlock, yBlock)) {
                     SimpleColor color = ShadowMap.getColor(x, y);
                     int upperLimit = 100;
                     int lowestLimit = -20;
@@ -532,35 +532,24 @@ public class TextureDrawing {
         }
     }
 
-    public static boolean isOnCamera(float x, float y, float xSize, float ySize) {
+    public static boolean isOnCamera(int x, int y) {
         DynamicWorldObjects player = DynamicObjects.getFirst();
 
-        float left = player.getX() - (1920 / 5.5f) - (32 + xSize);
-        float right = player.getX() + (1920 / 5.5f) + (32 - xSize);
-        float bottom = player.getY() - (1080f / blockSize) - (32 + ySize); //lower dividet number - higher drawing
-        float top = player.getY() + (1080 / 4.5f) + (32 - ySize);
+        float left = player.getX() - (1920 / 2.1f) - (32 + blockSize);
+        float right = player.getX() + (1920 / 1.7f) + (32 - blockSize);
+        float bottom = player.getY() - (1080 / 3.7f) - (32 + blockSize); //lower dividet number - higher drawing
+        float top = player.getY() + (1080 / 1.4f) + (32 - blockSize);
 
         return !(x + 16 < left) && !(x > right) && !(y + 16 < bottom) && !(y > top);
     }
 
     public static void updateDynamicObj() {
-        Iterator<DynamicWorldObjects> dynamicIterator = DynamicObjects.iterator();
-        DynamicWorldObjects player = DynamicObjects.getFirst();
-
-        while (dynamicIterator.hasNext()) {
-            DynamicWorldObjects dynamicObject = dynamicIterator.next();
-
+        for (DynamicWorldObjects dynamicObject : DynamicObjects) {
             if (dynamicObject != null) {
-                float left = player.getX() - (1920 / 5.5f) - (48);
-                float right = player.getX() + (1920 / 5.5f) + (48);
-                float bottom = player.getY() - (1080f / blockSize) - (48); //lower dividet number - higher drawing
-                float top = player.getY() + (1080 / 5f) + (48);
-                float xBlock = dynamicObject.getX();
-                float yBlock = dynamicObject.getY();
-
                 dynamicObject.incrementCurrentFrame();
 
-                if (!(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top)) {
+                //todo проверить правильность настройки камеры
+                if (isOnCamera((int) dynamicObject.getX(), (int) dynamicObject.getY())) {
                     if (dynamicObject.getFramesCount() == 0) {
                         drawTexture(dynamicObject.getX(), dynamicObject.getY(), 1, false, false, dynamicObject.getPath(), ShadowMap.getColorDynamic());
                     } else {

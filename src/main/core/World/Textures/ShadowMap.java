@@ -1,5 +1,6 @@
 package core.World.Textures;
 
+import core.EventHandling.Logging.Logger;
 import core.Utils.SimpleColor;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.WorldGenerator;
@@ -17,10 +18,14 @@ public class ShadowMap {
     //TODO: rewrite generation n update
 
     public static SimpleColor getShadow(int x, int y) {
+        assert (x + SizeX * y) < shadows.length;
+
         return SimpleColor.toColor(shadows[x + SizeX * y]);
     }
 
     public static void setShadow(int x, int y, SimpleColor color) {
+        assert (x + SizeX * y) < shadows.length;
+
         shadows[x + SizeX * y] = color.getValue();
     }
 
