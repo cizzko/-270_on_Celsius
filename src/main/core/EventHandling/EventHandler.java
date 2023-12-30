@@ -26,7 +26,6 @@ import static core.World.Creatures.Physics.updates;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class EventHandler {
-    private static long lastMouseMovedTime = System.currentTimeMillis();
     private static long lastSecond = System.currentTimeMillis();
     private static boolean keyLogging = false;
     public static String keyLoggingText = "";
