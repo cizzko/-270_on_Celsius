@@ -74,6 +74,9 @@ public class Window {
         TextureLoader.preLoadResources();
         Main.create();
 
+        Global.input = new InputHandler();
+        Global.input.init();
+
         log("Init status: true\n");
     }
 
@@ -82,6 +85,9 @@ public class Window {
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
         while (!glfwWindowShouldClose(glfwWindow)) {
+            Global.input.update();
+            EventHandler.update();
+
             updateVideo();
             if (start) {
                 updateStaticObj();
@@ -93,7 +99,6 @@ public class Window {
 
             glfwSwapBuffers(glfwWindow);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glfwPollEvents();
 
             fps++;
         }
