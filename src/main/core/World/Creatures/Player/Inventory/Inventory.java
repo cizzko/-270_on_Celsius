@@ -2,6 +2,7 @@ package core.World.Creatures.Player.Inventory;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
+import core.Global;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Items.Details;
 import core.World.Creatures.Player.Inventory.Items.Items;
@@ -16,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import static core.Window.assetsDir;
 import static core.World.Textures.TextureDrawing.*;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Inventory {
     public static boolean inventoryOpen = false, create = false;
@@ -60,7 +62,7 @@ public class Inventory {
     }
 
     private static Point getObjectUnderMouse() {
-        Point mousePos = EventHandler.getMousePos();
+        Point mousePos = Global.input.mousePos();
         int x = mousePos.x;
         int y = mousePos.y;
 
@@ -107,7 +109,7 @@ public class Inventory {
         Point current = currentObject;
 
         if (current != null) {
-            Point mousePos = EventHandler.getMousePos();
+            Point mousePos = Global.input.mousePos();
 
             if (underMouseItem != null) {
                 float zoom = inventoryObjects[underMouseItem.x][underMouseItem.y].zoom;
@@ -138,14 +140,14 @@ public class Inventory {
             currentObject = underMouse;
             currentObjectType = inventoryObjects[underMouse.x][underMouse.y].type;
 
-            if (EventHandler.getMousePress()) {
+            if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
                 underMouseItem = underMouse;
             }
         }
     }
 
     private static void updateDropItem() {
-        if (!EventHandler.getMousePress() && underMouseItem != null) {
+        if (!Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && underMouseItem != null) {
             Point hasItemsMouse = getObjectUnderMouse();
 
             if (hasItemsMouse != null && inventoryObjects[hasItemsMouse.x][hasItemsMouse.y] == null) {

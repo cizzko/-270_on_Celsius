@@ -1,7 +1,7 @@
 package core.World.Creatures.Player;
 
-import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
+import core.Global;
 import core.Utils.SimpleColor;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
@@ -15,7 +15,7 @@ import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import java.awt.Point;
 import java.awt.geom.Point2D;
-import static core.EventHandling.EventHandler.getMousePos;
+
 import static core.Window.assetsDir;
 import static core.Window.start;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
@@ -32,7 +32,7 @@ public class Player {
     private static long lastChangeTransparency = System.currentTimeMillis(), lastChangeLengthDamage = System.currentTimeMillis();
 
     public static void updatePlayerJump() {
-        if (EventHandler.getKey(GLFW_KEY_SPACE)) {
+        if (Global.input.pressed(GLFW_KEY_SPACE)) {
             DynamicObjects.get(0).jump(0.45f);
         }
     }
@@ -51,16 +51,16 @@ public class Player {
 //            setObject((int) (DynamicObjects.get(0).getX() / 16 + 2), (int) (DynamicObjects.get(0).getY() / 16 + 1), StaticWorldObjects.decrementHp(getObject((int) (DynamicObjects.get(0).getX() / 16 + 2), (int) (DynamicObjects.get(0).getY() / 16 + 1)), 10));
 //        }
 
-        if (EventHandler.getKey(GLFW_KEY_D) && DynamicObjects.get(0).getX() + 24 < SizeX * 16 && (noClip || !checkIntersStaticR(DynamicObjects.get(0).getX() + 0.1f, DynamicObjects.get(0).getY(), 24, 24))) {
+        if (Global.input.pressed(GLFW_KEY_D) && DynamicObjects.get(0).getX() + 24 < SizeX * 16 && (noClip || !checkIntersStaticR(DynamicObjects.get(0).getX() + 0.1f, DynamicObjects.get(0).getY(), 24, 24))) {
             DynamicObjects.get(0).setMotionVectorX(increment);
         }
-        if (EventHandler.getKey(GLFW_KEY_A) && DynamicObjects.get(0).getX() > 0 && (noClip || !checkIntersStaticL(DynamicObjects.get(0).getX() - 0.1f, DynamicObjects.get(0).getY(), 24))) {
+        if (Global.input.pressed(GLFW_KEY_A) && DynamicObjects.get(0).getX() > 0 && (noClip || !checkIntersStaticL(DynamicObjects.get(0).getX() - 0.1f, DynamicObjects.get(0).getY(), 24))) {
             DynamicObjects.get(0).setMotionVectorX(-increment);
         }
-        if (noClip && EventHandler.getKey(GLFW_KEY_S)) {
+        if (noClip && Global.input.pressed(GLFW_KEY_S)) {
             DynamicObjects.get(0).setMotionVectorY(-increment);
         }
-        if (noClip && EventHandler.getKey(GLFW_KEY_W)) {
+        if (noClip && Global.input.pressed(GLFW_KEY_W)) {
             DynamicObjects.get(0).setMotionVectorY(increment);
         }
     }
@@ -72,8 +72,10 @@ public class Player {
     }
 
     private static void updatePlaceableInteraction() {
-        if (currentObjectType == Items.Types.PLACEABLE && EventHandler.getMousePress()) {
-            if (getMousePos().x > (Inventory.inventoryOpen ? 1488 : 1866) && getMousePos().y > 756) {
+        if (currentObjectType == Items.Types.PLACEABLE && Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+            Point mouse = Global.input.mousePos();
+            int xBound = (Inventory.inventoryOpen ? 1488 : 1866);
+            if (mouse.x > xBound && mouse.y > 756) {
                 return;
             }
             Point blockUMB = getBlockUnderMousePoint();
@@ -138,7 +140,7 @@ public class Player {
         if (getDistanceUnderMouse() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
             drawBlock(blockX, blockY, object, true);
 
-            if (EventHandler.getMousePress() && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
+            if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
                 tool.lastHitTime = System.currentTimeMillis();
 
                 if (getHp(decrementHp(object, (int) tool.damage)) <= 0) {
@@ -163,7 +165,7 @@ public class Player {
             if (getDistanceUnderMouse() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
                 drawStructure(blockX, blockY, true, getObject(root.x, root.y), StaticObjectsConst.getConst(StaticWorldObjects.getId(getObject(blockX, blockY))).optionalTiles);
 
-                if (EventHandler.getMousePress() && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
+                if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
                     tool.lastHitTime = System.currentTimeMillis();
                     decrementHpMulti(blockX, blockY, (int) tool.damage);
                 }
@@ -258,8 +260,8 @@ public class Player {
     }
 
     public static Point2D.Float getWorldMousePoint() {
-        float blockX = ((getMousePos().x - 960) / 3f + 16) + DynamicObjects.get(0).getX();
-        float blockY = ((getMousePos().y - 540) / 3f + 64) + DynamicObjects.get(0).getY();
+        float blockX = ((Global.input.mousePos().x - 960) / 3f + 16) + DynamicObjects.get(0).getX();
+        float blockY = ((Global.input.mousePos().y - 540) / 3f + 64) + DynamicObjects.get(0).getY();
 
         return new Point2D.Float(blockX, blockY);
     }

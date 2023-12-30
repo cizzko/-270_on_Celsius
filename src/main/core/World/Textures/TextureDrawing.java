@@ -14,13 +14,13 @@ import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.Structures.Factories;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.StaticWorldObjects.TemperatureMap;
-import java.awt.Rectangle;
-import java.awt.Dimension;
+
+import java.awt.*;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
-import static core.EventHandling.EventHandler.getMousePos;
+
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.UI.GUI.CreateElement.*;
 import static core.UI.GUI.Fonts.*;
@@ -371,8 +371,11 @@ public class TextureDrawing {
     }
 
     public static void drawPrompt(ButtonObject button) {
-        if (getFromConfig("ShowPrompts").equals("true") && new Rectangle(button.x, button.y, button.width, button.height).contains(getMousePos()) && System.currentTimeMillis() - Global.input.getLastMouseMoveTimestamp() >= 1000 && button.prompt != null) {
-            drawRectangleText(EventHandler.getMousePos().x, EventHandler.getMousePos().y, 0, button.prompt, false, new SimpleColor(40, 40, 40, 240));
+        if (getFromConfig("ShowPrompts").equals("true")) {
+            Point mouse = Global.input.mousePos();
+            if (new Rectangle(button.x, button.y, button.width, button.height).contains(mouse) && System.currentTimeMillis() - Global.input.getLastMouseMoveTimestamp() >= 1000 && button.prompt != null) {
+                drawRectangleText(mouse.x, mouse.y, 0, button.prompt, false, new SimpleColor(40, 40, 40, 240));
+            }
         }
     }
 

@@ -1,7 +1,7 @@
 package core.World.StaticWorldObjects.Structures;
 
-import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
+import core.Global;
 import core.UI.Sounds.Sound;
 import core.Utils.ArrayUtils;
 import core.World.Creatures.Player.Inventory.Inventory;
@@ -17,6 +17,7 @@ import java.awt.Point;
 import java.util.*;
 import static core.Utils.ArrayUtils.findEqualsObjects;
 import static core.Window.*;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Factories implements StaticBlocksEvents {
     public float productionSpeed, needEnergy, currentHp, currentEnergy, maxHp, timeSinceBreakdown, x, y;
@@ -129,12 +130,12 @@ public class Factories implements StaticBlocksEvents {
     }
 
     public static void update() {
-        if (System.currentTimeMillis() - EventHandler.lastMouseMovedTime > 1000) {
+        if (System.currentTimeMillis() - Global.input.getLastMouseMoveTimestamp() > 1000) {
             Factories factory = findFactoryUnderMouse();
 
             if (factory != null) {
-                float xMouse = EventHandler.getMousePos().x;
-                float yMouse = EventHandler.getMousePos().y;
+                float xMouse = Global.input.mousePos().x;
+                float yMouse = Global.input.mousePos().y;
                 boolean input = factory.inputStoredObjects != null;
                 boolean output = factory.outputStoredObjects != null;
 
@@ -151,10 +152,10 @@ public class Factories implements StaticBlocksEvents {
             }
         }
 
-        if (EventHandler.getMousePress() && Inventory.currentObjectType != null) {
+        if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && Inventory.currentObjectType != null) {
             mouseGrabbedItem = true;
         }
-        if (!EventHandler.getMousePress() && mouseGrabbedItem) {
+        if (!Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && mouseGrabbedItem) {
             mouseGrabbedItem = false;
             Factories factoryUM = findFactoryUnderMouse();
 

@@ -61,26 +61,11 @@ public class EventHandler {
         keyLogging = false;
     }
 
-    public static Point getMousePos() {
-        return Global.input.mousePos();
-    }
-
-    public static boolean getKey(int key) {
-        return Global.input.pressed(key);
-    }
-
-    public static boolean getKeyClick(int key) {
-        return Global.input.pressed(key);
-    }
-
-    public static boolean getMousePress() {
-        return Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT);
-    }
-
     public static boolean getRectanglePress(int x, int y, int x1, int y1) {
-        Point mousePos = getMousePos();
+        Point mousePos = Global.input.mousePos();
 
-        return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 && getMousePress();
+        return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 &&
+                Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT);
     }
 
     private static void updateSliders() {
@@ -91,7 +76,7 @@ public class EventHandler {
             }
 
             if (EventHandler.getRectanglePress(slider.x, slider.y, slider.width + slider.x, slider.height + slider.y)) {
-                slider.sliderPos = EventHandler.getMousePos().x;
+                slider.sliderPos = Global.input.mousePos().x;
             }
         }
     }
@@ -124,22 +109,22 @@ public class EventHandler {
     private static void updateKeyLogging() {
         if (keyLogging) {
             for (int i = 48; i <= 90; i++) {
-                if (getKeyClick(GLFW_KEY_SPACE)) {
+                if (Global.input.pressed(GLFW_KEY_SPACE)) {
                     keyLoggingText += " ";
                 }
-                if (getKeyClick(GLFW_KEY_BACKSPACE)) {
+                if (Global.input.pressed(GLFW_KEY_BACKSPACE)) {
                     if (keyLoggingText.length() > 0) {
                         keyLoggingText = keyLoggingText.substring(0, keyLoggingText.length() - 1);
                     }
                 }
-                if (getKeyClick(GLFW_KEY_PERIOD)) {
+                if (Global.input.pressed(GLFW_KEY_PERIOD)) {
                     keyLoggingText += ".";
                 }
 
                 //a - z, 0 - 9
                 if (i <= 57 || i >= 65) {
-                    if (getKeyClick(i)) {
-                        keyLoggingText += !getKey(GLFW_KEY_LEFT_SHIFT) ? glfwGetKeyName(i, 0) : glfwGetKeyName(i, 0).toUpperCase();
+                    if (Global.input.pressed(i)) {
+                        keyLoggingText += !Global.input.pressed(GLFW_KEY_LEFT_SHIFT) ? glfwGetKeyName(i, 0) : glfwGetKeyName(i, 0).toUpperCase();
                     }
                 }
             }
@@ -174,7 +159,7 @@ public class EventHandler {
     }
 
     private static void updateHotkeys() {
-        if (getKeyClick(GLFW_KEY_ESCAPE) && start) {
+        if (Global.input.pressed(GLFW_KEY_ESCAPE) && start) {
             if (!Pause.created) {
                 Pause.create();
             } else {
