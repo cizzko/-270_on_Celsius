@@ -12,8 +12,7 @@ import static core.World.WorldGenerator.*;
 public class ShadowMap {
     private static int[] shadows;
     private static ArrayList<SimpleColor> shadowsDynamic = new ArrayList<>(10);
-    private static SimpleColor deletedColor = SimpleColor.BLACK, deletedColorDynamic = SimpleColor.BLACK;
-    private static SimpleColor addedColor = SimpleColor.BLACK, addedColorDynamic = SimpleColor.WHITE;
+    private static SimpleColor deletedColor = SimpleColor.BLACK, deletedColorDynamic = SimpleColor.BLACK, addedColor = SimpleColor.BLACK, addedColorDynamic = SimpleColor.WHITE;
 
     //TODO: rewrite generation n update
 
@@ -118,6 +117,7 @@ public class ShadowMap {
     }
 
     public static SimpleColor getColorDynamic() {
+        //todo использовать ArrayList shadowsDynamic
         int r = checkColor(addedColorDynamic.getRed() - deletedColorDynamic.getRed());
         int g = checkColor(addedColorDynamic.getGreen() - deletedColorDynamic.getGreen());
         int b = checkColor(addedColorDynamic.getBlue() - deletedColorDynamic.getBlue());
