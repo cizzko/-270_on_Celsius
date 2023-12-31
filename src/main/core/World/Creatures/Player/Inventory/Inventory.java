@@ -1,6 +1,7 @@
 package core.World.Creatures.Player.Inventory;
 
 import core.EventHandling.EventHandler;
+import core.Global;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Player;
@@ -13,6 +14,7 @@ import static core.Window.assetsDir;
 import static core.World.Textures.TextureDrawing.*;
 import static core.World.WorldUtils.getBlockUnderMousePoint;
 import static core.World.WorldUtils.getDistanceToMouse;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Inventory {
     public static boolean inventoryOpen = false, create = false;
@@ -60,7 +62,7 @@ public class Inventory {
     }
 
     private static Point getObjectUnderMouse() {
-        Point mousePos = EventHandler.getMousePos();
+        Point mousePos = Global.input.mousePos();
         int x = mousePos.x;
         int y = mousePos.y;
 
@@ -108,7 +110,7 @@ public class Inventory {
         Point current = currentObject;
         if (current != null) {
 
-            Point mousePos = EventHandler.getMousePos();
+            Point mousePos = Global.input.mousePos();
             if (underMouseItem != null) {
                 float zoom = inventoryObjects[underMouseItem.x][underMouseItem.y].zoom;
                 drawTexture((mousePos.x - 15) / zoom, (mousePos.y - 15) / zoom, zoom, true, false, inventoryObjects[underMouseItem.x][underMouseItem.y].path, SimpleColor.WHITE);
@@ -139,7 +141,7 @@ public class Inventory {
                 currentObject = underMouse;
                 currentObjectType = inventoryObjects[underMouse.x][underMouse.y].type;
 
-                if (EventHandler.getMousePress()) {
+                if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
                     underMouseItem = underMouse;
                 }
             } else if (!hasUnderMouseItem) {
@@ -156,7 +158,7 @@ public class Inventory {
     }
 
     private static void updateDropItem() {
-        if (!EventHandler.getMousePress() && underMouseItem != null) {
+        if (!Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && underMouseItem != null) {
             //hasItemsMouse - inventory cell under the mouse when the mouse button is released, underMouseItem - item selected for movement
             Point hasItemsMouse = getObjectUnderMouse();
 

@@ -1,7 +1,7 @@
 package core.World.Creatures.Player;
 
-import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
+import core.Global;
 import core.Utils.SimpleColor;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
@@ -13,7 +13,7 @@ import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.*;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import java.awt.Point;
-import static core.EventHandling.EventHandler.getMousePos;
+
 import static core.Window.assetsDir;
 import static core.Window.start;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
@@ -37,7 +37,7 @@ public class Player {
     }
 
     public static void updatePlayerJump() {
-        if (EventHandler.getKey(GLFW_KEY_SPACE)) {
+        if (Global.input.pressed(GLFW_KEY_SPACE)) {
             DynamicObjects.getFirst().jump(1.05f);
         }
     }
@@ -56,16 +56,16 @@ public class Player {
 //            setObject((int) (DynamicObjects.getFirst().getX() / TextureDrawing.blockSize + 2), (int) (DynamicObjects.getFirst().getY() / TextureDrawing.blockSize + 1), StaticWorldObjects.decrementHp(getObject((int) (DynamicObjects.getFirst().getX() / TextureDrawing.blockSize + 2), (int) (DynamicObjects.getFirst().getY() / TextureDrawing.blockSize + 1)), 10));
 //        }
 
-        if (EventHandler.getKey(GLFW_KEY_D)) {
+        if (Global.input.pressed(GLFW_KEY_D)) {
             DynamicObjects.getFirst().setMotionVectorX(increment);
         }
-        if (EventHandler.getKey(GLFW_KEY_A)) {
+        if (Global.input.pressed(GLFW_KEY_A)) {
             DynamicObjects.getFirst().setMotionVectorX(-increment);
         }
-        if (noClip && EventHandler.getKey(GLFW_KEY_S)) {
+        if (noClip && Global.input.pressed(GLFW_KEY_S)) {
             DynamicObjects.getFirst().setMotionVectorY(-increment);
         }
-        if (noClip && EventHandler.getKey(GLFW_KEY_W)) {
+        if (noClip && Global.input.pressed(GLFW_KEY_W)) {
             DynamicObjects.getFirst().setMotionVectorY(increment);
         }
     }
@@ -77,9 +77,11 @@ public class Player {
     }
 
     private static void updatePlaceableInteraction() {
-        if (currentObjectType == Items.Types.PLACEABLE && EventHandler.getMousePress()) {
-            if (getMousePos().x > (Inventory.inventoryOpen ? 1488 : 1866) && getMousePos().y > 756) {
-                return;
+        if (currentObjectType == Items.Types.PLACEABLE && Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+            if (Global.input.mousePos().x > (Inventory.inventoryOpen ? 1488 : 1866)) {
+                if (Global.input.mousePos().y > 756) {
+                    return;
+                }
             }
             Point blockUMB = getBlockUnderMousePoint();
 
@@ -145,7 +147,7 @@ public class Player {
         if (getDistanceToMouse() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
             drawBlock(blockX, blockY, object, true);
 
-            if (EventHandler.getMousePress() && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
+            if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
                 tool.lastHitTime = System.currentTimeMillis();
 
                 if (getHp(decrementHp(object, (int) tool.damage)) <= 0) {
@@ -170,7 +172,7 @@ public class Player {
             if (getDistanceToMouse() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
                 drawBlock(blockX, blockY, getObject(root.x, root.y), true);
 
-                if (EventHandler.getMousePress() && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
+                if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
                     tool.lastHitTime = System.currentTimeMillis();
                     decrementHpMulti(blockX, blockY, (int) tool.damage, root);
                 }

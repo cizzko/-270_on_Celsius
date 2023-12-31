@@ -1,8 +1,8 @@
 package core.UI.GUI.Menu;
 
-import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
+import core.Global;
 import core.Utils.SimpleColor;
 import java.awt.Robot;
 import static core.EventHandling.Logging.Logger.printException;
@@ -40,18 +40,22 @@ public class MouseCalibration {
     public static void update() {
         new Thread(() -> {
             while (!buttons.get(Json.getName("CalibrateMouseContinue")).isClicked) {
-                if (EventHandler.getKeyClick(GLFW_KEY_A) || EventHandler.getKeyClick(GLFW_KEY_LEFT)) {
+                if (Global.input.pressed(GLFW_KEY_A) || Global.input.pressed(GLFW_KEY_LEFT)) {
                     xMultiplier -= 0.01f;
 
-                } else if (EventHandler.getKeyClick(GLFW_KEY_D) || EventHandler.getKeyClick(GLFW_KEY_RIGHT)) {
+                } else if (Global.input.pressed(GLFW_KEY_D) || Global.input.pressed(GLFW_KEY_RIGHT)) {
                     xMultiplier += 0.01f;
 
-                } else if (EventHandler.getKeyClick(GLFW_KEY_S) || EventHandler.getKeyClick(GLFW_KEY_DOWN)) {
-                    yMultiplier -= 0.01f;
+                } else {
+                    if (Global.input.pressed(GLFW_KEY_S) || Global.input.pressed(GLFW_KEY_DOWN)) {
+                        yMultiplier -= 0.01f;
 
-                } else if (EventHandler.getKeyClick(GLFW_KEY_W) || EventHandler.getKeyClick(GLFW_KEY_UP)) {
-                    yMultiplier += 0.01f;
+                    } else {
+                        if (Global.input.pressed(GLFW_KEY_W) || Global.input.pressed(GLFW_KEY_UP)) {
+                            yMultiplier += 0.01f;
 
+                        }
+                    }
                 }
             }
             Config.updateConfig("MouseMultiplierX", String.valueOf(xMultiplier));

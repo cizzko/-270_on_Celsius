@@ -5,6 +5,7 @@ import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
 import core.EventHandling.MouseScrollCallback;
 import core.UI.GUI.Menu.Main;
+import core.Utils.SimpleColor;
 import core.World.Textures.TextureLoader;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
@@ -70,9 +71,12 @@ public class Window {
         glOrtho(0, width, 0, height, 1, -1);
         glMatrixMode(GL_MODELVIEW);
 
-        EventHandler.initHandler();
+        EventHandler.init();
         TextureLoader.preLoadResources();
         Main.create();
+
+        Global.input = new InputHandler();
+        Global.input.init();
 
         log("Init status: true\n");
     }
@@ -82,18 +86,20 @@ public class Window {
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
         while (!glfwWindowShouldClose(glfwWindow)) {
+            Global.input.update();
+            EventHandler.update();
+
             updateVideo();
             if (start) {
                 updateStaticObj();
                 updateDynamicObj();
             } else {
-                drawTexture(assetsDir("World/Other/background.png"), 0, 0, 1, true);
+                drawTexture(0, 0, true, assetsDir("World/Other/background.png"));
             }
             updateGUI();
 
             glfwSwapBuffers(glfwWindow);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            glfwPollEvents();
 
             fps++;
         }

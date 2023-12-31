@@ -1,11 +1,11 @@
 package core.World;
 
+import core.Global;
 import core.World.Textures.TextureDrawing;
 
 import java.awt.*;
 import java.awt.geom.Point2D;
 
-import static core.EventHandling.EventHandler.getMousePos;
 import static core.World.WorldGenerator.*;
 import static core.World.WorldGenerator.DynamicObjects;
 
@@ -18,8 +18,8 @@ public class WorldUtils {
     }
 
     public static Point2D.Float getWorldMousePoint() {
-        float blockX = ((getMousePos().x - 960) + 32) + DynamicObjects.getFirst().getX();
-        float blockY = ((getMousePos().y - 540) + 200) + DynamicObjects.getFirst().getY();
+        float blockX = ((Global.input.mousePos().x - 960) + 32) + DynamicObjects.getFirst().getX();
+        float blockY = ((Global.input.mousePos().y - 540) + 200) + DynamicObjects.getFirst().getY();
 
         return new Point2D.Float(blockX, blockY);
     }

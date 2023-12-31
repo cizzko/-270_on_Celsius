@@ -3,14 +3,15 @@ package core.Utils;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
+import core.Global;
+
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import static core.EventHandling.EventHandler.getKey;
-import static core.EventHandling.EventHandler.getKeyClick;
+
 import static core.EventHandling.EventHandler.keyLoggingText;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -141,21 +142,20 @@ public class Commandline {
     }
 
     public static void updateLine() {
-        if (Commandline.created && getKeyClick(GLFW_KEY_F5)) {
+        if (Commandline.created && Global.input.pressed(GLFW_KEY_F5)) {
             Commandline.deleteLine();
         }
-        if (getKeyClick(GLFW_KEY_F5) && !Commandline.created) {
+        if (Global.input.pressed(GLFW_KEY_F5) && !Commandline.created) {
             Commandline.createLine();
         }
 
         if (created) {
-            if (getKeyClick(GLFW_KEY_ENTER)) {
+            if (Global.input.pressed(GLFW_KEY_ENTER)) {
                 startReflection(keyLoggingText);
             }
 
-            if (getKey(GLFW_KEY_LEFT_CONTROL) && getKey(GLFW_KEY_V)) {
-                Transferable transferable = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
-
+            if (Global.input.pressed(GLFW_KEY_LEFT_CONTROL) && Global.input.pressed(GLFW_KEY_V)) {
+                    Transferable transferable = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
                 if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
                     try {
                         keyLoggingText += (String) transferable.getTransferData(DataFlavor.stringFlavor);

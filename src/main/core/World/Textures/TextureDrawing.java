@@ -1,5 +1,6 @@
 package core.World.Textures;
 
+import core.Global;
 import core.Utils.Commandline;
 import core.EventHandling.EventHandler;
 import core.UI.GUI.Objects.ButtonObject;
@@ -17,11 +18,10 @@ import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.WorldUtils;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.List;
-import static core.EventHandling.EventHandler.getMousePos;
+
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.UI.GUI.CreateElement.*;
 import static core.UI.GUI.Fonts.*;
@@ -335,8 +335,10 @@ public class TextureDrawing {
     }
 
     public static void drawPrompt(ButtonObject button) {
-        if (getFromConfig("ShowPrompts").equals("true") && new Rectangle(button.x, button.y, button.width, button.height).contains(getMousePos()) && System.currentTimeMillis() - EventHandler.lastMouseMovedTime >= 1000 && button.prompt != null) {
-            drawRectangleText(EventHandler.getMousePos().x, EventHandler.getMousePos().y, 0, button.prompt, false, new SimpleColor(40, 40, 40, 240));
+        if (getFromConfig("ShowPrompts").equals("true")) {
+            if (new Rectangle(button.x, button.y, button.width, button.height).contains(Global.input.mousePos()) && System.currentTimeMillis() - Global.input.getLastMouseMoveTimestamp() >= 1000 && button.prompt != null) {
+                drawRectangleText(Global.input.mousePos().x, Global.input.mousePos().y, 0, button.prompt, false, new SimpleColor(40, 40, 40, 240));
+            }
         }
     }
 
@@ -511,7 +513,7 @@ public class TextureDrawing {
         char interactionChar = 'E';
         Point mousePos = WorldUtils.getBlockUnderMousePoint();
         Point root = findRoot(mousePos.x, mousePos.y);
-        boolean interactionButtonPressed = EventHandler.getKeyClick(interactionChar);
+        boolean interactionButtonPressed = Global.input.pressed(interactionChar);
 
         if (root != null) {
             Runnable interaction = StaticWorldObjects.getOnInteraction(getObject(root.x, root.y));

@@ -1,6 +1,6 @@
 package core.World.Creatures.Player.Inventory.Items.Weapons.Ammo;
 
-import core.EventHandling.EventHandler;
+import core.Global;
 import core.UI.Sounds.Sound;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
@@ -12,10 +12,11 @@ import core.World.Textures.TextureDrawing;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.Iterator;
-import static core.EventHandling.EventHandler.getMousePos;
+
 import static core.Window.assetsDir;
 import static core.World.Textures.TextureDrawing.drawTexture;
 import static core.World.WorldGenerator.*;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Bullets {
     public float bulletSpeed, damage, angle, x, y;
@@ -37,9 +38,9 @@ public class Bullets {
         if (Inventory.currentObjectType == Items.Types.WEAPON) {
             Weapons weapon = Inventory.getCurrent().weapon;
 
-            if (EventHandler.getMousePress() && System.currentTimeMillis() - weapon.lastShootTime >= weapon.fireRate) {
+            if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && System.currentTimeMillis() - weapon.lastShootTime >= weapon.fireRate) {
                 weapon.lastShootTime = System.currentTimeMillis();
-                Bullets.createBullet(DynamicObjects.getFirst().getX(), DynamicObjects.getFirst().getY(), weapon.ammoSpeed, weapon.damage, Math.abs((float) Math.toDegrees(Math.atan2(getMousePos().y - 540, getMousePos().x - 960)) - 180));
+                Bullets.createBullet(DynamicObjects.getFirst().getX(), DynamicObjects.getFirst().getY(), weapon.ammoSpeed, weapon.damage, Math.abs((float) Math.toDegrees(Math.atan2(Global.input.mousePos().y - 540, Global.input.mousePos().x - 960)) - 180));
                 Sound.SoundPlay(weapon.sound, Sound.types.EFFECT, false);
             }
         }

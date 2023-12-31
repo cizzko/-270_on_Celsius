@@ -4,8 +4,8 @@ package core.Utils;
 //modify core.Utils.DebugTools.selectionBlocksCopy true
 //modify core.Utils.DebugTools.selectionBlocksDelete true
 
-import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Logger;
+import core.Global;
 import core.UI.GUI.CreateElement;
 import core.World.Textures.ShadowMap;
 import core.World.StaticWorldObjects.Structures.Structures;
@@ -16,6 +16,7 @@ import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.WorldGenerator.destroyObject;
 import static core.World.WorldGenerator.getObject;
 import static core.World.WorldUtils.getBlockUnderMousePoint;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
 public class DebugTools {
@@ -28,15 +29,15 @@ public class DebugTools {
         new Thread(() -> {
             while (!glfwWindowShouldClose(glfwWindow)) {
                 if (selectionBlocksCopy || selectionBlocksDelete) {
-                    if (EventHandler.getMousePress()) {
+                    if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
                         if (!mousePressed) {
                             mousePressed = true;
                             lastMousePosBlocks = getBlockUnderMousePoint();
-                            lastMousePos = EventHandler.getMousePos();
+                            lastMousePos = Global.input.mousePos();
                         }
-                        CreateElement.createPanel(lastMousePos.x, lastMousePos.y, EventHandler.getMousePos().x - lastMousePos.x, EventHandler.getMousePos().y - lastMousePos.y, "debugPanel", true, "debugModule");
+                        CreateElement.createPanel(lastMousePos.x, lastMousePos.y, Global.input.mousePos().x - lastMousePos.x, Global.input.mousePos().y - lastMousePos.y, "debugPanel", true, "debugModule");
                     }
-                    if (mousePressed && !EventHandler.getMousePress()) {
+                    if (mousePressed && !Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
                         mousePressed = false;
                         CreateElement.panels.get("debugPanel").visible = false;
 
