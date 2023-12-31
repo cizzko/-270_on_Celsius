@@ -2,6 +2,7 @@ package core.World;
 
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.World.Textures.TextureDrawing;
 import core.World.Textures.TextureLoader;
 import java.awt.Point;
 import java.util.ArrayList;
@@ -12,13 +13,13 @@ import static core.World.WorldGenerator.*;
 public class HitboxMap {
 
     public static boolean checkIntersStaticR(float x, float y, int sizeX, int sizeY) {
-        int tarX = (int) (x / 16);
-        int tarY = y % 16 > 15.4 ? (int) (y / 16) : (int) (y / 16 - 1);
-        int tarXSize = (int) Math.ceil(sizeX / 16f);
-        int tarYSize = (int) Math.ceil(sizeY / 16f);
+        int tarX = (int) (x / TextureDrawing.blockSize);
+        int tarY = y % 48 > 47.4 ? (int) (y / TextureDrawing.blockSize) : (int) (y / TextureDrawing.blockSize - 1);
+        int tarXSize = (int) Math.ceil(sizeX / TextureDrawing.blockSize);
+        int tarYSize = (int) Math.ceil(sizeY / TextureDrawing.blockSize);
 
         for (int i = 0; i < tarYSize; i++) {
-            if (getObject(tarX + tarXSize, tarY + i + 1) == -1 || (getResistance(getObject(tarX + tarXSize, tarY + i + 1)) == 100 && x + sizeX >= (getType(getObject(tarX + tarXSize, tarY + i + 1)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + i + 1) : SizeX * 16))) {
+            if (getObject(tarX + tarXSize, tarY + i + 1) == -1 || (getResistance(getObject(tarX + tarXSize, tarY + i + 1)) == 100 && x + sizeX >= (getType(getObject(tarX + tarXSize, tarY + i + 1)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + i + 1) : SizeX * TextureDrawing.blockSize))) {
                 return true;
             }
         }
@@ -26,14 +27,14 @@ public class HitboxMap {
     }
 
     private static Point[] checkIntersStaticRP(float x, float y, int sizeX, int sizeY) {
-        int tarX = (int) (x / 16);
-        int tarY = y % 16 > 15.4 ? (int) (y / 16) : (int) (y / 16 - 1);
-        int tarXSize = (int) Math.ceil(sizeX / 16f);
-        int tarYSize = (int) Math.ceil(sizeY / 16f);
+        int tarX = (int) (x / TextureDrawing.blockSize);
+        int tarY = y % 48 > 47.4 ? (int) (y / TextureDrawing.blockSize) : (int) (y / TextureDrawing.blockSize - 1);
+        int tarXSize = (int) Math.ceil(sizeX / TextureDrawing.blockSize);
+        int tarYSize = (int) Math.ceil(sizeY / TextureDrawing.blockSize);
         ArrayList<Point> inters = new ArrayList<>(tarYSize);
 
         for (int i = 0; i < tarYSize; i++) {
-            if (getObject(tarX + tarXSize, tarY + i + 1) == -1 || (getResistance(getObject(tarX + tarXSize, tarY + i + 1)) == 100 && x + sizeX >= (getType(getObject(tarX + tarXSize, tarY + i + 1)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + i + 1) : SizeX * 16))) {
+            if (getObject(tarX + tarXSize, tarY + i + 1) == -1 || (getResistance(getObject(tarX + tarXSize, tarY + i + 1)) == 100 && x + sizeX >= (getType(getObject(tarX + tarXSize, tarY + i + 1)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + i + 1) : SizeX * TextureDrawing.blockSize))) {
                 inters.add(new Point(tarX + tarXSize, tarY + i + 1));
             }
         }
@@ -41,9 +42,9 @@ public class HitboxMap {
     }
 
     public static boolean checkIntersStaticL(float x, float y, int sizeY) {
-        int tarX = (int) (x / 16);
-        int tarY = y % 16 > 15.4 ? (int) (y / 16) : (int) (y / 16 - 1);
-        int tarYSize = (int) Math.ceil(sizeY / 16f);
+        int tarX = (int) (x / TextureDrawing.blockSize);
+        int tarY = y % 48 > 47.4 ? (int) (y / TextureDrawing.blockSize) : (int) (y / TextureDrawing.blockSize - 1);
+        int tarYSize = (int) Math.ceil(sizeY / TextureDrawing.blockSize);
 
         for (int i = 0; i < tarYSize; i++) {
             if (tarX < 0 || tarY < 0 || getObject(tarX, tarY + i + 1) == -1 || (getResistance(getObject(tarX, tarY + i + 1)) == 100 && getType(getObject(tarX, tarY + i + 1)) == StaticObjectsConst.Types.SOLID)) {
@@ -54,9 +55,9 @@ public class HitboxMap {
     }
 
     private static Point[] checkIntersStaticLP(float x, float y, int sizeY) {
-        int tarX = (int) (x / 16);
-        int tarY = y % 16 > 15.4 ? (int) (y / 16) : (int) (y / 16 - 1);
-        int tarYSize = (int) Math.ceil(sizeY / 16f);
+        int tarX = (int) (x / TextureDrawing.blockSize);
+        int tarY = y % 48 > 47.4 ? (int) (y / TextureDrawing.blockSize) : (int) (y / TextureDrawing.blockSize - 1);
+        int tarYSize = (int) Math.ceil(sizeY / TextureDrawing.blockSize);
         ArrayList<Point> inters = new ArrayList<>(tarYSize);
 
         for (int i = 0; i < tarYSize; i++) {
@@ -68,11 +69,11 @@ public class HitboxMap {
     }
 
     public static boolean checkIntersStaticD(float x, float y, int sizeX, int sizeY) {
-        int tarX = (int) (x / 16);
-        int tarY = (int) Math.floor(y / 16);
-        int tarXSize = (int) Math.ceil(sizeX / 16f);
+        int tarX = (int) (x / TextureDrawing.blockSize);
+        int tarY = (int) Math.floor(y / TextureDrawing.blockSize);
+        int tarXSize = (int) Math.ceil(sizeX / TextureDrawing.blockSize);
 
-        if (getObject(tarX + tarXSize, tarY) == -1 || (getResistance(getObject(tarX + tarXSize, tarY)) == 100 && x + sizeX >= (getType(getObject(tarX + tarXSize, tarY)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY) : SizeX * 16))) {
+        if (getObject(tarX + tarXSize, tarY) == -1 || (getResistance(getObject(tarX + tarXSize, tarY)) == 100 && x + sizeX >= (getType(getObject(tarX + tarXSize, tarY)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY) : SizeX * TextureDrawing.blockSize))) {
             return true;
         }
 
@@ -85,9 +86,9 @@ public class HitboxMap {
     }
 
     private static Point[] checkIntersStaticDP(float x, float y, int sizeX, int sizeY) {
-        int tarX = (int) (x / 16);
-        int tarY = (int) Math.floor(y / 16);
-        int tarXSize = (int) Math.ceil(sizeX / 16f);
+        int tarX = (int) (x / TextureDrawing.blockSize);
+        int tarY = (int) Math.floor(y / TextureDrawing.blockSize);
+        int tarXSize = (int) Math.ceil(sizeX / TextureDrawing.blockSize);
         ArrayList<Point> inters = new ArrayList<>(tarXSize);
 
         for (int i = 0; i < tarXSize; i++) {
@@ -99,17 +100,17 @@ public class HitboxMap {
     }
 
     public static boolean checkIntersStaticU(float x, float y, int sizeX, int sizeY) {
-        int tarX = (int) (x / 16);
-        int tarY = (int) (y / 16);
-        int tarYSize = (int) Math.ceil(sizeY / 16f);
-        int tarXSize = (int) Math.ceil(sizeX / 16f);
+        int tarX = (int) (x / TextureDrawing.blockSize);
+        int tarY = (int) (y / TextureDrawing.blockSize);
+        int tarYSize = (int) Math.ceil(sizeY / TextureDrawing.blockSize);
+        int tarXSize = (int) Math.ceil(sizeX / TextureDrawing.blockSize);
 
-        if (getObject(tarX + tarXSize, tarY + tarYSize) == -1 || (getResistance(getObject(tarX + tarXSize, tarY + tarYSize)) == 100 && x + sizeX >= (getType(getObject(tarX + tarXSize, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + tarYSize) : SizeX * 16))) {
+        if (getObject(tarX + tarXSize, tarY + tarYSize) == -1 || (getResistance(getObject(tarX + tarXSize, tarY + tarYSize)) == 100 && x + sizeX >= (getType(getObject(tarX + tarXSize, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + tarYSize) : SizeX * TextureDrawing.blockSize))) {
             return true;
         }
 
         for (int i = 0; i < tarXSize; i++) {
-            if (getObject(tarX + i, tarY + tarYSize) == -1 || (getResistance(getObject(tarX + i, tarY + tarYSize)) == 100 && (y + sizeY >= (getType(getObject(tarX + i, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID ? findY(tarX + i, tarY + tarYSize) : SizeY * 16)))) {
+            if (getObject(tarX + i, tarY + tarYSize) == -1 || (getResistance(getObject(tarX + i, tarY + tarYSize)) == 100 && (y + sizeY >= (getType(getObject(tarX + i, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID ? findY(tarX + i, tarY + tarYSize) : SizeY * TextureDrawing.blockSize)))) {
                 return true;
             }
         }
@@ -117,14 +118,14 @@ public class HitboxMap {
     }
 
     private static Point[] checkIntersStaticUP(float x, float y, int sizeX, int sizeY) {
-        int tarX = (int) (x / 16);
-        int tarY = (int) (y / 16);
-        int tarYSize = (int) Math.ceil(sizeY / 16f);
-        int tarXSize = (int) Math.ceil(sizeX / 16f);
+        int tarX = (int) (x / TextureDrawing.blockSize);
+        int tarY = (int) (y / TextureDrawing.blockSize);
+        int tarYSize = (int) Math.ceil(sizeY / TextureDrawing.blockSize);
+        int tarXSize = (int) Math.ceil(sizeX / TextureDrawing.blockSize);
         ArrayList<Point> inters = new ArrayList<>(tarXSize);
 
         for (int i = 0; i < tarXSize; i++) {
-            if (getObject(tarX + i, tarY + tarYSize) == -1 || (getResistance(getObject(tarX + i, tarY + tarYSize)) == 100 && (y + sizeY >= (getType(getObject(tarX + i, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID ? findY(tarX + i, tarY + tarYSize) : SizeY * 16)))) {
+            if (getObject(tarX + i, tarY + tarYSize) == -1 || (getResistance(getObject(tarX + i, tarY + tarYSize)) == 100 && (y + sizeY >= (getType(getObject(tarX + i, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID ? findY(tarX + i, tarY + tarYSize) : SizeY * TextureDrawing.blockSize)))) {
                 inters.add(new Point(tarX + i, tarY + tarYSize));
             }
         }
@@ -132,10 +133,10 @@ public class HitboxMap {
     }
 
     public static Point checkIntersInside(float x, float y, int sizeX, int sizeY) {
-        int tarX = (int) (x / 16);
-        int tarY = (int) (y / 16);
-        int tarYSize = (int) Math.ceil(sizeY / 16f);
-        int tarXSize = (int) Math.ceil(sizeX / 16f);
+        int tarX = (int) (x / TextureDrawing.blockSize);
+        int tarY = (int) (y / TextureDrawing.blockSize);
+        int tarYSize = (int) Math.ceil(sizeY / TextureDrawing.blockSize);
+        int tarXSize = (int) Math.ceil(sizeX / TextureDrawing.blockSize);
 
         for (int xPos = 0; xPos < tarXSize; xPos++) {
             for (int yPos = 0; yPos < tarYSize; yPos++) {
@@ -155,6 +156,7 @@ public class HitboxMap {
 
     public static Point[] checkIntersOutside(float x, float y, int sizeX, int sizeY) {
         //TODO: ужс, переписать
+
         Point[] d = checkIntersStaticDP(x, y, sizeX, sizeY);
         if (d.length > 0) {
             return d;

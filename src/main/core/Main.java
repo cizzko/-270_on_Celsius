@@ -6,7 +6,6 @@ public class Main {
     public static void main(String[] args) {
         Logger.log("-------- Log started -------- \nStarting...");
 
-        Window window = new Window();
-        window.run();
+        new Window().run();
     }
 }

@@ -14,6 +14,10 @@ public abstract class StaticWorldObjects implements Serializable {
         return (short) ((((byte) getMaxHp(id) & 0xFF) << 8) | (id & 0xFF));
     }
 
+    public static boolean idsContains(String name) {
+        return ids.containsKey(name);
+    }
+
     public static byte generateId(String name) {
         if (name == null) {
             return 0;
@@ -65,6 +69,10 @@ public abstract class StaticWorldObjects implements Serializable {
 
     public static int getLightTransmission(short id) {
         return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).lightTransmission : 0;
+    }
+
+    public static Runnable getOnInteraction(short id) {
+        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).onInteraction : null;
     }
 
     public static byte getId(short id) {

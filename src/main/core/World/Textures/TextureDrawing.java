@@ -11,14 +11,15 @@ import core.UI.GUI.Video;
 import core.Utils.SimpleColor;
 import core.Window;
 import core.World.Creatures.DynamicWorldObjects;
+import core.World.StaticWorldObjects.StaticWAnimations;
+import core.World.StaticWorldObjects.Structures.ElectricCables;
 import core.World.StaticWorldObjects.Structures.Factories;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.StaticWorldObjects.TemperatureMap;
-
+import core.World.WorldUtils;
 import java.awt.*;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.List;
 
 import static core.EventHandling.Logging.Config.getFromConfig;
@@ -26,7 +27,8 @@ import static core.UI.GUI.CreateElement.*;
 import static core.UI.GUI.Fonts.*;
 import static core.UI.GUI.Video.*;
 import static core.Window.*;
-import static core.World.Creatures.Player.Player.updatePlayerGUI;
+import static core.World.Creatures.Player.Player.*;
+import static core.World.Creatures.Player.Player.currentInteraction;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.Textures.TextureLoader.ByteBufferEncoder;
 import static core.World.Weather.Sun.updateSun;
@@ -34,13 +36,12 @@ import static core.World.WorldGenerator.*;
 import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
+    public static final int blockSize = 48;
     private static float playerX, playerY;
-    //TODO: here need intHashMap..
-    public static final HashMap<Integer, Integer> textures = new HashMap<>();
+    private static final HashMap<Integer, Integer> textures = new HashMap<>();
 
-    //for textures (world)
-    public static void drawTexture(String path, float x, float y, float zoom, SimpleColor color, boolean isStatic, boolean mirrorVertical) {
-        if (color != null && color.getAlpha() == 0) {
+    public static void drawTexture(float x, float y, float zoom, boolean isStatic, boolean mirrorVertical, String path, SimpleColor color) {
+        if (path == null || (color != null && color.getAlpha() == 0)) {
             return;
         } else if (color == null) {
             color = SimpleColor.WHITE;
@@ -74,33 +75,7 @@ public class TextureDrawing {
         glMultMatrixf(new float[]{zoom, 0, 0, 0, 0, zoom, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
         glBegin(GL_QUADS);
 
-        if (mirrorVertical) {
-            //top right
-            glTexCoord2f(1, 1);
-            glVertex2f(x, y);
-            //top left
-            glTexCoord2f(0, 1);
-            glVertex2f(x + width, y);
-            //bottom left
-            glTexCoord2f(0, 0);
-            glVertex2f(x + width, y + height);
-            //bottom right
-            glTexCoord2f(1, 0);
-            glVertex2f(x, y + height);
-        } else {
-            //top left
-            glTexCoord2f(0, 1);
-            glVertex2f(x, y);
-            //top right
-            glTexCoord2f(1, 1);
-            glVertex2f(x + width, y);
-            //bottom right
-            glTexCoord2f(1, 0);
-            glVertex2f(x + width, y + height);
-            //bottom left
-            glTexCoord2f(0, 0);
-            glVertex2f(x, y + height);
-        }
+        setCoords(x, y, height, width, mirrorVertical);
 
         glColor4f(1f, 1f, 1f, 1f);
         glEnd();
@@ -111,7 +86,11 @@ public class TextureDrawing {
         glBindTexture(GL_TEXTURE_2D, 0);
     }
 
-    public static void drawMultiTexture(String pathMain, String pathSecond, float x, float y, float zoom, SimpleColor color, boolean isStatic, boolean mirrorVertical) {
+    public static void drawTexture(float x, float y, boolean isStatic, String path) {
+        drawTexture(x, y, 1, isStatic, false, path, SimpleColor.WHITE);
+    }
+
+    public static void drawMultiTexture(float x, float y, float zoom, boolean isStatic, boolean mirrorVertical, String pathMain, String pathSecond, SimpleColor color) {
         if (color != null && color.getAlpha() == 0) {
             return;
         } else if (color == null) {
@@ -143,6 +122,46 @@ public class TextureDrawing {
         glMultMatrixf(new float[]{zoom, 0, 0, 0, 0, zoom, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
         glBegin(GL_QUADS);
 
+        setCoords(x, y, height, width, mirrorVertical);
+
+        glColor4f(1f, 1f, 1f, 1f);
+        glEnd();
+
+        glDisable(GL_TEXTURE_2D);
+        glPopMatrix();
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    public static void drawTexture(float x, float y, int width, int height, float zoom, boolean isStatic, int id, ByteBuffer buffer, SimpleColor color) {
+        if (textures.get(id) == null) {
+            bindTexture(buffer, id, width, height);
+        }
+        glBindTexture(GL_TEXTURE_2D, textures.get(id));
+
+        glMultMatrixf(new float[]{zoom, 0, 0, 0, 0, zoom, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
+        glColor4f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
+
+        glPushMatrix();
+        glEnable(GL_TEXTURE_2D);
+        glEnable(GL_BLEND);
+        glLoadIdentity();
+
+        if (start && !isStatic) {
+            glTranslatef(-playerX * zoom + Window.width / 2f - 32, -playerY * zoom + Window.height / 2f - 200, 0);
+        }
+
+        glBegin(GL_QUADS);
+        setCoords(x, y, height, width, false);
+        glEnd();
+
+        glDisable(GL_TEXTURE_2D);
+        glPopMatrix();
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    private static void setCoords(float x, float y, int height, int width, boolean mirrorVertical) {
         if (mirrorVertical) {
             //top right
             glTexCoord2f(1, 1);
@@ -170,61 +189,6 @@ public class TextureDrawing {
             glTexCoord2f(0, 0);
             glVertex2f(x, y + height);
         }
-
-        glColor4f(1f, 1f, 1f, 1f);
-        glEnd();
-
-        glDisable(GL_TEXTURE_2D);
-        glPopMatrix();
-
-        glBindTexture(GL_TEXTURE_2D, 0);
-    }
-
-    public static void drawTexture(String path, float x, float y, float zoom, boolean isStatic) {
-        drawTexture(path, x, y, zoom, SimpleColor.WHITE, isStatic, false);
-    }
-
-    //for video, text, etc
-    public static void drawTexture(float x, float y, int width, int height, String name, ByteBuffer buffer, SimpleColor color, float zoom) {
-        if (name != null && textures.get(name.hashCode()) != null) {
-            glBindTexture(GL_TEXTURE_2D, textures.get(name.hashCode()));
-        } else {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-        }
-
-        glPushMatrix();
-        glEnable(GL_TEXTURE_2D);
-        glEnable(GL_BLEND);
-        glLoadIdentity();
-
-        glMultMatrixf(new float[]{zoom, 0, 0, 0, 0, zoom, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
-
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-        glColor4f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
-
-        glBegin(GL_QUADS);
-        glTexCoord2f(0, 1);
-        glVertex2f(x, y);
-
-        glTexCoord2f(1, 1);
-        glVertex2f(x + width, y);
-
-        glTexCoord2f(1, 0);
-        glVertex2f(x + width, y + height);
-
-        glTexCoord2f(0, 0);
-        glVertex2f(x, y + height);
-
-        glColor4f(1f, 1f, 1f, 1f);
-        glEnd();
-
-        glDisable(GL_TEXTURE_2D);
-        glPopMatrix();
-
-        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     public static void drawText(int x, int y, String text, SimpleColor color) {
@@ -242,7 +206,7 @@ public class TextureDrawing {
                 x = startX;
                 continue;
             }
-            TextureDrawing.drawTexture(x, y, getCharDimension(ch).width, getCharDimension(ch).height, String.valueOf(ch), getCharBuffer(ch), color, 1);
+            TextureDrawing.drawTexture(x, y, getCharDimension(ch).width, getCharDimension(ch).height, 1, true, ch, getCharBuffer(ch), color);
             x += getCharDimension(ch).width;
         }
     }
@@ -372,16 +336,40 @@ public class TextureDrawing {
 
     public static void drawPrompt(ButtonObject button) {
         if (getFromConfig("ShowPrompts").equals("true")) {
-            Point mouse = Global.input.mousePos();
-            if (new Rectangle(button.x, button.y, button.width, button.height).contains(mouse) && System.currentTimeMillis() - Global.input.getLastMouseMoveTimestamp() >= 1000 && button.prompt != null) {
-                drawRectangleText(mouse.x, mouse.y, 0, button.prompt, false, new SimpleColor(40, 40, 40, 240));
+            if (new Rectangle(button.x, button.y, button.width, button.height).contains(Global.input.mousePos()) && System.currentTimeMillis() - Global.input.getLastMouseMoveTimestamp() >= 1000 && button.prompt != null) {
+                drawRectangleText(Global.input.mousePos().x, Global.input.mousePos().y, 0, button.prompt, false, new SimpleColor(40, 40, 40, 240));
             }
         }
     }
 
+    public static void drawPointArray(Point[] points) {
+        glColor4f(0, 0, 0, 1);
+
+        //todo вынести работу с матрицей
+        glPushMatrix();
+        glLoadIdentity();
+        glTranslatef(-playerX + Window.width / 2f - 32, -playerY + Window.height / 2f - 200, 0);
+        glMultMatrixf(new float[]{1, 0, 0, 0, 0, 3, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1});
+
+        glLineWidth(4);
+        glBegin(GL_LINES);
+
+        for (int i = 0; i < points.length; i++) {
+            glVertex2f(points[i].x * blockSize + 8, points[i].y * blockSize + 8);
+
+            if (i + 1 < points.length) {
+                glVertex2f(points[i + 1].x * blockSize + 8, points[i + 1].y * blockSize + 8);
+            }
+        }
+
+        glEnd();
+        glPopMatrix();
+        glColor4f(1, 1, 1, 1);
+    }
+
     public static void drawRectangleText(int x, int y, int maxWidth, String text, boolean staticTransfer, SimpleColor panColor) {
         maxWidth = (maxWidth > 0 ? maxWidth : 1920 - x);
-        y = staticTransfer ? y + getTextSize(text).width / maxWidth * 16 : y;
+        y = staticTransfer ? y + getTextSize(text).width / maxWidth * TextureDrawing.blockSize : y;
 
         StringBuilder modifiedText = new StringBuilder();
         int currentWidth = 0;
@@ -445,7 +433,7 @@ public class TextureDrawing {
                         video.frame = 1;
                     }
                     if (byteBuffer.get(name) != null && !byteBuffer.get(name).equals(buff)) {
-                        drawTexture(video.x, video.y, video.width, video.height, null, byteBuffer.get(name), SimpleColor.WHITE, 1);
+                        drawTexture(video.x, video.y, video.width, video.height, 1, true, name.hashCode(), byteBuffer.get(name), SimpleColor.WHITE);
                         buff = byteBuffer.get(name);
                     }
                 }
@@ -454,22 +442,23 @@ public class TextureDrawing {
     }
 
     public static void updatePlayerPos() {
-        playerX = DynamicObjects.get(0).getX();
-        playerY = DynamicObjects.get(0).getY();
+        playerX = DynamicObjects.getFirst().getX();
+        playerY = DynamicObjects.getFirst().getY();
     }
 
     public static void updateStaticObj() {
         updateSun();
+        ElectricCables.drawCables();
         updatePlayerPos();
 
-        for (int x = (int) (playerX / 16) - 20; x < playerX / 16 + 21; x++) {
-            for (int y = (int) (playerY / 16) - 8; y < playerY / 16 + 16; y++) {
+        for (int x = (int) (playerX / blockSize) - 20; x < playerX / blockSize + 21; x++) {
+            for (int y = (int) (playerY / blockSize) - 8; y < playerY / blockSize + blockSize; y++) {
                 if (x < 0 || y < 0 || x > SizeX || y > SizeY) {
                     continue;
                 }
                 short obj = getObject(x, y);
 
-                if (StaticWorldObjects.getId(obj) == 0 || getPath(obj) == null) {
+                if (obj == -1 || StaticWorldObjects.getId(obj) == 0 || getPath(obj) == null) {
                     continue;
                 }
                 if (getHp(obj) <= 0) {
@@ -477,10 +466,11 @@ public class TextureDrawing {
                     continue;
                 }
 
-                float xBlock = findX(x, y);
-                float yBlock = findY(x, y);
+                int xBlock = findX(x, y);
+                int yBlock = findY(x, y);
 
-                if (isOnCamera(xBlock, yBlock, 16, 16)) {
+                //todo настроить камеру
+                if (isOnCamera(xBlock, yBlock)) {
                     SimpleColor color = ShadowMap.getColor(x, y);
                     int upperLimit = 100;
                     int lowestLimit = -20;
@@ -497,52 +487,76 @@ public class TextureDrawing {
                         color = new SimpleColor(color.getRed() - a, color.getGreen() - (a / 2), color.getBlue(), color.getAlpha());
                     }
 
+                    StaticWAnimations.AnimData currentFrame = StaticWAnimations.getCurrentFrame(obj, new Point(x, y));
+                    if (currentFrame != null) {
+                        drawTexture(xBlock, yBlock, currentFrame.width(), currentFrame.height(), 1, false, currentFrame.currentFrame() + StaticWorldObjects.getId(obj), currentFrame.currentFrameImage(), color);
+                        continue;
+                    }
+
                     if (getHp(obj) > getMaxHp(obj) / 1.5f) {
-                        drawTexture(getPath(obj), xBlock, yBlock, 3f, color, false, false);
+                        drawTexture(xBlock, yBlock, 1f, false, false, getPath(obj), color);
 
                     } else if (getHp(obj) < getMaxHp(obj) / 3) {
-                        drawMultiTexture(getPath(obj), assetsDir("World/Blocks/damaged1.png"), xBlock, yBlock, 3f, color, false, false);
+                        drawMultiTexture(xBlock, yBlock, 1f, false, false, getPath(obj), assetsDir(("World/Blocks/damaged" + (getHp(obj) < getMaxHp(obj) / 3 ? "1" : "0")) + ".png"), color);
 
                     } else {
-                        drawMultiTexture(getPath(obj), assetsDir("World/Blocks/damaged0.png"), xBlock, yBlock, 3f, color, false, false);
+                        drawMultiTexture(xBlock, yBlock, 1f, false, false, getPath(obj), assetsDir("World/Blocks/damaged0.png"), color);
                     }
                 }
             }
         }
+        updateBlocksInteraction();
         Factories.update();
     }
 
-    public static boolean isOnCamera(float x, float y, float xSize, float ySize) {
-        DynamicWorldObjects player = DynamicObjects.get(0);
+    private static void updateBlocksInteraction() {
+        char interactionChar = 'E';
+        Point mousePos = WorldUtils.getBlockUnderMousePoint();
+        Point root = findRoot(mousePos.x, mousePos.y);
+        boolean interactionButtonPressed = Global.input.pressed(interactionChar);
 
-        float left = player.getX() - (1920 / 5.5f) - (32 + xSize);
-        float right = player.getX() + (1920 / 5.5f) + (32 - xSize);
-        float bottom = player.getY() - (1080 / 16f) - (32 + ySize); //lower dividet number - higher drawing
-        float top = player.getY() + (1080 / 4.5f) + (32 - ySize);
+        if (root != null) {
+            Runnable interaction = StaticWorldObjects.getOnInteraction(getObject(root.x, root.y));
+
+            if (currentInteraction != null && currentInteraction.isAlive() && interactionButtonPressed) {
+                currentInteraction.interrupt();
+                return;
+            }
+            if (interaction != null) {
+                TextureDrawing.drawTexture((root.x * TextureDrawing.blockSize) + TextureDrawing.blockSize, (root.y * TextureDrawing.blockSize) + TextureDrawing.blockSize, false, assetsDir("\\UI\\GUI\\interactionIcon.png"));
+                TextureDrawing.drawTexture((root.x * TextureDrawing.blockSize + 16) + TextureDrawing.blockSize, (root.y * TextureDrawing.blockSize + 12) + TextureDrawing.blockSize, getCharDimension(interactionChar).width, getCharDimension(interactionChar).height, 1, false, interactionChar, getCharBuffer(interactionChar), SimpleColor.WHITE);
+
+                if (interactionButtonPressed) {
+                    currentInteraction = new Thread(interaction);
+                    currentInteraction.start();
+                }
+            }
+        }
+    }
+
+    public static boolean isOnCamera(int x, int y) {
+        DynamicWorldObjects player = DynamicObjects.getFirst();
+
+        float left = player.getX() - (1920 / 2.1f) - (32 + blockSize);
+        float right = player.getX() + (1920 / 1.7f) + (32 - blockSize);
+        float bottom = player.getY() - (1080 / 3.7f) - (32 + blockSize); //lower dividet number - higher drawing
+        float top = player.getY() + (1080 / 1.4f) + (32 - blockSize);
 
         return !(x + 16 < left) && !(x > right) && !(y + 16 < bottom) && !(y > top);
     }
 
     public static void updateDynamicObj() {
-        for (int x = 0; x < DynamicObjects.size(); x++) {
-            DynamicWorldObjects dynamicObject = DynamicObjects.get(x);
-            DynamicWorldObjects player = DynamicObjects.get(0);
-
+        for (DynamicWorldObjects dynamicObject : DynamicObjects) {
             if (dynamicObject != null) {
-                float left = player.getX() - (1920 / 5.5f) - (48);
-                float right = player.getX() + (1920 / 5.5f) + (48);
-                float bottom = player.getY() - (1080 / 16f) - (48); //lower dividet number - higher drawing
-                float top = player.getY() + (1080 / 5f) + (48);
-                float xBlock = dynamicObject.getX();
-                float yBlock = dynamicObject.getY();
-
                 dynamicObject.incrementCurrentFrame();
 
-                if (!(xBlock + 16 < left) && !(xBlock > right) && !(yBlock + 16 < bottom) && !(yBlock > top)) {
+                //todo проверить правильность настройки камеры
+                if (isOnCamera((int) dynamicObject.getX(), (int) dynamicObject.getY())) {
                     if (dynamicObject.getFramesCount() == 0) {
-                        drawTexture(dynamicObject.getPath(), dynamicObject.getX(), dynamicObject.getY(), 3, ShadowMap.getColorDynamic(x), false, false);
+                        drawTexture(dynamicObject.getX(), dynamicObject.getY(), 1, false, false, dynamicObject.getPath(), ShadowMap.getColorDynamic(dynamicObject));
                     } else {
-                        drawTexture(dynamicObject.getPath() + dynamicObject.getCurrentFrame() + ".png", dynamicObject.getX(), dynamicObject.getY(), 3, ShadowMap.getColorDynamic(x), false, false);
+                        //todo дописать
+                        //drawTexture(dynamicObject.getPath() + dynamicObject.getCurrentFrame() + ".png", dynamicObject.getX(), dynamicObject.getY(), ShadowMap.getColorDynamic(), false, false);
                     }
                 }
             }
@@ -570,7 +584,7 @@ public class TextureDrawing {
                 for (int layer : layers) {
                     for (PanelObject panelObj : panels.values()) {
                         if (panelObj.options != null && panelObj.layer == layer && panelObj.visible) {
-                            drawTexture(panelObj.options, panelObj.x, panelObj.y, 1, true);
+                            drawTexture(panelObj.x, panelObj.y, true, panelObj.options);
                         }
                     }
                 }
@@ -595,7 +609,7 @@ public class TextureDrawing {
 
             if (button.simple && button.isClicked) {
                 drawRectangle(button.x, button.y, button.width, button.height, button.color);
-                drawTexture(assetsDir("UI/GUI/checkMarkTrue.png"), button.x + button.width / 1.3f, button.y + button.height / 3f, 1, true);
+                drawTexture(button.x + button.width / 1.3f, button.y + button.height / 3f, true, assetsDir("UI/GUI/checkMarkTrue.png"));
                 drawText((int) (button.x * 1.1f), button.y + button.height / 3, button.name);
             } else if (button.simple) {
                 drawRectangle(button.x, button.y, button.width, button.height, button.color);
@@ -604,11 +618,11 @@ public class TextureDrawing {
                 //if swap and not simple
                 if (button.isClicked) {
                     drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
-                    drawTexture(assetsDir("UI/GUI/checkMarkTrue.png"), button.x, button.y, 1, true);
+                    drawTexture(button.x, button.y, true, assetsDir("UI/GUI/checkMarkTrue.png"));
                     drawText(button.width + button.x + 24, button.y, button.name);
                 } else {
                     drawRectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
-                    drawTexture(assetsDir("UI/GUI/checkMarkFalse.png"), button.x, button.y, 1, true);
+                    drawTexture(button.x, button.y, true, assetsDir("UI/GUI/checkMarkFalse.png"));
                     drawText(button.width + button.x + 24, button.y, button.name);
                 }
             }
@@ -624,7 +638,7 @@ public class TextureDrawing {
             }
 
             if (button.path != null) {
-                drawTexture(button.path, button.x, button.y, 1, true);
+                drawTexture(button.x, button.y, true, button.path);
                 continue;
             }
             if (button.simple) {
@@ -665,7 +679,7 @@ public class TextureDrawing {
     }
 
 
-    public static void bindTexture(String path) {
+    public static int bindTexture(String path) {
         ByteBuffer buffer = ByteBufferEncoder(path);
 
         int width = TextureLoader.getSize(path).width();
@@ -680,9 +694,11 @@ public class TextureDrawing {
         textures.put(path.hashCode(), id);
 
         glBindTexture(GL_TEXTURE_2D, 0);
+
+        return id;
     }
 
-    public static void bindTexture(ByteBuffer buffer, int id, int width, int height) {
+    public static int bindTexture(ByteBuffer buffer, int id, int width, int height) {
         int texId = glGenTextures();
 
         glBindTexture(GL_TEXTURE_2D, texId);
@@ -693,5 +709,24 @@ public class TextureDrawing {
         textures.put(id, texId);
 
         glBindTexture(GL_TEXTURE_2D, 0);
+        return texId;
+    }
+
+    public static void bindChars() {
+        letterSize.forEach((character, dimension) -> {
+            int width = dimension.width;
+            int height = dimension.height;
+
+            int id = glGenTextures();
+            glBindTexture(GL_TEXTURE_2D, id);
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, getCharBuffer(character));
+            TextureDrawing.textures.put(character.hashCode(), id);
+
+            glBindTexture(GL_TEXTURE_2D, 0);
+        });
     }
 }

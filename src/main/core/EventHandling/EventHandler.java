@@ -5,22 +5,20 @@ import core.EventHandling.Logging.Json;
 import core.EventHandling.Logging.Logger;
 import core.Global;
 import core.UI.GUI.CreateElement;
-import core.UI.GUI.Menu.Pause;
-import core.UI.GUI.Menu.Settings;
+import core.UI.GUI.Menu.*;
 import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.SliderObject;
-import core.Utils.SimpleColor;
 import core.World.Creatures.Player.Player;
+import core.Utils.SimpleColor;
+import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
-import org.lwjgl.glfw.GLFW;
-import org.lwjgl.glfw.GLFWKeyCallback;
-import org.lwjgl.glfw.GLFWWindowSizeCallback;
+import org.lwjgl.glfw.*;
 
-import java.awt.*;
+import java.awt.Point;
 
+import static core.Utils.Commandline.updateLine;
 import static core.EventHandling.Logging.Logger.log;
 import static core.UI.GUI.CreateElement.*;
-import static core.Utils.Commandline.updateLine;
 import static core.Window.*;
 import static core.World.Creatures.Physics.updates;
 import static org.lwjgl.glfw.GLFW.*;
@@ -64,8 +62,7 @@ public class EventHandler {
     public static boolean getRectanglePress(int x, int y, int x1, int y1) {
         Point mousePos = Global.input.mousePos();
 
-        return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 &&
-                Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT);
+        return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 && Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT);
     }
 
     private static void updateSliders() {
@@ -174,7 +171,7 @@ public class EventHandler {
             lastSecond = System.currentTimeMillis();
 
             if (start) {
-                CreateElement.createText(5, 980, "PlayerPos", "Player pos: x - " + (int) WorldGenerator.DynamicObjects.get(0).getX() + "(" + (int) WorldGenerator.DynamicObjects.get(0).getX() / 16 + ") y - " + (int) WorldGenerator.DynamicObjects.get(0).getX() + "(" + (int) WorldGenerator.DynamicObjects.get(0).getY() / 16 + ")", new SimpleColor(25, 25, 25, 255), null);
+                CreateElement.createText(5, 980, "PlayerPos", "Player pos: x - " + (int) WorldGenerator.DynamicObjects.getFirst().getX() + "(" + (int) WorldGenerator.DynamicObjects.getFirst().getX() / TextureDrawing.blockSize + ") y - " + (int) WorldGenerator.DynamicObjects.getFirst().getX() + "(" + (int) WorldGenerator.DynamicObjects.getFirst().getY() / TextureDrawing.blockSize + ")", new SimpleColor(25, 25, 25, 255), null);
                 CreateElement.createText(5, 1005, "PhysicsFPS", "Physics FPS: " + updates, new SimpleColor(25, 25, 25, 255), null);
             }
             CreateElement.createText(5, 1030, "HandlerFPS", "Handler FPS: " + handlerUpdates, new SimpleColor(25, 25, 25, 255), null);
@@ -186,7 +183,7 @@ public class EventHandler {
         }
     }
 
-    public static void initHandler() {
+    public static void init() {
         initCallbacks();
     }
 

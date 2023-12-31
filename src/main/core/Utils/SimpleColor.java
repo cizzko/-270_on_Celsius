@@ -5,8 +5,11 @@ import java.io.Serializable;
 public final class SimpleColor implements Serializable {
     public static final SimpleColor WHITE = fromRGBA(255, 255, 255, 255);
     public static final SimpleColor BLACK = fromRGBA(0, 0, 0, 0);
+    private final int value; // argb
 
-    private int value; // argb
+    public static SimpleColor toColor(int value) {
+        return new SimpleColor((value >> 16) & 0xFF, (value >> 8) & 0xFF, (value) & 0xFF, (value >> 24) & 0xff);
+    }
 
     private static int clamp(int c) {
         return Math.clamp(c, 0, 255);
@@ -29,6 +32,10 @@ public final class SimpleColor implements Serializable {
 
     public static SimpleColor fromRGBA(int r, int g, int b, int a) {
         return new SimpleColor(r, g, b, a);
+    }
+
+    public int getValue() {
+        return value;
     }
 
     public int getRed() {

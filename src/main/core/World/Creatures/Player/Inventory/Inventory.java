@@ -1,32 +1,32 @@
 package core.World.Creatures.Player.Inventory;
 
 import core.EventHandling.EventHandler;
-import core.EventHandling.Logging.Config;
 import core.Global;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
-import core.World.Creatures.Player.Inventory.Items.Details;
 import core.World.Creatures.Player.Inventory.Items.Items;
-import core.World.Creatures.Player.Inventory.Items.Tools;
-import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.Creatures.Player.Player;
 import core.Utils.SimpleColor;
-import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import static core.Window.assetsDir;
 import static core.World.Textures.TextureDrawing.*;
+import static core.World.WorldUtils.getBlockUnderMousePoint;
+import static core.World.WorldUtils.getDistanceToMouse;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Inventory {
     public static boolean inventoryOpen = false, create = false;
     public static Items[][] inventoryObjects = new Items[8][6];
-    public static Point currentObject;
-    public static Point underMouseItem;
+    public static Point currentObject, underMouseItem;
     public static Items.Types currentObjectType;
     private static long lastOpen = System.currentTimeMillis();
-    private static ArrayList<InventoryEvents> listeners = new ArrayList<>();
+    private static final ArrayList<InventoryEvents> listeners = new ArrayList<>();
+
+    public static void registerListener(InventoryEvents event) {
+        listeners.add(event);
+    }
 
     public static Items getCurrent() {
         Point current = currentObject;
@@ -50,7 +50,7 @@ public class Inventory {
     }
 
     private static void drawInventory() {
-        drawTexture(assetsDir("UI/GUI/inventory/inventory" + (inventoryOpen ? "Open" : "Closed") + ".png"), inventoryOpen ? 1488 : 1866, 756, 1, true);
+        drawTexture(inventoryOpen ? 1488 : 1866, 756, true, assetsDir("UI/GUI/inventory/inventory" + (inventoryOpen ? "Open" : "Closed") + ".png"));
 
         for (int x = inventoryOpen ? 0 : 7; x < inventoryObjects.length; x++) {
             for (int y = 0; y < inventoryObjects[x].length; y++) {
@@ -77,14 +77,14 @@ public class Inventory {
     public static void drawInventoryItem(float x, float y, int countInCell, String path) {
         float zoom = Items.findZoom(path);
 
-        drawTexture(path, (x + 5) / zoom, (y + 5) / zoom, zoom, true);
+        drawTexture((x + 5) / zoom, (y + 5) / zoom, zoom, true, false, path, null);
         drawText((int) x + 31, (int) y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell), new SimpleColor(10, 10, 10, 255));
     }
 
     public static void drawInventoryItem(float x, float y, String path) {
         float zoom = Items.findZoom(path);
 
-        drawTexture(path, (x + 5) / zoom, (y + 5) / zoom, zoom, true);
+        drawTexture((x + 5) / zoom, (y + 5) / zoom, zoom, true, false, path, null);
     }
 
     public static void decrementItem(int x, int y) {
@@ -106,138 +106,72 @@ public class Inventory {
             inventoryOpen = !inventoryOpen;
             lastOpen = System.currentTimeMillis();
         }
+
         Point current = currentObject;
-
         if (current != null) {
-            Point mousePos = Global.input.mousePos();
 
+            Point mousePos = Global.input.mousePos();
             if (underMouseItem != null) {
                 float zoom = inventoryObjects[underMouseItem.x][underMouseItem.y].zoom;
-                drawTexture(inventoryObjects[underMouseItem.x][underMouseItem.y].path, (mousePos.x - 15) / zoom, (mousePos.y - 15) / zoom, zoom, true);
+                drawTexture((mousePos.x - 15) / zoom, (mousePos.y - 15) / zoom, zoom, true, false, inventoryObjects[underMouseItem.x][underMouseItem.y].path, SimpleColor.WHITE);
             }
             if ((inventoryOpen || current.x > 6)) {
-                drawTexture(assetsDir("UI/GUI/inventory/inventoryCurrent.png"), 1488 + current.x * 54, 756 + current.y * 54f, 1, true);
+                drawTexture(1488 + current.x * 54, 756 + current.y * 54f, true, assetsDir("UI/GUI/inventory/inventoryCurrent.png"));
             }
+
+            //update placeables preview
             short placeable = inventoryObjects[current.x][current.y].placeable;
-            int blockX = Player.getBlockUnderMousePoint().x;
-            int blockY = Player.getBlockUnderMousePoint().y;
+            int blockX = getBlockUnderMousePoint().x;
+            int blockY = getBlockUnderMousePoint().y;
 
             if (placeable != 0 && underMouseItem == null && !new Rectangle(1488, 756, 500, 500).contains(mousePos)) {
-                boolean isDeclined = Player.getDistanceUnderMouse() < 8 && Player.canPlace(placeable, blockX, blockY);
-
-                if (StaticObjectsConst.getConst(StaticWorldObjects.getId(placeable)).optionalTiles == null) {
-                    Player.drawBlock(blockX, blockY, placeable, isDeclined);
-                } else if (StaticObjectsConst.getConst(StaticWorldObjects.getId(placeable)).optionalTiles != null) {
-                    Player.drawStructure(blockX, blockY, isDeclined, placeable, StaticObjectsConst.getConst(StaticWorldObjects.getId(placeable)).optionalTiles);
-                }
+                boolean isDeclined = getDistanceToMouse() < 8 && Player.canPlace(placeable, blockX, blockY);
+                Player.drawBlock(blockX, blockY, placeable, isDeclined);
             }
         }
     }
 
     private static void updateUnderMouse() {
         Point underMouse = getObjectUnderMouse();
-        if (underMouseItem == null && EventHandler.getRectanglePress(1488, 756, 1919, 1079) && underMouse != null && currentObject != underMouse && inventoryObjects[underMouse.x][underMouse.y] != null) {
-            currentObject = underMouse;
-            currentObjectType = inventoryObjects[underMouse.x][underMouse.y].type;
 
-            if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
-                underMouseItem = underMouse;
+        if (underMouse != null && EventHandler.getRectanglePress(1488, 756, 1919, 1079) && underMouseItem == null) {
+            boolean hasUnderMouseItem = inventoryObjects[underMouse.x][underMouse.y] != null;
+
+            if (currentObject != underMouse && hasUnderMouseItem) {
+                currentObject = underMouse;
+                currentObjectType = inventoryObjects[underMouse.x][underMouse.y].type;
+
+                if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+                    underMouseItem = underMouse;
+                }
+            } else if (!hasUnderMouseItem) {
+                currentObject = null;
+                currentObjectType = null;
             }
         }
+    }
+
+    private static void moveItems(Point from, Point to) {
+        Items buff = inventoryObjects[from.x][from.y];
+        inventoryObjects[from.x][from.y] = inventoryObjects[to.x][to.y];
+        inventoryObjects[to.x][to.y] = buff;
     }
 
     private static void updateDropItem() {
         if (!Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && underMouseItem != null) {
+            //hasItemsMouse - inventory cell under the mouse when the mouse button is released, underMouseItem - item selected for movement
             Point hasItemsMouse = getObjectUnderMouse();
 
-            if (hasItemsMouse != null && inventoryObjects[hasItemsMouse.x][hasItemsMouse.y] == null) {
-                inventoryObjects[hasItemsMouse.x][hasItemsMouse.y] = inventoryObjects[underMouseItem.x][underMouseItem.y];
-                inventoryObjects[underMouseItem.x][underMouseItem.y] = null;
+            if (hasItemsMouse != null) {
+                moveItems(hasItemsMouse, underMouseItem);
                 currentObject = hasItemsMouse;
             } else {
                 for (InventoryEvents listener : listeners) {
-                    Point mousePos = Player.getBlockUnderMousePoint();
+                    Point mousePos = getBlockUnderMousePoint();
                     listener.itemDropped(mousePos.x, mousePos.y, inventoryObjects[underMouseItem.x][underMouseItem.y]);
                 }
             }
             underMouseItem = null;
-        }
-    }
-
-    public static void createElementTool(Tools tool, String path, String description) {
-        int id = tool.name.hashCode();
-
-        if (findCountID(id) > 1) {
-            Point cell = findItemByID(id);
-            inventoryObjects[cell.x][cell.y].countInCell++;
-            return;
-        }
-
-        Point cell = findFreeCell();
-        if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = new Items(tool, path, description);
-        }
-    }
-
-    public static void createElementPlaceable(short object, String description) {
-        byte id = StaticWorldObjects.getId(object);
-        if (findCountID(id) > 1) {
-           Point cell = findItemByID(id);
-            inventoryObjects[cell.x][cell.y].countInCell++;
-            return;
-        }
-
-        Point cell = findFreeCell();
-        if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = new Items((short) ((((byte) StaticWorldObjects.getMaxHp(id) & 0xFF) << 8) | (id & 0xFF)), description);
-        }
-    }
-
-    public static void createElementPlaceable(String rootName, short[][] tiles, String description) {
-        int maxHp;
-        short object;
-        byte id = StaticWorldObjects.generateId(rootName);
-
-        StaticObjectsConst objectConst = StaticObjectsConst.getConst(id);
-        if (objectConst == null) {
-            maxHp = Integer.parseInt((String) Config.getProperties(assetsDir("World/ItemsCharacteristics/" + rootName + ".properties")).get("MaxHp"));
-        } else {
-            maxHp = (int) objectConst.maxHp;
-        }
-
-        object = (short) ((((byte) maxHp & 0xFF) << 8) | (id & 0xFF));
-
-        StaticObjectsConst.setConst(rootName, id, tiles);
-        Inventory.createElementPlaceable(object, description);
-    }
-
-    public static void createElementDetail(Details object, String description) {
-        int id = object.name.hashCode();
-
-        if (findCountID(id) > 1) {
-            Point cell = findItemByID(id);
-            inventoryObjects[cell.x][cell.y].countInCell++;
-            return;
-        }
-
-        Point cell = findFreeCell();
-        if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = new Items(new Details(object.name, object.path), description);
-        }
-    }
-
-    public static void createElementWeapon(Weapons weapon, String path, String description) {
-        int id = weapon.name.hashCode();
-
-        if (findCountID(id) > 1) {
-            Point cell = findItemByID(id);
-            inventoryObjects[cell.x][cell.y].countInCell++;
-            return;
-        }
-
-        Point cell = findFreeCell();
-        if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = new Items(weapon, path, description);
         }
     }
 
@@ -268,5 +202,65 @@ public class Inventory {
             }
         }
         return findFreeCell();
+    }
+
+    public static void createElementTool(String name) {
+        int id = name.hashCode();
+
+        if (findCountID(id) > 1) {
+            Point cell = findItemByID(id);
+            inventoryObjects[cell.x][cell.y].countInCell++;
+            return;
+        }
+
+        Point cell = findFreeCell();
+        if (cell != null) {
+            inventoryObjects[cell.x][cell.y] = Items.createTool(name);
+        }
+    }
+
+    public static void createElementPlaceable(short object) {
+        byte id = StaticWorldObjects.getId(object);
+
+        if (findCountID(id) > 1) {
+            Point cell = findItemByID(id);
+            inventoryObjects[cell.x][cell.y].countInCell++;
+            return;
+        }
+
+        Point cell = findFreeCell();
+        if (cell != null) {
+            inventoryObjects[cell.x][cell.y] = Items.createPlaceable(object);
+        }
+    }
+
+    public static void createElementDetail(String name) {
+        int id = name.hashCode();
+
+        if (findCountID(id) > 1) {
+            Point cell = findItemByID(id);
+            inventoryObjects[cell.x][cell.y].countInCell++;
+            return;
+        }
+
+        Point cell = findFreeCell();
+        if (cell != null) {
+            inventoryObjects[cell.x][cell.y] = Items.createDetail(name);
+        }
+    }
+
+    public static void createElementWeapon(String name) {
+        int id = name.hashCode();
+
+        if (findCountID(id) > 1) {
+            Point cell = findItemByID(id);
+            inventoryObjects[cell.x][cell.y].countInCell++;
+            return;
+        }
+
+        Point cell = findFreeCell();
+        if (cell != null) {
+            inventoryObjects[cell.x][cell.y] = Items.createWeapon(name);
+        }
     }
 }

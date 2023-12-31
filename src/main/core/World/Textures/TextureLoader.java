@@ -6,6 +6,8 @@ import core.Utils.ArrayUtils;
 import core.Utils.SimpleColor;
 import org.lwjgl.BufferUtils;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -13,18 +15,16 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import static core.EventHandling.Logging.Logger.*;
-import static core.UI.GUI.Fonts.getCharBuffer;
-import static core.UI.GUI.Fonts.letterSize;
-import static core.Window.assetsDir;
-import static core.Window.pathTo;
+import static core.Window.*;
+import static core.World.Textures.TextureDrawing.bindChars;
 import static core.World.Textures.TextureDrawing.bindTexture;
-import static org.lwjgl.opengl.GL11.*;
 
 public class TextureLoader extends Thread {
-    //private static SoftReference<HashMap<String, Size>> sizes = new SoftReference<>(new HashMap<>());
     private static HashMap<String, Size> sizes = new HashMap<>();
+
     public record Size(int width, int height) {}
     public record ImageData(int width, int height, ByteBuffer data) {}
+    public record GifImageData(int width, int height, ByteBuffer[] data) {}
 
     public static BufferedImage BufferedImageEncoder(String path) {
         try {
@@ -63,33 +63,8 @@ public class TextureLoader extends Thread {
     }
 
     public static Size getSize(String path) {
-        path += path.endsWith(".png") ? "" : "1.png";
         return getSizeStatic(path);
     }
-
-//    TODO: тестовая конструкция
-//    public static Size getSizeStatic(String path) {
-//        HashMap<String, Size> ref = sizes.get();
-//
-//        if (ref == null) {
-//            ref = new HashMap<>();
-//            BufferedImage encoder = BufferedImageEncoder(path);
-//            Size size = new Size(encoder.getWidth(), encoder.getHeight());
-//            ref.put(path, size);
-//            sizes = new SoftReference<>(ref);
-//
-//            return size;
-//        } else if (ref.get(path) != null) {
-//            return ref.get(path);
-//        } else {
-//            BufferedImage encoder = BufferedImageEncoder(path);
-//            Size size = new Size(encoder.getWidth(), encoder.getHeight());
-//            ref.put(path, size);
-//            sizes = new SoftReference<>(ref);
-//
-//            return size;
-//        }
-//    }
 
     public static Size getSizeStatic(String path) {
         Size size = sizes.getOrDefault(path, null);
@@ -125,21 +100,23 @@ public class TextureLoader extends Thread {
         }
     }
 
-    public static void bindChars() {
-        letterSize.forEach((character, dimension) -> {
-            int width = dimension.width;
-            int height = dimension.height;
+    public static GifImageData framesDecoder(String path) {
+        try {
+            if (path.endsWith(".gif")) {
+                ImageReader reader = ImageIO.getImageReadersByFormatName("gif").next();
+                File input = new File(path);
+                ImageInputStream stream = ImageIO.createImageInputStream(input);
+                reader.setInput(stream);
 
-            int id = glGenTextures();
-            glBindTexture(GL_TEXTURE_2D, id);
-
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, getCharBuffer(character));
-            TextureDrawing.textures.put(character.hashCode(), id);
-
-            glBindTexture(GL_TEXTURE_2D, 0);
-        });
+                ByteBuffer[] frames = new ByteBuffer[reader.getNumImages(true)];
+                for (int index = 0; index < frames.length; index++) {
+                    frames[index] = ByteBufferEncoder(reader.read(index));
+                }
+                return new GifImageData(reader.read(0).getWidth(), reader.read(0).getHeight(), frames);
+            }
+        } catch (IOException e) {
+            printException("Error when decode texture: ", e);
+        }
+        return null;
     }
 }

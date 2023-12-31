@@ -1,6 +1,7 @@
 package core.World.Textures;
 
 import core.Utils.SimpleColor;
+import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.WorldGenerator;
 import java.util.*;
@@ -9,19 +10,22 @@ import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.WorldGenerator.*;
 
 public class ShadowMap {
-    private static SimpleColor[] shadows;
-    private static ArrayList<SimpleColor> shadowsDynamic = new ArrayList<>(10);
-    private static SimpleColor deletedColor = SimpleColor.BLACK, deletedColorDynamic = SimpleColor.BLACK;
-    private static SimpleColor addedColor = SimpleColor.BLACK, addedColorDynamic = SimpleColor.BLACK;
+    private static int[] shadows;
+    private static HashMap<DynamicWorldObjects, SimpleColor> shadowsDynamic = new HashMap<>();
+    private static SimpleColor deletedColor = SimpleColor.BLACK, deletedColorDynamic = SimpleColor.BLACK, addedColor = SimpleColor.BLACK, addedColorDynamic = SimpleColor.BLACK;
 
     //TODO: rewrite generation n update
 
     public static SimpleColor getShadow(int x, int y) {
-        return shadows[x + SizeX * y];
+        assert (x + SizeX * y) < shadows.length;
+
+        return SimpleColor.toColor(shadows[x + SizeX * y]);
     }
 
     public static void setShadow(int x, int y, SimpleColor color) {
-        shadows[x + SizeX * y] = color;
+        assert (x + SizeX * y) < shadows.length;
+
+        shadows[x + SizeX * y] = color.getValue();
     }
 
     public static int getDegree(int x, int y) {
@@ -30,8 +34,8 @@ public class ShadowMap {
     }
 
     public static void generate() {
-        shadows = new SimpleColor[(WorldGenerator.SizeX + 1) * (WorldGenerator.SizeY + 1)];
-        Arrays.fill(shadows, SimpleColor.WHITE);
+        shadows = new int[(WorldGenerator.SizeX + 1) * (WorldGenerator.SizeY + 1)];
+        Arrays.fill(shadows, SimpleColor.WHITE.getValue());
 
         generateShadows();
     }
@@ -66,11 +70,11 @@ public class ShadowMap {
 
     public static void update() {
         if (start) {
-            int xPos = (int) DynamicObjects.get(0).getX();
-            int yPos = (int) DynamicObjects.get(0).getY();
+            int xPos = (int) DynamicObjects.getFirst().getX();
+            int yPos = (int) DynamicObjects.getFirst().getY();
 
-            for (int x = xPos / 16 - 20; x < xPos / 16 + 21; x++) {
-                for (int y = yPos / 16 - 8; y < yPos / 16 + 16; y++) {
+            for (int x = xPos / TextureDrawing.blockSize - 20; x < xPos / TextureDrawing.blockSize + 21; x++) {
+                for (int y = yPos / TextureDrawing.blockSize - 8; y < yPos / TextureDrawing.blockSize + 16; y++) {
                     if (checkHasGasAround(x, y, 1)) {
                         setShadow(x, y, new SimpleColor(165, 165, 165, 255));
                     } else {
@@ -78,15 +82,15 @@ public class ShadowMap {
                     }
                 }
             }
-            for (int x = xPos / 16 - 20; x < xPos / 16 + 21; x++) {
-                for (int y = yPos / 16 - 8; y < yPos / 16 + 16; y++) {
+            for (int x = xPos / TextureDrawing.blockSize - 20; x < xPos / TextureDrawing.blockSize + 21; x++) {
+                for (int y = yPos / TextureDrawing.blockSize - 8; y < yPos / TextureDrawing.blockSize + 16; y++) {
                     if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
                         setShadow(x, y, new SimpleColor(85, 85, 85, 255));
                     }
                 }
             }
-            for (int x = xPos / 16 - 20; x < xPos / 16 + 21; x++) {
-                for (int y = yPos / 16 - 8; y < yPos / 16 + 16; y++) {
+            for (int x = xPos / TextureDrawing.blockSize - 20; x < xPos / TextureDrawing.blockSize + 21; x++) {
+                for (int y = yPos / TextureDrawing.blockSize - 8; y < yPos / TextureDrawing.blockSize + 16; y++) {
                     if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
                         setShadow(x, y, new SimpleColor(5, 5, 5, 255));
                     }
@@ -94,36 +98,6 @@ public class ShadowMap {
             }
         }
     }
-
-//    public static int getBlockDepthVertical(int x, int y) {
-//        int maxDepth = 4;
-//        int depth = 0;
-//
-//        for (int i = y; i < SizeY; i++) {
-//            if (depth >= maxDepth || getType(getObject(x, i + 1)) == StaticObjectsConst.Types.GAS) {
-//                break;
-//            }
-//            depth++;
-//        }
-//        return depth;
-//    }
-//
-//    private static int getBlockLightingVertical(int x, int y) {
-//        int lighting = 255;
-//
-//        for (int i = y; i < SizeY; i++) {
-//            if (getType(getObject(x, i)) != StaticObjectsConst.Types.GAS) {
-//                lighting -= Math.abs(255 - StaticWorldObjects.getLightTransmission(getObject(x, i)));
-//
-//                if (lighting < 10) {
-//                    return 10;
-//                }
-//            } else {
-//                return 255;
-//            }
-//        }
-//        return lighting;
-//    }
 
     private static SimpleColor calculateColor(int lighting, SimpleColor originalColor) {
         int r = originalColor.getRed() - Math.abs(255 - lighting);
@@ -142,18 +116,20 @@ public class ShadowMap {
         return new SimpleColor(r, g, b, a);
     }
 
-    public static SimpleColor getColorDynamic(int cell) {
-        if (shadowsDynamic != null && cell < shadowsDynamic.size()) {
-            int r = checkColor(shadowsDynamic.get(cell).getRed() + addedColorDynamic.getRed() - deletedColorDynamic.getRed());
-            int g = checkColor(shadowsDynamic.get(cell).getGreen() + addedColorDynamic.getGreen() - deletedColorDynamic.getGreen());
-            int b = checkColor(shadowsDynamic.get(cell).getBlue() + addedColorDynamic.getBlue() - deletedColorDynamic.getBlue());
-            int a = checkColor(shadowsDynamic.get(cell).getAlpha() + addedColorDynamic.getAlpha() - deletedColorDynamic.getAlpha());
+    public static SimpleColor getColorDynamic(DynamicWorldObjects object) {
+        SimpleColor color = shadowsDynamic.getOrDefault(object, null);
 
-            return new SimpleColor(r, g, b, a);
+        if (color == null) {
+            shadowsDynamic.put(object, SimpleColor.WHITE);
+            color = SimpleColor.WHITE;
         }
-        shadowsDynamic.add(SimpleColor.WHITE);
 
-        return SimpleColor.WHITE;
+        int r = checkColor(color.getRed() + addedColorDynamic.getRed() - deletedColorDynamic.getRed());
+        int g = checkColor(color.getGreen() + addedColorDynamic.getGreen() - deletedColorDynamic.getGreen());
+        int b = checkColor(color.getBlue() + addedColorDynamic.getBlue() - deletedColorDynamic.getBlue());
+        int a = checkColor(color.getAlpha() + addedColorDynamic.getAlpha() - deletedColorDynamic.getAlpha());
+
+        return new SimpleColor(r, g, b, a);
     }
 
     public static void addAllColor(SimpleColor color) {
@@ -231,8 +207,8 @@ public class ShadowMap {
     }
 
     public static void setAllData(HashMap<String, Object> data) {
-        shadows = (SimpleColor[]) data.get("Shadows");
-        shadowsDynamic = (ArrayList<SimpleColor>) data.get("ShadowsDynamic");
+        shadows = (int[]) data.get("Shadows");
+        shadowsDynamic = (HashMap<DynamicWorldObjects, SimpleColor>) data.get("ShadowsDynamic");
         deletedColor = (SimpleColor) data.get("DeletedColor");
         deletedColorDynamic = (SimpleColor) data.get("DeletedColorDynamic");
         addedColor = (SimpleColor) data.get("AddedColor");

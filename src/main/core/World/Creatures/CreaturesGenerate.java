@@ -1,6 +1,8 @@
 package core.World.Creatures;
 
 import core.EventHandling.Logging.Logger;
+import core.World.Textures.TextureDrawing;
+
 import static core.Window.*;
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
@@ -33,7 +35,7 @@ public class CreaturesGenerate {
     private static void updateLogic() {
         for (DynamicWorldObjects object : DynamicObjects) {
             if (object != null) {
-                if (object.getX() - 960 > SizeX * 16 || object.getY() - 540 > SizeY * 16 || object.getX() + 960 < 0 || object.getY() + 540 < 0) {
+                if (object.getX() - 960 > SizeX * TextureDrawing.blockSize || object.getY() - 540 > SizeY * TextureDrawing.blockSize || object.getX() + 960 < 0 || object.getY() + 540 < 0) {
                     DynamicObjects.remove(object);
                     continue;
                 }
@@ -51,7 +53,7 @@ public class CreaturesGenerate {
     }
 
     private static void generateButterfly() {
-        DynamicObjects.add(DynamicWorldObjects.createDynamic("butterfly", (float) (Math.random() * (SizeX * 16))));
+        DynamicObjects.add(DynamicWorldObjects.createDynamic("butterfly", (float) (Math.random() * (SizeX * TextureDrawing.blockSize))));
         currentCreaturesCount++;
     }
 

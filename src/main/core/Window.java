@@ -5,6 +5,7 @@ import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
 import core.EventHandling.MouseScrollCallback;
 import core.UI.GUI.Menu.Main;
+import core.Utils.SimpleColor;
 import core.World.Textures.TextureLoader;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
@@ -70,7 +71,7 @@ public class Window {
         glOrtho(0, width, 0, height, 1, -1);
         glMatrixMode(GL_MODELVIEW);
 
-        EventHandler.initHandler();
+        EventHandler.init();
         TextureLoader.preLoadResources();
         Main.create();
 
@@ -93,7 +94,7 @@ public class Window {
                 updateStaticObj();
                 updateDynamicObj();
             } else {
-                drawTexture(assetsDir("World/Other/background.png"), 0, 0, 1, true);
+                drawTexture(0, 0, true, assetsDir("World/Other/background.png"));
             }
             updateGUI();
 
