@@ -67,7 +67,7 @@ public class DebugTools {
         for (int x = startX; x < targetX; x++) {
             for (int y = startY; y < targetY; y++) {
                 if (x < WorldGenerator.SizeX && y < WorldGenerator.SizeY && x > 0 && y > 0 && getObject(x, y) > 0 && getId(getObject(x, y)) != 0) {
-                    ShadowMap.setShadow(x, y, new SimpleColor(0, 0, 255, 255));
+                    ShadowMap.setShadow(x, y, SimpleColor.fromRGBA(0, 0, 255, 255));
                     objects[x - startX][y - startY] = getObject(x, y);
                 }
             }

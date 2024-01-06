@@ -44,7 +44,7 @@ public class ShadowMap {
         for (int x = 1; x < WorldGenerator.SizeX - 1; x++) {
             for (int y = 1; y < WorldGenerator.SizeY - 1; y++) {
                 if (checkHasGasAround(x, y, 1)) {
-                    setShadow(x, y, new SimpleColor(165, 165, 165, 255));
+                    setShadow(x, y, SimpleColor.fromRGBA(165, 165, 165, 255));
                 } else {
                     setShadow(x, y, SimpleColor.WHITE);
                 }
@@ -54,7 +54,7 @@ public class ShadowMap {
         for (int x = 1; x < WorldGenerator.SizeX - 1; x++) {
             for (int y = 1; y < WorldGenerator.SizeY - 1; y++) {
                 if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
-                    setShadow(x, y, new SimpleColor(85, 85, 85, 255));
+                    setShadow(x, y, SimpleColor.fromRGBA(85, 85, 85, 255));
                 }
             }
         }
@@ -62,7 +62,7 @@ public class ShadowMap {
         for (int x = 2; x < WorldGenerator.SizeX - 2; x++) {
             for (int y = 2; y < WorldGenerator.SizeY - 2; y++) {
                 if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
-                    setShadow(x, y, new SimpleColor(5, 5, 5, 255));
+                    setShadow(x, y, SimpleColor.DIRTY_BRIGHT_BLACK);
                 }
             }
         }
@@ -76,7 +76,7 @@ public class ShadowMap {
             for (int x = xPos / TextureDrawing.blockSize - 20; x < xPos / TextureDrawing.blockSize + 21; x++) {
                 for (int y = yPos / TextureDrawing.blockSize - 8; y < yPos / TextureDrawing.blockSize + 16; y++) {
                     if (checkHasGasAround(x, y, 1)) {
-                        setShadow(x, y, new SimpleColor(165, 165, 165, 255));
+                        setShadow(x, y, SimpleColor.fromRGBA(165, 165, 165, 255));
                     } else {
                         setShadow(x, y, SimpleColor.WHITE);
                     }
@@ -85,14 +85,14 @@ public class ShadowMap {
             for (int x = xPos / TextureDrawing.blockSize - 20; x < xPos / TextureDrawing.blockSize + 21; x++) {
                 for (int y = yPos / TextureDrawing.blockSize - 8; y < yPos / TextureDrawing.blockSize + 16; y++) {
                     if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
-                        setShadow(x, y, new SimpleColor(85, 85, 85, 255));
+                        setShadow(x, y, SimpleColor.fromRGBA(85, 85, 85, 255));
                     }
                 }
             }
             for (int x = xPos / TextureDrawing.blockSize - 20; x < xPos / TextureDrawing.blockSize + 21; x++) {
                 for (int y = yPos / TextureDrawing.blockSize - 8; y < yPos / TextureDrawing.blockSize + 16; y++) {
                     if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
-                        setShadow(x, y, new SimpleColor(5, 5, 5, 255));
+                        setShadow(x, y, SimpleColor.DIRTY_BRIGHT_BLACK);
                     }
                 }
             }
@@ -104,7 +104,7 @@ public class ShadowMap {
         int g = originalColor.getGreen() - Math.abs(255 - lighting);
         int b = originalColor.getBlue() - Math.abs(255 - lighting);
 
-        return checkColor(new SimpleColor(r, g, b, originalColor.getAlpha()));
+        return checkColor(SimpleColor.fromRGBA(r, g, b, originalColor.getAlpha()));
     }
 
     public static SimpleColor getColor(int x, int y) {
@@ -113,7 +113,7 @@ public class ShadowMap {
         int b = checkColor(getShadow(x, y).getBlue() + addedColor.getBlue() - deletedColor.getBlue());
         int a = checkColor(getShadow(x, y).getAlpha() + addedColor.getAlpha() - deletedColor.getAlpha());
 
-        return new SimpleColor(r, g, b, a);
+        return SimpleColor.fromRGBA(r, g, b, a);
     }
 
     public static SimpleColor getColorDynamic(DynamicWorldObjects object) {
@@ -129,7 +129,7 @@ public class ShadowMap {
         int b = checkColor(color.getBlue() + addedColorDynamic.getBlue() - deletedColorDynamic.getBlue());
         int a = checkColor(color.getAlpha() + addedColorDynamic.getAlpha() - deletedColorDynamic.getAlpha());
 
-        return new SimpleColor(r, g, b, a);
+        return SimpleColor.fromRGBA(r, g, b, a);
     }
 
     public static void addAllColor(SimpleColor color) {
@@ -157,7 +157,7 @@ public class ShadowMap {
                     int b = checkColor(getShadow(x, y).getBlue() + color.getBlue());
                     int a = checkColor(getShadow(x, y).getAlpha() + color.getAlpha());
 
-                    setShadow(x, y, new SimpleColor(r, g, b, a));
+                    setShadow(x, y, SimpleColor.fromRGBA(r, g, b, a));
                 }
             }
         }
@@ -173,7 +173,7 @@ public class ShadowMap {
         int b = checkColor(color.getBlue());
         int a = checkColor(color.getAlpha());
 
-        return new SimpleColor(r, g, b, a);
+        return SimpleColor.fromRGBA(r, g, b, a);
     }
 
     private static SimpleColor checkLightTransmission(SimpleColor color, int transmission) {
@@ -182,7 +182,7 @@ public class ShadowMap {
         int b = checkColor(color.getBlue() + transmission);
         int a = checkColor(color.getAlpha() + transmission);
 
-        return new SimpleColor(r, g, b, a);
+        return SimpleColor.fromRGBA(r, g, b, a);
     }
 
     private static boolean checkHasGasAround(int x, int y, int radius) {

@@ -146,13 +146,13 @@ public class Factories implements StaticBlocksEvents {
                 boolean output = factory.outputStoredObjects != null;
 
                 if (input && ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0) {
-                    TextureDrawing.drawRectangle((int) xMouse, (int) yMouse, ArrayUtils.findDistinctObjects(factory.inputStoredObjects) * 54 + playerSize, 64, new SimpleColor(40, 40, 40, 240));
+                    TextureDrawing.drawRectangle((int) xMouse, (int) yMouse, ArrayUtils.findDistinctObjects(factory.inputStoredObjects) * 54 + playerSize, 64, SimpleColor.fromRGBA(40, 40, 40, 240));
                     drawObjects(xMouse, yMouse, factory.inputStoredObjects, assetsDir("UI/GUI/buildMenu/factoryIn.png"));
                 }
                 if (output && ArrayUtils.findFreeCell(factory.outputStoredObjects) != 0) {
                     xMouse += (ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0 ? 78 : 0);
 
-                    TextureDrawing.drawRectangle((int) xMouse, (int) yMouse, ArrayUtils.findDistinctObjects(factory.outputStoredObjects) * 54 + playerSize, 64, new SimpleColor(40, 40, 40, 240));
+                    TextureDrawing.drawRectangle((int) xMouse, (int) yMouse, ArrayUtils.findDistinctObjects(factory.outputStoredObjects) * 54 + playerSize, 64, SimpleColor.fromRGBA(40, 40, 40, 240));
                     drawObjects(xMouse, yMouse, factory.outputStoredObjects, assetsDir("UI/GUI/buildMenu/factoryOut.png"));
                 }
             }

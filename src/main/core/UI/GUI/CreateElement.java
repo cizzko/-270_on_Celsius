@@ -56,7 +56,7 @@ public class CreateElement {
     }
 
     public static void createPanel(int x, int y, int panWidth, int panHeight, String name, boolean simple, String group) {
-        panels.put(name, new PanelObject(x, y, panWidth, panHeight, 1, name, simple, null, group, new SimpleColor(40, 40, 40, 240)));
+        panels.put(name, new PanelObject(x, y, panWidth, panHeight, 1, name, simple, null, group, SimpleColor.fromRGBA(40, 40, 40, 240)));
     }
 
     public static void createText(int x, int y, String name, String text, SimpleColor color, String group) {

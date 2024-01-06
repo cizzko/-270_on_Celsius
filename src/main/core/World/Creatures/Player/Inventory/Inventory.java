@@ -78,7 +78,7 @@ public class Inventory {
         float zoom = Items.findZoom(path);
 
         drawTexture((x + 5) / zoom, (y + 5) / zoom, zoom, true, false, path, null);
-        drawText((int) x + 31, (int) y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell), new SimpleColor(10, 10, 10, 255));
+        drawText((int) x + 31, (int) y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell), SimpleColor.DIRTY_BRIGHT_BLACK);
     }
 
     public static void drawInventoryItem(float x, float y, String path) {

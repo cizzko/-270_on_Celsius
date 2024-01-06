@@ -15,10 +15,10 @@ public class Pause {
         if (!created) {
             createPanel(0, 0, 1920, 1080, "Panel", true, "Pause");
 
-            createButton(840, 650, 240, 65, getName("Continue"), null, false, new SimpleColor(255, 80, 0, 55), "Pause", Pause::continueBtn);
-            createButton(840, 550, 240, 65, getName("SaveWorld"), null, false, new SimpleColor(255, 80, 0, 55), "Pause", Pause::saveButton);
-            createButton(840, 300, 240, 65, getName("Exit"), null, false, new SimpleColor(236, 236, 236, 55), "Pause", Pause::exitBtn);
-            createButton(840, 400, 240, 65, getName("Settings"), null, false, new SimpleColor(236, 236, 236, 55), "Pause", Pause::settingsBtn);
+            createButton(840, 650, 240, 65, getName("Continue"), null, false, SimpleColor.DEFAULT_ORANGE, "Pause", Pause::continueBtn);
+            createButton(840, 550, 240, 65, getName("SaveWorld"), null, false, SimpleColor.DEFAULT_ORANGE, "Pause", Pause::saveButton);
+            createButton(840, 300, 240, 65, getName("Exit"), null, false, SimpleColor.DIRTY_WHITE, "Pause", Pause::exitBtn);
+            createButton(840, 400, 240, 65, getName("Settings"), null, false, SimpleColor.DIRTY_WHITE, "Pause", Pause::settingsBtn);
             created = true;
         }
     }

@@ -212,7 +212,7 @@ public class TextureDrawing {
     }
 
     public static void drawText(int x, int y, String text) {
-        drawText(x, y, text, new SimpleColor(210, 210, 210, 255));
+        drawText(x, y, text, SimpleColor.DIRTY_BRIGHT_WHITE);
     }
 
     public static void drawRectangleBorder(int x, int y, int width, int height, int thickness, SimpleColor color) {
@@ -337,7 +337,7 @@ public class TextureDrawing {
     public static void drawPrompt(ButtonObject button) {
         if (getFromConfig("ShowPrompts").equals("true")) {
             if (new Rectangle(button.x, button.y, button.width, button.height).contains(Global.input.mousePos()) && System.currentTimeMillis() - Global.input.getLastMouseMoveTimestamp() >= 1000 && button.prompt != null) {
-                drawRectangleText(Global.input.mousePos().x, Global.input.mousePos().y, 0, button.prompt, false, new SimpleColor(40, 40, 40, 240));
+                drawRectangleText(Global.input.mousePos().x, Global.input.mousePos().y, 0, button.prompt, false, SimpleColor.fromRGBA(40, 40, 40, 240));
             }
         }
     }
@@ -480,11 +480,11 @@ public class TextureDrawing {
                     int a;
                     if (temp > upperLimit) {
                         a = (int) Math.min(maxColor, Math.abs((temp - upperLimit) / 3));
-                        color = new SimpleColor(color.getRed(), color.getGreen() - (a / 2), color.getBlue() - a, color.getAlpha());
+                        color = SimpleColor.fromRGBA(color.getRed(), color.getGreen() - (a / 2), color.getBlue() - a, color.getAlpha());
 
                     } else if (temp < lowestLimit) {
                         a = (int) Math.min(maxColor, Math.abs((temp + lowestLimit) / 3));
-                        color = new SimpleColor(color.getRed() - a, color.getGreen() - (a / 2), color.getBlue(), color.getAlpha());
+                        color = SimpleColor.fromRGBA(color.getRed() - a, color.getGreen() - (a / 2), color.getBlue(), color.getAlpha());
                     }
 
                     StaticWAnimations.AnimData currentFrame = StaticWAnimations.getCurrentFrame(obj, new Point(x, y));
@@ -535,6 +535,7 @@ public class TextureDrawing {
     }
 
     public static boolean isOnCamera(int x, int y) {
+        //todo очень редко проскакивает белая полоска снизу, возможно есть смысл немного повысить дальность отрисовки снизу
         DynamicWorldObjects player = DynamicObjects.getFirst();
 
         float left = player.getX() - (1920 / 2.1f) - (32 + blockSize);
@@ -550,7 +551,6 @@ public class TextureDrawing {
             if (dynamicObject != null) {
                 dynamicObject.incrementCurrentFrame();
 
-                //todo проверить правильность настройки камеры
                 if (isOnCamera((int) dynamicObject.getX(), (int) dynamicObject.getY())) {
                     if (dynamicObject.getFramesCount() == 0) {
                         drawTexture(dynamicObject.getX(), dynamicObject.getY(), 1, false, false, dynamicObject.getPath(), ShadowMap.getColorDynamic(dynamicObject));
@@ -647,7 +647,7 @@ public class TextureDrawing {
                 drawRectangleBorder(button.x, button.y, button.width, button.height, 6, button.color);
             }
             if (!button.isClickable) {
-                drawRectangle(button.x, button.y, button.width, button.height, new SimpleColor(0, 0, 0, 123));
+                drawRectangle(button.x, button.y, button.width, button.height, SimpleColor.fromRGBA(0, 0, 0, 123));
             }
             drawText(button.x + 20, (int) (button.y + button.height / 2.8f), button.name);
             drawPrompt(button);
@@ -673,7 +673,7 @@ public class TextureDrawing {
         }
 
         if (Commandline.created) {
-            drawRectangle(20, 800, 650, 260, new SimpleColor(0, 0, 0, 220));
+            drawRectangle(20, 800, 650, 260, SimpleColor.fromRGBA(0, 0, 0, 220));
             drawRectangleText(-10, 810, 630, EventHandler.keyLoggingText, true, SimpleColor.BLACK);
         }
     }

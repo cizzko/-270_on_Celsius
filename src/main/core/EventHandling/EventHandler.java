@@ -171,11 +171,11 @@ public class EventHandler {
             lastSecond = System.currentTimeMillis();
 
             if (start) {
-                CreateElement.createText(5, 980, "PlayerPos", "Player pos: x - " + (int) WorldGenerator.DynamicObjects.getFirst().getX() + "(" + (int) WorldGenerator.DynamicObjects.getFirst().getX() / TextureDrawing.blockSize + ") y - " + (int) WorldGenerator.DynamicObjects.getFirst().getX() + "(" + (int) WorldGenerator.DynamicObjects.getFirst().getY() / TextureDrawing.blockSize + ")", new SimpleColor(25, 25, 25, 255), null);
-                CreateElement.createText(5, 1005, "PhysicsFPS", "Physics FPS: " + updates, new SimpleColor(25, 25, 25, 255), null);
+                CreateElement.createText(5, 980, "PlayerPos", "Player pos: x - " + (int) WorldGenerator.DynamicObjects.getFirst().getX() + "(" + (int) WorldGenerator.DynamicObjects.getFirst().getX() / TextureDrawing.blockSize + ") y - " + (int) WorldGenerator.DynamicObjects.getFirst().getX() + "(" + (int) WorldGenerator.DynamicObjects.getFirst().getY() / TextureDrawing.blockSize + ")", SimpleColor.DIRTY_BRIGHT_BLACK, null);
+                CreateElement.createText(5, 1005, "PhysicsFPS", "Physics FPS: " + updates, SimpleColor.DIRTY_BRIGHT_BLACK, null);
             }
-            CreateElement.createText(5, 1030, "HandlerFPS", "Handler FPS: " + handlerUpdates, new SimpleColor(25, 25, 25, 255), null);
-            CreateElement.createText(5, 1055, "GameFPS", "Game FPS: " + fps, new SimpleColor(25, 25, 25, 255), null);
+            CreateElement.createText(5, 1030, "HandlerFPS", "Handler FPS: " + handlerUpdates, SimpleColor.DIRTY_BRIGHT_BLACK, null);
+            CreateElement.createText(5, 1055, "GameFPS", "Game FPS: " + fps, SimpleColor.DIRTY_BRIGHT_BLACK, null);
 
             handlerUpdates = 0;
             updates = 0;

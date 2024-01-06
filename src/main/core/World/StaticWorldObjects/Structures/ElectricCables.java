@@ -21,7 +21,7 @@ public class ElectricCables implements InventoryEvents {
 
     @Override
     public void itemDropped(int blockX, int blockY, Items item) {
-        if (StaticWorldObjects.getType(WorldGenerator.getObject(blockX, blockY)) == StaticObjectsConst.Types.SOLID /*&& item.detail.name.toLowerCase().equals("electric cable")*/) {
+        if (StaticWorldObjects.getType(WorldGenerator.getObject(blockX, blockY)) == StaticObjectsConst.Types.SOLID && item.name.toLowerCase().equals("electric cable")) {
             if (lastPlacedCable != null) {
                 if (WorldUtils.getDistanceBetweenBlocks(lastPlacedCable, new Point(blockX, blockY)) <= 15) {
                     placeCable(lastPlacedCable, new Point(blockX, blockY));

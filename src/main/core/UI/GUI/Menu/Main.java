@@ -15,9 +15,9 @@ public class Main {
         createPanel(0, 965, 1920, 115, "defPan", true, "MainMenu");
 
         createPictureButton(1830, 990, assetsDir("UI/discordIcon.png"), "DiscordButton", "MainMenu", Main::discordBtn);
-        createButton(822, 990, 240, 65, getName("Exit"), null, false, new SimpleColor(236, 236, 236, 55), "MainMenu", Main::exitBtn);
-        createButton(548, 990, 240, 65, getName("Settings"), null, false, new SimpleColor(236, 236, 236, 55), "MainMenu", Main::settingsBtn);
-        createButton(46, 990, 240, 65, getName("Play"), null, false, new SimpleColor(255, 80, 0, 55), "MainMenu", Main::playBtn);
+        createButton(822, 990, 240, 65, getName("Exit"), null, false, SimpleColor.DIRTY_WHITE, "MainMenu", Main::exitBtn);
+        createButton(548, 990, 240, 65, getName("Settings"), null, false, SimpleColor.DIRTY_WHITE, "MainMenu", Main::settingsBtn);
+        createButton(46, 990, 240, 65, getName("Play"), null, false, SimpleColor.DEFAULT_ORANGE, "MainMenu", Main::playBtn);
     }
 
     public static void delete() {

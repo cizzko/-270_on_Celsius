@@ -48,7 +48,7 @@ public class Sun {
 
             updateNightBackground();
             updateGradient();
-            drawTexture(580, y, 1, true, false, assetsDir("World/Sun/sun.png"), new SimpleColor(255, green, 40, 220));
+            drawTexture(580, y, 1, true, false, assetsDir("World/Sun/sun.png"), SimpleColor.fromRGBA(255, green, 40, 220));
         }
     }
 
@@ -63,7 +63,7 @@ public class Sun {
         int aGradient = (int) (250 * alpha);
         aGradient = Math.max(0, Math.min(250, aGradient));
 
-        drawTexture(0, 0, 1, true, false, assetsDir("World/Sun/" + (getFromConfig("InterpolateSunset").equals("true") ? "" : "non") + "InterpolatedSunset.png"), new SimpleColor(aGradient, 0, 20, aGradient));
+        drawTexture(0, 0, 1, true, false, assetsDir("World/Sun/" + (getFromConfig("InterpolateSunset").equals("true") ? "" : "non") + "InterpolatedSunset.png"), SimpleColor.fromRGBA(aGradient, 0, 20, aGradient));
     }
 
     private static void updateNightBackground() {
@@ -78,10 +78,10 @@ public class Sun {
         int deleteGradient = Math.max(0, Math.min(150, aGradient));
         int backGradient = Math.max(0, Math.min(255, aGradient));
 
-        ShadowMap.deleteAllColor(new SimpleColor(deleteGradient, deleteGradient, deleteGradient, 0));
-        ShadowMap.deleteAllColorDynamic(new SimpleColor(deleteGradient, deleteGradient, deleteGradient, 0));
+        ShadowMap.deleteAllColor(SimpleColor.fromRGBA(deleteGradient, deleteGradient, deleteGradient, 0));
+        ShadowMap.deleteAllColorDynamic(SimpleColor.fromRGBA(deleteGradient, deleteGradient, deleteGradient, 0));
 
-        drawTexture(0, 0, 1, true, false, assetsDir("World/Sky/skyBackground0.png"), new SimpleColor(255, 255, 255, backGradient));
+        drawTexture(0, 0, 1, true, false, assetsDir("World/Sky/skyBackground0.png"), SimpleColor.fromRGBA(255, 255, 255, backGradient));
     }
 
     private static double Lerp(double a, double b, double t) {

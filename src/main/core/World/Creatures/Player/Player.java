@@ -223,7 +223,7 @@ public class Player {
     public static void drawBlock(int cellX, int cellY, short obj, boolean breakable) {
         SimpleColor color = ShadowMap.getColor(cellX, cellY);
         int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
-        SimpleColor blockColor = breakable ? new SimpleColor(Math.max(0, a - 150), Math.max(0, a - 150), a, 255) : new SimpleColor(a, Math.max(0, a - 150), Math.max(0, a - 150), 255);
+        SimpleColor blockColor = breakable ? SimpleColor.fromRGBA(Math.max(0, a - 150), Math.max(0, a - 150), a, 255) : SimpleColor.fromRGBA(a, Math.max(0, a - 150), Math.max(0, a - 150), 255);
         int xBlock = cellX * TextureDrawing.blockSize;
         int yBlock = cellY * TextureDrawing.blockSize;
 
@@ -272,7 +272,7 @@ public class Player {
         int r = temp > 0 ? a : 0;
         int b = temp > 0 ? 0 : a;
 
-        TextureDrawing.drawTexture(0, 0, 1, true, false, assetsDir("\\UI\\GUI\\modifiedTemperature.png"), new SimpleColor(r, (int) (b / 2f), b, a));
+        TextureDrawing.drawTexture(0, 0, 1, true, false, assetsDir("\\UI\\GUI\\modifiedTemperature.png"), SimpleColor.fromRGBA(r, (int) (b / 2f), b, a));
     }
 
     public static void playerMaxHP() {
@@ -299,11 +299,11 @@ public class Player {
         }
 
         if (transparencyHPline > 0) {
-            TextureDrawing.drawRectangleBorder(30, 30, 200, 35, 1, new SimpleColor(10, 10, 10, transparencyHPline));
-            TextureDrawing.drawRectangle(31, 31, currentHp * 2 - 2, 33, new SimpleColor(150, 0, 20, transparencyHPline));
+            TextureDrawing.drawRectangleBorder(30, 30, 200, 35, 1, SimpleColor.fromRGBA(10, 10, 10, transparencyHPline));
+            TextureDrawing.drawRectangle(31, 31, currentHp * 2 - 2, 33, SimpleColor.fromRGBA(150, 0, 20, transparencyHPline));
 
             if (lastDamage > 0) {
-                TextureDrawing.drawRectangle(29 + currentHp * 2, 31, Math.min(lastDamage * 2, 200), 33, new SimpleColor(252, 161, 3, transparencyHPline));
+                TextureDrawing.drawRectangle(29 + currentHp * 2, 31, Math.min(lastDamage * 2, 200), 33, SimpleColor.fromRGBA(252, 161, 3, transparencyHPline));
             }
         }
     }

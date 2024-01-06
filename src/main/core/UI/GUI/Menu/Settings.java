@@ -21,11 +21,11 @@ public class Settings {
         createPanel(20, 20, 1880, 1040, "defaultPanSettings", false, "Settings");
         createPanel(40, 40, 240, 1000, "leftPanSettings", true, "Settings");
 
-        createButton(40, 900, 240, 65, getName("SettingsExit"), null, true, new SimpleColor(255, 80, 0, 55), "Settings", Settings::exitBtn);
-        createButton(40, 800, 240, 65, getName("SettingsSave"), null, true, new SimpleColor(255, 80, 0, 55), "Settings", Settings::saveBtn);
-        createButton(40, 300, 240, 65, getName("SettingsGraphics"), null, true, new SimpleColor(0, 0, 0, 50), "Settings", Settings::graphicsBtn);
-        createButton(40, 200, 240, 65, getName("SettingsBasic"), null, true, new SimpleColor(0, 0, 0, 50), "Settings", Settings::basicBtn);
-        createButton(40, 100, 240, 65, getName("SettingsOther"), null, true, new SimpleColor(0, 0, 0, 50), "Settings", Settings::otherBtn);
+        createButton(40, 900, 240, 65, getName("SettingsExit"), null, true, SimpleColor.DEFAULT_ORANGE, "Settings", Settings::exitBtn);
+        createButton(40, 800, 240, 65, getName("SettingsSave"), null, true, SimpleColor.DEFAULT_ORANGE, "Settings", Settings::saveBtn);
+        createButton(40, 300, 240, 65, getName("SettingsGraphics"), null, true, SimpleColor.DIRTY_BLACK, "Settings", Settings::graphicsBtn);
+        createButton(40, 200, 240, 65, getName("SettingsBasic"), null, true, SimpleColor.DIRTY_BLACK, "Settings", Settings::basicBtn);
+        createButton(40, 100, 240, 65, getName("SettingsOther"), null, true, SimpleColor.DIRTY_BLACK, "Settings", Settings::otherBtn);
 
         buttons.get(Json.getName("SettingsSave")).isClickable = false;
         buttons.get(getName("SettingsGraphics")).isClickable = false;
@@ -36,21 +36,21 @@ public class Settings {
     }
 
     public static void createGraphicsSett() {
-        createSwapButton(310, 980, 32, 32, getName("InterpolateSunset"), getName("InterpolateSunsetPrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("InterpolateSunset")), "SettingsGraphicsSwap");
-        createSwapButton(310, 910, 32, 32, getName("PreloadResources"), getName("PreloadResourcesPrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("PreloadResources")), "SettingsGraphicsSwap");
-        createSwapButton(310, 840, 32, 32, getName("VerticalSync"), getName("VerticalSyncPrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("VerticalSync")), "SettingsGraphicsSwap");
+        createSwapButton(310, 980, 32, 32, getName("InterpolateSunset"), getName("InterpolateSunsetPrompt"), false, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("InterpolateSunset")), "SettingsGraphicsSwap");
+        createSwapButton(310, 910, 32, 32, getName("PreloadResources"), getName("PreloadResourcesPrompt"), false, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("PreloadResources")), "SettingsGraphicsSwap");
+        createSwapButton(310, 840, 32, 32, getName("VerticalSync"), getName("VerticalSyncPrompt"), false, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("VerticalSync")), "SettingsGraphicsSwap");
     }
 
     public static void createBasicSett() {
         String[] langs = Json.getAllLanguagesArray();
-        createDropButton(780, 950, 240, 65, langs, Json.getName("Language"), new SimpleColor(255, 80, 0, 55), "SettingsBasicDrop", langButton(langs));
-        createSwapButton(310, 980, 32, 32, getName("ShowPrompts"), getName("ShowPromptsPrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("ShowPrompts")), "SettingsBasicSwap");
-        createSwapButton(310, 910, 32, 32, getName("DetectLanguage"), getName("DetectLanguagePrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("DetectLanguage")), "SettingsBasicSwap");
+        createDropButton(780, 950, 240, 65, langs, Json.getName("Language"), SimpleColor.DEFAULT_ORANGE, "SettingsBasicDrop", langButton(langs));
+        createSwapButton(310, 980, 32, 32, getName("ShowPrompts"), getName("ShowPromptsPrompt"), false, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("ShowPrompts")), "SettingsBasicSwap");
+        createSwapButton(310, 910, 32, 32, getName("DetectLanguage"), getName("DetectLanguagePrompt"), false, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("DetectLanguage")), "SettingsBasicSwap");
         createPicture(745, 965, 1, "languageIcon", assetsDir("UI/GUI/languageIcon.png"), "SettingsBasic");
     }
 
     public static void createOtherSett() {
-        createSwapButton(310, 980, 32, 32, getName("SendAnonymousStatistics"), getName("SendAnonymousStatisticsPrompt"), false, new SimpleColor(236, 236, 236, 55), Boolean.parseBoolean(getFromConfig("SendAnonymousStatistics")), "SettingsOtherSwap");
+        createSwapButton(310, 980, 32, 32, getName("SendAnonymousStatistics"), getName("SendAnonymousStatisticsPrompt"), false, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("SendAnonymousStatistics")), "SettingsOtherSwap");
     }
 
     public static void deleteGraphicsSett() {

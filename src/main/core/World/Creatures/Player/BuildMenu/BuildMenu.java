@@ -173,7 +173,7 @@ public class BuildMenu {
                     drawTexture(1650 + currentObject.x * 54, yCoord, true, assetsDir("UI/GUI/inventory/inventoryCurrent.png"));
                 }
             }
-            drawRectangle(1915, (int) Math.abs(scroll / 2f) - 5, 4, 20, new SimpleColor(0, 0, 0, 200));
+            drawRectangle(1915, (int) Math.abs(scroll / 2f) - 5, 4, 20, SimpleColor.fromRGBA(0, 0, 0, 200));
 
             drawRequirements(1663, 156);
 
@@ -182,8 +182,8 @@ public class BuildMenu {
         }
 
         if (infoCreated && currentObject != null && items[currentObject.x][currentObject.y] != null) {
-            TextureDrawing.drawRectangle(0, 0, 1920, 1080, new SimpleColor(0, 0, 0, 50));
-            TextureDrawing.drawRectangle(560, 0, 800, 1080, new SimpleColor(0, 0, 0, 50));
+            TextureDrawing.drawRectangle(0, 0, 1920, 1080, SimpleColor.DIRTY_BLACK);
+            TextureDrawing.drawRectangle(560, 0, 800, 1080, SimpleColor.DIRTY_BLACK);
             TextureDrawing.drawTexture(605, 989, true, assetsDir("UI/GUI/buildMenu/exitBtn.png"));
             TextureDrawing.drawText(694, 730, items[currentObject.x][currentObject.y].description);
             Inventory.drawInventoryItem(694, 915, items[currentObject.x][currentObject.y].path);

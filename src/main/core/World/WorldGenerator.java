@@ -142,26 +142,29 @@ public class WorldGenerator {
     }
 
     public static void generateWorld() {
-        int SizeX = getSliderPos("worldSize") + 20;
-        int SizeY = getSliderPos("worldSize") + 20;
-        boolean simple = buttons.get(Json.getName("GenerateSimpleWorld")).isClicked;
-        boolean randomSpawn = buttons.get(Json.getName("RandomSpawn")).isClicked;
-        boolean creatures = buttons.get(Json.getName("GenerateCreatures")).isClicked;
+        new Thread(() -> {
 
-        log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world at size: x - " + SizeX + ", y - " + SizeY + " (" + SizeX * SizeY + "); with arguments 'simple: " + simple + ", random spawn: " + randomSpawn + "'");
+            int SizeX = getSliderPos("worldSize") + 20;
+            int SizeY = getSliderPos("worldSize") + 20;
+            boolean simple = buttons.get(Json.getName("GenerateSimpleWorld")).isClicked;
+            boolean randomSpawn = buttons.get(Json.getName("RandomSpawn")).isClicked;
+            boolean creatures = buttons.get(Json.getName("GenerateCreatures")).isClicked;
 
-        StaticObjects = new short[(SizeX + 1) * (SizeY + 1)];
-        WorldGenerator.SizeX = SizeX;
-        WorldGenerator.SizeY = SizeY;
+            log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world at size: x - " + SizeX + ", y - " + SizeY + " (" + SizeX * SizeY + "); with arguments 'simple: " + simple + ", random spawn: " + randomSpawn + "'");
 
-        generateBlocks(simple);
-        TemperatureMap.create();
-        Player.createPlayer(randomSpawn);
+            StaticObjects = new short[(SizeX + 1) * (SizeY + 1)];
+            WorldGenerator.SizeX = SizeX;
+            WorldGenerator.SizeY = SizeY;
 
-        log("World generator: generating done!\n");
-        createText(42, 50, "generatingDone", "Done! Starting world..", new SimpleColor(147, 51, 0, 255), "WorldGeneratorState");
+            generateBlocks(simple);
+            TemperatureMap.create();
+            Player.createPlayer(randomSpawn);
 
-        start(creatures);
+            log("World generator: generating done!\n");
+            createText(42, 50, "generatingDone", "Done! Starting world..", SimpleColor.fromRGBA(147, 51, 0, 255), "WorldGeneratorState");
+
+            start(creatures);
+        }).start();
     }
 
     private static void generateBlocks(boolean simple) {
@@ -185,7 +188,7 @@ public class WorldGenerator {
 
     private static void generateFlatWorld() {
         log("World generator: generating flat world");
-        createText(42, 170, "WorldGeneratorState", "Generating flat world", new SimpleColor(210, 210, 210, 255), "WorldGeneratorState");
+        createText(42, 170, "WorldGeneratorState", "Generating flat world", SimpleColor.DIRTY_BRIGHT_WHITE, "WorldGeneratorState");
 
         for (int x = 0; x < SizeX; x++) {
             for (int y = 0; y < SizeY; y++) {
@@ -200,7 +203,7 @@ public class WorldGenerator {
 
     private static void generateMountains() {
         log("World generator: generating mountain");
-        createText(42, 140, "generateMountainsText", "Generating mountains", new SimpleColor(210, 210, 210, 255), "WorldGeneratorState");
+        createText(42, 140, "generateMountainsText", "Generating mountains", SimpleColor.DIRTY_BRIGHT_WHITE, "WorldGeneratorState");
 
         float randGrass = 2f;           //chance of unevenness, the higher the number - the lower the chance
         float randAir = 3.5f;           //chance of air appearing instead of a block, higher number - lower chance
@@ -224,7 +227,7 @@ public class WorldGenerator {
 
     private static void fillHollows() {
         log("World generator: filling hollows");
-        createText(42, 80, "fillHollowsText", "Filling hollows", new SimpleColor(210, 210, 210, 255), "WorldGeneratorState");
+        createText(42, 80, "fillHollowsText", "Filling hollows", SimpleColor.DIRTY_BRIGHT_WHITE, "WorldGeneratorState");
 
         boolean[][] visited = new boolean[SizeX][SizeY];
 
@@ -244,7 +247,7 @@ public class WorldGenerator {
 
     private static void smoothWorld() {
         log("World generator: smoothing world");
-        createText(42, 110, "smoothWorldText", "Smoothing world", new SimpleColor(210, 210, 210, 255), "WorldGeneratorState");
+        createText(42, 110, "smoothWorldText", "Smoothing world", SimpleColor.DIRTY_BRIGHT_WHITE, "WorldGeneratorState");
 
         float smoothingChance = 3f; //chance of smoothing, higher number - lower chance
 
