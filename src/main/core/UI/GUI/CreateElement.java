@@ -33,15 +33,21 @@ public class CreateElement {
         buttons.get(name).path = path;
     }
 
-    public static void createSwapButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, SimpleColor color, boolean isClicked, String group) {
-        buttons.put(name, new ButtonObject(simple, true, x, y, simple ? btnHeight : 44, simple ? btnWidth : 44, name, prompt, color, group, null));
-        if (isClicked) {
-            buttons.get(name).isClicked = true;
+    public static void createSwapButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, boolean resetValue, SimpleColor color, boolean isClicked, String group) {
+        ButtonObject button = buttons.getOrDefault(name, null);
+
+        if (button == null || resetValue) {
+            buttons.put(name, new ButtonObject(simple, true, x, y, simple ? btnHeight : 44, simple ? btnWidth : 44, name, prompt, color, group, null));
+            if (isClicked) {
+                buttons.get(name).isClicked = true;
+            }
+        } else {
+            button.visible = true;
         }
     }
 
     public static void createSwapButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, SimpleColor color, String group) {
-        createSwapButton(x, y, btnWidth, btnHeight, name, prompt, simple, color, false, group);
+        createSwapButton(x, y, btnWidth, btnHeight, name, prompt, simple, false, color, false, group);
     }
 
     public static void createSlider(int x, int y, int sliderWidth, int sliderHeight, int max, String name, SimpleColor sliderColor, SimpleColor dotColor) {

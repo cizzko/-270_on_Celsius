@@ -21,7 +21,7 @@ public class Settings {
         createPanel(20, 20, 1880, 1040, "defaultPanSettings", false, "Settings");
         createPanel(40, 40, 240, 1000, "leftPanSettings", true, "Settings");
 
-        createButton(40, 900, 240, 65, getName("SettingsExit"), null, true, SimpleColor.DEFAULT_ORANGE, "Settings", Settings::exitBtn);
+        createButton(40, 900, 240, 65, getName("Return"), null, true, SimpleColor.DEFAULT_ORANGE, "Settings", Settings::exitBtn);
         createButton(40, 800, 240, 65, getName("SettingsSave"), null, true, SimpleColor.DEFAULT_ORANGE, "Settings", Settings::saveBtn);
         createButton(40, 300, 240, 65, getName("SettingsGraphics"), null, true, SimpleColor.DIRTY_BLACK, "Settings", Settings::graphicsBtn);
         createButton(40, 200, 240, 65, getName("SettingsBasic"), null, true, SimpleColor.DIRTY_BLACK, "Settings", Settings::basicBtn);
@@ -31,38 +31,38 @@ public class Settings {
         buttons.get(getName("SettingsGraphics")).isClickable = false;
 
         createdSettings = true;
-        createGraphicsSett();
+        createGraphicsSet();
         otter();
     }
 
-    public static void createGraphicsSett() {
-        createSwapButton(310, 980, 32, 32, getName("InterpolateSunset"), getName("InterpolateSunsetPrompt"), false, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("InterpolateSunset")), "SettingsGraphicsSwap");
-        createSwapButton(310, 910, 32, 32, getName("PreloadResources"), getName("PreloadResourcesPrompt"), false, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("PreloadResources")), "SettingsGraphicsSwap");
-        createSwapButton(310, 840, 32, 32, getName("VerticalSync"), getName("VerticalSyncPrompt"), false, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("VerticalSync")), "SettingsGraphicsSwap");
+    public static void createGraphicsSet() {
+        createSwapButton(310, 980, 32, 32, getName("InterpolateSunset"), getName("InterpolateSunsetPrompt"), false, true, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("InterpolateSunset")), "SettingsGraphicsSwap");
+        createSwapButton(310, 910, 32, 32, getName("PreloadResources"), getName("PreloadResourcesPrompt"), false, true, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("PreloadResources")), "SettingsGraphicsSwap");
+        createSwapButton(310, 840, 32, 32, getName("VerticalSync"), getName("VerticalSyncPrompt"), false, true, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("VerticalSync")), "SettingsGraphicsSwap");
     }
 
-    public static void createBasicSett() {
+    public static void createBasicSet() {
         String[] langs = Json.getAllLanguagesArray();
         createDropButton(780, 950, 240, 65, langs, Json.getName("Language"), SimpleColor.DEFAULT_ORANGE, "SettingsBasicDrop", langButton(langs));
-        createSwapButton(310, 980, 32, 32, getName("ShowPrompts"), getName("ShowPromptsPrompt"), false, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("ShowPrompts")), "SettingsBasicSwap");
-        createSwapButton(310, 910, 32, 32, getName("DetectLanguage"), getName("DetectLanguagePrompt"), false, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("DetectLanguage")), "SettingsBasicSwap");
+        createSwapButton(310, 980, 32, 32, getName("ShowPrompts"), getName("ShowPromptsPrompt"), false, true, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("ShowPrompts")), "SettingsBasicSwap");
+        createSwapButton(310, 910, 32, 32, getName("DetectLanguage"), getName("DetectLanguagePrompt"), false, true, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("DetectLanguage")), "SettingsBasicSwap");
         createPicture(745, 965, 1, "languageIcon", assetsDir("UI/GUI/languageIcon.png"), "SettingsBasic");
     }
 
-    public static void createOtherSett() {
-        createSwapButton(310, 980, 32, 32, getName("SendAnonymousStatistics"), getName("SendAnonymousStatisticsPrompt"), false, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("SendAnonymousStatistics")), "SettingsOtherSwap");
+    public static void createOtherSet() {
+        createSwapButton(310, 980, 32, 32, getName("SendAnonymousStatistics"), getName("SendAnonymousStatisticsPrompt"), false, true, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("SendAnonymousStatistics")), "SettingsOtherSwap");
     }
 
-    public static void deleteGraphicsSett() {
+    public static void deleteGraphicsSet() {
         buttons.values().stream().filter(button -> button.group.contains("SettingsGraphics")).forEach(button -> button.visible = false);
     }
 
-    public static void deleteBasicSett() {
+    public static void deleteBasicSet() {
         buttons.values().stream().filter(button -> button.group.contains("SettingsBasic")).forEach(button -> button.visible = false);
         panels.values().stream().filter(button -> button.group.contains("SettingsBasic")).forEach(button -> button.visible = false);
     }
 
-    public static void deleteOtherSett() {
+    public static void deleteOtherSet() {
         buttons.values().stream().filter(button -> button.group.contains("SettingsOther")).forEach(button -> button.visible = false);
     }
 
@@ -70,9 +70,9 @@ public class Settings {
         panels.values().stream().filter(button -> button.group.equals("Settings")).forEach(button -> button.visible = false);
         buttons.values().stream().filter(button -> button.group.equals("Settings")).forEach(button -> button.visible = false);
 
-        deleteGraphicsSett();
-        deleteBasicSett();
-        deleteOtherSett();
+        deleteGraphicsSet();
+        deleteBasicSet();
+        deleteOtherSet();
         createdSettings = false;
     }
 
@@ -82,7 +82,7 @@ public class Settings {
     }
 
     private static void exitBtn() {
-        Settings.delete();
+        delete();
         if (!start) {
             Main.create();
         }
@@ -90,43 +90,43 @@ public class Settings {
 
     private static void saveBtn() {
         buttons.get(Json.getName("SettingsSave")).isClickable = false;
-        Settings.updateConfigAll();
+        updateConfigAll();
     }
 
     private static void graphicsBtn() {
-        Settings.deleteBasicSett();
-        Settings.deleteOtherSett();
-        Settings.createGraphicsSett();
+        deleteBasicSet();
+        deleteOtherSet();
+        createGraphicsSet();
 
         buttons.get(Json.getName("SettingsGraphics")).isClickable = false;
         buttons.get(Json.getName("SettingsBasic")).isClickable = true;
         buttons.get(Json.getName("SettingsOther")).isClickable = true;
         buttons.get(Json.getName("SettingsSave")).isClickable = false;
-        Settings.needUpdateCount = true;
+        needUpdateCount = true;
     }
 
     private static void basicBtn() {
-        Settings.createBasicSett();
-        Settings.deleteOtherSett();
-        Settings.deleteGraphicsSett();
+        createBasicSet();
+        deleteOtherSet();
+        deleteGraphicsSet();
 
         buttons.get(Json.getName("SettingsBasic")).isClickable = false;
         buttons.get(Json.getName("SettingsGraphics")).isClickable = true;
         buttons.get(Json.getName("SettingsOther")).isClickable = true;
         buttons.get(Json.getName("SettingsSave")).isClickable = false;
-        Settings.needUpdateCount = true;
+        needUpdateCount = true;
     }
 
     private static void otherBtn() {
-        Settings.deleteBasicSett();
-        Settings.createOtherSett();
-        Settings.deleteGraphicsSett();
+        deleteBasicSet();
+        createOtherSet();
+        deleteGraphicsSet();
 
         buttons.get(Json.getName("SettingsOther")).isClickable = false;
         buttons.get(Json.getName("SettingsGraphics")).isClickable = true;
         buttons.get(Json.getName("SettingsBasic")).isClickable = true;
         buttons.get(Json.getName("SettingsSave")).isClickable = false;
-        Settings.needUpdateCount = true;
+        needUpdateCount = true;
     }
 
     private static Runnable[] langButton(String[] buttonNames) {
@@ -135,7 +135,7 @@ public class Settings {
         for (int i = 0; i < tasks.length; i++) {
             int finalI = i;
             tasks[i] = () -> {
-              Settings.newLang = buttonNames[finalI];
+              newLang = buttonNames[finalI];
               buttons.get(getName("Language")).taskOnClick.run();
             };
         }

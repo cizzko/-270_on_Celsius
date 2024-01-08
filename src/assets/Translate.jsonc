@@ -5,7 +5,11 @@
     "Settings": "Settings",
     "Exit": "Exit",
     "Continue": "Continue",
+    "Return": "Return",
 
+    "Basic": "Basic",
+    "Generation": "Generation",
+    "Physics": "Physics",
     "SaveWorld": "Save world",
     "GenerateWorld": "Generate world",
     "GenerateSimpleWorld": "Simplified generation",
@@ -15,7 +19,6 @@
     "RandomSpawn": "Random spawn",
     "RandomSpawnPrompt": "If enabled, player will spawn in a random location, otherwise in the middle of the world",
 
-    "SettingsExit": "Return",
     "SettingsSave": "Save",
     "SettingsCancel": "reserved",
     "SettingsAccept": "Accept",
@@ -49,7 +52,11 @@
     "Settings": "Настройки",
     "Exit": "Выход",
     "Continue": "Продолжить",
+    "Return": "Вернуться",
 
+    "Basic": "Общие",
+    "Generation": "Генерация",
+    "Physics": "Физика",
     "SaveWorld": "Сохранить мир",
     "GenerateWorld": "Создать мир",
     "GenerateSimpleWorld": "Упрощенная генерация",
@@ -59,7 +66,6 @@
     "RandomSpawn": "Случайное положение",
     "RandomSpawnPrompt": "Если включено, персонаж появится в случайном месте, иначе - посередине мира",
 
-    "SettingsExit": "Вернуться",
     "SettingsSave": "Сохранить",
     "SettingsCancel": "reserved",
     "SettingsAccept": "Подтвердить",
@@ -93,7 +99,11 @@
     "Settings": "Налаштування",
     "Exit": "Выхід",
     "Continue": "Продовжити",
+    "Return": "Повернутися",
 
+    "Basic": "загальні",
+    "Generation": "генерація",
+    "Physics": "фізика",
     "SaveWorld": "Зберегти світ",
     "GenerateWorld": "Создати мир",
     "GenerateSimpleWorld": "Спрощенна генерація",
@@ -103,7 +113,6 @@
     "RandomSpawn": "Случайное положение",
     "RandomSpawnPrompt": "Если включено, персонаж появится в случайном месте, иначе - посередине мира",
 
-    "SettingsExit": "Повернутися",
     "SettingsSave": "Сохранити",
     "SettingsCancel": "reserved",
     "SettingsAccept": "Подтвердить",

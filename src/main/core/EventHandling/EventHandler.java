@@ -81,9 +81,6 @@ public class EventHandler {
     private static void updateButtons() {
         for (ButtonObject button : buttons.values()) {
             if (button == null || !button.visible || !button.isClickable) {
-                if (button != null) {
-                    button.isClicked = false;
-                }
                 continue;
             }
 
@@ -97,7 +94,8 @@ public class EventHandler {
                 button.isClicked = press;
 
                 if (press && button.taskOnClick != null) {
-                    button.taskOnClick.run();
+                    Thread.startVirtualThread(() -> button.taskOnClick.run());
+                    return;
                 }
             }
         }
@@ -156,7 +154,7 @@ public class EventHandler {
     }
 
     private static void updateHotkeys() {
-        if (Global.input.pressed(GLFW_KEY_ESCAPE) && start) {
+        if (Global.input.justPressed(GLFW_KEY_ESCAPE) && start) {
             if (!Pause.created) {
                 Pause.create();
             } else {
