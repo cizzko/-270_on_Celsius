@@ -9,12 +9,13 @@ import org.lwjgl.glfw.GLFWMouseButtonCallback;
 import java.awt.*;
 import java.util.Arrays;
 
+import static core.Window.addResource;
 import static core.Window.glfwWindow;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class InputHandler {
     static final int PRESSED_ARRAY_SIZE = 349;
-    static final int CLICKED_ARRAY_SIZE = 5; // взял с потолка
+    static final int CLICKED_ARRAY_SIZE = 8; // GLFW_MOUSE_BUTTON_1 ~ GLFW_MOUSE_BUTTON_8
 
     private final long[] pressed, clicked;
     private final long[] justPressed, justClicked;
@@ -31,7 +32,7 @@ public class InputHandler {
     }
 
     public void init() {
-        glfwSetCursorPosCallback(glfwWindow, new GLFWCursorPosCallback() {
+        glfwSetCursorPosCallback(glfwWindow, addResource(new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double xpos, double ypos) {
                 double mouseX = xpos * MouseCalibration.xMultiplier;
@@ -41,8 +42,8 @@ public class InputHandler {
                 lastMouseMoveTimestamp = System.currentTimeMillis();
                 mousePos.setLocation(mouseX, invertedY);
             }
-        });
-        glfwSetKeyCallback(glfwWindow, new GLFWKeyCallback() {
+        }));
+        glfwSetKeyCallback(glfwWindow, addResource(new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
                 switch (action) {
@@ -56,8 +57,8 @@ public class InputHandler {
                     }
                 }
             }
-        });
-        glfwSetMouseButtonCallback(glfwWindow, new GLFWMouseButtonCallback() {
+        }));
+        glfwSetMouseButtonCallback(glfwWindow, addResource(new GLFWMouseButtonCallback() {
             @Override
             public void invoke(long window, int button, int action, int mods) {
                 switch (action) {
@@ -71,7 +72,7 @@ public class InputHandler {
                     }
                 }
             }
-        });
+        }));
     }
 
     public void update() {
