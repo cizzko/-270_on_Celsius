@@ -33,21 +33,21 @@ public class EventHandler {
     private static void initCallbacks() {
         log("Thread: Event handling started");
 
-        glfwSetWindowSizeCallback(glfwWindow, new GLFWWindowSizeCallback() {
+        glfwSetWindowSizeCallback(glfwWindow, addResource(new GLFWWindowSizeCallback() {
             @Override
             public void invoke(long window, int width, int height) {
                 EventHandler.width = width;
                 EventHandler.height = height;
             }
-        });
-        glfwSetKeyCallback(glfwWindow, new GLFWKeyCallback() {
+        }));
+        glfwSetKeyCallback(glfwWindow, addResource(new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
                 if (key == GLFW.GLFW_KEY_F4 && mods == GLFW.GLFW_MOD_ALT) {
                     Logger.logExit(1863);
                 }
             }
-        });
+        }));
     }
 
     public static void startKeyLogging() {

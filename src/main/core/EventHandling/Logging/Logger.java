@@ -10,6 +10,7 @@ import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Random;
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Window.*;
@@ -155,7 +156,11 @@ public class Logger extends PrintStream {
     private static StringBuilder getStartMessage() {
         StringBuilder message = new StringBuilder();
 
-        message.append(!System.getProperty("os.name").toLowerCase().contains("windows 10") ? "Warning: " + System.getProperty("os.name") + " not supported!\n" : "");
+        String os = System.getProperty("os.name");
+        String identifier = os.toLowerCase(Locale.ROOT);
+        if (!identifier.contains("windows 10") && !identifier.contains("linux")) {
+            message.append("Warning: ").append(os).append(" not supported!\n");
+        }
         message.append("\nGLFW version: ").append(glfwGetVersionString());
         message.append("\nGame version: " + Window.version);
         message.append("\nStart time: ").append(LocalDateTime.now());
