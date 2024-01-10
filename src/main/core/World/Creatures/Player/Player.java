@@ -44,29 +44,30 @@ public class Player {
 
     public static void updatePlayerMove() {
         float increment = noClip ? 1.6f : 0.4f;
+        DynamicWorldObjects player = DynamicObjects.getFirst();
 
-//        if (EventHandler.getKeyClick(GLFW_KEY_Q) && DynamicObjects.getFirst().getAnimationSpeed() == 0) {
-//            DynamicObjects.getFirst().setPath(assetsDir("World/Creatures/playerLeft/player"));
-//            DynamicObjects.getFirst().setAnimationSpeed(30);
-//            setObject((int) ((DynamicObjects.getFirst().getX() - 1) / TextureDrawing.blockSize), (int) (DynamicObjects.getFirst().getY() / TextureDrawing.blockSize + 1), StaticWorldObjects.decrementHp(getObject((int) ((DynamicObjects.getFirst().getX() - 1) / TextureDrawing.blockSize), (int) (DynamicObjects.getFirst().getY() / TextureDrawing.blockSize + 1)), 10));
-//        }
-//        if (EventHandler.getKeyClick(GLFW_KEY_E) && DynamicObjects.getFirst().getAnimationSpeed() == 0) {
-//            DynamicObjects.getFirst().setPath(assetsDir("World/Creatures/playerRight/player"));
-//            DynamicObjects.getFirst().setAnimationSpeed(30);
-//            setObject((int) (DynamicObjects.getFirst().getX() / TextureDrawing.blockSize + 2), (int) (DynamicObjects.getFirst().getY() / TextureDrawing.blockSize + 1), StaticWorldObjects.decrementHp(getObject((int) (DynamicObjects.getFirst().getX() / TextureDrawing.blockSize + 2), (int) (DynamicObjects.getFirst().getY() / TextureDrawing.blockSize + 1)), 10));
-//        }
+        if (!noClip) {
+            if (Global.input.pressed(GLFW_KEY_D)) {
+                player.setMotionVectorX(increment);
+            }
+            if (Global.input.pressed(GLFW_KEY_A)) {
+                player.setMotionVectorX(-increment);
+            }
+        } else {
+            player.setMotionVectorY(0);
 
-        if (Global.input.pressed(GLFW_KEY_D)) {
-            DynamicObjects.getFirst().setMotionVectorX(increment);
-        }
-        if (Global.input.pressed(GLFW_KEY_A)) {
-            DynamicObjects.getFirst().setMotionVectorX(-increment);
-        }
-        if (noClip && Global.input.pressed(GLFW_KEY_S)) {
-            DynamicObjects.getFirst().setMotionVectorY(-increment);
-        }
-        if (noClip && Global.input.pressed(GLFW_KEY_W)) {
-            DynamicObjects.getFirst().setMotionVectorY(increment);
+            if (Global.input.pressed(GLFW_KEY_D)) {
+                player.setX(player.getX() + increment);
+            }
+            if (Global.input.pressed(GLFW_KEY_A)) {
+                player.setX(player.getX() - increment);
+            }
+            if (Global.input.pressed(GLFW_KEY_S)) {
+                player.setY(player.getY() - increment);
+            }
+            if (Global.input.pressed(GLFW_KEY_W)) {
+                player.setY(player.getY() + increment);
+            }
         }
     }
 
