@@ -9,9 +9,8 @@ import java.io.*;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Random;
+import java.util.*;
+
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Window.*;
 import static core.Window.pathTo;
@@ -21,6 +20,7 @@ public class Logger extends PrintStream {
     private static final long sessionId = (long) (new Random().nextDouble() * Long.MAX_VALUE);
     public static boolean cleanup = false;
     private static byte[] lastErrBuf;
+    private static final Set<String> testedSystems = Set.of("6.6.8-arch", "windows10");
 
     public Logger() {
         super(System.err);
@@ -157,9 +157,13 @@ public class Logger extends PrintStream {
         StringBuilder message = new StringBuilder();
 
         String os = System.getProperty("os.name");
-        String identifier = os.toLowerCase(Locale.ROOT);
-        if (!identifier.contains("windows 10") && !identifier.contains("linux")) {
-            message.append("Warning: ").append(os).append(" not supported!\n");
+        String osVersion = System.getProperty("os.version");
+
+        String identifier = os.toLowerCase(Locale.ROOT).replaceAll(" ", "");
+        String identifierVersion = osVersion.toLowerCase(Locale.ROOT).replaceAll(" ", "");
+
+        if (!testedSystems.contains(identifierVersion) && !testedSystems.contains(identifier)) {
+            message.append("Warning: '").append(os).append("' with version '").append(osVersion).append("' not tested!\n");
         }
         message.append("\nGLFW version: ").append(glfwGetVersionString());
         message.append("\nGame version: " + Window.version);

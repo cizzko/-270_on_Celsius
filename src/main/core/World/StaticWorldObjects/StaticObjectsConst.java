@@ -1,6 +1,7 @@
 package core.World.StaticWorldObjects;
 
 import core.EventHandling.Logging.Config;
+import core.EventHandling.Logging.Logger;
 import core.Window;
 import java.io.File;
 import java.util.Properties;
@@ -27,12 +28,12 @@ public class StaticObjectsConst implements Cloneable {
 
     @Override
     public StaticObjectsConst clone() {
-
         try {
             return (StaticObjectsConst) super.clone();
         } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
+            Logger.printException("Error when cloning static objects const", e);
         }
+        return null;
     }
 
     private StaticObjectsConst(boolean hasMotherBlock, float maxHp, float density, float resistance, int lightTransmission, String path, String objectName, String originalFileName, Types type) {
