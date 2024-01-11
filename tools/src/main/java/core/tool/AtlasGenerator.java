@@ -145,6 +145,8 @@ public final class AtlasGenerator {
         }
         gr.dispose();
 
+        Files.createDirectories(outputDir);
+
         var atlasPath = outputDir.resolve(atlasBaseName + Atlas.ATLAS_EXT);
         ImageIO.write(atlasImage, "png", atlasPath.toFile());
 
