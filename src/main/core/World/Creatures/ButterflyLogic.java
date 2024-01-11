@@ -12,7 +12,7 @@ public class ButterflyLogic {
 
     //TODO: rewrite
     public static void update(DynamicWorldObjects object) {
-        if (object.getPath().contains("butterfly")) {
+        if (object.getTexture().name().contains("butterfly")) {
             if (lastSwapPos.get(object) != null) {
                 if (System.currentTimeMillis() - lastSwapPos.get(object) >= swapPosTime) {
                     int randX = (int) (Math.random() * 60) - 30;

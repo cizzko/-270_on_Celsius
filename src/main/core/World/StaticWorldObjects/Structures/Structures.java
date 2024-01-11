@@ -2,13 +2,14 @@ package core.World.StaticWorldObjects.Structures;
 
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
+import core.Global;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
 import core.World.Textures.TextureLoader;
 import java.io.*;
+import java.nio.file.Files;
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.Properties;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
@@ -30,8 +31,10 @@ public class Structures implements Serializable {
         Structures struct = structures.get(name);
 
         if (struct == null) {
-            struct = Objects.requireNonNull(read(assetsDir("\\World\\Saves\\Structures\\" + name + ".ser")));
-            structures.put(name, struct);
+            struct = read(assetsDir("\\World\\Saves\\Structures\\" + name + ".ser"));
+            if (struct != null) {
+                structures.put(name, struct);
+            }
         }
         return struct;
     }
@@ -113,16 +116,15 @@ public class Structures implements Serializable {
             //if its simple structure (without .ser file)
             if (new File(path).exists()) {
                 Properties prop = Config.getProperties(path);
-                String texturePath = assetsDir((String) prop.get("Path"));
-                TextureLoader.Size size = TextureLoader.getSize(texturePath);
-                blocks = new short[size.width() / TextureDrawing.blockSize][size.height() / TextureDrawing.blockSize];
+                var texture = Global.atlas.byPath((String) prop.get("Path"));
+                blocks = new short[texture.width() / TextureDrawing.blockSize][texture.height() / TextureDrawing.blockSize];
                 maxHp = Byte.parseByte((String) prop.getOrDefault("MaxHp", "100"));
 
                 StaticObjectsConst rootConst = StaticObjectsConst.getConst(path);
                 StaticObjectsConst tailConst = rootConst.clone();
 
                 tailConst.optionalTiles = null;
-                tailConst.path = null;
+                tailConst.texture = null;
                 tailConst.hasMotherBlock = true;
 
                 for (int x = 0; x < blocks.length; x++) {

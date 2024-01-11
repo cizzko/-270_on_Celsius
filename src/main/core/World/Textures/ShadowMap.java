@@ -12,7 +12,7 @@ import static core.World.WorldGenerator.*;
 public class ShadowMap {
     private static int[] shadows;
     private static HashMap<DynamicWorldObjects, SimpleColor> shadowsDynamic = new HashMap<>();
-    private static SimpleColor deletedColor = SimpleColor.BLACK, deletedColorDynamic = SimpleColor.BLACK, addedColor = SimpleColor.BLACK, addedColorDynamic = SimpleColor.BLACK;
+    private static SimpleColor deletedColor = SimpleColor.CLEAR, deletedColorDynamic = SimpleColor.CLEAR, addedColor = SimpleColor.CLEAR, addedColorDynamic = SimpleColor.CLEAR;
 
     //TODO: rewrite generation n update
 
@@ -23,9 +23,12 @@ public class ShadowMap {
     }
 
     public static void setShadow(int x, int y, SimpleColor color) {
-        assert (x + SizeX * y) < shadows.length;
+        int idx = x + SizeX * y;
+        if (idx >= shadows.length) {
+            return;
+        }
 
-        shadows[x + SizeX * y] = color.getValue();
+        shadows[idx] = color.getValueARGB();
     }
 
     public static int getDegree(int x, int y) {
@@ -35,7 +38,7 @@ public class ShadowMap {
 
     public static void generate() {
         shadows = new int[(WorldGenerator.SizeX + 1) * (WorldGenerator.SizeY + 1)];
-        Arrays.fill(shadows, SimpleColor.WHITE.getValue());
+        Arrays.fill(shadows, SimpleColor.WHITE.getValueARGB());
 
         generateShadows();
     }

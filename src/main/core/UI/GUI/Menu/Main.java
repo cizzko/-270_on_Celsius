@@ -1,6 +1,8 @@
 package core.UI.GUI.Menu;
 
+import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Logger;
+import core.Global;
 import core.Utils.SimpleColor;
 import java.awt.Desktop;
 import java.net.URI;
@@ -12,9 +14,9 @@ import static core.Window.*;
 public class Main {
     public static void create() {
         //default coordinate system - full hd
-        createPanel(0, 965, 1920, 115, "defPan", true, "MainMenu");
+        createPanel(0, 965, EventHandler.width, 115, "defPan", true, "MainMenu");
 
-        createPictureButton(1830, 990, assetsDir("UI/discordIcon.png"), "DiscordButton", "MainMenu", Main::discordBtn);
+        createPictureButton(1830, 990, Global.atlas.byPath("UI/discordIcon.png"), "DiscordButton", "MainMenu", Main::discordBtn);
         createButton(822, 990, 240, 65, getName("Exit"), null, false, SimpleColor.DIRTY_WHITE, "MainMenu", Main::exitBtn);
         createButton(548, 990, 240, 65, getName("Settings"), null, false, SimpleColor.DIRTY_WHITE, "MainMenu", Main::settingsBtn);
         createButton(46, 990, 240, 65, getName("Play"), null, false, SimpleColor.DEFAULT_ORANGE, "MainMenu", Main::playBtn);

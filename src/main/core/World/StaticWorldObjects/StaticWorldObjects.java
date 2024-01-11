@@ -1,11 +1,13 @@
 package core.World.StaticWorldObjects;
 
 import core.EventHandling.Logging.Logger;
+import core.g2d.Atlas;
+
 import java.io.Serializable;
 import java.util.HashMap;
 
 public abstract class StaticWorldObjects implements Serializable {
-    private static final HashMap<String, Byte> ids = new HashMap<>();
+    public static final HashMap<String, Byte> ids = new HashMap<>();
 
     public static short createStatic(String name) {
         byte id = generateId(name);
@@ -47,8 +49,8 @@ public abstract class StaticWorldObjects implements Serializable {
         return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).density : 0;
     }
 
-    public static String getPath(short id) {
-        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).path : null;
+    public static Atlas.Region getTexture(short id) {
+        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).texture : null;
     }
 
     public static String getName(short id) {

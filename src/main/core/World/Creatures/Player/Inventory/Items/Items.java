@@ -1,13 +1,16 @@
 package core.World.Creatures.Player.Inventory.Items;
 
 import core.EventHandling.Logging.Config;
+import core.Global;
+import core.Utils.Sized;
 import core.Window;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.g2d.Atlas;
+
 import java.io.Serializable;
 import java.util.Properties;
-import static core.World.Textures.TextureLoader.getSize;
 
 public class Items implements Serializable {
     public Items[] requiredForBuild;
@@ -17,10 +20,11 @@ public class Items implements Serializable {
     public Details detail;
     public int id, countInCell;
     public float zoom;
-    public String path, description, name, filename;
+    public String description, name, filename;
+    public Atlas.Region texture;
     public Types type;
 
-    private record DefaultValues(String name, String path, String description, Items[] requiredForBuild) {}
+    private record DefaultValues(String name, Atlas.Region texture, String description, Items[] requiredForBuild) {}
 
     public enum Types {
         TOOL,
@@ -29,7 +33,7 @@ public class Items implements Serializable {
         DETAIL
     }
 
-    private Items(Weapons weapon, short placeable, Tools tool, Details detail, int id, float zoom, String path, String description, String name, String filename, Items[] requiredForBuild, Types type) {
+    private Items(Weapons weapon, short placeable, Tools tool, Details detail, int id, float zoom, Atlas.Region texture, String description, String name, String filename, Items[] requiredForBuild, Types type) {
         this.name = name;
         this.weapon = weapon;
         this.placeable = placeable;
@@ -37,7 +41,7 @@ public class Items implements Serializable {
         this.detail = detail;
         this.id = id;
         this.zoom = zoom;
-        this.path = path;
+        this.texture = texture;
         this.description = description;
         this.filename = filename;
         this.requiredForBuild = requiredForBuild;
@@ -45,7 +49,7 @@ public class Items implements Serializable {
     }
 
     private static DefaultValues getDefault(Properties properties) {
-        String path = Window.assetsDir((String) properties.getOrDefault("Path", "\\World\\textureNotFound.png"));
+        var texture = Global.atlas.byPath((String) properties.getOrDefault("Path", "/World/textureNotFound.png"));
         String description = (String) properties.getOrDefault("Description", null);
         String name = (String) properties.getOrDefault("Name", null);
         String requiredForBuild = (String) properties.getOrDefault("RequiredForBuild", null);
@@ -66,18 +70,18 @@ public class Items implements Serializable {
                     output[i] = createTool(required[i]);
                 }
             }
-            return new DefaultValues(name, path, description, output);
+            return new DefaultValues(name, texture, description, output);
         }
 
-        return new DefaultValues(name, path, description, null);
+        return new DefaultValues(name, texture, description, null);
     }
 
     public static Items createWeapon(String fileName) {
-        Properties weapon = Config.getProperties(Window.assetsDir("\\World\\ItemsCharacteristics\\BuildMenu\\Weapons\\" + fileName + ".properties"));
+        Properties weapon = Config.getProperties(Window.assetsDir("/World/ItemsCharacteristics/BuildMenu/Weapons/" + fileName + ".properties"));
         DefaultValues defaultValues = getDefault(weapon);
 
         int id = fileName.hashCode();
-        float zoom = findZoom(defaultValues.path);
+        float zoom = computeZoom(defaultValues.texture);
         float fireRate = Float.parseFloat((String) weapon.getOrDefault("FireRate", "100"));
         float damage = Float.parseFloat((String) weapon.getOrDefault("Damage", "100"));
         float ammoSpeed = Float.parseFloat((String) weapon.getOrDefault("AmmoSpeed", "100"));
@@ -88,44 +92,41 @@ public class Items implements Serializable {
         String bulletPath = Window.assetsDir((String) weapon.getOrDefault("BulletPath", "World/Items/someBullet.png"));
         Weapons.Types type = Weapons.Types.valueOf((String) weapon.getOrDefault("Type", "BULLET"));
 
-        return new Items(new Weapons(fireRate, damage, ammoSpeed, reloadTime, bulletSpread, magazineSize, sound, bulletPath, type), (short) 0, null, null, id, zoom, defaultValues.path(), defaultValues.description, defaultValues.name, fileName, defaultValues.requiredForBuild, Types.WEAPON);
+        return new Items(new Weapons(fireRate, damage, ammoSpeed, reloadTime, bulletSpread, magazineSize, sound, bulletPath, type), (short) 0, null, null, id, zoom, defaultValues.texture(), defaultValues.description, defaultValues.name, fileName, defaultValues.requiredForBuild, Types.WEAPON);
     }
 
     public static Items createTool(String fileName) {
-        Properties tool = Config.getProperties(Window.assetsDir("\\World\\ItemsCharacteristics\\BuildMenu\\Tools\\" + fileName + ".properties"));
+        Properties tool = Config.getProperties(Window.assetsDir("/World/ItemsCharacteristics/BuildMenu/Tools/" + fileName + ".properties"));
         DefaultValues defaultValues = getDefault(tool);
 
         int id = fileName.hashCode();
-        float zoom = findZoom(defaultValues.path);
+        float zoom = computeZoom(defaultValues.texture);
         float maxHp = Float.parseFloat((String) tool.getOrDefault("MaxHp", "100"));
         float damage = Float.parseFloat((String) tool.getOrDefault("Damage", "30"));
         float secBetweenHits = Float.parseFloat((String) tool.getOrDefault("SecBetweenHits", "100"));
         float maxInteractionRange = Float.parseFloat((String) tool.getOrDefault("MaxInteractionRange", "8"));
 
-        return new Items(null, (short) 0, new Tools(maxHp, damage, secBetweenHits, maxInteractionRange), null, id, zoom, defaultValues.path(), defaultValues.description, defaultValues.name, fileName, defaultValues.requiredForBuild, Types.TOOL);
+        return new Items(null, (short) 0, new Tools(maxHp, damage, secBetweenHits, maxInteractionRange), null, id, zoom, defaultValues.texture(), defaultValues.description, defaultValues.name, fileName, defaultValues.requiredForBuild, Types.TOOL);
     }
 
     public static Items createPlaceable(short placeable) {
         StaticObjectsConst placeableProp = StaticObjectsConst.getConst(StaticWorldObjects.getId(placeable));
         int id = StaticWorldObjects.getId(placeable);
-        float zoom = findZoom(StaticWorldObjects.getPath(placeable));
+        float zoom = computeZoom(StaticWorldObjects.getTexture(placeable));
 
-        return new Items(null, placeable, null, null, id, zoom, placeableProp.path, "", placeableProp.objectName, StaticWorldObjects.getFileName(placeable), null, Types.PLACEABLE);
+        return new Items(null, placeable, null, null, id, zoom, placeableProp.texture, "", placeableProp.objectName, StaticWorldObjects.getFileName(placeable), null, Types.PLACEABLE);
     }
 
     public static Items createDetail(String fileName) {
-        Properties detail = Config.getProperties(Window.assetsDir("\\World\\ItemsCharacteristics\\BuildMenu\\Details\\" + fileName + ".properties"));
+        Properties detail = Config.getProperties(Window.assetsDir("/World/ItemsCharacteristics/BuildMenu/Details/" + fileName + ".properties"));
         DefaultValues defaultValues = getDefault(detail);
         int id = fileName.hashCode();
-        float zoom = findZoom(defaultValues.path);
+        float zoom = computeZoom(defaultValues.texture);
 
-        return new Items(null, (short) 0, null, new Details(""), id, zoom, defaultValues.path(), defaultValues.description, defaultValues.name, fileName, defaultValues.requiredForBuild, Types.DETAIL);
+        return new Items(null, (short) 0, null, new Details(""), id, zoom, defaultValues.texture(), defaultValues.description, defaultValues.name, fileName, defaultValues.requiredForBuild, Types.DETAIL);
     }
 
-    public static float findZoom(String path) {
-        int width = getSize(path).width();
-        int height = getSize(path).height();
-
-        return 32f / (Math.max(width, height));
+    public static float computeZoom(Sized sized) {
+        return 32f / (Math.max(sized.width(), sized.height()));
     }
 }

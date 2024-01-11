@@ -5,9 +5,9 @@ import core.UI.GUI.Objects.PanelObject;
 import core.UI.GUI.Objects.SliderObject;
 import core.UI.GUI.Objects.TextObject;
 import core.Utils.SimpleColor;
-import core.World.Textures.TextureLoader;
+import core.g2d.Atlas;
+
 import java.util.concurrent.ConcurrentHashMap;
-import static core.World.Textures.TextureLoader.getSize;
 
 public class CreateElement {
     public static ConcurrentHashMap<String, ButtonObject> buttons = new ConcurrentHashMap<>();
@@ -28,9 +28,9 @@ public class CreateElement {
         }
     }
 
-    public static void createPictureButton(int x, int y, String path, String name, String group, Runnable taskOnClick) {
-        buttons.put(name, new ButtonObject(true, false, x, y, TextureLoader.getSize(path).height(), TextureLoader.getSize(path).width(), name, null, SimpleColor.WHITE, group, taskOnClick));
-        buttons.get(name).path = path;
+    public static void createPictureButton(int x, int y, Atlas.Region texture, String name, String group, Runnable taskOnClick) {
+        buttons.put(name, new ButtonObject(true, false, x, y, texture.height(), texture.width(), name, null, SimpleColor.WHITE, group, taskOnClick));
+        buttons.get(name).texture = texture;
     }
 
     public static void createSwapButton(int x, int y, int btnWidth, int btnHeight, String name, String prompt, boolean simple, boolean resetValue, SimpleColor color, boolean isClicked, String group) {
@@ -65,11 +65,11 @@ public class CreateElement {
         panels.put(name, new PanelObject(x, y, panWidth, panHeight, 1, name, simple, null, group, SimpleColor.fromRGBA(40, 40, 40, 240)));
     }
 
-    public static void createText(int x, int y, String name, String text, SimpleColor color, String group) {
+    public static void createText(float x, float y, String name, String text, SimpleColor color, String group) {
         texts.put(name, new TextObject(x, y, text, color, group));
     }
 
-    public static void createPicture(int x, int y, int layer, String name, String path, String group) {
-        panels.put(name, new PanelObject(x, y, getSize(path).width(), getSize(path).height(), layer, name, true, path, group, SimpleColor.WHITE));
+    public static void createPicture(int x, int y, int layer, String name, Atlas.Region texture, String group) {
+        panels.put(name, new PanelObject(x, y, texture.width(), texture.height(), layer, name, true, texture, group, SimpleColor.WHITE));
     }
 }

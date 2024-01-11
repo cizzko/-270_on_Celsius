@@ -1,20 +1,19 @@
 package core.World.Creatures.Player.Inventory.Items.Weapons.Ammo;
 
-import core.Global;
 import core.UI.Sounds.Sound;
+import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.HitboxMap;
-import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
-import java.awt.Point;
+
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import static core.Window.assetsDir;
-import static core.World.Textures.TextureDrawing.drawTexture;
+import static core.Global.*;
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
@@ -38,9 +37,9 @@ public class Bullets {
         if (Inventory.currentObjectType == Items.Types.WEAPON) {
             Weapons weapon = Inventory.getCurrent().weapon;
 
-            if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && System.currentTimeMillis() - weapon.lastShootTime >= weapon.fireRate) {
+            if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && System.currentTimeMillis() - weapon.lastShootTime >= weapon.fireRate) {
                 weapon.lastShootTime = System.currentTimeMillis();
-                Bullets.createBullet(DynamicObjects.getFirst().getX(), DynamicObjects.getFirst().getY(), weapon.ammoSpeed, weapon.damage, Math.abs((float) Math.toDegrees(Math.atan2(Global.input.mousePos().y - 540, Global.input.mousePos().x - 960)) - 180));
+                Bullets.createBullet(DynamicObjects.getFirst().getX(), DynamicObjects.getFirst().getY(), weapon.ammoSpeed, weapon.damage, Math.abs((float) Math.toDegrees(Math.atan2(input.mousePos().y - 540, input.mousePos().x - 960)) - 180));
                 Sound.SoundPlay(weapon.sound, Sound.types.EFFECT, false);
             }
         }
@@ -91,10 +90,11 @@ public class Bullets {
     }
 
     public static void drawBullets() {
+        var bulletRegion = atlas.byPath("World/Items/someBullet.png");
         for (Bullets bullet : bullets) {
             //TODO: add paths
             if (bullet != null && !(bullet.x > DynamicObjects.getFirst().getX() + 350 || bullet.x < DynamicObjects.getFirst().getX() - 350)) {
-                drawTexture(bullet.x, bullet.y, false, assetsDir("World/Items/someBullet.png"));
+                batch.draw(bulletRegion, bullet.x, bullet.y);
             }
         }
     }

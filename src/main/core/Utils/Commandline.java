@@ -4,6 +4,7 @@ import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
 import core.Global;
+import core.Window;
 
 import java.awt.Toolkit;
 import java.awt.datatransfer.DataFlavor;
@@ -13,6 +14,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import static core.EventHandling.EventHandler.keyLoggingText;
+import static core.Global.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Commandline {
@@ -21,21 +23,21 @@ public class Commandline {
 
     private static void startReflection(String target) {
         if (target.equalsIgnoreCase("help")) {
-            keyLoggingText = "Prefix: " + prefix + ", write '" + prefix + " help'";
+            EventHandler.setKeyLoggingText("Prefix: " + prefix + ", write '" + prefix + " help'");
             return;
         }
         if (target.startsWith(prefix) && target.trim().length() > prefix.length()) {
             target = Config.getFromFC(target.substring(prefix.length() + 1));
 
             if (target == null || target.equals("null") || target.contains("sendStateMessage")) {
-                keyLoggingText = "No access or target is null";
+                EventHandler.setKeyLoggingText("No access or target is null");
                 return;
             }
             if (target.startsWith("output:")) {
-                keyLoggingText = target.substring(7);
+                EventHandler.setKeyLoggingText(target.substring(7));
             }
         } else {
-            keyLoggingText = "Command not found";
+            EventHandler.setKeyLoggingText("Command not found");
         }
 
         switch (target.trim().split("\\s+")[0]) {
@@ -43,7 +45,7 @@ public class Commandline {
             case "start" -> startMethod(target.substring(6));
             case "eval" -> {
                 final String[] targetMethod = target.split(" ");
-                new Thread(() -> EventHandler.keyLoggingText = ImportClassMethod.startMethod(targetMethod[1], targetMethod[targetMethod.length - 1], null, null)).start();
+                new Thread(() -> EventHandler.setKeyLoggingText(ImportClassMethod.startMethod(targetMethod[1], targetMethod[targetMethod.length - 1], null, null))).start();
             }
         }
     }
@@ -61,9 +63,9 @@ public class Commandline {
             Field field = clazz.getDeclaredField(fieldName);
             field.set(null, convertToType(parts[parts.length - 1]));
 
-            keyLoggingText = fieldName + " modified to " + convertToType(parts[parts.length - 1]);
+            EventHandler.setKeyLoggingText(fieldName + " modified to " + convertToType(parts[parts.length - 1]));
         } catch (Exception e) {
-            keyLoggingText = e.getMessage();
+            EventHandler.setKeyLoggingText(e.getMessage());
         }
     }
 
@@ -106,9 +108,9 @@ public class Commandline {
             }
 
             Object result = method.invoke(null, convertedArgs);
-            keyLoggingText = result != null ? "Returned: " + result : "Successfully";
+            EventHandler.setKeyLoggingText(result != null ? "Returned: " + result : "Successfully");
         } catch (Exception e) {
-            keyLoggingText = e.getMessage();
+            EventHandler.setKeyLoggingText(e.getMessage());
         }
     }
 
@@ -132,7 +134,7 @@ public class Commandline {
 
     public static void createLine() {
         EventHandler.startKeyLogging();
-        EventHandler.keyLoggingText = "";
+        EventHandler.resetKeyLogginText();
         created = true;
     }
 
@@ -142,27 +144,23 @@ public class Commandline {
     }
 
     public static void updateLine() {
-        if (Commandline.created && Global.input.pressed(GLFW_KEY_F5)) {
-            Commandline.deleteLine();
-        }
-        if (Global.input.pressed(GLFW_KEY_F5) && !Commandline.created) {
-            Commandline.createLine();
+        if (input.justPressed(GLFW_KEY_F5)) {
+            if (created) {
+                Commandline.deleteLine();
+            } else {
+                Commandline.createLine();
+            }
         }
 
         if (created) {
-            if (Global.input.pressed(GLFW_KEY_ENTER)) {
-                startReflection(keyLoggingText);
+            if (input.justPressed(GLFW_KEY_ENTER)) {
+                startReflection(keyLoggingText.toString());
             }
 
-            if (Global.input.pressed(GLFW_KEY_LEFT_CONTROL) && Global.input.pressed(GLFW_KEY_V)) {
-                    Transferable transferable = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
-                if (transferable != null && transferable.isDataFlavorSupported(DataFlavor.stringFlavor)) {
-                    try {
-                        keyLoggingText += (String) transferable.getTransferData(DataFlavor.stringFlavor);
-                        Thread.sleep(200);
-                    } catch (Exception e) {
-                        Logger.printException("Error when past text at control line", e);
-                    }
+            if (input.pressed(GLFW_KEY_LEFT_CONTROL) && input.justPressed(GLFW_KEY_V)) {
+                String text = glfwGetClipboardString(Window.glfwWindow);
+                if (text != null) {
+                    keyLoggingText.append(text);
                 }
             }
         }

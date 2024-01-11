@@ -144,8 +144,9 @@ public class WorldGenerator {
     public static void generateWorld() {
         new Thread(() -> {
 
-            int SizeX = getSliderPos("worldSize") + 20;
-            int SizeY = getSliderPos("worldSize") + 20;
+            int sliderPos = getSliderPos("worldSize");
+            int SizeX = sliderPos + 20;
+            int SizeY = sliderPos + 20;
             boolean simple = buttons.get(Json.getName("GenerateSimpleWorld")).isClicked;
             boolean randomSpawn = buttons.get(Json.getName("RandomSpawn")).isClicked;
             boolean creatures = buttons.get(Json.getName("GenerateCreatures")).isClicked;
@@ -227,7 +228,7 @@ public class WorldGenerator {
 
     private static void fillHollows() {
         log("World generator: filling hollows");
-        createText(42, 80, "fillHollowsText", "Filling hollows", SimpleColor.DIRTY_BRIGHT_WHITE, "WorldGeneratorState");
+        createText(42, 80, "fillHollowsText", "Filling hollows", SimpleColor.fromRGBA(210, 210, 210, 255), "WorldGeneratorState");
 
         boolean[][] visited = new boolean[SizeX][SizeY];
 
@@ -362,7 +363,12 @@ public class WorldGenerator {
                     int xTree = x + (i * distance);
                     int yTree = findFreeVerticalCell(x + (i * distance));
 
-                    if (xTree > 0 && yTree > 0 && xTree < forests.length && !checkInterInsideSolid(xTree, yTree, name) && xTree + Structures.getStructure(name).lowestSolidBlock < SizeX && yTree - 1 < SizeY && getType(getObject(xTree + Structures.getStructure(name).lowestSolidBlock, yTree - 1)) == StaticObjectsConst.Types.SOLID) {
+                    Structures structures;
+                    if (xTree > 0 && yTree > 0 && xTree < forests.length &&
+                            !checkInterInsideSolid(xTree, yTree, name) &&
+                            (structures = Structures.getStructure(name)) != null &&
+                            xTree + structures.lowestSolidBlock < SizeX && yTree - 1 < SizeY &&
+                            getType(getObject(xTree + structures.lowestSolidBlock, yTree - 1)) == StaticObjectsConst.Types.SOLID) {
                         createStructure(xTree, yTree, name);
                     }
                 }
@@ -386,7 +392,11 @@ public class WorldGenerator {
     }
 
     private static boolean checkInterInsideSolid(int xCell, int yCell, String structName) {
-        short[][] objects = Structures.bindStructures(Structures.getStructure(structName).blocks);
+        Structures structure = Structures.getStructure(structName);
+        if (structure == null) {
+            return false;
+        }
+        short[][] objects = Structures.bindStructures(structure.blocks);
 
         for (int x = xCell; x < xCell + objects.length; x++) {
             for (int y = yCell; y < yCell + objects[0].length; y++) {

@@ -4,11 +4,11 @@ import core.Utils.SimpleColor;
 
 public class TextObject {
     public String text, group;
-    public int x, y;
+    public float x, y;
     public SimpleColor color;
     public boolean visible;
 
-    public TextObject(int x, int y, String text, SimpleColor color, String group) {
+    public TextObject(float x, float y, String text, SimpleColor color, String group) {
         if (group == null) {
             group = "None";
         }

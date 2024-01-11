@@ -1,7 +1,8 @@
 package core.World.Creatures.Player;
 
+import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
-import core.Global;
+import core.Graphic.Layer;
 import core.Utils.SimpleColor;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
@@ -9,12 +10,15 @@ import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Inventory.Items.Tools;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
-import core.World.StaticWorldObjects.TemperatureMap;
-import core.World.Textures.*;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import java.awt.Point;
+import core.World.StaticWorldObjects.TemperatureMap;
+import core.World.Textures.ShadowMap;
+import core.World.Textures.TextureDrawing;
+import core.g2d.Fill;
 
-import static core.Window.assetsDir;
+import java.awt.*;
+
+import static core.Global.*;
 import static core.Window.start;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
@@ -37,7 +41,10 @@ public class Player {
     }
 
     public static void updatePlayerJump() {
-        if (Global.input.pressed(GLFW_KEY_SPACE)) {
+        if (EventHandler.isKeylogging())
+            return;
+
+        if (input.pressed(GLFW_KEY_SPACE)) {
             DynamicObjects.getFirst().jump(1.05f);
         }
     }
@@ -56,16 +63,22 @@ public class Player {
 //            setObject((int) (DynamicObjects.getFirst().getX() / TextureDrawing.blockSize + 2), (int) (DynamicObjects.getFirst().getY() / TextureDrawing.blockSize + 1), StaticWorldObjects.decrementHp(getObject((int) (DynamicObjects.getFirst().getX() / TextureDrawing.blockSize + 2), (int) (DynamicObjects.getFirst().getY() / TextureDrawing.blockSize + 1)), 10));
 //        }
 
-        if (Global.input.pressed(GLFW_KEY_D)) {
+
+        // TODO тут надо проверять элемент UI на фокусировку, т.е. на порядок отображения (фокусирован = самый последний элемент)
+        if (EventHandler.isKeylogging()) {
+            return;
+        }
+
+        if (input.pressed(GLFW_KEY_D)) {
             DynamicObjects.getFirst().setMotionVectorX(increment);
         }
-        if (Global.input.pressed(GLFW_KEY_A)) {
+        if (input.pressed(GLFW_KEY_A)) {
             DynamicObjects.getFirst().setMotionVectorX(-increment);
         }
-        if (noClip && Global.input.pressed(GLFW_KEY_S)) {
+        if (noClip && input.pressed(GLFW_KEY_S)) {
             DynamicObjects.getFirst().setMotionVectorY(-increment);
         }
-        if (noClip && Global.input.pressed(GLFW_KEY_W)) {
+        if (noClip && input.pressed(GLFW_KEY_W)) {
             DynamicObjects.getFirst().setMotionVectorY(increment);
         }
     }
@@ -77,9 +90,9 @@ public class Player {
     }
 
     private static void updatePlaceableInteraction() {
-        if (currentObjectType == Items.Types.PLACEABLE && Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
-            if (Global.input.mousePos().x > (Inventory.inventoryOpen ? 1488 : 1866)) {
-                if (Global.input.mousePos().y > 756) {
+        if (currentObjectType == Items.Types.PLACEABLE && input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+            if (input.mousePos().x > (Inventory.inventoryOpen ? 1488 : 1866)) {
+                if (input.mousePos().y > 756) {
                     return;
                 }
             }
@@ -135,7 +148,7 @@ public class Player {
             int blockY = blockUMB.y;
             short object = getObject(blockX, blockY);
 
-            if (object != 0 && getPath(object) != null && !StaticObjectsConst.getConst(getId(object)).hasMotherBlock && StaticObjectsConst.getConst(getId(object)).optionalTiles == null) {
+            if (object != 0 && getTexture(object) != null && !StaticObjectsConst.getConst(getId(object)).hasMotherBlock && StaticObjectsConst.getConst(getId(object)).optionalTiles == null) {
                 updateNonStructure(blockX, blockY, object, tool);
             } else if (StaticObjectsConst.getConst(getId(object)).hasMotherBlock || StaticObjectsConst.getConst(getId(object)).optionalTiles != null) {
                 updateStructure(blockX, blockY, object, tool);
@@ -147,7 +160,7 @@ public class Player {
         if (getDistanceToMouse() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
             drawBlock(blockX, blockY, object, true);
 
-            if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
+            if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
                 tool.lastHitTime = System.currentTimeMillis();
 
                 if (getHp(decrementHp(object, (int) tool.damage)) <= 0) {
@@ -172,7 +185,7 @@ public class Player {
             if (getDistanceToMouse() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
                 drawBlock(blockX, blockY, getObject(root.x, root.y), true);
 
-                if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
+                if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
                     tool.lastHitTime = System.currentTimeMillis();
                     decrementHpMulti(blockX, blockY, (int) tool.damage, root);
                 }
@@ -227,15 +240,19 @@ public class Player {
         int xBlock = cellX * TextureDrawing.blockSize;
         int yBlock = cellY * TextureDrawing.blockSize;
 
-        if (getHp(obj) > getMaxHp(obj) / 1.5f) {
-            TextureDrawing.drawTexture(xBlock, yBlock, 1f, false, false, getPath(obj), blockColor);
+        byte hp = getHp(obj);
+        float maxHp = getMaxHp(obj);
 
-        } else if (getHp(obj) < getMaxHp(obj) / 3) {
-            TextureDrawing.drawMultiTexture(xBlock, yBlock, 1f, false, false, getPath(obj), assetsDir("World/Blocks/damaged1.png"), blockColor);
-
+        var oldColor = batch.color(blockColor);
+        batch.draw(getTexture(obj), xBlock, yBlock);
+        if (hp > maxHp / 1.5f) {
+            // ???
+        } else if (hp < maxHp / 3) {
+            batch.draw(atlas.byPath("World/Blocks/damaged1.png"), xBlock, yBlock);
         } else {
-            TextureDrawing.drawMultiTexture(xBlock, yBlock, 1f, false, false, getPath(obj), assetsDir("World/Blocks/damaged0.png"), blockColor);
+            batch.draw(atlas.byPath("World/Blocks/damaged0.png"), xBlock, yBlock);
         }
+        batch.color(oldColor);
     }
 
     public static void updatePlayerGUI() {
@@ -257,7 +274,7 @@ public class Player {
 
     private static void updateTemperatureEffect() {
         DynamicWorldObjects player = DynamicObjects.getFirst();
-        int temp = (int) TemperatureMap.getAverageTempAroundDynamic(player.getX(), player.getY(), player.getPath());
+        int temp = (int) TemperatureMap.getAverageTempAroundDynamic(player.getX(), player.getY(), player.getTexture());
         int upperLimit = 100;
         int lowestLimit = -20;
         int maxColor = 90;
@@ -272,7 +289,12 @@ public class Player {
         int r = temp > 0 ? a : 0;
         int b = temp > 0 ? 0 : a;
 
-        TextureDrawing.drawTexture(0, 0, 1, true, false, assetsDir("\\UI\\GUI\\modifiedTemperature.png"), SimpleColor.fromRGBA(r, (int) (b / 2f), b, a));
+        var modifiedTemperature = assets.getTextureByPath(assets.assetsDir("/UI/GUI/modifiedTemperature.png"));
+        int z = batch.z(Layer.EFFECTS);
+        var oldColor = batch.color(SimpleColor.fromRGBA(r, (int) (b / 2f), b, a));
+        batch.draw(modifiedTemperature);
+        batch.color(oldColor);
+        batch.z(z);
     }
 
     public static void playerMaxHP() {
@@ -299,11 +321,11 @@ public class Player {
         }
 
         if (transparencyHPline > 0) {
-            TextureDrawing.drawRectangleBorder(30, 30, 200, 35, 1, SimpleColor.fromRGBA(10, 10, 10, transparencyHPline));
-            TextureDrawing.drawRectangle(31, 31, currentHp * 2 - 2, 33, SimpleColor.fromRGBA(150, 0, 20, transparencyHPline));
+            Fill.rectangleBorder(30, 30, 200, 35, 1, SimpleColor.fromRGBA(10, 10, 10, transparencyHPline));
+            Fill.rect(31, 31, currentHp * 2 - 2, 33, SimpleColor.fromRGBA(150, 0, 20, transparencyHPline));
 
             if (lastDamage > 0) {
-                TextureDrawing.drawRectangle(29 + currentHp * 2, 31, Math.min(lastDamage * 2, 200), 33, SimpleColor.fromRGBA(252, 161, 3, transparencyHPline));
+                Fill.rect(29 + currentHp * 2, 31, Math.min(lastDamage * 2, 200), 33, SimpleColor.fromRGBA(252, 161, 3, transparencyHPline));
             }
         }
     }

@@ -1,8 +1,7 @@
 package core.World.Textures;
 
-import core.EventHandling.Logging.Config;
-import core.UI.GUI.Fonts;
-import core.Utils.ArrayUtils;
+import core.Global;
+import core.g2d.Font;
 import core.Utils.SimpleColor;
 import org.lwjgl.BufferUtils;
 import javax.imageio.ImageIO;
@@ -16,13 +15,8 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import static core.EventHandling.Logging.Logger.*;
 import static core.Window.*;
-import static core.World.Textures.TextureDrawing.bindChars;
-import static core.World.Textures.TextureDrawing.bindTexture;
 
 public class TextureLoader extends Thread {
-    private static HashMap<String, Size> sizes = new HashMap<>();
-
-    public record Size(int width, int height) {}
     public record ImageData(int width, int height, ByteBuffer data) {}
     public record GifImageData(int width, int height, ByteBuffer[] data) {}
 
@@ -62,42 +56,8 @@ public class TextureLoader extends Thread {
         return readImage(image).data;
     }
 
-    public static Size getSize(String path) {
-        return getSizeStatic(path);
-    }
-
-    public static Size getSizeStatic(String path) {
-        Size size = sizes.getOrDefault(path, null);
-        if (size == null) {
-            BufferedImage encoder = BufferedImageEncoder(path);
-            size = new Size(encoder.getWidth(), encoder.getHeight());
-            sizes.put(path, size);
-        }
-        return size;
-    }
-
-    public static ByteBuffer uniteTextures(String mainTexture, String secondTexture) {
-        BufferedImage mergedImage = BufferedImageEncoder(mainTexture);
-        Graphics2D g2d = mergedImage.createGraphics();
-
-        g2d.drawImage(BufferedImageEncoder(secondTexture), 0, 0, null);
-        g2d.dispose();
-
-        return ByteBufferEncoder(mergedImage);
-    }
-
-    public static void preLoadResources() {
-        Fonts.generateFont(assetsDir("UI/arial.ttf"));
-        if (Config.getFromConfig("PreloadResources").equals("true")) {
-            String[] textures = ArrayUtils.getAllFiles(pathTo("src/assets"), ".png");
-
-            for (String texture : textures) {
-                bindTexture(texture);
-            }
-
-            log("Texture loader: load '" + textures.length + "' textures");
-            bindChars();
-        }
+    public static void preLoadResources() throws IOException {
+        defaultFont = Font.load(Global.assets.assetsDir("UI/arial.ttf"));
     }
 
     public static GifImageData framesDecoder(String path) {

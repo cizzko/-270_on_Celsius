@@ -9,7 +9,7 @@ public class BirdLogic {
 
     //TODO: rewrite
     public static void update(DynamicWorldObjects object) {
-        if (object.getPath().contains("bird")) {
+        if (object.getTexture().name().contains("bird")) {
             if (birdFlying.get(object) != null) {
                 int flyingTime = birdFlying.get(object);
                 birdFlying.put(object, flyingTime - 1);

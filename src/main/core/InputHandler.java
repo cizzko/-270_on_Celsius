@@ -2,11 +2,12 @@ package core;
 
 import core.EventHandling.EventHandler;
 import core.UI.GUI.Menu.MouseCalibration;
+import core.math.Point2i;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
+import org.lwjgl.glfw.GLFWScrollCallback;
 
-import java.awt.*;
 import java.util.Arrays;
 
 import static core.Window.addResource;
@@ -19,9 +20,10 @@ public class InputHandler {
 
     private final long[] pressed, clicked;
     private final long[] justPressed, justClicked;
-    private final Point mousePos = new Point(0, 0);
+    private final Point2i mousePos = new Point2i();
 
     private long lastMouseMoveTimestamp;
+    private double scrollOffset = 1;
 
     public InputHandler() {
         justPressed = createBitSet(PRESSED_ARRAY_SIZE);
@@ -35,12 +37,12 @@ public class InputHandler {
         glfwSetCursorPosCallback(glfwWindow, addResource(new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double xpos, double ypos) {
-                double mouseX = xpos * MouseCalibration.xMultiplier;
-                double mouseY = ypos / MouseCalibration.yMultiplier;
-                double invertedY = EventHandler.height - mouseY;
+                int mouseX = (int) (xpos * MouseCalibration.xMultiplier);
+                int mouseY = (int) (ypos / MouseCalibration.yMultiplier);
+                int invertedY = EventHandler.height - mouseY;
 
                 lastMouseMoveTimestamp = System.currentTimeMillis();
-                mousePos.setLocation(mouseX, invertedY);
+                mousePos.set(mouseX, invertedY);
             }
         }));
         glfwSetKeyCallback(glfwWindow, addResource(new GLFWKeyCallback() {
@@ -73,6 +75,12 @@ public class InputHandler {
                 }
             }
         }));
+        glfwSetScrollCallback(glfwWindow, addResource(new GLFWScrollCallback() {
+            @Override
+            public void invoke(long window, double xoffset, double yoffset) {
+                scrollOffset += yoffset;
+            }
+        }));
     }
 
     public void update() {
@@ -84,11 +92,15 @@ public class InputHandler {
 
     // region Public API
 
+    public double getScrollOffset() {
+        return scrollOffset;
+    }
+
     public long getLastMouseMoveTimestamp() {
         return lastMouseMoveTimestamp;
     }
 
-    public Point mousePos() {
+    public Point2i mousePos() {
         return mousePos;
     }
 

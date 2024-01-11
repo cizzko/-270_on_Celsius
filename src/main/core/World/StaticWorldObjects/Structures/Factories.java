@@ -1,7 +1,6 @@
 package core.World.StaticWorldObjects.Structures;
 
 import core.EventHandling.Logging.Config;
-import core.Global;
 import core.UI.Sounds.Sound;
 import core.Utils.ArrayUtils;
 import core.World.Creatures.Player.Inventory.Inventory;
@@ -10,11 +9,16 @@ import core.World.Creatures.Player.Player;
 import core.Utils.SimpleColor;
 import core.World.StaticWorldObjects.StaticBlocksEvents;
 import core.World.StaticWorldObjects.StaticWorldObjects;
-import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
 import core.World.WorldUtils;
+import core.g2d.Atlas;
+import core.g2d.Fill;
+import core.math.Point2i;
+
 import java.awt.Point;
 import java.util.*;
+
+import static core.Global.*;
 import static core.Utils.ArrayUtils.findEqualsObjects;
 import static core.Window.*;
 import static core.World.Creatures.Player.Player.playerSize;
@@ -34,7 +38,7 @@ public class Factories implements StaticBlocksEvents {
 
     @Override
     public void placeStatic(int cellX, int cellY, short id) {
-        if (id != 0 && id != -1 && StaticWorldObjects.getPath(id) != null && StaticWorldObjects.getPath(id).toLowerCase().contains("factory")) {
+        if (id != 0 && id != -1 && StaticWorldObjects.getTexture(id) != null && StaticWorldObjects.getTexture(id).name().toLowerCase().contains("factory")) {
             setFactoryConst(StaticWorldObjects.getFileName(id));
             factories.add(new Point(cellX, cellY));
         }
@@ -42,7 +46,7 @@ public class Factories implements StaticBlocksEvents {
 
     @Override
     public void destroyStatic(int cellX, int cellY, short id) {
-        if (id != 0 && id != -1 && StaticWorldObjects.getPath(id) != null && StaticWorldObjects.getPath(id).toLowerCase().contains("factory")) {
+        if (id != 0 && id != -1 && StaticWorldObjects.getTexture(id) != null && StaticWorldObjects.getTexture(id).name().toLowerCase().contains("factory")) {
             factories.remove(new Point(cellX, cellY));
         }
     }
@@ -136,38 +140,42 @@ public class Factories implements StaticBlocksEvents {
     }
 
     public static void update() {
-        if (System.currentTimeMillis() - Global.input.getLastMouseMoveTimestamp() > 1000) {
+        if (System.currentTimeMillis() - input.getLastMouseMoveTimestamp() > 1000) {
             Factories factory = findFactoryUnderMouse();
 
             if (factory != null) {
-                float xMouse = Global.input.mousePos().x;
-                float yMouse = Global.input.mousePos().y;
+                float xMouse = input.mousePos().x;
+                float yMouse = input.mousePos().y;
                 boolean input = factory.inputStoredObjects != null;
                 boolean output = factory.outputStoredObjects != null;
 
                 if (input && ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0) {
-                    TextureDrawing.drawRectangle((int) xMouse, (int) yMouse, ArrayUtils.findDistinctObjects(factory.inputStoredObjects) * 54 + playerSize, 64, SimpleColor.fromRGBA(40, 40, 40, 240));
-                    drawObjects(xMouse, yMouse, factory.inputStoredObjects, assetsDir("UI/GUI/buildMenu/factoryIn.png"));
+                    int width1 = ArrayUtils.findDistinctObjects(factory.inputStoredObjects) * 54 + playerSize;
+                    SimpleColor color = SimpleColor.fromRGBA(40, 40, 40, 240);
+                    Fill.rect(xMouse, yMouse, width1, 64, color);
+                    drawObjects(xMouse, yMouse, factory.inputStoredObjects, atlas.byPath("UI/GUI/buildMenu/factoryIn.png"));
                 }
                 if (output && ArrayUtils.findFreeCell(factory.outputStoredObjects) != 0) {
                     xMouse += (ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0 ? 78 : 0);
 
-                    TextureDrawing.drawRectangle((int) xMouse, (int) yMouse, ArrayUtils.findDistinctObjects(factory.outputStoredObjects) * 54 + playerSize, 64, SimpleColor.fromRGBA(40, 40, 40, 240));
-                    drawObjects(xMouse, yMouse, factory.outputStoredObjects, assetsDir("UI/GUI/buildMenu/factoryOut.png"));
+                    int width1 = ArrayUtils.findDistinctObjects(factory.outputStoredObjects) * 54 + playerSize;
+                    SimpleColor color = SimpleColor.fromRGBA(40, 40, 40, 240);
+                    Fill.rect(xMouse, yMouse, width1, 64, color);
+                    drawObjects(xMouse, yMouse, factory.outputStoredObjects, atlas.byPath("UI/GUI/buildMenu/factoryOut.png"));
                 }
             }
         }
 
-        if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && Inventory.currentObjectType != null) {
+        if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && Inventory.currentObjectType != null) {
             mouseGrabbedItem = true;
         }
-        if (!Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && mouseGrabbedItem) {
+        if (!input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && mouseGrabbedItem) {
             mouseGrabbedItem = false;
             Factories factoryUM = findFactoryUnderMouse();
 
             if (factoryUM != null) {
                 int cell = ArrayUtils.findFreeCell(factoryUM.inputStoredObjects);
-                Point current = Inventory.currentObject;
+                Point2i current = Inventory.currentObject;
 
                 if (cell != -1 && current != null) {
                     factoryUM.inputStoredObjects[cell] = Inventory.getCurrent();
@@ -177,18 +185,17 @@ public class Factories implements StaticBlocksEvents {
         }
     }
 
-    public static void drawObjects(float x, float y, Items[] items, String iconPath) {
+    public static void drawObjects(float x, float y, Items[] items, Atlas.Region iconRegion) {
         if (items != null && ArrayUtils.findFreeCell(items) != 0) {
-            TextureDrawing.drawTexture(x, y + 16, true, iconPath);
+            batch.draw(iconRegion, x, y + 16);
 
             for (int i = 0; i < ArrayUtils.findDistinctObjects(items); i++) {
                 if (items[i] != null) {
-                    Inventory.drawInventoryItem((x + (i * 54)) + playerSize, y + 10, findEqualsObjects(items, items[i]), items[i].path);
+                    Inventory.drawInventoryItem((x + (i * 54)) + playerSize, y + 10, findEqualsObjects(items, items[i]), items[i].texture);
                 }
             }
         }
     }
-
 
     public static void updateFactoriesOutput() {
         for (Point factories : factories) {

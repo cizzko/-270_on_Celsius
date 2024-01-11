@@ -3,42 +3,49 @@ package core;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
-import core.EventHandling.MouseScrollCallback;
+import core.Graphic.Layer;
 import core.UI.GUI.Menu.Main;
+import core.World.Textures.TextureDrawing;
 import core.World.Textures.TextureLoader;
+import core.g2d.*;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.system.NativeResource;
 
-import java.nio.file.Path;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import static core.EventHandling.Logging.Logger.log;
-import static core.World.Textures.TextureDrawing.*;
+import static core.Global.*;
 import static core.World.Textures.TextureLoader.BufferedImageEncoder;
 import static core.World.Textures.TextureLoader.readImage;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFW.glfwInitHint;
-import static org.lwjgl.opengl.GL13.*;
+import static org.lwjgl.opengl.GL46.*;
 
 public class Window {
-    public static final String defPath = Path.of("").toAbsolutePath().toString().replace('\\', '/'), versionStamp = "0.0.5", version = "alpha " + versionStamp + " (non stable)";
-    public static int width = 1920, height = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0, fps = 0;
+    static {
+        assets = new AssetsManager();
+    }
+
+    public static final String versionStamp = "0.0.5", version = "alpha " + versionStamp + " (non stable)";
+    public static int defaultWidth = 1920, defaultHeight = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0, fps = 0;
     public static boolean start = false;
     public static long glfwWindow;
 
-    private static final List<NativeResource> resources = new ArrayList<>();
+    public static Font defaultFont;
 
     public static String assetsDir(String path) {
-        return defPath + "/src/assets/" + path.replace('\\', '/');
+        return assets.assetsDir(path);
     }
 
     public static String pathTo(String path) {
-        return defPath + path.replace('\\', '/');
+        return assets.pathTo(path);
     }
+
+    private static final List<NativeResource> resources = new ArrayList<>();
 
     public void run() {
         init();
@@ -52,7 +59,9 @@ public class Window {
             @Override
             public void invoke(int error, long description) {
                 Logger.logExit(error, "Error at glfw: '" + error + "', with description: '" + GLFWErrorCallback.getDescription(description) + "'", false);
-                System.exit(error);
+                if (error != GLFW_FORMAT_UNAVAILABLE) {
+                    System.exit(error);
+                }
             }
         }));
 
@@ -66,11 +75,9 @@ public class Window {
         glfwInit();
         glfwDefaultWindowHints();
 
-        glfwWindow = glfwCreateWindow(width, height, "-270 on Celsius", glfwGetPrimaryMonitor(), MemoryUtil.NULL);
+        glfwWindow = glfwCreateWindow(defaultWidth, defaultHeight, "-270 on Celsius", glfwGetPrimaryMonitor(), MemoryUtil.NULL);
 
-        glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
         glfwMakeContextCurrent(glfwWindow);
-        glfwSetScrollCallback(glfwWindow, addResource(new MouseScrollCallback()));
 
         var cursorImage = readImage(BufferedImageEncoder(assetsDir("World/Other/cursorDefault.png")));
         GLFWImage glfwImg = GLFWImage.create().set(cursorImage.width(), cursorImage.height(), cursorImage.data());
@@ -84,16 +91,32 @@ public class Window {
         //connects library tools
         GL.createCapabilities();
 
-        glMatrixMode(GL_PROJECTION);
-        glOrtho(0, width, 0, height, 1, -1);
-        glMatrixMode(GL_MODELVIEW);
+        // Великий инструмент.
+        // glEnable(GL_DEBUG_OUTPUT);
+        // GLUtil.setupDebugMessageCallback();
 
         EventHandler.init();
-        TextureLoader.preLoadResources();
-        Main.create();
+        try {
+            TextureLoader.preLoadResources();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-        Global.input = new InputHandler();
-        Global.input.init();
+        input = new InputHandler();
+        input.init();
+
+        try {
+            atlas = Atlas.load(assets.assetsDir("/out/sprites"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        camera = new Camera2();
+        camera.setToOrthographic(defaultWidth, defaultHeight);
+        batch = new SortingBatch(4 * 1024 * 1024, 1024 * 8, 1024 * 8);
+        batch.matrix(camera.projection);
+
+        Main.create();
 
         log("Init status: true\n");
     }
@@ -108,26 +131,35 @@ public class Window {
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
         while (!glfwWindowShouldClose(glfwWindow)) {
-            Global.input.update();
+            input.update();
             EventHandler.update();
 
-            updateVideo();
+            TextureDrawing.updateVideo();
+            batch.z(Layer.STATIC_OBJECTS);
             if (start) {
-                updateStaticObj();
-                updateDynamicObj();
+                TextureDrawing.updateStaticObj();
+                batch.z(Layer.DYNAMIC_OBJECTS);
+                TextureDrawing.updateDynamicObj();
             } else {
-                drawTexture(0, 0, true, assetsDir("World/Other/background.png"));
+                batch.draw(assets.getTextureByPath(assets.assetsDir("World/Other/background.png")));
             }
-            updateGUI();
+            batch.z(Layer.GUI);
+            camera.setToOrthographic(camera.width(), camera.height());
+            batch.matrix(camera.projection);
+            TextureDrawing.updateGUI();
+            batch.flush();
 
             glfwSwapBuffers(glfwWindow);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             fps++;
         }
+
         glfwTerminate();
         for (NativeResource resource : resources) {
             resource.free();
         }
+
+        batch.close();
     }
 }

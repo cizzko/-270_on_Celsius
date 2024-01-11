@@ -6,11 +6,14 @@ import core.EventHandling.Logging.Json;
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.CreateElement;
 import core.Utils.SimpleColor;
-import java.awt.Point;
+
+import java.awt.*;
+
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.EventHandling.Logging.Json.getName;
+import static core.Global.atlas;
 import static core.UI.GUI.CreateElement.*;
-import static core.Window.*;
+import static core.Window.start;
 
 public class Settings {
     public static boolean createdSettings = false, needUpdateCount = true;
@@ -46,7 +49,7 @@ public class Settings {
         createDropButton(780, 950, 240, 65, langs, Json.getName("Language"), SimpleColor.DEFAULT_ORANGE, "SettingsBasicDrop", langButton(langs));
         createSwapButton(310, 980, 32, 32, getName("ShowPrompts"), getName("ShowPromptsPrompt"), false, true, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("ShowPrompts")), "SettingsBasicSwap");
         createSwapButton(310, 910, 32, 32, getName("DetectLanguage"), getName("DetectLanguagePrompt"), false, true, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("DetectLanguage")), "SettingsBasicSwap");
-        createPicture(745, 965, 1, "languageIcon", assetsDir("UI/GUI/languageIcon.png"), "SettingsBasic");
+        createPicture(745, 965, 1, "languageIcon", atlas.byPath("UI/GUI/languageIcon.png"), "SettingsBasic");
     }
 
     public static void createOtherSet() {
@@ -162,7 +165,7 @@ public class Settings {
                 }
                 if (crawlingOut && System.currentTimeMillis() - lastPosSwap >= 7) {
                     lastPosSwap = System.currentTimeMillis();
-                    CreateElement.createPicture(pos.x, pos.y, 0, "otter", assetsDir("UI/comeOutOtter.png"), "Settings");
+                    CreateElement.createPicture(pos.x, pos.y, 0, "otter", atlas.byPath("UI/comeOutOtter.png"), "Settings");
 
                     if (!out && pos.x > 1770 && pos.y < -90) {
                         pos.x -= 1;

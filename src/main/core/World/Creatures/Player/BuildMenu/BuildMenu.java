@@ -2,15 +2,18 @@ package core.World.Creatures.Player.BuildMenu;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
-import core.EventHandling.MouseScrollCallback;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.StaticWorldObjects.Structures.Factories;
 import core.Utils.SimpleColor;
 import core.World.Textures.TextureDrawing;
+import core.g2d.Fill;
+
 import java.awt.Point;
 import java.util.Properties;
+
+import static core.Global.*;
 import static core.Window.assetsDir;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
 import static core.World.Textures.TextureDrawing.*;
@@ -113,12 +116,11 @@ public class BuildMenu {
     }
 
     private static void updateScroll() {
-        double scrollM = MouseScrollCallback.getScroll() * 6;
+        double scrollM = input.getScrollOffset() * 6;
 
         if (scrollM >= -276 && scrollM <= 0) {
             scroll = (float) scrollM;
-        }
-        else if (scroll < -276) {
+        } else if (scroll < -276) {
             scroll = -276;
         } else if (scroll > 0) {
             scroll = -0f;
@@ -148,7 +150,7 @@ public class BuildMenu {
 
     public static void draw() {
         if (create && isOpen) {
-            drawTexture(1650, 0, true, assetsDir("UI/GUI/buildMenu/menuOpen.png"));
+            batch.draw(atlas.byPath("UI/GUI/buildMenu/menuOpen.png"), 1650, 0);
 
             for (int x = 0; x < items.length; x++) {
                 for (int y = 0; y < items[x].length; y++) {
@@ -157,7 +159,7 @@ public class BuildMenu {
                         float yCoord = 57 + scroll + (items[x][y].type.ordinal() * 20) + y * 54f;
 
                         if (yCoord < 115 && yCoord > -60) {
-                            Inventory.drawInventoryItem(xCoord, yCoord, items[x][y].path);
+                            Inventory.drawInventoryItem(xCoord, yCoord, items[x][y].texture);
 
                             if (EventHandler.getRectanglePress((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
                                 currentObject = new Point(x, y);
@@ -170,23 +172,25 @@ public class BuildMenu {
                 float yCoord = 47 + scroll + (items[currentObject.x][currentObject.y].type.ordinal() * 20) + currentObject.y * 54;
 
                 if (yCoord < 105 && yCoord > -60) {
-                    drawTexture(1650 + currentObject.x * 54, yCoord, true, assetsDir("UI/GUI/inventory/inventoryCurrent.png"));
+                    batch.draw(atlas.byPath("UI/GUI/inventory/inventoryCurrent.png"), 1650 + currentObject.x * 54, yCoord);
                 }
             }
-            drawRectangle(1915, (int) Math.abs(scroll / 2f) - 5, 4, 20, SimpleColor.fromRGBA(0, 0, 0, 200));
+            SimpleColor color = SimpleColor.fromRGBA(0, 0, 0, 200);
+            Fill.rect(1915, (int) Math.abs(scroll / 2f) - 5, 4, 20, color);
 
             drawRequirements(1663, 156);
 
         } else if (!isOpen) {
-            drawTexture(1650, 0, true, assetsDir("UI/GUI/buildMenu/menuClosed.png"));
+            batch.draw(atlas.byPath("UI/GUI/buildMenu/menuClosed.png"), 1650, 0);
         }
 
         if (infoCreated && currentObject != null && items[currentObject.x][currentObject.y] != null) {
-            TextureDrawing.drawRectangle(0, 0, 1920, 1080, SimpleColor.DIRTY_BLACK);
-            TextureDrawing.drawRectangle(560, 0, 800, 1080, SimpleColor.DIRTY_BLACK);
-            TextureDrawing.drawTexture(605, 989, true, assetsDir("UI/GUI/buildMenu/exitBtn.png"));
+            Fill.rect(0, 0, 1920, 1080, SimpleColor.DIRTY_BLACK);
+            Fill.rect(560, 0, 800, 1080, SimpleColor.DIRTY_BLACK);
+            batch.draw(atlas.byPath("UI/GUI/buildMenu/exitBtn.png"), 605, 989);
+
             TextureDrawing.drawText(694, 730, items[currentObject.x][currentObject.y].description);
-            Inventory.drawInventoryItem(694, 915, items[currentObject.x][currentObject.y].path);
+            Inventory.drawInventoryItem(694, 915, items[currentObject.x][currentObject.y].texture);
 
             drawRequirements(694, 760);
         }
@@ -201,14 +205,14 @@ public class BuildMenu {
 
             if (factory != null) {
                 if (factory.inputObjects != null) {
-                    Factories.drawObjects(x, y + 82, factory.inputObjects, assetsDir("UI/GUI/buildMenu/factoryIn.png"));
+                    Factories.drawObjects(x, y + 82, factory.inputObjects, atlas.byPath("UI/GUI/buildMenu/factoryIn.png"));
                 }
                 if (factory.outputObjects != null) {
-                    Factories.drawObjects(x, y + 41, factory.outputObjects, assetsDir("UI/GUI/buildMenu/factoryOut.png"));
+                    Factories.drawObjects(x, y + 41, factory.outputObjects, atlas.byPath("UI/GUI/buildMenu/factoryOut.png"));
                 }
             }
             if (item.requiredForBuild != null) {
-                Factories.drawObjects(x, y, item.requiredForBuild, assetsDir("UI/GUI/buildMenu/build.png"));
+                Factories.drawObjects(x, y, item.requiredForBuild, atlas.byPath("UI/GUI/buildMenu/build.png"));
             }
         }
     }

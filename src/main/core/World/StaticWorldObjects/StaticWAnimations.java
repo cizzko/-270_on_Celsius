@@ -23,14 +23,14 @@ public class StaticWAnimations {
     }
 
     public static AnimData getCurrentFrame(short id, Point pos) {
-        String path = StaticWorldObjects.getPath(id);
+        var path = StaticWorldObjects.getTexture(id);
 
-        if (path != null && path.endsWith(".gif")) {
+        if (path != null && path.name().endsWith(".gif")) {
             StaticWAnimations animation = textures.getOrDefault(pos, null);
             TextureLoader.GifImageData data = frames.getOrDefault(StaticWorldObjects.getId(id), null);
 
             if (animation == null) {
-                data = TextureLoader.framesDecoder(path);
+                data = TextureLoader.framesDecoder(path.name());
                 ByteBuffer[] textureFrames = data.data();
 
                 animation = new StaticWAnimations((short) textureFrames.length, (short) 0);

@@ -1,9 +1,12 @@
 package core.World.StaticWorldObjects;
 
+import core.Utils.Sized;
 import core.World.Textures.TextureDrawing;
 import core.World.Textures.TextureLoader;
 import core.World.Weather.Sun;
 import core.World.WorldGenerator;
+import core.g2d.Atlas;
+
 import java.awt.*;
 import java.util.HashMap;
 import static core.World.Weather.Sun.currentTime;
@@ -68,10 +71,9 @@ public class TemperatureMap {
         }
     }
 
-    public static float getAverageTempAroundDynamic(float xPos, float yPos, String path) {
+    public static float getAverageTempAroundDynamic(float xPos, float yPos, Sized size) {
         int count = 0;
         float totalTemp = 0;
-        var size = TextureLoader.getSize(path);
 
         for (int x = 0; x < Math.ceil(size.width()) / TextureDrawing.blockSize; x++) {
             for (int y = 0; y < Math.ceil(size.height()) / TextureDrawing.blockSize; y++) {

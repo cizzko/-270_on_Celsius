@@ -4,6 +4,7 @@ import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.Menu.Pause;
 import core.UI.GUI.Menu.Settings;
+import core.Utils.Sized;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.HitboxMap;
@@ -11,17 +12,19 @@ import core.World.Saves;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
-import core.World.Textures.TextureLoader;
 import core.World.WorldGenerator;
+
 import java.awt.*;
 import java.util.Iterator;
-import static core.Window.*;
-import static core.World.StaticWorldObjects.StaticWorldObjects.*;
-import static core.World.StaticWorldObjects.Structures.Factories.updateFactoriesOutput;
+
+import static core.Window.glfwWindow;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.HitboxMap.*;
+import static core.World.StaticWorldObjects.StaticWorldObjects.getResistance;
+import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
+import static core.World.StaticWorldObjects.Structures.Factories.updateFactoriesOutput;
 import static core.World.WorldGenerator.*;
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
 //version 1.5
 public class Physics {
@@ -66,7 +69,7 @@ public class Physics {
         }).start();
     }
 
-    private static void updateVerticalSpeed(DynamicWorldObjects dynamicObject, TextureLoader.Size size) {
+    private static void updateVerticalSpeed(DynamicWorldObjects dynamicObject, Sized size) {
         dynamicObject.setMotionVectorY(dynamicObject.getMotionVectorY() * (1 - (getTotalResistanceInside(dynamicObject) / 100f)));
 
         boolean intersD = checkIntersStaticD(dynamicObject.getX(), dynamicObject.getY() + dynamicObject.getMotionVectorY(), size.width(), size.height());
@@ -83,7 +86,7 @@ public class Physics {
         dynamicObject.incrementY(dynamicObject.getMotionVectorY());
     }
 
-    private static void updateHorizontalSpeed(DynamicWorldObjects dynamicObject, TextureLoader.Size size) {
+    private static void updateHorizontalSpeed(DynamicWorldObjects dynamicObject, Sized size) {
         dynamicObject.setMotionVectorX(dynamicObject.getMotionVectorX() * (1 - (getTotalResistanceInside(dynamicObject) / 100f)));
 
         boolean intersR = checkIntersStaticR(dynamicObject.getX() + dynamicObject.getMotionVectorX() * 60, dynamicObject.getY(), size.width(), size.height());
@@ -115,7 +118,7 @@ public class Physics {
         float vectorY = object.getMotionVectorY();
 
         if (vectorX > minVectorIntersDamage || vectorX < -minVectorIntersDamage || vectorY > minVectorIntersDamage || vectorY < -minVectorIntersDamage) {
-            Point[] staticObjectPoint = HitboxMap.checkIntersOutside(object.getX() + vectorX * 2, object.getY() + vectorY, TextureLoader.getSize(object.getPath()).width(), TextureLoader.getSize(object.getPath()).height() + 4);
+            Point[] staticObjectPoint = HitboxMap.checkIntersOutside(object.getX() + vectorX * 2, object.getY() + vectorY, object.getTexture().width(), object.getTexture().height() + 4);
 
             if (staticObjectPoint != null) {
                 float damage = 0;
@@ -128,11 +131,11 @@ public class Physics {
                 object.incrementCurrentHP(-damage);
 
                 //TODO: rewrite
-                if (object.getPath().toLowerCase().contains("player")) {
+                if (object.getTexture().name().toLowerCase().contains("player")) {
                     lastDamage = (int) damage;
                     lastDamageTime = System.currentTimeMillis();
                 }
-                if (object.getCurrentHP() <= 0 && !object.getPath().toLowerCase().contains("player")) {
+                if (object.getCurrentHP() <= 0 && !object.getTexture().name().toLowerCase().contains("player")) {
                     DynamicObjects.remove(object);
                 }
             }
@@ -149,11 +152,10 @@ public class Physics {
             DynamicWorldObjects dynamicObject = dynamicIterator.next();
 
             if (dynamicObject != null) {
-                TextureLoader.Size size = TextureLoader.getSize(dynamicObject.getPath());
-                updateHorizontalSpeed(dynamicObject, size);
+                updateHorizontalSpeed(dynamicObject, dynamicObject.getTexture());
 
                 if (!dynamicObject.getIsFlying()) {
-                    updateVerticalSpeed(dynamicObject, size);
+                    updateVerticalSpeed(dynamicObject, dynamicObject.getTexture());
                 }
             }
         }
@@ -162,8 +164,8 @@ public class Physics {
     public static float getTotalResistanceInside(DynamicWorldObjects dynamicObject) {
         int tarX = (int) (dynamicObject.getX() / TextureDrawing.blockSize);
         int tarY = (int) (dynamicObject.getY() / TextureDrawing.blockSize);
-        int tarYSize = (int) Math.ceil(TextureLoader.getSize(dynamicObject.getPath()).height() / TextureDrawing.blockSize);
-        int tarXSize = (int) Math.ceil(TextureLoader.getSize(dynamicObject.getPath()).width() / TextureDrawing.blockSize);
+        int tarYSize = (int) Math.ceil(dynamicObject.getTexture().height() / TextureDrawing.blockSize);
+        int tarXSize = (int) Math.ceil(dynamicObject.getTexture().width() / TextureDrawing.blockSize);
         float totalResistance = 0;
 
         for (int xPos = 0; xPos < tarXSize; xPos++) {

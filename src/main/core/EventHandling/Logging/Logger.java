@@ -37,6 +37,11 @@ public class Logger extends PrintStream {
     }
 
     public static void printException(String message, Throwable exception) {
+        if (true) {
+            exception.printStackTrace();
+            return;
+        }
+
         printStackTrace(exception.getStackTrace(), exception.getMessage(), String.valueOf(exception.getCause()), message, "Error");
     }
 
@@ -93,8 +98,7 @@ public class Logger extends PrintStream {
         log(exitMessage.toString());
 
         if (exitOnProgram) {
-            glfwDestroyWindow(glfwWindow);
-            System.exit(status);
+            glfwSetWindowShouldClose(glfwWindow, true);
         }
     }
 

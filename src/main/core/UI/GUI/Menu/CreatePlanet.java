@@ -1,5 +1,6 @@
 package core.UI.GUI.Menu;
 
+import core.Global;
 import core.Utils.SimpleColor;
 import core.World.WorldGenerator;
 import static core.EventHandling.Logging.Json.getName;
@@ -14,8 +15,8 @@ public class CreatePlanet {
         createPanel(1440, 240, 460, 820, "rightPanel", false, "WorldGenerator");
         createPanel(40, 955, 1360, 85, "leftAccentPanel", true, "WorldGenerator");
 
-        createPicture(1460, 620, 1, "planetBackground", assetsDir("World/WorldGenerator/skyBackgroundPlanet.png"), "WorldGenerator");
-        createPicture(1510, 670, 2, "planet", assetsDir("World/WorldGenerator/planetMini.png"), "WorldGenerator");
+        createPicture(1460, 620, 1, "planetBackground", Global.atlas.byPath("World/WorldGenerator/skyBackgroundPlanet.png"), "WorldGenerator");
+        createPicture(1510, 670, 2, "planet", Global.atlas.byPath("World/WorldGenerator/planetMini.png"), "WorldGenerator");
 
         createButton(40, 975, 240, 65, getName("Return"), null, true, SimpleColor.DEFAULT_ORANGE, "WorldGenerator", CreatePlanet::returnBtn);
         createButton(640, 975, 240, 65, getName("Basic"), null, true, SimpleColor.DEFAULT_ORANGE, "WorldGenerator", CreatePlanet::basicBtn);

@@ -3,8 +3,14 @@ package core.Utils;
 import java.io.Serializable;
 
 public final class SimpleColor implements Serializable {
-    public static final SimpleColor WHITE = fromRGBA(255, 255, 255, 255), BLACK = fromRGBA(0, 0, 0, 0), DEFAULT_ORANGE = fromRGBA(255, 80, 0, 55);
-    public static final SimpleColor DIRTY_WHITE = fromRGBA(230, 230, 230, 55), DIRTY_BRIGHT_WHITE = fromRGBA(230, 230, 230, 255), DIRTY_BRIGHT_BLACK = fromRGBA(10, 10, 10, 255), DIRTY_BLACK = fromRGBA(10, 10, 10, 55);
+    public static final SimpleColor WHITE = fromRGBA(255, 255, 255, 255);
+    public static final SimpleColor CLEAR = fromRGBA(0, 0, 0, 0);
+    public static final SimpleColor DEFAULT_ORANGE = fromRGBA(255, 80, 0, 55);
+    public static final SimpleColor DIRTY_WHITE = fromRGBA(230, 230, 230, 55);
+    public static final SimpleColor DIRTY_BRIGHT_WHITE = fromRGBA(230, 230, 230, 255);
+    public static final SimpleColor DIRTY_BRIGHT_BLACK = fromRGBA(10, 10, 10, 255);
+    public static final SimpleColor DIRTY_BLACK = fromRGBA(10, 10, 10, 55);
+
     private final int value; //argb?
 
     public static SimpleColor toColor(int value) {
@@ -20,7 +26,7 @@ public final class SimpleColor implements Serializable {
         g = clamp(g);
         b = clamp(b);
         a = clamp(a);
-        value = ((a & 0xFF) << 24) | ((r & 0xFF) << 16) | ((g & 0xFF) << 8) | ((b & 0xFF));
+        value = (a << 24) | (r << 16) | (g << 8) | (b);
     }
 
     public static int argbToRgba(int argb) {
@@ -34,8 +40,16 @@ public final class SimpleColor implements Serializable {
         return new SimpleColor(r, g, b, a);
     }
 
-    public int getValue() {
+    public int getValueARGB() {
         return value;
+    }
+
+    public int getValueRGBA() {
+        return (getRed() << 24) | (getGreen() << 16) | (getBlue() << 8) | getAlpha();
+    }
+
+    public int getValueABGR() {
+        return (getAlpha() << 24) | (getBlue() << 16) | (getGreen() << 8) | getRed();
     }
 
     public int getRed() {

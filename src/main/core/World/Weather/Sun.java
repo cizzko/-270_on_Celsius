@@ -1,13 +1,14 @@
 package core.World.Weather;
 
+import core.Utils.SimpleColor;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
-import core.Utils.SimpleColor;
 import core.World.WorldGenerator;
+import core.g2d.Texture;
 
 import static core.EventHandling.Logging.Config.getFromConfig;
-import static core.Window.assetsDir;
-import static core.World.Textures.TextureDrawing.*;
+import static core.Global.assets;
+import static core.Global.batch;
 import static core.World.WorldGenerator.DynamicObjects;
 
 public class Sun {
@@ -48,7 +49,9 @@ public class Sun {
 
             updateNightBackground();
             updateGradient();
-            drawTexture(580, y, 1, true, false, assetsDir("World/Sun/sun.png"), SimpleColor.fromRGBA(255, green, 40, 220));
+            var oldColor = batch.color(SimpleColor.fromRGBA(255, green, 40, 220));
+            batch.draw(assets.getTextureByPath(assets.assetsDir("World/Sun/sun.png")), 580, y);
+            batch.color(oldColor);
         }
     }
 
@@ -63,7 +66,10 @@ public class Sun {
         int aGradient = (int) (250 * alpha);
         aGradient = Math.max(0, Math.min(250, aGradient));
 
-        drawTexture(0, 0, 1, true, false, assetsDir("World/Sun/" + (getFromConfig("InterpolateSunset").equals("true") ? "" : "non") + "InterpolatedSunset.png"), SimpleColor.fromRGBA(aGradient, 0, 20, aGradient));
+        String sunsetType = getFromConfig("InterpolateSunset").equals("true") ? "" : "non";
+        var oldColor = batch.color(SimpleColor.fromRGBA(aGradient, 0, 20, aGradient));
+        batch.draw(assets.getTextureByPath(assets.assetsDir("World/Sun/" + sunsetType + "InterpolatedSunset.png")));
+        batch.color(oldColor);
     }
 
     private static void updateNightBackground() {
@@ -81,7 +87,9 @@ public class Sun {
         ShadowMap.deleteAllColor(SimpleColor.fromRGBA(deleteGradient, deleteGradient, deleteGradient, 0));
         ShadowMap.deleteAllColorDynamic(SimpleColor.fromRGBA(deleteGradient, deleteGradient, deleteGradient, 0));
 
-        drawTexture(0, 0, 1, true, false, assetsDir("World/Sky/skyBackground0.png"), SimpleColor.fromRGBA(255, 255, 255, backGradient));
+        var oldColor = batch.color(SimpleColor.fromRGBA(255, 255, 255, backGradient));
+        batch.draw(assets.getTextureByPath(assets.assetsDir("World/Sky/skyBackground0.png")));
+        batch.color(oldColor);
     }
 
     private static double Lerp(double a, double b, double t) {

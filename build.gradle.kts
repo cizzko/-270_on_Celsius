@@ -36,12 +36,30 @@ val lwjglNatives = Pair(
     }
 }
 
-repositories {
-    mavenCentral()
+allprojects {
+    repositories {
+        mavenCentral()
+    }
+
+    apply(plugin = "java")
+
+    dependencies {
+        implementation("com.google.code.gson:gson:2.10.1")
+    }
+
+    tasks.compileJava {
+        options.release.set(21)
+    }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
 }
 
 dependencies {
-    implementation("com.google.code.gson:gson:2.10.1")
     implementation("org.jcodec:jcodec:0.2.5")
     implementation("org.jcodec:jcodec-javase:0.2.5")
 
@@ -53,15 +71,4 @@ dependencies {
     runtimeOnly("org.lwjgl", "lwjgl", classifier = lwjglNatives)
     runtimeOnly("org.lwjgl", "lwjgl-glfw", classifier = lwjglNatives)
     runtimeOnly("org.lwjgl", "lwjgl-opengl", classifier = lwjglNatives)
-}
-
-
-tasks.compileJava {
-    options.release.set(21)
-}
-
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
 }

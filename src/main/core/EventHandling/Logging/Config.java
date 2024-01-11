@@ -3,7 +3,6 @@ package core.EventHandling.Logging;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Properties;
-import static core.EventHandling.Logging.Logger.logExit;
 import static core.EventHandling.Logging.Logger.printException;
 import static core.Window.assetsDir;
 import static core.Window.pathTo;

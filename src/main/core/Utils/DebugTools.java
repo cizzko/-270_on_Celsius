@@ -10,6 +10,9 @@ import core.UI.GUI.CreateElement;
 import core.World.Textures.ShadowMap;
 import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.WorldGenerator;
+import core.math.Point2i;
+import core.math.Vector2f;
+
 import java.awt.Point;
 import static core.Window.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
@@ -30,12 +33,13 @@ public class DebugTools {
             while (!glfwWindowShouldClose(glfwWindow)) {
                 if (selectionBlocksCopy || selectionBlocksDelete) {
                     if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+                        Point2i mousePos = Global.input.mousePos();
                         if (!mousePressed) {
                             mousePressed = true;
                             lastMousePosBlocks = getBlockUnderMousePoint();
-                            lastMousePos = Global.input.mousePos();
+                            lastMousePos.setLocation(mousePos.x, mousePos.y);
                         }
-                        CreateElement.createPanel(lastMousePos.x, lastMousePos.y, Global.input.mousePos().x - lastMousePos.x, Global.input.mousePos().y - lastMousePos.y, "debugPanel", true, "debugModule");
+                        CreateElement.createPanel(lastMousePos.x, lastMousePos.y, mousePos.x - lastMousePos.x, mousePos.y - lastMousePos.y, "debugPanel", true, "debugModule");
                     }
                     if (mousePressed && !Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
                         mousePressed = false;

@@ -3,8 +3,9 @@ package core.World.Creatures;
 import core.EventHandling.Logging.Logger;
 import core.World.HitboxMap;
 import core.World.Textures.TextureDrawing;
-import core.World.Textures.TextureLoader;
 import core.World.WorldGenerator;
+import core.g2d.Atlas;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -30,10 +31,10 @@ public class DynamicWorldObjects implements Serializable {
 
     public static DynamicWorldObjects createDynamic(String name, float x) {
         byte id = generateId(name);
-        DynamicObjectsConst.bindDynamic(name, id);
+        var obj = DynamicObjectsConst.bindDynamic(name, id);
         ArrayList<Integer> topmostBlocks = new ArrayList<>(4);
 
-        for (int xSize = 0; xSize < (int) Math.ceil(TextureLoader.getSize(DynamicObjectsConst.getConst(id).path).width() / TextureDrawing.blockSize) + 1; xSize++) {
+        for (int xSize = 0; xSize < (int) Math.ceil(obj.texture.width() / TextureDrawing.blockSize) + 1; xSize++) {
             topmostBlocks.add(WorldGenerator.findTopmostSolidBlock((int) ((x / TextureDrawing.blockSize) + xSize), 5));
         }
 
@@ -68,9 +69,9 @@ public class DynamicWorldObjects implements Serializable {
     }
 
     public void jump(float impulse) {
-        TextureLoader.Size size = TextureLoader.getSize(DynamicObjectsConst.getConst(id).path);
+        var tex = DynamicObjectsConst.getConst(id).texture;
 
-        if (HitboxMap.checkIntersStaticD(x, y, size.width(), size.height()) && motionVectorY == 0) {
+        if (HitboxMap.checkIntersStaticD(x, y, tex.width(), tex.height()) && motionVectorY == 0) {
             motionVectorY += (impulse * 1000);
         }
     }
@@ -153,8 +154,8 @@ public class DynamicWorldObjects implements Serializable {
         return DynamicObjectsConst.getConst(id).weight;
     }
 
-    public String getPath() {
-        return DynamicObjectsConst.getConst(id).path;
+    public Atlas.Region getTexture() {
+        return DynamicObjectsConst.getConst(id).texture;
     }
 
     public boolean getIsFlying() {
