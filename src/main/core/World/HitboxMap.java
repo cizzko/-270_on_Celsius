@@ -3,7 +3,7 @@ package core.World;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.TextureDrawing;
-import core.World.Textures.TextureLoader;
+
 import java.awt.Point;
 import java.util.ArrayList;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getResistance;

@@ -3,10 +3,13 @@ package core;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
-import core.Graphic.Layer;
+import core.assets.AssetsManager;
+import core.g2d.Atlas;
+import core.g2d.Font;
+import core.graphic.Layer;
 import core.UI.GUI.Menu.Main;
 import core.World.Textures.TextureDrawing;
-import core.World.Textures.TextureLoader;
+import core.assets.TextureLoader;
 import core.g2d.*;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
@@ -20,8 +23,8 @@ import java.util.List;
 
 import static core.EventHandling.Logging.Logger.log;
 import static core.Global.*;
-import static core.World.Textures.TextureLoader.BufferedImageEncoder;
-import static core.World.Textures.TextureLoader.readImage;
+import static core.assets.TextureLoader.BufferedImageEncoder;
+import static core.assets.TextureLoader.readImage;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;
 

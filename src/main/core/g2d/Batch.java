@@ -12,7 +12,6 @@ import java.nio.FloatBuffer;
 import java.util.List;
 
 import static core.g2d.VertexAttribute.*;
-import static org.lwjgl.opengl.GL20.glVertexAttribPointer;
 import static org.lwjgl.opengl.GL46.*;
 
 public class Batch implements Disposable {
@@ -24,6 +23,16 @@ public class Batch implements Disposable {
             create(4, Type.UNSIGNED_BYTE, Interp.COLOR),
             create(2, Type.FLOAT, Interp.NORMAL)
     ));
+
+    // TODO
+    //  Мне не нравится текущий вариант работы с color(), scale(), blending(),
+    //  т.е. возвращение старого значения, чтобы потом его можно было восстановить
+    //  Вижу следующие решения:
+    //  1) void withColor(Color color, Runnable action)
+    //  Но это накладно и возникнут пробелемы с кодом из-за effectively final
+    //  2) void color(Color newColor) - Записывает старый цвет в дополнительное поле класса
+    //     void resetColor()          - Восстанавливает цвет из доп. поля.
+    //   Мне этот вариант кажется более эффективным, но с ним надо быть осторожным
 
     protected Blending blending = Blending.NORMAL;
     protected SimpleColor color = SimpleColor.WHITE;

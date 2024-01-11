@@ -1,6 +1,6 @@
 package core.World.StaticWorldObjects;
 
-import core.World.Textures.TextureLoader;
+import core.assets.TextureLoader;
 import java.awt.*;
 import java.nio.ByteBuffer;
 import java.util.HashMap;

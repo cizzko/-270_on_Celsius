@@ -1,7 +1,7 @@
 package core.UI.GUI;
 
 import core.EventHandling.Logging.Logger;
-import core.World.Textures.TextureLoader;
+import core.assets.TextureLoader;
 import org.jcodec.api.FrameGrab;
 import org.jcodec.common.io.NIOUtils;
 import org.jcodec.scale.AWTUtil;
@@ -72,4 +72,3 @@ public class Video {
         }
     }
 }
-

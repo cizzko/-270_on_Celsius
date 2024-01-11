@@ -1,15 +1,13 @@
 package core.g2d;
 
-import core.Utils.Sized;
-
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
-import static core.World.Textures.TextureLoader.BufferedImageEncoder;
-import static core.World.Textures.TextureLoader.readImage;
+import static core.assets.TextureLoader.BufferedImageEncoder;
+import static core.assets.TextureLoader.readImage;
 import static org.lwjgl.opengl.GL11.*;
 
-public final class Texture implements Drawable, Sized {
+public final class Texture implements Drawable {
     final int glHandle;
 
     private final int glTarget; // TODO возможно и не нужно, но пускай побудет

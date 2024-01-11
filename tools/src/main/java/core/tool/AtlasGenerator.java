@@ -1,7 +1,7 @@
 package core.tool;
 
 import com.google.gson.stream.JsonWriter;
-import core.Graphic.RectanglePacker;
+import core.graphic.RectanglePacker;
 import core.g2d.Atlas;
 import core.math.MathUtil;
 

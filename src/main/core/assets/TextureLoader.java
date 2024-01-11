@@ -1,4 +1,4 @@
-package core.World.Textures;
+package core.assets;
 
 import core.Global;
 import core.g2d.Font;
@@ -7,16 +7,18 @@ import org.lwjgl.BufferUtils;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
-import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
+
 import static core.EventHandling.Logging.Logger.*;
 import static core.Window.*;
 
-public class TextureLoader extends Thread {
+// TODO есть планы на этот класс
+//  переместить сюда кеш с текстурами, а также сделать эту самую загрузку
+//  текстур асинхронной
+public class TextureLoader {
     public record ImageData(int width, int height, ByteBuffer data) {}
     public record GifImageData(int width, int height, ByteBuffer[] data) {}
 

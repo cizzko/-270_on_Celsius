@@ -1,7 +1,7 @@
 package core.g2d;
 
 import core.EventHandling.Logging.Logger;
-import core.Graphic.RectanglePacker;
+import core.graphic.RectanglePacker;
 import core.math.MathUtil;
 import org.lwjgl.opengl.GL46;
 

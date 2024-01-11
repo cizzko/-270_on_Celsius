@@ -1,5 +1,7 @@
 package core;
 
+import core.assets.AssetsManager;
+import core.g2d.Atlas;
 import core.g2d.*;
 
 public class Global {

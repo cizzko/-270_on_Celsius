@@ -1,11 +1,13 @@
-package core.g2d;
+package core.assets;
+
+import core.g2d.Texture;
 
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AssetsManager {
+public final class AssetsManager {
 
     private static final String rootPath = normalizePath(Path.of("").toAbsolutePath().toString());
 

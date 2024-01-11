@@ -11,7 +11,6 @@ import core.World.Textures.ShadowMap;
 import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.WorldGenerator;
 import core.math.Point2i;
-import core.math.Vector2f;
 
 import java.awt.Point;
 import static core.Window.*;

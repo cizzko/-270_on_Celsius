@@ -3,6 +3,7 @@ package core.EventHandling.Logging;
 import java.io.*;
 import java.util.HashMap;
 import java.util.Properties;
+
 import static core.EventHandling.Logging.Logger.printException;
 import static core.Global.assets;
 
@@ -16,11 +17,9 @@ public class Config {
             Properties prop = getProperties(assets.assetsDir("config.properties"));
 
             if (prop == null || prop.isEmpty() || prop.keys() == null) {
-                try {
-                    try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("/log.txt")))) {
-                        printWriter.println("Config empty or keys not found, it will be reset to default values");
-                        resetConfig();
-                    }
+                try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("/log.txt")))) {
+                    printWriter.println("Config empty or keys not found, it will be reset to default values");
+                    resetConfig();
                 } catch (IOException e) {
                     printException("Error when print to log", e);
                 }
@@ -30,28 +29,23 @@ public class Config {
     }
 
     private static void resetConfig() {
-        try {
-            try (FileInputStream config = new FileInputStream(assets.assetsDir("config.properties"))) {
-                try (FileInputStream configDefault = new FileInputStream(assets.assetsDir("configDefault.properties"))) {
-                    try (FileOutputStream out = new FileOutputStream(assets.assetsDir("config.properties"))) {
+        try (FileInputStream config = new FileInputStream(assets.assetsDir("config.properties"));
+             FileInputStream configDefault = new FileInputStream(assets.assetsDir("configDefault.properties"));
+             FileOutputStream out = new FileOutputStream(assets.assetsDir("config.properties"))) {
 
-                        Properties configProp = new Properties();
-                        Properties defaultConfig = new Properties();
+            Properties configProp = new Properties();
+            Properties defaultConfig = new Properties();
 
-                        configProp.load(config);
-                        defaultConfig.load(configDefault);
+            configProp.load(config);
+            defaultConfig.load(configDefault);
 
-                        String[] defaultKeys = defaultConfig.values().toArray(new String[0]);
-                        String[] defaultValues = defaultConfig.keySet().toArray(new String[0]);
+            String[] defaultKeys = defaultConfig.values().toArray(new String[0]);
+            String[] defaultValues = defaultConfig.keySet().toArray(new String[0]);
 
-                        for (int i = 0; i < defaultValues.length; i++) {
-                            configProp.setProperty(defaultValues[i], defaultKeys[i]);
-                        }
-                        configProp.store(out, null);
-
-                    }
-                }
+            for (int i = 0; i < defaultValues.length; i++) {
+                configProp.setProperty(defaultValues[i], defaultKeys[i]);
             }
+            configProp.store(out, null);
         } catch (Exception e) {
             Logger.printException("Error when reset config: ", e);
         }
@@ -59,8 +53,9 @@ public class Config {
 
     //if need caching values && prop
     public static Object getFromProp(String path, String key) {
-        if (values.get(key) != null) {
-            return values.get(key);
+        Object obj = values.get(key);
+        if (obj != null) {
+            return obj;
         }
 
         Object value = getProperties(path).getProperty(key);
@@ -71,15 +66,16 @@ public class Config {
 
     //if need caching only prop
     public static Properties getProperties(String path) {
-        if (props.get(path) == null) {
-            props.put(path, new Properties());
+        Properties props = Config.props.get(path);
+        if (props == null) {
+            Config.props.put(path, new Properties());
             try {
-                props.get(path).load(new FileInputStream(path));
+                props.load(new FileInputStream(path));
             } catch (IOException e) {
                 Logger.printException("Error when get properties, file: " + path, e);
             }
         }
-        return props.get(path);
+        return props;
     }
 
     public static String getFromConfig(String key) {

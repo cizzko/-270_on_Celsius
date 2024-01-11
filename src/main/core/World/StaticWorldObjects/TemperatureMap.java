@@ -2,10 +2,8 @@ package core.World.StaticWorldObjects;
 
 import core.Utils.Sized;
 import core.World.Textures.TextureDrawing;
-import core.World.Textures.TextureLoader;
 import core.World.Weather.Sun;
 import core.World.WorldGenerator;
-import core.g2d.Atlas;
 
 import java.awt.*;
 import java.util.HashMap;

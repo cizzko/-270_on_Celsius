@@ -3,7 +3,6 @@ package core.g2d;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import javax.swing.plaf.synth.Region;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -84,8 +83,7 @@ public final class Atlas {
         return errorRegion;
     }
 
-    public static final class Region
-            implements Drawable {
+    public static final class Region implements Drawable {
         private final Atlas atlas;
         private final String name;
         private final int x, y;

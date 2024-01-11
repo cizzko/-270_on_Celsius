@@ -2,7 +2,7 @@ package core.World.Creatures.Player;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
-import core.Graphic.Layer;
+import core.graphic.Layer;
 import core.Utils.SimpleColor;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;

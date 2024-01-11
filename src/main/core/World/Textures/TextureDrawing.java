@@ -1,7 +1,6 @@
 package core.World.Textures;
 
 import core.EventHandling.EventHandler;
-import core.Graphic.Layer;
 import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.PanelObject;
 import core.UI.GUI.Objects.SliderObject;
@@ -18,6 +17,7 @@ import core.World.StaticWorldObjects.Structures.Factories;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.WorldUtils;
 import core.g2d.Fill;
+import core.graphic.Layer;
 import core.math.Rectangle;
 
 import java.awt.*;
@@ -34,7 +34,6 @@ import static core.UI.GUI.Video.video;
 import static core.Window.start;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
-import static core.World.Textures.TextureLoader.ByteBufferEncoder;
 import static core.World.Weather.Sun.updateSun;
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.opengl.GL13.*;
