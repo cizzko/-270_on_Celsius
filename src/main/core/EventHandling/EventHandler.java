@@ -164,6 +164,12 @@ public class EventHandler {
             }
             Settings.delete();
         }
+        if (input.justPressed(GLFW_KEY_BACKSPACE) && isKeylogging()) {
+            int length = keyLoggingText.length();
+            if (length > 0) {
+                keyLoggingText.deleteCharAt(length - 1);
+            }
+        }
     }
 
     private static void updateDebug() {
