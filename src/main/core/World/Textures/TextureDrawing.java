@@ -17,7 +17,6 @@ import core.World.StaticWorldObjects.Structures.ElectricCables;
 import core.World.StaticWorldObjects.Structures.Factories;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.WorldUtils;
-import core.g2d.Blending;
 import core.g2d.Fill;
 import core.math.Rectangle;
 
@@ -25,7 +24,6 @@ import java.awt.*;
 import java.nio.ByteBuffer;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static core.EventHandling.Logging.Config.getFromConfig;
@@ -33,7 +31,6 @@ import static core.Global.*;
 import static core.UI.GUI.CreateElement.*;
 import static core.UI.GUI.Video.byteBuffer;
 import static core.UI.GUI.Video.video;
-import static core.Window.assetsDir;
 import static core.Window.start;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;

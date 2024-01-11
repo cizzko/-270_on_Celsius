@@ -19,7 +19,7 @@ import java.util.HashMap;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import static core.EventHandling.Logging.Logger.printException;
-import static core.Window.assetsDir;
+import static core.Global.assets;
 
 public class Saves {
     private static boolean saving = false;
@@ -42,7 +42,7 @@ public class Saves {
                 dos.close();
                 byte[] compressedBytes = compressed.toByteArray();
 
-                FileOutputStream fos = new FileOutputStream(assetsDir("\\World\\Saves\\WorldSaves\\" + name + ".ser"));
+                FileOutputStream fos = new FileOutputStream(assets.assetsDir("\\World\\Saves\\WorldSaves\\" + name + ".ser"));
                 fos.write(compressedBytes);
                 fos.close();
             } catch (Exception e) {
@@ -103,7 +103,7 @@ public class Saves {
     }
 
     public static String[] loadWorldSaves() {
-      return ArrayUtils.getAllFiles(assetsDir("World/Saves/WorldSaves"), ".ser");
+        return ArrayUtils.getAllFiles(assets.assetsDir("World/Saves/WorldSaves"), ".ser");
     }
 
     private static void setBlocks(String[] names) {

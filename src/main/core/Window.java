@@ -37,14 +37,6 @@ public class Window {
 
     public static Font defaultFont;
 
-    public static String assetsDir(String path) {
-        return assets.assetsDir(path);
-    }
-
-    public static String pathTo(String path) {
-        return assets.pathTo(path);
-    }
-
     private static final List<NativeResource> resources = new ArrayList<>();
 
     public void run() {
@@ -79,7 +71,7 @@ public class Window {
 
         glfwMakeContextCurrent(glfwWindow);
 
-        var cursorImage = readImage(BufferedImageEncoder(assetsDir("World/Other/cursorDefault.png")));
+        var cursorImage = readImage(BufferedImageEncoder(assets.assetsDir("World/Other/cursorDefault.png")));
         GLFWImage glfwImg = GLFWImage.create().set(cursorImage.width(), cursorImage.height(), cursorImage.data());
         addResource(glfwImg);
         glfwSetCursor(glfwWindow, glfwCreateCursor(glfwImg, 0, 0));

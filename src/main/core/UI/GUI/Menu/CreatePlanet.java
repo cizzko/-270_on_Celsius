@@ -5,7 +5,6 @@ import core.Utils.SimpleColor;
 import core.World.WorldGenerator;
 import static core.EventHandling.Logging.Json.getName;
 import static core.UI.GUI.CreateElement.*;
-import static core.Window.assetsDir;
 
 public class CreatePlanet {
 

@@ -6,15 +6,14 @@ import core.Global;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
-import core.World.Textures.TextureLoader;
+
 import java.io.*;
-import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import static core.EventHandling.Logging.Logger.printException;
-import static core.Window.assetsDir;
+import static core.Global.assets;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 
 public class Structures implements Serializable {
@@ -31,7 +30,7 @@ public class Structures implements Serializable {
         Structures struct = structures.get(name);
 
         if (struct == null) {
-            struct = read(assetsDir("\\World\\Saves\\Structures\\" + name + ".ser"));
+            struct = read(assets.assetsDir("\\World\\Saves\\Structures\\" + name + ".ser"));
             if (struct != null) {
                 structures.put(name, struct);
             }
@@ -80,7 +79,7 @@ public class Structures implements Serializable {
             dos.close();
             byte[] compressedBytes = compressed.toByteArray();
 
-            FileOutputStream fos = new FileOutputStream(assetsDir("World/Saves/Structures/structure" + structureName + ".ser"));
+            FileOutputStream fos = new FileOutputStream(assets.assetsDir("World/Saves/Structures/structure" + structureName + ".ser"));
             fos.write(compressedBytes);
             fos.close();
         } catch (Exception e) {
@@ -107,7 +106,7 @@ public class Structures implements Serializable {
 
     public static short bindStructure(String name) {
         if (!StaticWorldObjects.idsContains(name)) {
-            String path = assetsDir("World/ItemsCharacteristics/" + name + ".properties");
+            String path = assets.assetsDir("World/ItemsCharacteristics/" + name + ".properties");
             byte rootId = StaticWorldObjects.generateId(name);
 
             byte maxHp;

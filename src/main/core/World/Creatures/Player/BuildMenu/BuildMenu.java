@@ -14,7 +14,6 @@ import java.awt.Point;
 import java.util.Properties;
 
 import static core.Global.*;
-import static core.Window.assetsDir;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
 import static core.World.Textures.TextureDrawing.*;
 
@@ -30,7 +29,7 @@ public class BuildMenu {
     }
 
     private static void addDefaultItems() {
-        Properties defaultItems = Config.getProperties(assetsDir("\\World\\ItemsCharacteristics\\BuildMenu\\DefaultBuildMenuItems.properties"));
+        Properties defaultItems = Config.getProperties(assets.assetsDir("\\World\\ItemsCharacteristics\\BuildMenu\\DefaultBuildMenuItems.properties"));
 
         //todo выглядит странно
         String[] details = ((String) defaultItems.getOrDefault("Details", "")).split(",");

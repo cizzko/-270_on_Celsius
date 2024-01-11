@@ -13,8 +13,8 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static core.EventHandling.Logging.Config.getFromConfig;
+import static core.Global.assets;
 import static core.Window.*;
-import static core.Window.pathTo;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Logger extends PrintStream {
@@ -72,16 +72,20 @@ public class Logger extends PrintStream {
             System.out.println(message);
 
             if (!cleanup) {
-                try (PrintWriter printWriter = new PrintWriter(new FileWriter(pathTo("/log.txt")))) {
-                    printWriter.print("");
-                    cleanup = true;
+                try {
+                    try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("/log.txt")))) {
+                        printWriter.print("");
+                        cleanup = true;
+                    }
                 } catch (IOException e) {
                     printException("Error when cleanup log", e);
                 }
             }
 
-            try (PrintWriter printWriter = new PrintWriter(new FileWriter(pathTo("/log.txt"), true))) {
-                printWriter.println(message);
+            try {
+                try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("/log.txt"), true))) {
+                    printWriter.println(message);
+                }
             } catch (IOException e) {
                 printException("Error when print to log", e);
             }

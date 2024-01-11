@@ -3,7 +3,6 @@ package core.World.Creatures.Player.Inventory.Items;
 import core.EventHandling.Logging.Config;
 import core.Global;
 import core.Utils.Sized;
-import core.Window;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
@@ -11,6 +10,8 @@ import core.g2d.Atlas;
 
 import java.io.Serializable;
 import java.util.Properties;
+
+import static core.Global.assets;
 
 public class Items implements Serializable {
     public Items[] requiredForBuild;
@@ -77,7 +78,7 @@ public class Items implements Serializable {
     }
 
     public static Items createWeapon(String fileName) {
-        Properties weapon = Config.getProperties(Window.assetsDir("/World/ItemsCharacteristics/BuildMenu/Weapons/" + fileName + ".properties"));
+        Properties weapon = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/BuildMenu/Weapons/" + fileName + ".properties"));
         DefaultValues defaultValues = getDefault(weapon);
 
         int id = fileName.hashCode();
@@ -88,15 +89,17 @@ public class Items implements Serializable {
         float reloadTime = Float.parseFloat((String) weapon.getOrDefault("ReloadTime", "100"));
         float bulletSpread = Float.parseFloat((String) weapon.getOrDefault("BulletSpread", "0"));
         int magazineSize = Integer.parseInt((String) weapon.getOrDefault("MagazineSize", "10"));
-        String sound = Window.assetsDir((String) weapon.getOrDefault("Sound", null));
-        String bulletPath = Window.assetsDir((String) weapon.getOrDefault("BulletPath", "World/Items/someBullet.png"));
+        String path1 = (String) weapon.getOrDefault("Sound", null);
+        String sound = assets.assetsDir(path1);
+        String path = (String) weapon.getOrDefault("BulletPath", "World/Items/someBullet.png");
+        String bulletPath = assets.assetsDir(path);
         Weapons.Types type = Weapons.Types.valueOf((String) weapon.getOrDefault("Type", "BULLET"));
 
         return new Items(new Weapons(fireRate, damage, ammoSpeed, reloadTime, bulletSpread, magazineSize, sound, bulletPath, type), (short) 0, null, null, id, zoom, defaultValues.texture(), defaultValues.description, defaultValues.name, fileName, defaultValues.requiredForBuild, Types.WEAPON);
     }
 
     public static Items createTool(String fileName) {
-        Properties tool = Config.getProperties(Window.assetsDir("/World/ItemsCharacteristics/BuildMenu/Tools/" + fileName + ".properties"));
+        Properties tool = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/BuildMenu/Tools/" + fileName + ".properties"));
         DefaultValues defaultValues = getDefault(tool);
 
         int id = fileName.hashCode();
@@ -118,7 +121,7 @@ public class Items implements Serializable {
     }
 
     public static Items createDetail(String fileName) {
-        Properties detail = Config.getProperties(Window.assetsDir("/World/ItemsCharacteristics/BuildMenu/Details/" + fileName + ".properties"));
+        Properties detail = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/BuildMenu/Details/" + fileName + ".properties"));
         DefaultValues defaultValues = getDefault(detail);
         int id = fileName.hashCode();
         float zoom = computeZoom(defaultValues.texture);

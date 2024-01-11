@@ -8,11 +8,15 @@ import java.util.HashMap;
 import java.util.Locale;
 
 import static core.EventHandling.Logging.Logger.printException;
-import static core.Window.assetsDir;
+import static core.Global.assets;
 
 public class Json {
     private static final HashMap<String, String> words = new HashMap<>(), keys = new HashMap<>();
-    private static final String translateFile = assetsDir("Translate.jsonc");
+    private static final String translateFile;
+
+    static {
+        translateFile = assets.assetsDir("Translate.jsonc");
+    }
 
     public static String lang, allLanguages;
 

@@ -2,11 +2,12 @@ package core.World.Creatures;
 
 import core.EventHandling.Logging.Config;
 import core.Global;
-import core.Window;
 import core.g2d.Atlas;
 
 import java.util.HashMap;
 import java.util.Properties;
+
+import static core.Global.assets;
 
 public class DynamicObjectsConst {
     private static final HashMap<Byte, DynamicObjectsConst> consts = new HashMap<>();
@@ -28,7 +29,7 @@ public class DynamicObjectsConst {
     public static DynamicObjectsConst bindDynamic(String name, byte id) {
         var cnst = consts.get(id);
         if (cnst == null) {
-            Properties prop = Config.getProperties(Window.assetsDir("/World/CreaturesCharacteristics/" + name + ".properties"));
+            Properties prop = Config.getProperties(assets.assetsDir("/World/CreaturesCharacteristics/" + name + ".properties"));
             boolean isFlying = Boolean.parseBoolean((String) prop.getOrDefault("IsFlying", "false"));
             boolean oneoffAnimation = Boolean.parseBoolean((String) prop.getOrDefault("OneoffAnimation", "false"));
             int framesCount = Integer.parseInt((String) prop.getOrDefault("FramesCount", "0"));

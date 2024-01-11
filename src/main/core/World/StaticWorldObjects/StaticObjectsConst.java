@@ -9,7 +9,7 @@ import java.io.File;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static core.Window.assetsDir;
+import static core.Global.assets;
 
 public class StaticObjectsConst implements Cloneable {
     private static final ConcurrentHashMap<Byte, StaticObjectsConst> constants = new ConcurrentHashMap<>();
@@ -77,7 +77,11 @@ public class StaticObjectsConst implements Cloneable {
         this.lightTransmission = lightTransmission;
         this.optionalTiles = optionalTiles;
         this.resistance = resistance;
-        this.onInteraction = new File(assetsDir("/World/ItemsCharacteristics/BlocksInteractions" + objectName + ".java")).exists() ? generateRunnable(assetsDir("/World/ItemsCharacteristics/BlocksInteractions" + objectName + ".java")) : onInteraction;
+        if (new File(assets.assetsDir("/World/ItemsCharacteristics/BlocksInteractions" + objectName + ".java")).exists()) {
+            this.onInteraction = generateRunnable(assets.assetsDir("/World/ItemsCharacteristics/BlocksInteractions" + objectName + ".java"));
+        } else {
+            this.onInteraction = onInteraction;
+        }
     }
 
     //todo генерация раннабле интеракции для возможности переопределить поведение блока
@@ -91,7 +95,7 @@ public class StaticObjectsConst implements Cloneable {
 
     public static void setConst(String name, byte id, short[][] optionalTiles) {
         if (constants.get(id) == null) {
-            StaticObjectsConst staticConst = getConst(assetsDir("World/ItemsCharacteristics/" + name + ".properties"));
+            StaticObjectsConst staticConst = getConst(assets.assetsDir("World/ItemsCharacteristics/" + name + ".properties"));
             staticConst.optionalTiles = optionalTiles;
             staticConst.originalFileName = name;
 

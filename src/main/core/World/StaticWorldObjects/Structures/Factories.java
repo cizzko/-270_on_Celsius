@@ -20,7 +20,6 @@ import java.util.*;
 
 import static core.Global.*;
 import static core.Utils.ArrayUtils.findEqualsObjects;
-import static core.Window.*;
 import static core.World.Creatures.Player.Player.playerSize;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
@@ -82,7 +81,7 @@ public class Factories implements StaticBlocksEvents {
 
     public static void setFactoryConst(String name) {
         String originalName = name;
-        name = assetsDir("World/ItemsCharacteristics/BuildMenu/Factories/" + name + ".properties");
+        name = assets.assetsDir("World/ItemsCharacteristics/BuildMenu/Factories/" + name + ".properties");
 
         if (factoriesConst.get(name) == null) {
             byte id = StaticWorldObjects.generateId(name);
@@ -98,7 +97,7 @@ public class Factories implements StaticBlocksEvents {
             Items[] inputObjects = transformItems((String) props.get("InputObjects"));
 
             factoriesConst.put(originalName, new Factories(productionSpeed, needEnergy, maxHp,
-                    maxStoredObjects, (short) ((((byte) maxHp & 0xFF) << 8) | (id & 0xFF)), pathTo(path),
+                    maxStoredObjects, (short) ((((byte) maxHp & 0xFF) << 8) | (id & 0xFF)), assets.pathTo(path),
                     sound, factoryName, outputObjects, inputObjects));
             Structures.bindStructure("\\BuildMenu\\Factories\\" + name);
         }

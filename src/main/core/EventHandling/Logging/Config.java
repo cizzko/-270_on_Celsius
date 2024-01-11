@@ -4,8 +4,7 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Properties;
 import static core.EventHandling.Logging.Logger.printException;
-import static core.Window.assetsDir;
-import static core.Window.pathTo;
+import static core.Global.assets;
 
 public class Config {
     private static boolean configCheckMark = false;
@@ -14,12 +13,14 @@ public class Config {
 
     public static void checkConfig() {
         if (!configCheckMark) {
-            Properties prop = getProperties(assetsDir("config.properties"));
+            Properties prop = getProperties(assets.assetsDir("config.properties"));
 
             if (prop == null || prop.isEmpty() || prop.keys() == null) {
-                try (PrintWriter printWriter = new PrintWriter(new FileWriter(pathTo("/log.txt")))) {
-                    printWriter.println("Config empty or keys not found, it will be reset to default values");
-                    resetConfig();
+                try {
+                    try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("/log.txt")))) {
+                        printWriter.println("Config empty or keys not found, it will be reset to default values");
+                        resetConfig();
+                    }
                 } catch (IOException e) {
                     printException("Error when print to log", e);
                 }
@@ -29,24 +30,28 @@ public class Config {
     }
 
     private static void resetConfig() {
-        try (FileInputStream config = new FileInputStream(assetsDir("config.properties"));
-             FileInputStream configDefault = new FileInputStream(assetsDir("configDefault.properties"));
-             FileOutputStream out = new FileOutputStream(assetsDir("config.properties"))) {
+        try {
+            try (FileInputStream config = new FileInputStream(assets.assetsDir("config.properties"))) {
+                try (FileInputStream configDefault = new FileInputStream(assets.assetsDir("configDefault.properties"))) {
+                    try (FileOutputStream out = new FileOutputStream(assets.assetsDir("config.properties"))) {
 
-            Properties configProp = new Properties();
-            Properties defaultConfig = new Properties();
+                        Properties configProp = new Properties();
+                        Properties defaultConfig = new Properties();
 
-            configProp.load(config);
-            defaultConfig.load(configDefault);
+                        configProp.load(config);
+                        defaultConfig.load(configDefault);
 
-            String[] defaultKeys = defaultConfig.values().toArray(new String[0]);
-            String[] defaultValues = defaultConfig.keySet().toArray(new String[0]);
+                        String[] defaultKeys = defaultConfig.values().toArray(new String[0]);
+                        String[] defaultValues = defaultConfig.keySet().toArray(new String[0]);
 
-            for (int i = 0; i < defaultValues.length; i++) {
-                configProp.setProperty(defaultValues[i], defaultKeys[i]);
+                        for (int i = 0; i < defaultValues.length; i++) {
+                            configProp.setProperty(defaultValues[i], defaultKeys[i]);
+                        }
+                        configProp.store(out, null);
+
+                    }
+                }
             }
-            configProp.store(out, null);
-
         } catch (Exception e) {
             Logger.printException("Error when reset config: ", e);
         }
@@ -79,16 +84,16 @@ public class Config {
 
     public static String getFromConfig(String key) {
         checkConfig();
-        return (String) getFromProp(assetsDir("config.properties"), key);
+        return (String) getFromProp(assets.assetsDir("config.properties"), key);
     }
 
     //fast commands
     public static String getFromFC(String key) {
-        return (String) getFromProp(assetsDir("fastCommands.properties"), key);
+        return (String) getFromProp(assets.assetsDir("fastCommands.properties"), key);
     }
 
     public static void updateConfig(String key, String value) {
-        String configFile = assetsDir("config.properties");
+        String configFile = assets.assetsDir("config.properties");
 
         try (FileInputStream fis = new FileInputStream(configFile);
              FileOutputStream fos = new FileOutputStream(configFile)) {
