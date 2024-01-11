@@ -29,10 +29,6 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;
 
 public class Window {
-    static {
-        assets = new AssetsManager();
-    }
-
     public static final String versionStamp = "0.0.5", version = "alpha " + versionStamp + " (non stable)";
     public static int defaultWidth = 1920, defaultHeight = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0, fps = 0;
     public static boolean start = false;

@@ -68,7 +68,8 @@ public class Config {
     public static Properties getProperties(String path) {
         Properties props = Config.props.get(path);
         if (props == null) {
-            Config.props.put(path, new Properties());
+            props = new Properties();
+            Config.props.put(path, props);
             try {
                 props.load(new FileInputStream(path));
             } catch (IOException e) {
