@@ -143,14 +143,17 @@ public class WorldGenerator {
 
     public static void generateWorld() {
         new Thread(() -> {
+            createText(42, 170, "WorldGeneratorState", "First iteration: ", SimpleColor.DIRTY_BRIGHT_WHITE, "WorldGeneratorState");
 
             int SizeX = getSliderPos("worldSize") + 20;
             int SizeY = getSliderPos("worldSize") + 20;
-            boolean simple = buttons.get(Json.getName("GenerateSimpleWorld")).isClicked;
-            boolean randomSpawn = buttons.get(Json.getName("RandomSpawn")).isClicked;
-            boolean creatures = buttons.get(Json.getName("GenerateCreatures")).isClicked;
 
-            log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world at size: x - " + SizeX + ", y - " + SizeY + " (" + SizeX * SizeY + "); with arguments 'simple: " + simple + ", random spawn: " + randomSpawn + "'");
+            //todo чтоб не вылетала ошибка, если игрок не переходил в другой раздел настроек генерации, и кнопка не была создана
+            boolean simple = buttons.containsKey(Json.getName("GenerateSimpleWorld")) && buttons.get(Json.getName("GenerateSimpleWorld")).isClicked;
+            boolean randomSpawn = buttons.containsKey(Json.getName("RandomSpawn")) && buttons.get(Json.getName("RandomSpawn")).isClicked;
+            boolean creatures = buttons.containsKey(Json.getName("GenerateCreatures")) && buttons.get(Json.getName("GenerateCreatures")).isClicked;
+
+            log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world with size: x - " + SizeX + ", y - " + SizeY);
 
             StaticObjects = new short[(SizeX + 1) * (SizeY + 1)];
             WorldGenerator.SizeX = SizeX;
@@ -161,8 +164,9 @@ public class WorldGenerator {
             Player.createPlayer(randomSpawn);
 
             log("World generator: generating done!\n");
-            createText(42, 50, "generatingDone", "Done! Starting world..", SimpleColor.fromRGBA(147, 51, 0, 255), "WorldGeneratorState");
+            texts.get("WorldGeneratorState").text += "\\nGenerating done! Starting world..";
 
+            try { Thread.sleep(10000); } catch (Exception e) {}
             start(creatures);
         }).start();
     }
@@ -172,6 +176,7 @@ public class WorldGenerator {
         generateFlatWorld();
 
         if (simple) {
+            texts.get("WorldGeneratorState").text += "\\nSecond iteration: generating shadows";
             ShadowMap.generate();
             generateResources();
         } else {
@@ -179,16 +184,17 @@ public class WorldGenerator {
             smoothWorld();
             fillHollows();
 
+            texts.get("WorldGeneratorState").text += "\\nThird iteration: generating shadows";
             ShadowMap.generate();
             generateResources();
-            generateEnvironment();
+            generateEnvironments();
             ShadowMap.generate();
         }
     }
 
     private static void generateFlatWorld() {
         log("World generator: generating flat world");
-        createText(42, 170, "WorldGeneratorState", "Generating flat world", SimpleColor.DIRTY_BRIGHT_WHITE, "WorldGeneratorState");
+        texts.get("WorldGeneratorState").text += "generating flat world";
 
         for (int x = 0; x < SizeX; x++) {
             for (int y = 0; y < SizeY; y++) {
@@ -203,7 +209,7 @@ public class WorldGenerator {
 
     private static void generateMountains() {
         log("World generator: generating mountain");
-        createText(42, 140, "generateMountainsText", "Generating mountains", SimpleColor.DIRTY_BRIGHT_WHITE, "WorldGeneratorState");
+        texts.get("WorldGeneratorState").text += ", generating mountains";
 
         float randGrass = 2f;           //chance of unevenness, the higher the number - the lower the chance
         float randAir = 3.5f;           //chance of air appearing instead of a block, higher number - lower chance
@@ -227,7 +233,7 @@ public class WorldGenerator {
 
     private static void fillHollows() {
         log("World generator: filling hollows");
-        createText(42, 80, "fillHollowsText", "Filling hollows", SimpleColor.DIRTY_BRIGHT_WHITE, "WorldGeneratorState");
+        texts.get("WorldGeneratorState").text += ", filling hollows";
 
         boolean[][] visited = new boolean[SizeX][SizeY];
 
@@ -247,7 +253,7 @@ public class WorldGenerator {
 
     private static void smoothWorld() {
         log("World generator: smoothing world");
-        createText(42, 110, "smoothWorldText", "Smoothing world", SimpleColor.DIRTY_BRIGHT_WHITE, "WorldGeneratorState");
+        texts.get("WorldGeneratorState").text += "\\nSecond step: smoothing world";
 
         float smoothingChance = 3f; //chance of smoothing, higher number - lower chance
 
@@ -326,7 +332,9 @@ public class WorldGenerator {
 
     }
 
-    private static void generateEnvironment() {
+    private static void generateEnvironments() {
+        texts.get("WorldGeneratorState").text += "\\nFourth step: ";
+
         generateTrees();
         generateDecorStones();
         Structures.clearStructuresMap();
@@ -334,6 +342,7 @@ public class WorldGenerator {
 
     private static void generateTrees() {
         log("World generator: generating trees");
+        texts.get("WorldGeneratorState").text += "generating trees";
 
         byte[] forests = new byte[SizeX];
         float lastForest = 0;
@@ -371,6 +380,7 @@ public class WorldGenerator {
     }
 
     private static void generateDecorStones() {
+        texts.get("WorldGeneratorState").text += ", generating decor stones";
         log("World generator: generating decor stones");
 
         float chance = 40;
