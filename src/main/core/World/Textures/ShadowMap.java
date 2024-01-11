@@ -4,7 +4,9 @@ import core.Utils.SimpleColor;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.WorldGenerator;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+
 import static core.Window.start;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.WorldGenerator.*;
@@ -102,19 +104,11 @@ public class ShadowMap {
         }
     }
 
-    private static SimpleColor calculateColor(int lighting, SimpleColor originalColor) {
-        int r = originalColor.getRed() - Math.abs(255 - lighting);
-        int g = originalColor.getGreen() - Math.abs(255 - lighting);
-        int b = originalColor.getBlue() - Math.abs(255 - lighting);
-
-        return checkColor(SimpleColor.fromRGBA(r, g, b, originalColor.getAlpha()));
-    }
-
     public static SimpleColor getColor(int x, int y) {
-        int r = checkColor(getShadow(x, y).getRed() + addedColor.getRed() - deletedColor.getRed());
-        int g = checkColor(getShadow(x, y).getGreen() + addedColor.getGreen() - deletedColor.getGreen());
-        int b = checkColor(getShadow(x, y).getBlue() + addedColor.getBlue() - deletedColor.getBlue());
-        int a = checkColor(getShadow(x, y).getAlpha() + addedColor.getAlpha() - deletedColor.getAlpha());
+        int r = getShadow(x, y).getRed() + addedColor.getRed() - deletedColor.getRed();
+        int g = getShadow(x, y).getGreen() + addedColor.getGreen() - deletedColor.getGreen();
+        int b = getShadow(x, y).getBlue() + addedColor.getBlue() - deletedColor.getBlue();
+        int a = getShadow(x, y).getAlpha() + addedColor.getAlpha() - deletedColor.getAlpha();
 
         return SimpleColor.fromRGBA(r, g, b, a);
     }
@@ -127,65 +121,28 @@ public class ShadowMap {
             color = SimpleColor.WHITE;
         }
 
-        int r = checkColor(color.getRed() + addedColorDynamic.getRed() - deletedColorDynamic.getRed());
-        int g = checkColor(color.getGreen() + addedColorDynamic.getGreen() - deletedColorDynamic.getGreen());
-        int b = checkColor(color.getBlue() + addedColorDynamic.getBlue() - deletedColorDynamic.getBlue());
-        int a = checkColor(color.getAlpha() + addedColorDynamic.getAlpha() - deletedColorDynamic.getAlpha());
+        int r = color.getRed() + addedColorDynamic.getRed() - deletedColorDynamic.getRed();
+        int g = color.getGreen() + addedColorDynamic.getGreen() - deletedColorDynamic.getGreen();
+        int b = color.getBlue() + addedColorDynamic.getBlue() - deletedColorDynamic.getBlue();
+        int a = color.getAlpha() + addedColorDynamic.getAlpha() - deletedColorDynamic.getAlpha();
 
         return SimpleColor.fromRGBA(r, g, b, a);
     }
 
     public static void addAllColor(SimpleColor color) {
-        addedColor = checkColor(color);
+        addedColor = color;
     }
 
     public static void addAllColorDynamic(SimpleColor color) {
-        addedColorDynamic = checkColor(color);
+        addedColorDynamic = color;
     }
 
     public static void deleteAllColor(SimpleColor color) {
-        deletedColor = checkColor(color);
+        deletedColor = color;
     }
 
     public static void deleteAllColorDynamic(SimpleColor color) {
-        deletedColorDynamic = checkColor(color);
-    }
-
-    public static void setColorBrightness(SimpleColor color, int brightness) {
-        for (int x = 1; x < WorldGenerator.SizeX - 1; x++) {
-            for (int y = 1; y < WorldGenerator.SizeY - 1; y++) {
-                if (getDegree(x, y) == brightness) {
-                    int r = checkColor(getShadow(x, y).getRed() + color.getRed());
-                    int g = checkColor(getShadow(x, y).getGreen() + color.getGreen());
-                    int b = checkColor(getShadow(x, y).getBlue() + color.getBlue());
-                    int a = checkColor(getShadow(x, y).getAlpha() + color.getAlpha());
-
-                    setShadow(x, y, SimpleColor.fromRGBA(r, g, b, a));
-                }
-            }
-        }
-    }
-
-    public static int checkColor(int SimpleColor) {
-        return Math.clamp(SimpleColor, 0, 255);
-    }
-
-    private static SimpleColor checkColor(SimpleColor color) {
-        int r = checkColor(color.getRed());
-        int g = checkColor(color.getGreen());
-        int b = checkColor(color.getBlue());
-        int a = checkColor(color.getAlpha());
-
-        return SimpleColor.fromRGBA(r, g, b, a);
-    }
-
-    private static SimpleColor checkLightTransmission(SimpleColor color, int transmission) {
-        int r = checkColor(color.getRed() + transmission);
-        int g = checkColor(color.getGreen() + transmission);
-        int b = checkColor(color.getBlue() + transmission);
-        int a = checkColor(color.getAlpha() + transmission);
-
-        return SimpleColor.fromRGBA(r, g, b, a);
+        deletedColorDynamic = color;
     }
 
     private static boolean checkHasGasAround(int x, int y, int radius) {

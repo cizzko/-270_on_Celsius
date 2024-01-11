@@ -1,9 +1,10 @@
 package core.Utils;
 
-import core.EventHandling.Logging.Logger;
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
 import java.lang.reflect.Method;
+
+import static core.EventHandling.Logging.Logger.printException;
 
 public class ImportClassMethod {
 
@@ -13,13 +14,13 @@ public class ImportClassMethod {
             int result = compiler.run(null, null, null, classPath);
 
             if (result != 0) {
-                throw new RuntimeException("Error at compiling .java file");
+                printException("Error at compiling .java file", new RuntimeException());
             }
 
             Class<?> loadedClass = Class.forName(classPath.replace("\\", ".").replaceAll(".*src\\.", "").replace(".java", ""));
 
             if (implementsClass != null && !implementsClass.isAssignableFrom(loadedClass)) {
-                throw new RuntimeException("Class at path: '" + classPath + "' not implements class: '" + implementsClass + "'");
+                printException("Class at path: '" + classPath + "' not implements class: '" + implementsClass + "'", new RuntimeException());
             }
 
             Object instance = loadedClass.newInstance();
@@ -42,7 +43,7 @@ public class ImportClassMethod {
             }
 
         } catch (Exception e) {
-            Logger.printException("Some error at start method, class path: '" + classPath + "', method: '" + methodName, e);
+            printException("Some error at start method, class path: '" + classPath + "', method: '" + methodName, e);
         }
         return null;
     }

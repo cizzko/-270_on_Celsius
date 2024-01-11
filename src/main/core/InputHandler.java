@@ -10,6 +10,7 @@ import org.lwjgl.glfw.GLFWScrollCallback;
 
 import java.util.Arrays;
 
+import static core.EventHandling.Logging.Logger.printException;
 import static core.Window.addResource;
 import static core.Window.glfwWindow;
 import static org.lwjgl.glfw.GLFW.*;
@@ -128,22 +129,25 @@ public class InputHandler {
 
     private static void setBit(long[] bits, int i) {
         int idx = i >> 6;
-        if (idx < 0 || idx >= bits.length)
-            throw new IllegalArgumentException("Unexpected button: " + i);
+        if (idx < 0 || idx >= bits.length) {
+            printException("Unexpected button: " + i, new IllegalArgumentException());
+        }
         bits[idx] |= 1L << i;
     }
 
     private static void unsetBit(long[] bits, int i) {
         int idx = i >> 6;
-        if (idx < 0 || idx >= bits.length)
-            throw new IllegalArgumentException("Unexpected button: " + i);
+        if (idx < 0 || idx >= bits.length) {
+            printException("Unexpected button: " + i, new IllegalArgumentException());
+        }
         bits[idx] &= ~(1L << i);
     }
 
     private static boolean isSet(long[] bits, int i) {
         int idx = i >> 6;
-        if (idx < 0 || idx >= bits.length)
-            throw new IllegalArgumentException("Unexpected button: " + i);
+        if (idx < 0 || idx >= bits.length) {
+            printException("Unexpected button: " + i, new IllegalArgumentException());
+        }
         return (bits[idx] & (1L << i)) != 0;
     }
 }

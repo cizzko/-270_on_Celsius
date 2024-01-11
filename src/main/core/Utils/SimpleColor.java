@@ -17,8 +17,8 @@ public final class SimpleColor implements Serializable {
         return SimpleColor.fromRGBA((value >> 16) & 0xFF, (value >> 8) & 0xFF, (value) & 0xFF, (value >> 24) & 0xff);
     }
 
-    private static int clamp(int c) {
-        return Math.clamp(c, 0, 255);
+    private static int clamp(int value) {
+        return Math.clamp(value, 0, 255);
     }
 
     private SimpleColor(int r, int g, int b, int a) {

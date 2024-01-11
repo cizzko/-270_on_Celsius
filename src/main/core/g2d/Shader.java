@@ -2,87 +2,20 @@ package core.g2d;
 
 import core.Utils.Disposable;
 import core.math.Mat3;
-import org.lwjgl.BufferUtils;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
-import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
 
 import static org.lwjgl.opengl.GL46.*;
 
 public final class Shader implements Disposable {
     private int glHandle;
 
-    private int vertexSize;
     private float[] mat4adapt;
-
-    private final Map<String, ShaderAttribute> attributes = Map.of(); // new LinkedHashMap<>();
 
     public Shader(int program) {
         this.glHandle = program;
-
-        // TODO всё таки сделать автоматическую настройку вершинных данных
-        //  но при этом учесть оптимизированную запись цвета как 1 float и т.п., т.д.
-        // try (var stack = MemoryStack.stackPush()) {
-        //     int numAttrs = glGetProgrami(glHandle, GL_ACTIVE_ATTRIBUTES);
-        //     for (int i = 0; i < numAttrs; i++) {
-        //         IntBuffer size = stack.mallocInt(1);
-        //         IntBuffer type = stack.mallocInt(1);
-        //         var name = glGetActiveAttrib(program, i, size, type);
-        //
-        //         int loc = glGetAttribLocation(glHandle, name);
-        //         ShaderAttribute attr = new ShaderAttribute(name, size.get(0), type.get(0), loc);
-        //         vertexSize += attr.size();
-        //
-        //         attributes.put(name, attr);
-        //     }
-        // }
-    }
-
-    public int vertexSize() {
-        return vertexSize;
-    }
-
-    public Collection<ShaderAttribute> attributes() {
-        return attributes.values();
-    }
-
-    public record ShaderAttribute(String name, int components, int type, int location) {
-        public int size() {
-            return switch (type) {
-                case GL_FLOAT_VEC4 -> 4 * components;
-                case GL_FLOAT_VEC2 -> 2 * components;
-                default -> throw new IllegalArgumentException(Integer.toHexString(type));
-            };
-        }
-
-        public boolean normalized() {
-            return false; // TODO нужно ли?
-        }
-
-        @Override
-        public String toString() {
-            return "ShaderAttribute{" +
-                    "name='" + name + '\'' +
-                    ", components=" + components +
-                    ", type=" + type +
-                    ", location=" + location +
-                    ", normalized=" + normalized() +
-                    ", size=" + size() +
-                    '}';
-        }
-
-        public int vertexType() {
-            return GL_FLOAT;
-        }
     }
 
     public static Shader load(String basePath) throws IOException {

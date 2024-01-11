@@ -92,7 +92,7 @@ public final class AtlasGenerator {
                                 relativePath + "' and '" +
                                 duplicate.path + "'");
                     }
-                    System.out.println("Loading image '" + relativePath + "'");
+                    log("Loading image '" + relativePath + "'");
 
                     var regionImage = ImageIO.read(path.toFile());
                     regionMap.put(regionName, new Region(relativePath, regionName, regionImage));
@@ -132,6 +132,7 @@ public final class AtlasGenerator {
             region.ry = pos.y();
         }
 
+        log("Result atlas size: " + packer.w + "x" + packer.h);
 
         var atlasImage = new BufferedImage(packer.w, packer.h, BufferedImage.TYPE_INT_ARGB);
         var gr = atlasImage.createGraphics();
@@ -164,5 +165,9 @@ public final class AtlasGenerator {
             wr.endObject();
             wr.endObject();
         }
+    }
+
+    private static void log(String str) {
+        System.out.println(str);
     }
 }

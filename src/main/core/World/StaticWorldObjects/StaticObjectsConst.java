@@ -1,14 +1,15 @@
 package core.World.StaticWorldObjects;
 
 import core.EventHandling.Logging.Config;
+import core.EventHandling.Logging.Logger;
 import core.Global;
-import core.Window;
 import core.g2d.Atlas;
 
 import java.io.File;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
-import static core.Window.*;
+
+import static core.Window.assetsDir;
 
 public class StaticObjectsConst implements Cloneable {
     private static final ConcurrentHashMap<Byte, StaticObjectsConst> constants = new ConcurrentHashMap<>();
@@ -31,12 +32,12 @@ public class StaticObjectsConst implements Cloneable {
 
     @Override
     public StaticObjectsConst clone() {
-
         try {
             return (StaticObjectsConst) super.clone();
         } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
+            Logger.printException("Error when cloning static objects const", e);
         }
+        return null;
     }
 
     private StaticObjectsConst(boolean hasMotherBlock, float maxHp, float density, float resistance, int lightTransmission, Atlas.Region texture, String objectName, String originalFileName, Types type) {

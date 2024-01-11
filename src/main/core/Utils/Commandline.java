@@ -104,7 +104,7 @@ public class Commandline {
             }
 
             if (method == null) {
-                throw new NoSuchMethodException("Method not found");
+                Logger.printException("Method not found", new NoSuchMethodException("Target = " + target));
             }
 
             Object result = method.invoke(null, convertedArgs);
