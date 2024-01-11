@@ -29,7 +29,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;
 
 public class Window {
-    public static final String versionStamp = "0.0.5", version = "alpha " + versionStamp + " (non stable)";
+    public static final String versionStamp = "0.0.55", version = "alpha " + versionStamp + " (non stable)";
     public static int defaultWidth = 1920, defaultHeight = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0, fps = 0;
     public static boolean start = false;
     public static long glfwWindow;
@@ -70,7 +70,7 @@ public class Window {
 
         glfwMakeContextCurrent(glfwWindow);
 
-        var cursorImage = readImage(BufferedImageEncoder(assets.assetsDir("World/Other/cursorDefault.png")));
+        TextureLoader.ImageData cursorImage = readImage(BufferedImageEncoder(assets.assetsDir("World/Other/cursorDefault.png")));
         GLFWImage glfwImg = GLFWImage.create().set(cursorImage.width(), cursorImage.height(), cursorImage.data());
         addResource(glfwImg);
         glfwSetCursor(glfwWindow, glfwCreateCursor(glfwImg, 0, 0));
@@ -127,6 +127,7 @@ public class Window {
 
             TextureDrawing.updateVideo();
             batch.z(Layer.STATIC_OBJECTS);
+
             if (start) {
                 TextureDrawing.updateStaticObj();
                 batch.z(Layer.DYNAMIC_OBJECTS);
@@ -134,6 +135,7 @@ public class Window {
             } else {
                 batch.draw(assets.getTextureByPath(assets.assetsDir("World/Other/background.png")));
             }
+
             batch.z(Layer.GUI);
             camera.setToOrthographic(camera.width(), camera.height());
             batch.matrix(camera.projection);

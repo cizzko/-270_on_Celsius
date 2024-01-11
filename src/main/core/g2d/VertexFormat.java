@@ -13,7 +13,7 @@ public final class VertexFormat {
 
         int vsize = 0;
         for (int i = 0; i < vertexAttributes.size(); i++) {
-            var attr = vertexAttributes.get(i);
+            VertexAttribute attr = vertexAttributes.get(i);
             offsets[i] = vsize;
             vsize += attr.byteSize();
         }
@@ -30,14 +30,14 @@ public final class VertexFormat {
 
     public void enableAttributes() {
         for (int i = 0; i < vertexAttributes.size(); i++) {
-            var attr = vertexAttributes.get(i);
+            VertexAttribute attr = vertexAttributes.get(i);
             attr.enable(i, vertexByteSize, offsets[i]);
         }
     }
 
     public void disableAttributes() {
         for (int i = 0; i < vertexAttributes.size(); i++) {
-            var attr = vertexAttributes.get(i);
+            VertexAttribute attr = vertexAttributes.get(i);
             attr.disable(i);
         }
     }

@@ -2,6 +2,7 @@ package core.World.Creatures.Player;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
+import core.g2d.Texture;
 import core.graphic.Layer;
 import core.Utils.SimpleColor;
 import core.World.Creatures.DynamicWorldObjects;
@@ -15,9 +16,7 @@ import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.TextureDrawing;
 import core.g2d.Fill;
-
 import java.awt.*;
-
 import static core.Global.*;
 import static core.Window.start;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
@@ -243,7 +242,7 @@ public class Player {
         byte hp = getHp(obj);
         float maxHp = getMaxHp(obj);
 
-        var oldColor = batch.color(blockColor);
+        SimpleColor oldColor = batch.color(blockColor);
         batch.draw(getTexture(obj), xBlock, yBlock);
         if (hp > maxHp / 1.5f) {
             // ???
@@ -289,9 +288,9 @@ public class Player {
         int r = temp > 0 ? a : 0;
         int b = temp > 0 ? 0 : a;
 
-        var modifiedTemperature = assets.getTextureByPath(assets.assetsDir("/UI/GUI/modifiedTemperature.png"));
+        Texture modifiedTemperature = assets.getTextureByPath(assets.assetsDir("/UI/GUI/modifiedTemperature.png"));
         int z = batch.z(Layer.EFFECTS);
-        var oldColor = batch.color(SimpleColor.fromRGBA(r, (int) (b / 2f), b, a));
+        SimpleColor oldColor = batch.color(SimpleColor.fromRGBA(r, (int) (b / 2f), b, a));
         batch.draw(modifiedTemperature);
         batch.color(oldColor);
         batch.z(z);

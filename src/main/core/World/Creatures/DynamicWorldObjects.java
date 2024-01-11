@@ -31,7 +31,7 @@ public class DynamicWorldObjects implements Serializable {
 
     public static DynamicWorldObjects createDynamic(String name, float x) {
         byte id = generateId(name);
-        var obj = DynamicObjectsConst.bindDynamic(name, id);
+        DynamicObjectsConst obj = DynamicObjectsConst.bindDynamic(name, id);
         ArrayList<Integer> topmostBlocks = new ArrayList<>(4);
 
         for (int xSize = 0; xSize < (int) Math.ceil(obj.texture.width() / TextureDrawing.blockSize) + 1; xSize++) {
@@ -69,7 +69,7 @@ public class DynamicWorldObjects implements Serializable {
     }
 
     public void jump(float impulse) {
-        var tex = DynamicObjectsConst.getConst(id).texture;
+        Atlas.Region tex = DynamicObjectsConst.getConst(id).texture;
 
         if (HitboxMap.checkIntersStaticD(x, y, tex.width(), tex.height()) && motionVectorY == 0) {
             motionVectorY += (impulse * 1000);

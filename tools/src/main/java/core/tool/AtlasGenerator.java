@@ -6,6 +6,7 @@ import core.g2d.Atlas;
 import core.math.MathUtil;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -50,9 +51,9 @@ public final class AtlasGenerator {
     }
 
     public static void main(String[] args) throws IOException {
-        var basePath = Path.of("src/assets/");
-        var outputDir = basePath.resolve("out");
-        var ignore = Set.of(
+        Path basePath = Path.of("src/assets/");
+        Path outputDir = basePath.resolve("out");
+        Set<Path> ignore = Set.of(
                 basePath.resolve("World/Other/background.png"),
                 basePath.resolve("World/Sky/skyBackground0.png"),
                 basePath.resolve("World/Sky/skyBackground1.png"),
@@ -62,8 +63,8 @@ public final class AtlasGenerator {
                 basePath.resolve("World/Sun/sun.png")
 
         );
-        var error = basePath.resolve("World/textureNotFound.png");
-        var baseName = "sprites"; // sptrites.atlas, sprites.atlas.meta
+        Path error = basePath.resolve("World/textureNotFound.png");
+        String baseName = "sprites"; // sptrites.atlas, sprites.atlas.meta
         process(outputDir, baseName, basePath, error, ignore, 64, 1024 * 8);
     }
 
@@ -71,7 +72,7 @@ public final class AtlasGenerator {
                                String atlasBaseName,
                                Path sourceDir, Path errorImage,
                                Set<Path> ignore, int min, int max) throws IOException {
-        var regionMap = new HashMap<String, Region>();
+        HashMap<String, Region> regionMap = new HashMap<>();
 
         class WalkVisitor extends SimpleFileVisitor<Path> {
             @Override
@@ -81,12 +82,12 @@ public final class AtlasGenerator {
                 }
 
                 if (path.toString().endsWith(IMAGE_EXT)) {
-                    var relativePath = sourceDir.relativize(path);
+                    Path relativePath = sourceDir.relativize(path);
                     String filename = relativePath.toString();
                     String regionName = filename.substring(0, filename.length() - IMAGE_EXT.length())
                             .replace('\\', '/');
 
-                    var duplicate = regionMap.get(regionName);
+                    Region duplicate = regionMap.get(regionName);
                     if (duplicate != null) {
                         throw new IllegalStateException("Duplicate region name: '" +
                                 relativePath + "' and '" +
@@ -94,7 +95,7 @@ public final class AtlasGenerator {
                     }
                     log("Loading image '" + relativePath + "'");
 
-                    var regionImage = ImageIO.read(path.toFile());
+                    BufferedImage regionImage = ImageIO.read(path.toFile());
                     regionMap.put(regionName, new Region(relativePath, regionName, regionImage));
                 }
                 return FileVisitResult.CONTINUE;
@@ -103,18 +104,20 @@ public final class AtlasGenerator {
 
         Files.walkFileTree(sourceDir, new WalkVisitor());
 
-        var regions = new ArrayList<>(regionMap.values());
+        ArrayList<Region> regions = new ArrayList<>(regionMap.values());
 
-        var errorPathRelative = sourceDir.relativize(errorImage);
+        Path errorPathRelative = sourceDir.relativize(errorImage);
         Region errorRegion = regions.stream()
                 .filter(rg -> rg.path.equals(errorPathRelative))
                 .findAny()
                 .orElseThrow();
 
         regions.sort(Comparator.comparingInt(Region::size).reversed());
-        var packer = new RectanglePacker(regions.size(), min, min);
+
+        RectanglePacker packer = new RectanglePacker(regions.size(), min, min);
         for (Region region : regions) {
             RectanglePacker.Position pos;
+
             while ((pos = packer.pack(region.ow(), region.oh())).isInvalid()) {
                 boolean increaseW = packer.w <= packer.h;
                 if (packer.w >= max && increaseW) {
@@ -134,8 +137,8 @@ public final class AtlasGenerator {
 
         log("Result atlas size: " + packer.w + "x" + packer.h);
 
-        var atlasImage = new BufferedImage(packer.w, packer.h, BufferedImage.TYPE_INT_ARGB);
-        var gr = atlasImage.createGraphics();
+        BufferedImage atlasImage = new BufferedImage(packer.w, packer.h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D gr = atlasImage.createGraphics();
         // Можно, но зачем?
         // gr.setColor(Color.BLACK);
         // gr.fillRect(0, 0, packer.w, packer.h);
@@ -147,14 +150,15 @@ public final class AtlasGenerator {
 
         Files.createDirectories(outputDir);
 
-        var atlasPath = outputDir.resolve(atlasBaseName + Atlas.ATLAS_EXT);
+        Path atlasPath = outputDir.resolve(atlasBaseName + Atlas.ATLAS_EXT);
         ImageIO.write(atlasImage, "png", atlasPath.toFile());
 
-        var atlasMetaPath = outputDir.resolve(atlasBaseName + Atlas.META_EXT);
-        try (var wr = new JsonWriter(Files.newBufferedWriter(atlasMetaPath, StandardCharsets.UTF_8))) {
+        Path atlasMetaPath = outputDir.resolve(atlasBaseName + Atlas.META_EXT);
+        try (JsonWriter wr = new JsonWriter(Files.newBufferedWriter(atlasMetaPath, StandardCharsets.UTF_8))) {
             wr.beginObject();
             wr.name("error").value(errorRegion.name);
             wr.name("regions").beginObject();
+
             for (Region region : regions) {
                 wr.name(region.name);
                 wr.beginObject();

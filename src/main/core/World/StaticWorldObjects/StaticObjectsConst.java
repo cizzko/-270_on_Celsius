@@ -110,7 +110,7 @@ public class StaticObjectsConst implements Cloneable {
         float resistance = Float.parseFloat((String) props.getOrDefault("Resistance", "100"));
         int lightTransmission = Integer.parseInt((String) props.getOrDefault("LightTransmission", "100"));
         int maxHp = Integer.parseInt((String) props.getOrDefault("MaxHp", "100"));
-        var texture = Global.atlas.byPath((String) props.get("Path"));
+        Atlas.Region texture = Global.atlas.byPath((String) props.get("Path"));
         String enumType = (String) props.getOrDefault("Type", Types.SOLID.name());
         String objectName = (String) props.getOrDefault("Name", "notFound");
 

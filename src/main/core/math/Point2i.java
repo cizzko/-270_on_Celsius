@@ -33,8 +33,12 @@ public final class Point2i {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Point2i point2i)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Point2i point2i)) {
+            return false;
+        }
         return x == point2i.x && y == point2i.y;
     }
 

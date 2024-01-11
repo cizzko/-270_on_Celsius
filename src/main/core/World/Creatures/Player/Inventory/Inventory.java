@@ -54,7 +54,7 @@ public class Inventory {
     }
 
     private static void drawInventory() {
-        var inventory = atlas.byPath("UI/GUI/inventory/inventory" + (inventoryOpen ? "Open" : "Closed") + ".png");
+        Atlas.Region inventory = atlas.byPath("UI/GUI/inventory/inventory" + (inventoryOpen ? "Open" : "Closed") + ".png");
         batch.draw(inventory, inventoryOpen ? 1488 : 1866, 756);
 
         for (int x = inventoryOpen ? 0 : 7; x < inventoryObjects.length; x++) {
@@ -68,7 +68,7 @@ public class Inventory {
     }
 
     private static Point2i getObjectUnderMouse() {
-        var mousePos = input.mousePos();
+        Point2i mousePos = input.mousePos();
         int x = mousePos.x;
         int y = mousePos.y;
 
@@ -146,7 +146,7 @@ public class Inventory {
     }
 
     private static void updateUnderMouse() {
-        var underMouse = getObjectUnderMouse();
+        Point2i underMouse = getObjectUnderMouse();
 
         if (underMouse != null && EventHandler.getRectanglePress(1488, 756, 1919, 1079) && underMouseItem == null) {
             boolean hasUnderMouseItem = inventoryObjects[underMouse.x][underMouse.y] != null;
@@ -174,7 +174,7 @@ public class Inventory {
     private static void updateDropItem() {
         if (!input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && underMouseItem != null) {
             //hasItemsMouse - inventory cell under the mouse when the mouse button is released, underMouseItem - item selected for movement
-            var hasItemsMouse = getObjectUnderMouse();
+            Point2i hasItemsMouse = getObjectUnderMouse();
 
             if (hasItemsMouse != null) {
                 moveItems(hasItemsMouse, underMouseItem);

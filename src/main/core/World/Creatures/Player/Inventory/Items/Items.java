@@ -50,7 +50,7 @@ public class Items implements Serializable {
     }
 
     private static DefaultValues getDefault(Properties properties) {
-        var texture = Global.atlas.byPath((String) properties.getOrDefault("Path", "/World/textureNotFound.png"));
+        Atlas.Region texture = Global.atlas.byPath((String) properties.getOrDefault("Path", "/World/textureNotFound.png"));
         String description = (String) properties.getOrDefault("Description", null);
         String name = (String) properties.getOrDefault("Name", null);
         String requiredForBuild = (String) properties.getOrDefault("RequiredForBuild", null);

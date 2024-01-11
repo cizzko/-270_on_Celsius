@@ -33,11 +33,11 @@ public final class Font {
             Logger.logExit(1);
         }
 
-        var fnt = new Font();
-        var glyphTableTmp = new HashMap<Character, Glyph>();
+        Font fnt = new Font();
+        HashMap<Character, Glyph> glyphTableTmp = new HashMap<>();
 
-        var tmp = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-        var tmpg = tmp.createGraphics();
+        BufferedImage tmp = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D tmpg = tmp.createGraphics();
         {
             tmpg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             tmpg.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
@@ -57,9 +57,9 @@ public final class Font {
         //  но надо это ещё надо подумать...
 
         int maxTexSize = GL46.glGetInteger(GL46.GL_MAX_TEXTURE_SIZE);
-        var packer = new RectanglePacker(64, 64);
+        RectanglePacker packer = new RectanglePacker(64, 64);
 
-        var glyphs = new ArrayList<GlyphAndImage>();
+        ArrayList<GlyphAndImage> glyphs = new ArrayList<>();
 
         int guessedHeight = metrics.getHeight();
         for (char c = Character.MIN_VALUE; c < Character.MAX_VALUE; c++) {
@@ -71,8 +71,8 @@ public final class Font {
                 continue;
             }
 
-            var image = new BufferedImage(charWidth, guessedHeight, BufferedImage.TYPE_INT_ARGB);
-            var g2 = image.createGraphics();
+            BufferedImage image = new BufferedImage(charWidth, guessedHeight, BufferedImage.TYPE_INT_ARGB);
+            Graphics2D g2 = image.createGraphics();
             g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
             g2.setFont(font);
@@ -88,8 +88,8 @@ public final class Font {
             glyphTableTmp.put(c, ch);
         }
 
-        for (var image : glyphs) {
-            var gl = image.glyph;
+        for (GlyphAndImage image : glyphs) {
+            Glyph gl = image.glyph;
 
             RectanglePacker.Position pos;
             while ((pos = packer.pack(gl.width, gl.height)).isInvalid()) {
@@ -107,9 +107,9 @@ public final class Font {
             gl.y = pos.y();
         }
 
-        var atlasImage = new BufferedImage(packer.w, packer.h, BufferedImage.TYPE_INT_ARGB);
-        var gr = atlasImage.createGraphics();
-        for (var p : glyphs) {
+        BufferedImage atlasImage = new BufferedImage(packer.w, packer.h, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D gr = atlasImage.createGraphics();
+        for (GlyphAndImage p : glyphs) {
             Glyph gl = p.glyph;
             gr.drawImage(p.image, gl.x, gl.y, null);
         }

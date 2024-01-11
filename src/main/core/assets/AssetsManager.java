@@ -13,6 +13,7 @@ public final class AssetsManager {
 
     // По сути, тут можно завернуть Texture и в WeakReference/SoftReference,
     // но придётся позаботиться об удалении текстуры из GL
+    //todo нужен какой то глобальный менеджер всех подгружаемых ассетов, который их будет кешировать, и уметь выставлять уровень важности (софт, стронг, веак), ну и очевидно уметь выдавать по запросу
     private final Map<String, Texture> textures;
 
     public AssetsManager() {
@@ -32,7 +33,8 @@ public final class AssetsManager {
     }
 
     public Texture getTextureByPath(String path) {
-        var tex = textures.get(path);
+        Texture tex = textures.get(path);
+
         if (tex == null) {
             try {
                 tex = Texture.load(path);

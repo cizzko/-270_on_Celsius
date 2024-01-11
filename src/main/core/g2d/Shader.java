@@ -21,6 +21,7 @@ public final class Shader implements Disposable {
     public static Shader load(String basePath) throws IOException {
         String vertSource = Files.readString(Path.of(basePath + ".vert"));
         String fragSource = Files.readString(Path.of(basePath + ".frag"));
+
         return load(vertSource, fragSource);
     }
 
@@ -28,7 +29,7 @@ public final class Shader implements Disposable {
         int vertexShader = compileShader(GL_VERTEX_SHADER, vertexSource);
         int fragmentShader = compileShader(GL_FRAGMENT_SHADER, fragmentSource);
 
-        var program = glCreateProgram();
+        int program = glCreateProgram();
         glAttachShader(program, vertexShader);
         glAttachShader(program, fragmentShader);
         glLinkProgram(program);
@@ -41,6 +42,7 @@ public final class Shader implements Disposable {
 
         glDeleteShader(vertexShader);
         glDeleteShader(fragmentShader);
+
         return new Shader(program);
     }
 
@@ -55,12 +57,12 @@ public final class Shader implements Disposable {
         if (status != GL_TRUE) {
             String log = glGetShaderInfoLog(glHandle);
             glDeleteShader(glHandle);
+
             String typeStr = switch (type) {
                 case GL_VERTEX_SHADER -> "vertex";
                 case GL_FRAGMENT_SHADER -> "fragment";
                 default -> "unnamed(0x" + Integer.toHexString(type) + ")";
             };
-
             throw new IllegalArgumentException("Failed to compile " + typeStr + " shader:\n" + log);
         }
         return glHandle;
@@ -82,7 +84,7 @@ public final class Shader implements Disposable {
     }
 
     public void setUniformTransforming(String name, Mat3 val) {
-        var buffer = mat4adapt;
+        float[] buffer = mat4adapt;
         if (buffer == null) {
             buffer = mat4adapt = new float[16];
         }

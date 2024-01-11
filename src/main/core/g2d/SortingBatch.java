@@ -40,7 +40,7 @@ public class SortingBatch extends Batch {
 
     @Override
     protected void drawTexture(Drawable drawable, float x, float y, float w, float h) {
-        var request = textureRequestsPool.obtain();
+        RequestTexture request = textureRequestsPool.obtain();
         request.set(z, drawable, x, y, w, h, color, blending);
         draw(request);
     }
@@ -64,8 +64,8 @@ public class SortingBatch extends Batch {
         switch (request) {
             case RequestProcedure proc -> proc.runnable.run();
             case RequestTexture tex -> {
-                var oldBlending = blending(tex.blending);
-                var oldColor = tex.color != null ? color(tex.color) : null;
+                Blending oldBlending = blending(tex.blending);
+                SimpleColor oldColor = tex.color != null ? color(tex.color) : null;
 
                 try {
                     super.drawTexture(tex.drawable, tex.x, tex.y, tex.w, tex.h);

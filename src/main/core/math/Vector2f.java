@@ -68,13 +68,18 @@ public final class Vector2f {
         float ry = x * mat.val[Mat3.M10] + y * mat.val[Mat3.M11] + mat.val[Mat3.M12];
         this.x = rx;
         this.y = ry;
+
         return this;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof Vector2f other)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Vector2f other)) {
+            return false;
+        }
         return Float.compare(x, other.x) == 0 && Float.compare(y, other.y) == 0;
     }
 
@@ -83,6 +88,7 @@ public final class Vector2f {
         int h = 5381;
         h += (h << 5) + Float.hashCode(x);
         h += (h << 5) + Float.hashCode(y);
+
         return h;
     }
 }

@@ -67,10 +67,13 @@ public final class Mesh implements Disposable {
 
     @Override
     public void close() {
-        if (disposed) return;
+        if (disposed) {
+            return;
+        }
         glDeleteVertexArrays(vao);
         glDeleteBuffers(vbo);
         glDeleteBuffers(eab);
+
         disposed = true;
     }
 }

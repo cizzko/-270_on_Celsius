@@ -13,6 +13,7 @@ import core.Window;
 import core.World.Creatures.Player.Player;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
+import core.math.Point2i;
 import core.math.Rectangle;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCharCallback;
@@ -80,14 +81,14 @@ public class EventHandler {
     }
 
     public static boolean getRectanglePress(int x, int y, int x1, int y1) {
-        var mousePos = input.mousePos();
+        Point2i mousePos = input.mousePos();
 
         return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 &&
                 input.justClicked(GLFW_MOUSE_BUTTON_LEFT);
     }
 
     private static void updateSliders() {
-        var mousePos = input.mousePos();
+        Point2i mousePos = input.mousePos();
 
         for (SliderObject slider : sliders.values()) {
             if (!slider.visible) {

@@ -24,9 +24,12 @@ public final class Pool<T> {
 
     public void free(T object) {
         Objects.requireNonNull(object);
+
         if (freeObjects.size() < maxSize) {
             freeObjects.addLast(object);
         }
-        if (object instanceof Poolable p) p.reset();
+        if (object instanceof Poolable p) {
+            p.reset();
+        }
     }
 }

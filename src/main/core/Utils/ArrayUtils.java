@@ -31,6 +31,7 @@ public class ArrayUtils {
 
         while (!stack.isEmpty()) {
             File currentFile = stack.pop();
+
             if (currentFile.isDirectory()) {
                 File[] subFiles = currentFile.listFiles();
                 if (subFiles != null) {

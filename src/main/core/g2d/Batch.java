@@ -9,6 +9,7 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.util.List;
 
 import static core.g2d.VertexAttribute.*;
@@ -55,7 +56,7 @@ public class Batch implements Disposable {
     private boolean disposed;
 
     public final Blending blending(Blending blending) {
-        var old = this.blending;
+        Blending old = this.blending;
         this.blending = blending;
         return old;
     }
@@ -70,9 +71,10 @@ public class Batch implements Disposable {
     }
 
     public final SimpleColor color(SimpleColor color) {
-        var oldColor = this.color;
+        SimpleColor oldColor = this.color;
         this.color = color;
         this.colorBits = toBits(color);
+
         return oldColor;
     }
 
@@ -93,7 +95,7 @@ public class Batch implements Disposable {
         VERTEX_FORMAT.enableAttributes();
 
         int indexesCount = bufferSize * VERTEX_PER_TRIANGLE;
-        var indexes = BufferUtils.createIntBuffer(indexesCount);
+        IntBuffer indexes = BufferUtils.createIntBuffer(indexesCount);
 
         int j = 0;
         for (int i = 0; i < bufferSize; i++) {
@@ -130,7 +132,9 @@ public class Batch implements Disposable {
     }
 
     public void flush() {
-        if (vertexCount == 0) return;
+        if (vertexCount == 0) {
+            return;
+        }
 
         blending.apply();
 

@@ -6,6 +6,7 @@ import core.Global;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
+import core.g2d.Atlas;
 
 import java.io.*;
 import java.util.HashMap;
@@ -115,7 +116,7 @@ public class Structures implements Serializable {
             //if its simple structure (without .ser file)
             if (new File(path).exists()) {
                 Properties prop = Config.getProperties(path);
-                var texture = Global.atlas.byPath((String) prop.get("Path"));
+                Atlas.Region texture = Global.atlas.byPath((String) prop.get("Path"));
                 blocks = new short[texture.width() / TextureDrawing.blockSize][texture.height() / TextureDrawing.blockSize];
                 maxHp = Byte.parseByte((String) prop.getOrDefault("MaxHp", "100"));
 

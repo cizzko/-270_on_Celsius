@@ -1,6 +1,8 @@
 package core.World.StaticWorldObjects;
 
 import core.assets.TextureLoader;
+import core.g2d.Atlas;
+
 import java.awt.*;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
@@ -23,7 +25,7 @@ public class StaticWAnimations {
     }
 
     public static AnimData getCurrentFrame(short id, Point pos) {
-        var path = StaticWorldObjects.getTexture(id);
+        Atlas.Region path = StaticWorldObjects.getTexture(id);
 
         if (path != null && path.name().endsWith(".gif")) {
             StaticWAnimations animation = textures.getOrDefault(pos, null);

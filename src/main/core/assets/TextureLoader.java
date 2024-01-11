@@ -18,6 +18,8 @@ import static core.Window.*;
 // TODO есть планы на этот класс
 //  переместить сюда кеш с текстурами, а также сделать эту самую загрузку
 //  текстур асинхронной
+
+// todo - а что все же насчет меню подтверждения? Изменился вес ассетов -> табличка при входе -> Возможно, ресурсы игры были изменены, перегенерировать текстурный атлас (карту)? кнопки да / нет
 public class TextureLoader {
     public record ImageData(int width, int height, ByteBuffer data) {}
     public record GifImageData(int width, int height, ByteBuffer[] data) {}

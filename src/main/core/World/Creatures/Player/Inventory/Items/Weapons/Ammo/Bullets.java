@@ -8,6 +8,7 @@ import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.HitboxMap;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
+import core.g2d.Atlas;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -90,7 +91,8 @@ public class Bullets {
     }
 
     public static void drawBullets() {
-        var bulletRegion = atlas.byPath("World/Items/someBullet.png");
+        Atlas.Region bulletRegion = atlas.byPath("World/Items/someBullet.png");
+
         for (Bullets bullet : bullets) {
             //TODO: add paths
             if (bullet != null && !(bullet.x > DynamicObjects.getFirst().getX() + 350 || bullet.x < DynamicObjects.getFirst().getX() - 350)) {

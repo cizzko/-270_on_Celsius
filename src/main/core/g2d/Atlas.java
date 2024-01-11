@@ -3,6 +3,7 @@ package core.g2d;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -19,20 +20,20 @@ public final class Atlas {
     private Map<String, Region> regions;
 
     public static Atlas load(String atlasBaseName) throws IOException {
-        var atlasPath = Path.of(atlasBaseName + ATLAS_EXT);
-        var atlasMetaPath = Path.of(atlasBaseName + META_EXT);
+        Path atlasPath = Path.of(atlasBaseName + ATLAS_EXT);
+        Path atlasMetaPath = Path.of(atlasBaseName + META_EXT);
 
-        var texture = Texture.load(atlasPath.toString());
-        var atlas = new Atlas();
+        Texture texture = Texture.load(atlasPath.toString());
+        Atlas atlas = new Atlas();
         atlas.texture = texture;
 
         JsonObject meta;
-        try (var reader = Files.newBufferedReader(atlasMetaPath, StandardCharsets.UTF_8)) {
+        try (BufferedReader reader = Files.newBufferedReader(atlasMetaPath, StandardCharsets.UTF_8)) {
             meta = JsonParser.parseReader(reader)
                     .getAsJsonObject();
         }
 
-        var tmpRegions = new HashMap<String, Region>();
+        HashMap<String, Region> tmpRegions = new HashMap<>();
         meta.getAsJsonObject("regions").asMap().forEach((regionName, regMeta) -> {
             var regionObject = regMeta.getAsJsonObject();
             int x = regionObject.get("x").getAsInt();
@@ -43,8 +44,8 @@ public final class Atlas {
         });
         String errorRegionName = meta.get("error").getAsString();
 
-        var regions = Map.copyOf(tmpRegions);
-        var errorRegion = regions.get(errorRegionName);
+        Map<String, Region> regions = Map.copyOf(tmpRegions);
+        Region errorRegion = regions.get(errorRegionName);
         if (errorRegion == null) {
             throw new IllegalArgumentException("No error region");
         }
@@ -68,10 +69,13 @@ public final class Atlas {
             return errorRegion;
         }
         regionName = regionName.replace('\\', '/');
-        if (regionName.endsWith(".png"))
+
+        if (regionName.endsWith(".png")) {
             regionName = regionName.substring(0, regionName.length() - ".png".length());
-        if (regionName.startsWith("/"))
+        }
+        if (regionName.startsWith("/")) {
             regionName = regionName.substring(1);
+        }
         return regions.getOrDefault(regionName, errorRegion);
     }
 

@@ -27,7 +27,8 @@ public class DynamicObjectsConst {
     }
 
     public static DynamicObjectsConst bindDynamic(String name, byte id) {
-        var cnst = consts.get(id);
+        DynamicObjectsConst cnst = consts.get(id);
+
         if (cnst == null) {
             Properties prop = Config.getProperties(assets.assetsDir("/World/CreaturesCharacteristics/" + name + ".properties"));
             boolean isFlying = Boolean.parseBoolean((String) prop.getOrDefault("IsFlying", "false"));
@@ -36,7 +37,7 @@ public class DynamicObjectsConst {
             int animSpeed = Integer.parseInt((String) prop.getOrDefault("AnimationSpeed", "0"));
             float weight = Float.parseFloat((String) prop.getOrDefault("Weight", "0.001f"));
             float maxHp = Float.parseFloat((String) prop.getOrDefault("MaxHp", "100"));
-            var texture = Global.atlas.byPath((String) prop.getOrDefault("Path", "/World/textureNotFound.png"));
+            Atlas.Region texture = Global.atlas.byPath((String) prop.getOrDefault("Path", "/World/textureNotFound.png"));
 
             consts.put(id, cnst = new DynamicObjectsConst(isFlying, oneoffAnimation, framesCount, animSpeed, weight, maxHp, texture));
         }

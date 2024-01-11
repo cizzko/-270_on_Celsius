@@ -1,5 +1,7 @@
 package core.g2d;
 
+import core.assets.TextureLoader;
+
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
@@ -28,8 +30,7 @@ public final class Texture implements Drawable {
     }
 
     public static Texture load(BufferedImage bufferedImage, int glTarget, float u, float v, float u2, float v2) throws IOException {
-        var image = readImage(bufferedImage);
-
+        TextureLoader.ImageData image = readImage(bufferedImage);
         int glHandle = glGenTextures();
 
         glBindTexture(glTarget, glHandle);

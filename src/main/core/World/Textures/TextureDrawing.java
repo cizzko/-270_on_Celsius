@@ -17,6 +17,7 @@ import core.World.StaticWorldObjects.Structures.Factories;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.WorldUtils;
 import core.g2d.Fill;
+import core.g2d.Font;
 import core.graphic.Layer;
 import core.math.Rectangle;
 
@@ -24,6 +25,7 @@ import java.awt.*;
 import java.nio.ByteBuffer;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static core.EventHandling.Logging.Config.getFromConfig;
@@ -77,7 +79,7 @@ public class TextureDrawing {
     public static void drawText(float x, float y, String text, SimpleColor color) {
         float startX = x;
 
-        var old = batch.color(color);
+        SimpleColor old = batch.color(color);
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
 
@@ -90,7 +92,7 @@ public class TextureDrawing {
                 x = startX;
                 continue;
             }
-            var glyph = Window.defaultFont.getGlyph(ch);
+            Font.Glyph glyph = Window.defaultFont.getGlyph(ch);
             batch.draw(glyph, x, y);
             x += glyph.width();
         }
@@ -237,7 +239,6 @@ public class TextureDrawing {
                 int xBlock = findX(x, y);
                 int yBlock = findY(x, y);
 
-                //todo настроить камеру
                 if (isOnCamera(xBlock, yBlock)) {
                     SimpleColor color = ShadowMap.getColor(x, y);
                     int upperLimit = 100;
@@ -261,7 +262,7 @@ public class TextureDrawing {
                         continue;
                     }
 
-                    var oldColor = batch.color(color);
+                    SimpleColor oldColor = batch.color(color);
                     batch.draw(getTexture(obj), xBlock, yBlock);
 
                     float maxHp = getMaxHp(obj);
@@ -328,7 +329,7 @@ public class TextureDrawing {
 
                 if (isOnCamera((int) dynamicObject.getX(), (int) dynamicObject.getY())) {
                     if (dynamicObject.getFramesCount() == 0) {
-                        var color = batch.color(ShadowMap.getColorDynamic(dynamicObject));
+                        SimpleColor color = batch.color(ShadowMap.getColorDynamic(dynamicObject));
                         batch.draw(dynamicObject.getTexture(), dynamicObject.getX(), dynamicObject.getY());
                         batch.color(color);
                     } else {
@@ -350,7 +351,8 @@ public class TextureDrawing {
     }
 
     private static void updatePanels() {
-        var sortedPanels = panels.values().stream().sorted(Comparator.comparingInt(p -> p.layer)).toList();
+        List<PanelObject> sortedPanels = panels.values().stream().sorted(Comparator.comparingInt(p -> p.layer)).toList();
+
         for (PanelObject panel : sortedPanels) {
             if (!panel.visible) {
                 continue;
@@ -431,7 +433,7 @@ public class TextureDrawing {
                 continue;
             }
             Fill.rect(slider.x, slider.y, slider.width, slider.height, slider.sliderColor);
-            var oldColor = batch.color(slider.dotColor);
+            SimpleColor oldColor = batch.color(slider.dotColor);
             Fill.circle(slider.sliderPos, slider.y - 5, slider.height * 1.5f);
             batch.color(oldColor);
         }

@@ -167,7 +167,7 @@ public class WorldGenerator {
             log("World generator: generating done!\n");
             texts.get("WorldGeneratorState").text += "\\nGenerating done! Starting world..";
 
-            try { Thread.sleep(10000); } catch (Exception e) {}
+            try { Thread.sleep(1000); } catch (Exception e) {}
             start(creatures);
         }).start();
     }

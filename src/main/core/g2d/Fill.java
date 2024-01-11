@@ -99,7 +99,7 @@ public final class Fill {
     }
 
     public static void rect(float x, float y, float width, float height, SimpleColor color) {
-        var old = batch.color(color);
+        SimpleColor old = batch.color(color);
         batch.draw(Global.atlas.byPath("World/white.png"), x, y, width, height);
         batch.color(old);
     }
