@@ -115,7 +115,8 @@ public class BuildMenu {
     }
 
     private static void updateScroll() {
-        double scrollM = input.getScrollOffset() * 6;
+        // TODO на обсуждение. -1 Нужно поскольку OY инветирована
+        double scrollM = -1 * input.getScrollOffset() * 6;
 
         if (scrollM >= -276 && scrollM <= 0) {
             scroll = (float) scrollM;
