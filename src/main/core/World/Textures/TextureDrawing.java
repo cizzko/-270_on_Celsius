@@ -79,7 +79,7 @@ public class TextureDrawing {
     public static void drawText(float x, float y, String text, SimpleColor color) {
         float startX = x;
 
-        SimpleColor old = batch.color(color);
+        batch.color(color);
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
 
@@ -96,7 +96,7 @@ public class TextureDrawing {
             batch.draw(glyph, x, y);
             x += glyph.width();
         }
-        batch.color(old);
+        batch.resetColor();
     }
 
     public static void drawText(float x, float y, String text) {
@@ -213,10 +213,10 @@ public class TextureDrawing {
     }
 
     public static void updateStaticObj() {
-        int oldZ = batch.z(Layer.BACKGROUND);
+        batch.z(Layer.BACKGROUND);
         updateSun();
         ElectricCables.drawCables();
-        batch.z(oldZ);
+        batch.resetZ();
 
         updatePlayerPos();
 
@@ -262,7 +262,7 @@ public class TextureDrawing {
                         continue;
                     }
 
-                    SimpleColor oldColor = batch.color(color);
+                    batch.color(color);
                     batch.draw(getTexture(obj), xBlock, yBlock);
 
                     float maxHp = getMaxHp(obj);
@@ -273,7 +273,7 @@ public class TextureDrawing {
                     } else {
                         batch.draw(atlas.byPath("World/Blocks/damaged0.png"), xBlock, yBlock);
                     }
-                    batch.color(oldColor);
+                    batch.resetColor();
                 }
             }
         }
@@ -329,9 +329,9 @@ public class TextureDrawing {
 
                 if (isOnCamera((int) dynamicObject.getX(), (int) dynamicObject.getY())) {
                     if (dynamicObject.getFramesCount() == 0) {
-                        SimpleColor color = batch.color(ShadowMap.getColorDynamic(dynamicObject));
+                        batch.color(ShadowMap.getColorDynamic(dynamicObject));
                         batch.draw(dynamicObject.getTexture(), dynamicObject.getX(), dynamicObject.getY());
-                        batch.color(color);
+                        batch.resetColor();
                     } else {
                         //todo дописать
                         //drawTexture(dynamicObject.getPath() + dynamicObject.getCurrentFrame() + ".png", dynamicObject.getX(), dynamicObject.getY(), ShadowMap.getColorDynamic(), false, false);
@@ -433,9 +433,9 @@ public class TextureDrawing {
                 continue;
             }
             Fill.rect(slider.x, slider.y, slider.width, slider.height, slider.sliderColor);
-            SimpleColor oldColor = batch.color(slider.dotColor);
+            batch.color(slider.dotColor);
             Fill.circle(slider.sliderPos, slider.y - 5, slider.height * 1.5f);
-            batch.color(oldColor);
+            batch.resetColor();
         }
     }
 

@@ -50,9 +50,9 @@ public class Sun {
             updateNightBackground();
             updateGradient();
 
-            SimpleColor oldColor = batch.color(SimpleColor.fromRGBA(255, green, 40, 220));
+            batch.color(SimpleColor.fromRGBA(255, green, 40, 220));
             batch.draw(assets.getTextureByPath(assets.assetsDir("World/Sun/sun.png")), 580, y);
-            batch.color(oldColor);
+            batch.resetColor();
         }
     }
 
@@ -68,9 +68,9 @@ public class Sun {
         aGradient = Math.max(0, Math.min(250, aGradient));
 
         String sunsetType = getFromConfig("InterpolateSunset").equals("true") ? "" : "non";
-        SimpleColor oldColor = batch.color(SimpleColor.fromRGBA(aGradient, 0, 20, aGradient));
+        batch.color(SimpleColor.fromRGBA(aGradient, 0, 20, aGradient));
         batch.draw(assets.getTextureByPath(assets.assetsDir("World/Sun/" + sunsetType + "InterpolatedSunset.png")));
-        batch.color(oldColor);
+        batch.resetColor();
     }
 
     private static void updateNightBackground() {
@@ -88,9 +88,9 @@ public class Sun {
         ShadowMap.deleteAllColor(SimpleColor.fromRGBA(deleteGradient, deleteGradient, deleteGradient, 0));
         ShadowMap.deleteAllColorDynamic(SimpleColor.fromRGBA(deleteGradient, deleteGradient, deleteGradient, 0));
 
-        SimpleColor oldColor = batch.color(SimpleColor.fromRGBA(255, 255, 255, backGradient));
+        batch.color(SimpleColor.fromRGBA(255, 255, 255, backGradient));
         batch.draw(assets.getTextureByPath(assets.assetsDir("World/Sky/skyBackground0.png")));
-        batch.color(oldColor);
+        batch.resetColor();
     }
 
     private static double Lerp(double a, double b, double t) {

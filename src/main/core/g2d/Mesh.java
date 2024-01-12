@@ -6,15 +6,15 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL15.glBindBuffer;
+import static org.lwjgl.opengl.GL15.glBufferData;
 import static org.lwjgl.opengl.GL46.*;
 
 public final class Mesh implements Disposable {
 
     private final int vaoUsage;
-    private final int vao, vbo, eab;
+    private final int vao, vbo, ebo;
 
-    private IntBuffer indexes;
-
+    private boolean useIndexes;
     private boolean disposed;
 
     public Mesh(int vaoUsage) {
@@ -22,42 +22,48 @@ public final class Mesh implements Disposable {
 
         vao = glGenVertexArrays();
         vbo = glGenBuffers();
-        eab = glGenBuffers();
+        ebo = glGenBuffers();
     }
 
     public void updateIndexes(IntBuffer indexes) {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eab);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes, vaoUsage);
 
-        this.indexes = indexes;
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    public void useIndexes(boolean state) {
+        this.useIndexes = state;
     }
 
     public void bindVbo() {
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
     }
 
-    public void render(int primitiveType, FloatBuffer vertices, int vertexCount) {
+    private void bindEbo() {
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
+    }
+
+    public void bindVao() {
+        glBindVertexArray(vao);
+    }
+
+    public void draw(int primitiveType, FloatBuffer vertices, int vertexCount) {
+        glBindVertexArray(vao);
+
         if (vertexCount > 0) {
             bindVbo();
             glBufferData(GL_ARRAY_BUFFER, vertices, vaoUsage);
         }
 
-        if (indexes != null) {
-            indexes.rewind();
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eab);
-
+        if (useIndexes) {
+            bindEbo();
             glDrawElements(primitiveType, vertexCount, GL_UNSIGNED_INT, 0L);
         } else {
             glDrawArrays(primitiveType, 0, vertexCount);
         }
 
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         glBindVertexArray(0);
-    }
-
-    public void bindVao() {
-        glBindVertexArray(vao);
     }
 
     @Override
@@ -70,9 +76,10 @@ public final class Mesh implements Disposable {
         if (disposed) {
             return;
         }
-        glDeleteVertexArrays(vao);
+
         glDeleteBuffers(vbo);
-        glDeleteBuffers(eab);
+        glDeleteBuffers(ebo);
+        glDeleteVertexArrays(vao);
 
         disposed = true;
     }

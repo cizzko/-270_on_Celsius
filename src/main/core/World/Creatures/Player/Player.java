@@ -242,7 +242,7 @@ public class Player {
         byte hp = getHp(obj);
         float maxHp = getMaxHp(obj);
 
-        SimpleColor oldColor = batch.color(blockColor);
+        batch.color(blockColor);
         batch.draw(getTexture(obj), xBlock, yBlock);
         if (hp > maxHp / 1.5f) {
             // ???
@@ -251,7 +251,7 @@ public class Player {
         } else {
             batch.draw(atlas.byPath("World/Blocks/damaged0.png"), xBlock, yBlock);
         }
-        batch.color(oldColor);
+        batch.resetColor();
     }
 
     public static void updatePlayerGUI() {
@@ -289,11 +289,11 @@ public class Player {
         int b = temp > 0 ? 0 : a;
 
         Texture modifiedTemperature = assets.getTextureByPath(assets.assetsDir("/UI/GUI/modifiedTemperature.png"));
-        int z = batch.z(Layer.EFFECTS);
-        SimpleColor oldColor = batch.color(SimpleColor.fromRGBA(r, (int) (b / 2f), b, a));
+        batch.z(Layer.EFFECTS);
+        batch.color(SimpleColor.fromRGBA(r, (int) (b / 2f), b, a));
         batch.draw(modifiedTemperature);
-        batch.color(oldColor);
-        batch.z(z);
+        batch.resetColor();
+        batch.resetZ();
     }
 
     public static void playerMaxHP() {

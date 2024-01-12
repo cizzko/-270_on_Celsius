@@ -83,9 +83,9 @@ public class Inventory {
     public static void drawInventoryItem(float x, float y, int countInCell, Atlas.Region region) {
         float zoom = Items.computeZoom(region);
 
-        float oldScale = batch.scale(zoom);
+        batch.scale(zoom);
         batch.draw(region, (x + 5) / zoom, (y + 5) / zoom);
-        batch.scale(oldScale);
+        batch.resetScale();
 
         drawText(x + 31, y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell), SimpleColor.DIRTY_BRIGHT_BLACK);
     }
@@ -93,9 +93,9 @@ public class Inventory {
     public static void drawInventoryItem(float x, float y, Atlas.Region region) {
         float scale = Items.computeZoom(region);
 
-        float oldScale = batch.scale(scale);
+        batch.scale(scale);
         batch.draw(region, (x + 5) / scale, (y + 5) / scale);
-        batch.scale(oldScale);
+        batch.resetScale();
     }
 
     public static void decrementItem(int x, int y) {
@@ -125,9 +125,9 @@ public class Inventory {
             if (underMouseItem != null) {
                 Items focusedItems = inventoryObjects[underMouseItem.x][underMouseItem.y];
                 float zoom = focusedItems.zoom;
-                float oldScale = batch.scale(zoom);
+                batch.scale(zoom);
                 batch.draw(focusedItems.texture, (mousePos.x - 15) / zoom, (mousePos.y - 15) / zoom);
-                batch.scale(oldScale);
+                batch.resetScale();
             }
             if ((inventoryOpen || current.x > 6)) {
                 batch.draw(atlas.byPath("UI/GUI/inventory/inventoryCurrent.png"), 1488 + current.x * 54, 756 + current.y * 54f);

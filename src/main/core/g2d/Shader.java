@@ -6,16 +6,29 @@ import core.math.Mat3;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.lwjgl.opengl.GL46.*;
 
 public final class Shader implements Disposable {
     private int glHandle;
 
-    private float[] mat4adapt;
+    private final Map<String, Integer> uniformLocations;
+
+    private final float[] mat4adapt = new float[16];
 
     public Shader(int program) {
         this.glHandle = program;
+
+        var tmpUniformLocations = new HashMap<String, Integer>();
+        int uniformCount = glGetProgrami(glHandle, GL_ACTIVE_UNIFORMS);
+        for (int i = 0; i < uniformCount; i++) {
+            String name = glGetActiveUniformName(glHandle, i);
+            tmpUniformLocations.put(name, i);
+        }
+
+        uniformLocations = Map.copyOf(tmpUniformLocations);
     }
 
     public static Shader load(String basePath) throws IOException {
@@ -73,10 +86,14 @@ public final class Shader implements Disposable {
     }
 
     public void setUniform(String name, Texture tex) {
-        glActiveTexture(GL_TEXTURE0);
+        setUniform(name, tex, 0);
+    }
+
+    public void setUniform(String name, Texture tex, int unit) {
+        glActiveTexture(GL_TEXTURE0 + unit);
         glBindTexture(tex.glTarget(), tex.glHandle);
 
-        setUniform(name, 0);
+        setUniform(name, unit);
     }
 
     public void setUniform(String name, int val) {
@@ -84,13 +101,9 @@ public final class Shader implements Disposable {
     }
 
     public void setUniformTransforming(String name, Mat3 val) {
-        float[] buffer = mat4adapt;
-        if (buffer == null) {
-            buffer = mat4adapt = new float[16];
-        }
-
-        toMat4(val, buffer);
-        glUniformMatrix4fv(uniformLocation(name), false, buffer);
+        float[] mat4 = mat4adapt;
+        toMat4(val, mat4);
+        glUniformMatrix4fv(uniformLocation(name), false, mat4);
     }
 
     private static void toMat4(Mat3 mat3, float[] res) {
@@ -109,7 +122,7 @@ public final class Shader implements Disposable {
     }
 
     private int uniformLocation(String name) {
-        return glGetUniformLocation(glHandle, name);
+        return uniformLocations.get(name);
     }
 
     @Override

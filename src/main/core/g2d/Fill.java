@@ -99,9 +99,9 @@ public final class Fill {
     }
 
     public static void rect(float x, float y, float width, float height, SimpleColor color) {
-        SimpleColor old = batch.color(color);
+        batch.color(color);
         batch.draw(Global.atlas.byPath("World/white.png"), x, y, width, height);
-        batch.color(old);
+        batch.resetColor();
     }
 
     public static void circle(float x, float y, float radius) {

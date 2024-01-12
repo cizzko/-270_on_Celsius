@@ -14,6 +14,8 @@ public class SortingBatch extends Batch {
     protected int z;
     protected boolean flushing;
 
+    private int prevZ;
+
     public SortingBatch(int bufferSize, int poolSize, int queueSize) {
         super(bufferSize);
         this.textureRequestsPool = new Pool<>(RequestTexture::new, poolSize);
@@ -25,23 +27,26 @@ public class SortingBatch extends Batch {
     }
 
     public void draw(int z, Runnable runnable) {
-        requests.add(new RequestProcedure(z, runnable));
+        requests.add(new RequestProcedure(z, blending, runnable));
     }
 
     public void draw(Request request) {
         requests.add(request);
     }
 
-    public int z(int z) {
-        int oldZ = this.z;
+    public void z(int z) {
+        this.prevZ = this.z;
         this.z = z;
-        return oldZ;
+    }
+
+    public final void resetZ() {
+        z = prevZ;
     }
 
     @Override
     protected void drawTexture(Drawable drawable, float x, float y, float w, float h) {
         RequestTexture request = textureRequestsPool.obtain();
-        request.set(z, drawable, x, y, w, h, color, blending);
+        request.set(z, drawable, x, y, w, h, color);
         draw(request);
     }
 
@@ -64,14 +69,12 @@ public class SortingBatch extends Batch {
         switch (request) {
             case RequestProcedure proc -> proc.runnable.run();
             case RequestTexture tex -> {
-                Blending oldBlending = blending(tex.blending);
-                SimpleColor oldColor = tex.color != null ? color(tex.color) : null;
+                color(tex.color);
 
                 try {
                     super.drawTexture(tex.drawable, tex.x, tex.y, tex.w, tex.h);
                 } finally {
-                    this.blending = oldBlending;
-                    if (oldColor != null) color(oldColor);
+                    resetColor();
 
                     textureRequestsPool.free(tex);
                 }
@@ -99,28 +102,11 @@ public class SortingBatch extends Batch {
         public Drawable drawable;
         public float x, y, w, h;
         public SimpleColor color;
-        public Blending blending;
 
         public RequestTexture() {}
 
-        public RequestTexture(int z,
-                              Drawable drawable, float x,
-                              float y, float w, float h,
-                              SimpleColor color, Blending blending) {
-            super(z);
-            this.drawable = drawable;
-            this.x = x;
-            this.y = y;
-            this.w = w;
-            this.h = h;
-            this.color = color;
-            this.blending = blending;
-        }
-
-        public void set(int z,
-                        Drawable drawable, float x,
-                        float y, float w, float h,
-                        SimpleColor color, Blending blending) {
+        public void set(int z, Drawable drawable, float x,
+                        float y, float w, float h, SimpleColor color) {
             this.z = z;
             this.drawable = drawable;
             this.x = x;
@@ -128,7 +114,6 @@ public class SortingBatch extends Batch {
             this.w = w;
             this.h = h;
             this.color = color;
-            this.blending = blending;
         }
 
         @Override
@@ -140,15 +125,16 @@ public class SortingBatch extends Batch {
             w = 0;
             h = 0;
             color = null;
-            blending = null;
         }
     }
 
     public static final class RequestProcedure extends Request {
+        public final Blending blending;
         public final Runnable runnable;
 
-        public RequestProcedure(int z, Runnable runnable) {
+        public RequestProcedure(int z, Blending blending, Runnable runnable) {
             super(z);
+            this.blending = blending;
             this.runnable = runnable;
         }
     }

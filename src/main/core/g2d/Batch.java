@@ -25,19 +25,9 @@ public class Batch implements Disposable {
             create(2, Type.FLOAT, Interp.NORMAL)
     ));
 
-    // TODO
-    //  Мне не нравится текущий вариант работы с color(), scale(), blending(),
-    //  т.е. возвращение старого значения, чтобы потом его можно было восстановить
-    //  Вижу следующие решения:
-    //  1) void withColor(Color color, Runnable action)
-    //  Но это накладно и возникнут пробелемы с кодом из-за effectively final
-    //  2) void color(Color newColor) - Записывает старый цвет в дополнительное поле класса
-    //     void resetColor()          - Восстанавливает цвет из доп. поля.
-    //   Мне этот вариант кажется более эффективным, но с ним надо быть осторожным
-
     protected Blending blending = Blending.NORMAL;
     protected SimpleColor color = SimpleColor.WHITE;
-    protected float colorBits = toBits(color);
+    protected float colorBits = toBits(SimpleColor.WHITE);
 
     private static float toBits(SimpleColor color) {
         return Float.intBitsToFloat(color.getValueABGR() & 0xfeffffff);
@@ -45,7 +35,7 @@ public class Batch implements Disposable {
 
     protected final Mat3 matrix = new Mat3();
 
-    protected float scale;
+    protected float xScale = 1f, yScale = 1f;
     protected Texture currentTexture;
 
     protected FloatBuffer vertices;
@@ -55,28 +45,57 @@ public class Batch implements Disposable {
 
     private boolean disposed;
 
-    public final Blending blending(Blending blending) {
-        Blending old = this.blending;
+    // Состояние по умолчанию / кеш
+    private SimpleColor prevColor;
+    private float prevColorBits;
+    private Blending prevBlending;
+    private float prevXScale = 1f, prevYScale = 1f;
+
+    // region Изменение параметров
+
+    public final void blending(Blending blending) {
+        flush(); // Иначе будут артефакты и неконсистентность
+        this.prevBlending = this.blending;
         this.blending = blending;
-        return old;
     }
 
-    // TODO не проверял, но кажется, что правильно сделал
-    public final float scale(float scale) {
-        float oldScale = this.scale;
-        this.scale = scale;
-
-        matrix(matrix.scale(scale));
-        return oldScale;
+    public final void scale(float scale) {
+        scale(scale, scale);
     }
 
-    public final SimpleColor color(SimpleColor color) {
-        SimpleColor oldColor = this.color;
-        this.color = color;
+    public final void scale(float xScale, float yScale) {
+        this.prevXScale = this.xScale;
+        this.prevYScale = this.yScale;
+
+        this.xScale = xScale;
+        this.yScale = yScale;
+    }
+
+    public final void color(SimpleColor color) {
+        this.prevColorBits = this.colorBits;
+        this.prevColor = this.color;
         this.colorBits = toBits(color);
-
-        return oldColor;
+        this.color = color;
     }
+
+    // endregion
+    // region Восстановление состояния/параметров
+
+    public final void resetScale() {
+        xScale = prevXScale;
+        yScale = prevYScale;
+    }
+
+    public final void resetBlending() {
+        blending = prevBlending;
+    }
+
+    public final void resetColor() {
+        color = prevColor;
+        colorBits = prevColorBits;
+    }
+
+    // endregion
 
     public Batch(int bufferSize) {
         try {
@@ -112,10 +131,7 @@ public class Batch implements Disposable {
 
         indexes.flip();
         mesh.updateIndexes(indexes);
-
-        glBindVertexArray(0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        mesh.useIndexes(true);
     }
 
     public final void matrix(Mat3 matrix) {
@@ -143,8 +159,7 @@ public class Batch implements Disposable {
         shader.setUniformTransforming("u_proj", matrix);
 
         vertices.flip();
-        mesh.bindVao();
-        mesh.render(GL_TRIANGLES, vertices, vertexCount * VERTEX_PER_TRIANGLE);
+        mesh.draw(GL_TRIANGLES, vertices, vertexCount * VERTEX_PER_TRIANGLE);
 
         vertices.clear();
         vertexCount = 0;
@@ -157,7 +172,7 @@ public class Batch implements Disposable {
     }
 
     public final void draw(Drawable drawable, float x, float y) {
-        draw(drawable, x, y, drawable.width(), drawable.height());
+        draw(drawable, x, y, drawable.width() * xScale, drawable.height() * yScale);
     }
 
     public final void draw(Drawable drawable, float x, float y, float width, float height) {
