@@ -336,8 +336,8 @@ public class WorldGenerator {
     private static void generateEnvironments() {
         texts.get("WorldGeneratorState").text += "\\nFourth step: ";
 
-        //generateTrees();
-        //generateDecorStones();
+        generateTrees();
+        generateDecorStones();
         Structures.clearStructuresMap();
     }
 
