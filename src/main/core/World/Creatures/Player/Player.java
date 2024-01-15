@@ -323,7 +323,7 @@ public class Player {
         }
 
         if (transparencyHPline > 0) {
-            Fill.rectangleBorder(30, 30, 200, 35, 1, SimpleColor.fromRGBA(10, 10, 10, transparencyHPline));
+            Fill.rectangleBorder(30, 30, 200, 35, SimpleColor.fromRGBA(10, 10, 10, transparencyHPline));
             Fill.rect(31, 31, currentHp * 2 - 2, 33, SimpleColor.fromRGBA(150, 0, 20, transparencyHPline));
 
             if (lastDamage > 0) {

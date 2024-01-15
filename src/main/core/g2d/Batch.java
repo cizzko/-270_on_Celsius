@@ -26,12 +26,7 @@ public class Batch implements Disposable {
     ));
 
     protected Blending blending = Blending.NORMAL;
-    protected SimpleColor color = SimpleColor.WHITE;
-    protected float colorBits = toBits(SimpleColor.WHITE);
-
-    private static float toBits(SimpleColor color) {
-        return Float.intBitsToFloat(color.getValueABGR() & 0xfeffffff);
-    }
+    protected float colorBits = SimpleColor.WHITE.toABGRBits();
 
     protected final Mat3 matrix = new Mat3();
 
@@ -46,7 +41,6 @@ public class Batch implements Disposable {
     private boolean disposed;
 
     // Состояние по умолчанию / кеш
-    private SimpleColor prevColor;
     private float prevColorBits;
     private Blending prevBlending;
     private float prevXScale = 1f, prevYScale = 1f;
@@ -71,11 +65,13 @@ public class Batch implements Disposable {
         this.yScale = yScale;
     }
 
-    public final void color(SimpleColor color) {
+    public final void color(float colorBits) {
         this.prevColorBits = this.colorBits;
-        this.prevColor = this.color;
-        this.colorBits = toBits(color);
-        this.color = color;
+        this.colorBits = colorBits;
+    }
+
+    public final void color(SimpleColor color) {
+        color(color.toABGRBits());
     }
 
     // endregion
@@ -91,7 +87,6 @@ public class Batch implements Disposable {
     }
 
     public final void resetColor() {
-        color = prevColor;
         colorBits = prevColorBits;
     }
 
@@ -176,14 +171,27 @@ public class Batch implements Disposable {
     }
 
     public final void draw(Drawable drawable, float x, float y, float width, float height) {
-        drawTexture(drawable, x, y, width, height);
+        float x2 = x + width;
+        float y2 = y + height;
+        drawTexture(drawable, x, y, x, y2, x2, y2, x2, y); // С учётом индексов!!
     }
 
-    protected void drawTexture(Drawable drawable, float x, float y, float w, float h) {
+    public final void rect(Drawable drawable,
+                           float x, float y,
+                           float x2, float y2,
+                           float x3, float y3,
+                           float x4, float y4) {
+        drawTexture(drawable, x, y, x2, y2, x3, y3, x4, y4);
+    }
+
+    protected void drawTexture(Drawable drawable,
+                               float x, float y,
+                               float x2, float y2,
+                               float x3, float y3,
+                               float x4, float y4) {
         prepareTexture(textureOf(drawable));
 
-        rect(x, y,
-                x + w, y + h,
+        rectInternal(x, y, x2, y2, x3, y3, x4, y4,
                 drawable.u(), drawable.v(),
                 drawable.u2(), drawable.v2(),
                 colorBits);
@@ -197,9 +205,7 @@ public class Batch implements Disposable {
         };
     }
 
-    protected final void vertex(float x, float y,
-                                float u, float v,
-                                float color) {
+    protected final void vertex(float x, float y, float u, float v, float color) {
         vertices.put(x);
         vertices.put(y);
         vertices.put(color);
@@ -209,16 +215,18 @@ public class Batch implements Disposable {
         vertexCount++;
     }
 
-    protected final void rect(float x1, float y1,
-                              float x2, float y2,
-                              float u1, float v1,
-                              float u2, float v2,
-                              float c) {
+    protected final void rectInternal(float x1, float y1,
+                                      float x2, float y2,
+                                      float x3, float y3,
+                                      float x4, float y4,
+                                      float u1, float v1,
+                                      float u2, float v2,
+                                      float c) {
 
         vertex(x1, y1, u1, v2, c);
-        vertex(x1, y2, u1, v1, c);
-        vertex(x2, y2, u2, v1, c);
-        vertex(x2, y1, u2, v2, c);
+        vertex(x2, y2, u1, v1, c);
+        vertex(x3, y3, u2, v1, c);
+        vertex(x4, y4, u2, v2, c);
     }
 
     @Override

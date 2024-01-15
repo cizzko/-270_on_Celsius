@@ -43,37 +43,10 @@ import static org.lwjgl.opengl.GL13.*;
 public class TextureDrawing {
     public static final int blockSize = 48;
     public static float playerX = 0, playerY = 0;
-    private static final HashMap<Integer, Integer> textures = new HashMap<>();
 
     // TODO Сломано сознательно, чуть позже доделаю
     @Deprecated(forRemoval = true)
     public static void drawTexture(float x, float y, int w, int h, float zoom, boolean isStatic, int id, ByteBuffer buffer, SimpleColor color) {
-        if (true)
-            return;
-
-        glBindTexture(GL_TEXTURE_2D, textures.get(id));
-
-        glMultMatrixf(new float[]{
-                zoom, 0, 0, 0,
-                0, zoom, 0, 0,
-                0, 0, 1, 0, 0,
-                0, 0, 1
-        });
-        glColor4f(color.getRed() / 255f, color.getGreen() / 255f, color.getBlue() / 255f, color.getAlpha() / 255f);
-
-        glPushMatrix();
-        glEnable(GL_TEXTURE_2D);
-        glEnable(GL_BLEND);
-        glLoadIdentity();
-
-        if (start && !isStatic) {
-            glTranslatef(-playerX * zoom + Window.defaultWidth / 2f - 32, -playerY * zoom + Window.defaultHeight / 2f - 200, 0);
-        }
-
-        glDisable(GL_TEXTURE_2D);
-        glPopMatrix();
-
-        glBindTexture(GL_TEXTURE_2D, 0);
     }
 
     public static void drawText(float x, float y, String text, SimpleColor color) {
@@ -112,7 +85,7 @@ public class TextureDrawing {
     }
 
     public static void drawPointArray(Point2i[] points) {
-        glLineWidth(4);
+        Fill.lineWidth(4f);
 
         batch.color(SimpleColor.fromRGBA(0, 0, 0, 1));
         float d = blockSize + 8;
@@ -123,6 +96,8 @@ public class TextureDrawing {
                 Fill.line(point.x * d, point.y * d, next.x * d, next.y * d);
             }
         }
+	batch.resetColor();
+        Fill.resetLineWidth();
     }
 
     public static void drawRectangleText(int x, int y, int maxWidth, String text, boolean staticTransfer, SimpleColor panColor) {

@@ -14,4 +14,8 @@ public final class MathUtil {
         v++;
         return v;
     }
+
+    public static float len(float x, float y) {
+        return (float) Math.sqrt(x*x + y*y);
+    }
 }

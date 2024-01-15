@@ -1,6 +1,5 @@
 package core.g2d;
 
-import core.Utils.SimpleColor;
 import core.pool.Pool;
 import core.pool.Poolable;
 
@@ -44,9 +43,13 @@ public class SortingBatch extends Batch {
     }
 
     @Override
-    protected void drawTexture(Drawable drawable, float x, float y, float w, float h) {
+    protected void drawTexture(Drawable drawable,
+                               float x, float y,
+                               float x2, float y2,
+                               float x3, float y3,
+                               float x4, float y4) {
         RequestTexture request = textureRequestsPool.obtain();
-        request.set(z, drawable, x, y, w, h, color);
+        request.set(z, drawable, x, y, x2, y2, x3, y3, x4, y4, colorBits);
         draw(request);
     }
 
@@ -69,10 +72,10 @@ public class SortingBatch extends Batch {
         switch (request) {
             case RequestProcedure proc -> proc.runnable.run();
             case RequestTexture tex -> {
-                color(tex.color);
+                color(tex.colorBits);
 
                 try {
-                    super.drawTexture(tex.drawable, tex.x, tex.y, tex.w, tex.h);
+                    super.drawTexture(tex.drawable, tex.x, tex.y, tex.x2, tex.y2, tex.x3, tex.y3, tex.x4, tex.y4);
                 } finally {
                     resetColor();
 
@@ -100,20 +103,28 @@ public class SortingBatch extends Batch {
     public static final class RequestTexture extends Request implements Poolable {
 
         public Drawable drawable;
-        public float x, y, w, h;
-        public SimpleColor color;
+        public float x, y, x2, y2, x3, y3, x4, y4;
+        public float colorBits;
 
         public RequestTexture() {}
 
-        public void set(int z, Drawable drawable, float x,
-                        float y, float w, float h, SimpleColor color) {
+        public void set(int z, Drawable drawable,
+                        float x, float y,
+                        float x2, float y2,
+                        float x3, float y3,
+                        float x4, float y4,
+                        float colorBits) {
             this.z = z;
             this.drawable = drawable;
             this.x = x;
             this.y = y;
-            this.w = w;
-            this.h = h;
-            this.color = color;
+            this.x2 = x2;
+            this.y2 = y2;
+            this.x3 = x3;
+            this.y3 = y3;
+            this.x4 = x4;
+            this.y4 = y4;
+            this.colorBits = colorBits;
         }
 
         @Override
@@ -122,9 +133,13 @@ public class SortingBatch extends Batch {
             drawable = null;
             x = 0;
             y = 0;
-            w = 0;
-            h = 0;
-            color = null;
+            x2 = 0;
+            y2 = 0;
+            x3 = 0;
+            y3 = 0;
+            x4 = 0;
+            y4 = 0;
+            colorBits = 0;
         }
     }
 

@@ -40,6 +40,10 @@ public final class SimpleColor implements Serializable {
         return new SimpleColor(r, g, b, a);
     }
 
+    public float toABGRBits() {
+        return Float.intBitsToFloat(getValueABGR() & 0xfeffffff);
+    }
+
     public int getValueARGB() {
         return value;
     }
