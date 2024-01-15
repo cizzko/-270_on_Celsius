@@ -2,13 +2,13 @@ package core.World.StaticWorldObjects;
 
 import core.assets.TextureLoader;
 import core.g2d.Atlas;
+import core.math.Point2i;
 
-import java.awt.*;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 
 public class StaticWAnimations {
-    private static final HashMap<Point, StaticWAnimations> textures = new HashMap<>();
+    private static final HashMap<Point2i, StaticWAnimations> textures = new HashMap<>();
     private static final HashMap<Byte, TextureLoader.GifImageData> frames = new HashMap<>();
 
     private long lastFrameTime;
@@ -24,7 +24,7 @@ public class StaticWAnimations {
         this.framesSpeed = framesSpeed;
     }
 
-    public static AnimData getCurrentFrame(short id, Point pos) {
+    public static AnimData getCurrentFrame(short id, Point2i pos) {
         Atlas.Region path = StaticWorldObjects.getTexture(id);
 
         if (path != null && path.name().endsWith(".gif")) {

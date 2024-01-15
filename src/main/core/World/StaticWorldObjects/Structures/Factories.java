@@ -15,7 +15,6 @@ import core.g2d.Atlas;
 import core.g2d.Fill;
 import core.math.Point2i;
 
-import java.awt.Point;
 import java.util.*;
 
 import static core.Global.*;
@@ -33,20 +32,20 @@ public class Factories implements StaticBlocksEvents {
     public Items[] outputObjects, outputStoredObjects, inputObjects, inputStoredObjects;
     private static boolean mouseGrabbedItem = false;
     private static final HashMap<String, Factories> factoriesConst = new HashMap<>();
-    private static final HashSet<Point> factories = new HashSet<>();
+    private static final HashSet<Point2i> factories = new HashSet<>();
 
     @Override
     public void placeStatic(int cellX, int cellY, short id) {
         if (id != 0 && id != -1 && StaticWorldObjects.getTexture(id) != null && StaticWorldObjects.getTexture(id).name().toLowerCase().contains("factory")) {
             setFactoryConst(StaticWorldObjects.getFileName(id));
-            factories.add(new Point(cellX, cellY));
+            factories.add(new Point2i(cellX, cellY));
         }
     }
 
     @Override
     public void destroyStatic(int cellX, int cellY, short id) {
         if (id != 0 && id != -1 && StaticWorldObjects.getTexture(id) != null && StaticWorldObjects.getTexture(id).name().toLowerCase().contains("factory")) {
-            factories.remove(new Point(cellX, cellY));
+            factories.remove(new Point2i(cellX, cellY));
         }
     }
 
@@ -197,7 +196,7 @@ public class Factories implements StaticBlocksEvents {
     }
 
     public static void updateFactoriesOutput() {
-        for (Point factories : factories) {
+        for (Point2i factories : factories) {
             Factories factory = factoriesConst.get(StaticWorldObjects.getFileName(WorldGenerator.getObject(factories.x, factories.y)));
 
             if (factory != null && factory.breakingType != Factories.breaking.CRITICAL && factory.currentEnergy == factory.needEnergy  && System.currentTimeMillis() - factory.lastProductionTime >= factory.productionSpeed && findInput(factory)) {
@@ -251,10 +250,10 @@ public class Factories implements StaticBlocksEvents {
     }
 
     private static Factories findFactoryUnderMouse() {
-        Point blockUnderMouse = WorldUtils.getBlockUnderMousePoint();
+        Point2i blockUnderMouse = WorldUtils.getBlockUnderMousePoint();
 
         if (WorldGenerator.getObject(blockUnderMouse.x, blockUnderMouse.y) != -1) {
-            Point root = Player.findRoot(blockUnderMouse.x, blockUnderMouse.y);
+            Point2i root = Player.findRoot(blockUnderMouse.x, blockUnderMouse.y);
 
             if (root != null && factories.contains(root)) {
                 return factoriesConst.get(StaticWorldObjects.getFileName(WorldGenerator.getObject(root.x, root.y)));

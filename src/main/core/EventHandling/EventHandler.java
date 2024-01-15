@@ -9,33 +9,34 @@ import core.UI.GUI.Menu.Settings;
 import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.SliderObject;
 import core.Utils.SimpleColor;
+import core.Utils.SimpleLongSummaryStatistics;
 import core.Window;
 import core.World.Creatures.Player.Player;
-import core.World.Textures.TextureDrawing;
-import core.World.WorldGenerator;
 import core.math.Point2i;
-import core.math.Rectangle;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.opengl.GL46;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static core.EventHandling.Logging.Logger.log;
 import static core.Global.*;
 import static core.UI.GUI.CreateElement.*;
 import static core.Utils.Commandline.updateLine;
 import static core.Window.*;
-import static core.World.Creatures.Physics.updates;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class EventHandler {
     private static long lastSecond = System.currentTimeMillis();
     private static boolean keyLogging = false;
     public static final StringBuilder keyLoggingText = new StringBuilder(256);
-    private static int handlerUpdates = 0;
 
     public static int width = defaultWidth, height = defaultHeight;
+    private static HashMap<String, debugValue> debugValues = new HashMap<>();
+    private record debugValue(boolean statistics, String text, SimpleLongSummaryStatistics summaryStatistics) {}
 
     public static void setKeyLoggingText(String text) {
         keyLoggingText.setLength(0);
@@ -173,20 +174,36 @@ public class EventHandler {
     }
 
     private static void updateDebug() {
-        if (Integer.parseInt(Config.getFromConfig("Debug")) > 0 && System.currentTimeMillis() - lastSecond >= 1000) {
+        if (System.currentTimeMillis() - lastSecond >= 1000 && Integer.parseInt(Config.getFromConfig("Debug")) > 0) {
             lastSecond = System.currentTimeMillis();
 
-            if (start) {
-                CreateElement.createText(5, 980, "PlayerPos", "Player pos: x - " + (int) WorldGenerator.DynamicObjects.getFirst().getX() + "(" + (int) WorldGenerator.DynamicObjects.getFirst().getX() / TextureDrawing.blockSize + ") y - " + (int) WorldGenerator.DynamicObjects.getFirst().getX() + "(" + (int) WorldGenerator.DynamicObjects.getFirst().getY() / TextureDrawing.blockSize + ")", SimpleColor.DIRTY_BRIGHT_BLACK, null);
-                CreateElement.createText(5, 1005, "PhysicsFPS", "Physics FPS: " + updates, SimpleColor.DIRTY_BRIGHT_BLACK, null);
-            }
-            CreateElement.createText(5, 1030, "HandlerFPS", "Handler FPS: " + handlerUpdates, SimpleColor.DIRTY_BRIGHT_BLACK, null);
-            CreateElement.createText(5, 1055, "GameFPS", "Game FPS: " + fps, SimpleColor.DIRTY_BRIGHT_BLACK, null);
+            int iterations = 0;
+            for (Map.Entry<String, debugValue> iteration : debugValues.entrySet()) {
+                debugValue value = iteration.getValue();
+                String key = iteration.getKey();
 
-            handlerUpdates = 0;
-            updates = 0;
-            fps = 0;
+                iterations++;
+                if (value.statistics) {
+                    CreateElement.createText(5, 1080 - (25 * iterations), key, value.text + value.summaryStatistics.toString(), SimpleColor.DIRTY_BRIGHT_BLACK, null);
+                } else {
+                    CreateElement.createText(5, 1080 - (25 * iterations), key, value.text, SimpleColor.DIRTY_BRIGHT_BLACK, null);
+                }
+            }
         }
+    }
+
+    public static void addDebugValue(boolean statistics, String text, String name) {
+        debugValue object = debugValues.getOrDefault(name, null);
+
+        if (object == null) {
+            debugValues.put(name, new debugValue(statistics, text, statistics ? new SimpleLongSummaryStatistics() : null));
+        } else if (statistics) {
+            object.summaryStatistics.add(1);
+        }
+    }
+
+    public static void putDebugValue(boolean statistics, String text, String name) {
+        debugValues.put(name, new debugValue(statistics, text, statistics ? new SimpleLongSummaryStatistics() : null));
     }
 
     public static void init() {
@@ -202,7 +219,7 @@ public class EventHandler {
         updateLine();
         updateDebug();
 
-        handlerUpdates++;
+        addDebugValue(true, "Handler fps: ", "HandlerFPS");
     }
 
     public static boolean isKeylogging() {

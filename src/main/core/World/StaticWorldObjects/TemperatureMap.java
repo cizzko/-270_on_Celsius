@@ -4,13 +4,13 @@ import core.Utils.Sized;
 import core.World.Textures.TextureDrawing;
 import core.World.Weather.Sun;
 import core.World.WorldGenerator;
+import core.math.Point2i;
 
-import java.awt.*;
 import java.util.HashMap;
 import static core.World.Weather.Sun.currentTime;
 
 public class TemperatureMap {
-    private static HashMap<Point, Float> individualTemperature = new HashMap<>();
+    private static HashMap<Point2i, Float> individualTemperature = new HashMap<>();
     private static float[] temperature;
     private static final float coreTemp = 4000;
     public static float dayTemperatureDecrement = 0.04f, currentWorldTemperature;
@@ -38,15 +38,15 @@ public class TemperatureMap {
         dayTemperatureDecrement = (float) map.get("WorldTemperatureDecrement");
         currentWorldTemperature = (float) map.get("WorldCurrentTemperature");
         temperature = (float[]) map.get("WorldBlocksTemperature");
-        individualTemperature = (HashMap<Point, Float>) map.get("WorldBlocksIndividualTemps");
+        individualTemperature = (HashMap<Point2i, Float>) map.get("WorldBlocksIndividualTemps");
     }
 
     public static float getTemp(int cellX, int cellY) {
-        float temp = individualTemperature.getOrDefault(new Point(cellX, cellY), Float.MIN_VALUE);
+        float temp = individualTemperature.getOrDefault(new Point2i(cellX, cellY), Float.MIN_VALUE);
 
         if (temp != Float.MIN_VALUE) {
             if (temp == temperature[cellY]) {
-                individualTemperature.remove(new Point(cellX, cellY));
+                individualTemperature.remove(new Point2i(cellX, cellY));
             }
             return temp;
         }
@@ -57,7 +57,7 @@ public class TemperatureMap {
 
     public static void setTemp(int cellX, int cellY, float temp) {
         if (temperature[cellY] != temp) {
-            individualTemperature.put(new Point(cellX, cellY), temp);
+            individualTemperature.put(new Point2i(cellX, cellY), temp);
         }
     }
 

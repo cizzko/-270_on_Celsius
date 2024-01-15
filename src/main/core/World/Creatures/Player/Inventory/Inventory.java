@@ -9,8 +9,6 @@ import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.g2d.Atlas;
 import core.math.Point2i;
 import core.math.Rectangle;
-
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -87,7 +85,7 @@ public class Inventory {
         batch.draw(region, (x + 5) / zoom, (y + 5) / zoom);
         batch.resetScale();
 
-        drawText(x + 31, y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell), SimpleColor.DIRTY_BRIGHT_BLACK);
+        drawText(x + 31, y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell + 1), SimpleColor.DIRTY_BRIGHT_BLACK);
     }
 
     public static void drawInventoryItem(float x, float y, Atlas.Region region) {
@@ -102,7 +100,7 @@ public class Inventory {
         if (inventoryObjects[x][y] != null) {
             inventoryObjects[x][y].countInCell--;
 
-            if (inventoryObjects[x][y].countInCell <= 0) {
+            if (inventoryObjects[x][y].countInCell < 0) {
                 inventoryObjects[x][y] = null;
                 currentObject = null;
             }
@@ -125,6 +123,7 @@ public class Inventory {
             if (underMouseItem != null) {
                 Items focusedItems = inventoryObjects[underMouseItem.x][underMouseItem.y];
                 float zoom = focusedItems.zoom;
+
                 batch.scale(zoom);
                 batch.draw(focusedItems.texture, (mousePos.x - 15) / zoom, (mousePos.y - 15) / zoom);
                 batch.resetScale();
@@ -180,8 +179,9 @@ public class Inventory {
                 moveItems(hasItemsMouse, underMouseItem);
                 currentObject = hasItemsMouse;
             } else {
+                Point2i mousePos = getBlockUnderMousePoint();
+
                 for (InventoryEvents listener : listeners) {
-                    Point mousePos = getBlockUnderMousePoint();
                     listener.itemDropped(mousePos.x, mousePos.y, inventoryObjects[underMouseItem.x][underMouseItem.y]);
                 }
             }
@@ -189,14 +189,14 @@ public class Inventory {
         }
     }
 
-    private static Point findFreeCell() {
+    private static Point2i findFreeCell() {
         for (int x = 0; x < inventoryObjects.length; x++) {
             for (int y = 0; y < inventoryObjects[x].length; y++) {
                 if (x == 7 && y == 5) {
                     continue;
                 }
                 if (inventoryObjects[x][y] == null) {
-                    return new Point(x, y);
+                    return new Point2i(x, y);
                 }
             }
         }
@@ -207,11 +207,11 @@ public class Inventory {
         return Arrays.stream(inventoryObjects).flatMapToInt(row -> Arrays.stream(row).filter(obj -> obj != null && obj.id == id).mapToInt(obj -> 1)).sum() + 1;
     }
 
-    public static Point findItemByID(int id) {
+    public static Point2i findItemByID(int id) {
         for (int x = 0; x < inventoryObjects.length; x++) {
             for (int y = 0; y < inventoryObjects[x].length; y++) {
                 if (inventoryObjects[x][y] != null && inventoryObjects[x][y].id == id) {
-                    return new Point(x, y);
+                    return new Point2i(x, y);
                 }
             }
         }
@@ -222,12 +222,12 @@ public class Inventory {
         int id = name.hashCode();
 
         if (findCountID(id) > 1) {
-            Point cell = findItemByID(id);
+            Point2i cell = findItemByID(id);
             inventoryObjects[cell.x][cell.y].countInCell++;
             return;
         }
 
-        Point cell = findFreeCell();
+        Point2i cell = findFreeCell();
         if (cell != null) {
             inventoryObjects[cell.x][cell.y] = Items.createTool(name);
         }
@@ -237,12 +237,12 @@ public class Inventory {
         byte id = StaticWorldObjects.getId(object);
 
         if (findCountID(id) > 1) {
-            Point cell = findItemByID(id);
+            Point2i cell = findItemByID(id);
             inventoryObjects[cell.x][cell.y].countInCell++;
             return;
         }
 
-        Point cell = findFreeCell();
+        Point2i cell = findFreeCell();
         if (cell != null) {
             inventoryObjects[cell.x][cell.y] = Items.createPlaceable(object);
         }
@@ -252,12 +252,12 @@ public class Inventory {
         int id = name.hashCode();
 
         if (findCountID(id) > 1) {
-            Point cell = findItemByID(id);
+            Point2i cell = findItemByID(id);
             inventoryObjects[cell.x][cell.y].countInCell++;
             return;
         }
 
-        Point cell = findFreeCell();
+        Point2i cell = findFreeCell();
         if (cell != null) {
             inventoryObjects[cell.x][cell.y] = Items.createDetail(name);
         }
@@ -267,12 +267,12 @@ public class Inventory {
         int id = name.hashCode();
 
         if (findCountID(id) > 1) {
-            Point cell = findItemByID(id);
+            Point2i cell = findItemByID(id);
             inventoryObjects[cell.x][cell.y].countInCell++;
             return;
         }
 
-        Point cell = findFreeCell();
+        Point2i cell = findFreeCell();
         if (cell != null) {
             inventoryObjects[cell.x][cell.y] = Items.createWeapon(name);
         }

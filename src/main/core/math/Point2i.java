@@ -14,6 +14,7 @@ public final class Point2i {
     public Point2i set(int x, int y) {
         this.x = x;
         this.y = y;
+
         return this;
     }
 

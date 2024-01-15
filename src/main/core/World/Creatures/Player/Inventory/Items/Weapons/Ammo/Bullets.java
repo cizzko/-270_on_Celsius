@@ -9,8 +9,8 @@ import core.World.HitboxMap;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
 import core.g2d.Atlas;
+import core.math.Point2i;
 
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 
@@ -59,7 +59,7 @@ public class Bullets {
                 bullet.y += deltaY;
                 bullet.damage -= 0.01f;
 
-                Point staticObjectPoint = HitboxMap.checkIntersInside(x, y, 8, 8);
+                Point2i staticObjectPoint = HitboxMap.checkIntersInside(x, y, 8, 8);
 
                 if (staticObjectPoint != null) {
                     short staticObject = getObject(staticObjectPoint.x, staticObjectPoint.y);
