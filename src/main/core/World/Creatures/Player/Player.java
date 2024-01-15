@@ -41,8 +41,9 @@ public class Player {
     }
 
     public static void updatePlayerJump() {
-        if (EventHandler.isKeylogging())
+        if (EventHandler.isKeylogging()) {
             return;
+        }
 
         if (input.pressed(GLFW_KEY_SPACE)) {
             DynamicObjects.getFirst().jump(1.05f);
@@ -85,7 +86,7 @@ public class Player {
     }
 
     public static void updateInventoryInteraction() {
-        if (currentObject != null) {
+        if (currentObject != null ) {
             updatePlaceableInteraction();
         }
     }
@@ -196,6 +197,7 @@ public class Player {
         }
     }
 
+    //ищет корень структуры в радиусе 4 блока
     public static Point2i findRoot(int cellX, int cellY) {
         if (!StaticObjectsConst.getConst(getId(getObject(cellX, cellY))).hasMotherBlock && StaticObjectsConst.getConst(getId(getObject(cellX, cellY))).optionalTiles == null) {
             return null;
@@ -244,6 +246,8 @@ public class Player {
         byte hp = getHp(obj);
         float maxHp = getMaxHp(obj);
 
+        //todo упорно не хочет рисоваться, координаты правильные
+        //todo и вообще этот метод не очень под класс player подходит
         batch.color(blockColor);
         batch.draw(getTexture(obj), xBlock, yBlock);
 
@@ -292,9 +296,12 @@ public class Player {
         int b = temp > 0 ? 0 : a;
 
         Texture modifiedTemperature = assets.getTextureByPath(assets.assetsDir("/UI/GUI/modifiedTemperature.png"));
+
         batch.z(Layer.EFFECTS);
         batch.color(SimpleColor.fromRGBA(r, (int) (b / 2f), b, a));
+
         batch.draw(modifiedTemperature);
+
         batch.resetColor();
         batch.resetZ();
     }

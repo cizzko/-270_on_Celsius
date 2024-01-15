@@ -70,6 +70,7 @@ public class Inventory {
         int x = mousePos.x;
         int y = mousePos.y;
 
+        //1488 и 756 - нижний левый угол инвентаря, 54 - размер ячейки, так кнч лучше не делать, но что есть, то есть
         if (x > 1488 && y > 756) {
             x -= 1488;
             y -= 756;
@@ -82,7 +83,7 @@ public class Inventory {
         float zoom = Items.computeZoom(region);
 
         batch.scale(zoom);
-        batch.draw(region, (x + 5) / zoom, (y + 5) / zoom);
+        batch.draw(region, (x + 5) / (zoom * 1.5f), (y + 5) / (zoom * 1.5f));
         batch.resetScale();
 
         drawText(x + 31, y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell + 1), SimpleColor.DIRTY_BRIGHT_BLACK);
@@ -92,7 +93,7 @@ public class Inventory {
         float scale = Items.computeZoom(region);
 
         batch.scale(scale);
-        batch.draw(region, (x + 5) / scale, (y + 5) / scale);
+        batch.draw(region, (x + 5) / (scale * 1.5f), (y + 5) / (scale * 1.5f));
         batch.resetScale();
     }
 
@@ -111,6 +112,7 @@ public class Inventory {
         updateUnderMouse();
         updateDropItem();
 
+        //todo press -> click
         if (EventHandler.getRectanglePress(1875, 1035, 1920, 1080) && System.currentTimeMillis() - lastOpen > 150) {
             inventoryOpen = !inventoryOpen;
             lastOpen = System.currentTimeMillis();
@@ -122,10 +124,10 @@ public class Inventory {
             Point2i mousePos = input.mousePos();
             if (underMouseItem != null) {
                 Items focusedItems = inventoryObjects[underMouseItem.x][underMouseItem.y];
-                float zoom = focusedItems.zoom;
+                float zoom = Items.computeZoom(focusedItems.texture);
 
                 batch.scale(zoom);
-                batch.draw(focusedItems.texture, (mousePos.x - 15) / zoom, (mousePos.y - 15) / zoom);
+                batch.draw(focusedItems.texture, (mousePos.x - 15) / (zoom * 1.5f), (mousePos.y - 15) / (zoom * 1.5f));
                 batch.resetScale();
             }
             if ((inventoryOpen || current.x > 6)) {
@@ -171,7 +173,7 @@ public class Inventory {
     }
 
     private static void updateDropItem() {
-        if (!input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && underMouseItem != null) {
+        if (!input.clicked(GLFW_MOUSE_BUTTON_LEFT) && underMouseItem != null) {
             //hasItemsMouse - inventory cell under the mouse when the mouse button is released, underMouseItem - item selected for movement
             Point2i hasItemsMouse = getObjectUnderMouse();
 

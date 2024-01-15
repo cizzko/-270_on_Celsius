@@ -3,7 +3,6 @@ package core;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
-import core.assets.AssetsManager;
 import core.g2d.Atlas;
 import core.g2d.Font;
 import core.graphic.Layer;
@@ -20,7 +19,6 @@ import org.lwjgl.system.NativeResource;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
 import static core.EventHandling.Logging.Logger.log;
 import static core.Global.*;
 import static core.assets.TextureLoader.BufferedImageEncoder;
@@ -29,8 +27,8 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;
 
 public class Window {
-    public static final String versionStamp = "0.0.55", version = "alpha " + versionStamp + " (non stable)";
-    public static int defaultWidth = 1920, defaultHeight = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0, fps = 0;
+    public static final String versionStamp = "0.0.56", version = "alpha " + versionStamp + " (non stable)";
+    public static int defaultWidth = 1920, defaultHeight = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0;
     public static boolean start = false;
     public static long glfwWindow;
 
@@ -90,7 +88,7 @@ public class Window {
         try {
             TextureLoader.preLoadResources();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            Logger.printException("Error when pre-loading resources", e);
         }
 
         input = new InputHandler();
@@ -99,7 +97,7 @@ public class Window {
         try {
             atlas = Atlas.load(assets.assetsDir("/out/sprites"));
         } catch (IOException e) {
-            e.printStackTrace();
+            Logger.printException("Error when loading texture atlas", e);
         }
 
         camera = new Camera2();
@@ -112,6 +110,7 @@ public class Window {
         log("Init status: true\n");
     }
 
+    //todo убери куда нибудь вот это вот
     public static <R extends NativeResource> R addResource(R resource) {
         resources.add(resource);
         return resource;
@@ -145,7 +144,7 @@ public class Window {
             glfwSwapBuffers(glfwWindow);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            fps++;
+            EventHandler.addDebugValue(true, "Drawing fps: ", "DrawingFPS");
         }
 
         glfwTerminate();
@@ -154,5 +153,6 @@ public class Window {
         }
 
         batch.close();
+        Logger.logExit(1863, "Main thread ending drawing", false);
     }
 }

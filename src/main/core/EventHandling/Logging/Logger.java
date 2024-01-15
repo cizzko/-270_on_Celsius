@@ -19,7 +19,7 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class Logger extends PrintStream {
     private static final long sessionId = ThreadLocalRandom.current().nextLong();
-    public static boolean cleanup = false;
+    private static boolean cleanup = false, ended = false;
     private static byte[] lastErrBuf;
     private static final Set<String> testedSystems = Set.of("6.6.8-arch", "windows10");
 
@@ -93,12 +93,16 @@ public class Logger extends PrintStream {
     }
 
     public static void logExit(int status, String reason, boolean exitOnProgram) {
-        StringBuilder exitMessage = getExitMessage(status, reason);
-        AnonymousStatistics.sendStateMessage("Session '" + sessionId + "' ended, " + exitMessage);
-        log(exitMessage.toString());
+        if (!ended) {
+            ended = true;
 
-        if (exitOnProgram) {
-            glfwSetWindowShouldClose(glfwWindow, true);
+            StringBuilder exitMessage = getExitMessage(status, reason);
+            AnonymousStatistics.sendStateMessage("Session '" + sessionId + "' ended, " + exitMessage);
+            log(exitMessage.toString());
+
+            if (exitOnProgram) {
+                glfwSetWindowShouldClose(glfwWindow, true);
+            }
         }
     }
 

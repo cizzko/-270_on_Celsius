@@ -49,8 +49,9 @@ public class EventHandler {
         glfwSetCharCallback(glfwWindow, Window.addResource(new GLFWCharCallback() {
             @Override
             public void invoke(long window, int codepoint) {
-                if (keyLogging)
+                if (keyLogging) {
                     keyLoggingText.appendCodePoint(codepoint);
+                }
             }
         }));
         glfwSetFramebufferSizeCallback(glfwWindow, Window.addResource(new GLFWFramebufferSizeCallback() {
@@ -60,14 +61,6 @@ public class EventHandler {
                 EventHandler.height = height;
 
                 GL46.glViewport(0, 0, width, height);
-            }
-        }));
-        glfwSetKeyCallback(glfwWindow, Window.addResource(new GLFWKeyCallback() {
-            @Override
-            public void invoke(long window, int key, int scancode, int action, int mods) {
-                if (key == GLFW.GLFW_KEY_F4 && mods == GLFW.GLFW_MOD_ALT) {
-                    Logger.logExit(1863);
-                }
             }
         }));
     }
