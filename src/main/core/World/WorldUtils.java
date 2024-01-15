@@ -2,19 +2,19 @@ package core.World;
 
 import core.Global;
 import core.World.Textures.TextureDrawing;
+import core.math.Point2i;
 
-import java.awt.*;
 import java.awt.geom.Point2D;
 
 import static core.World.WorldGenerator.*;
 import static core.World.WorldGenerator.DynamicObjects;
 
 public class WorldUtils {
-    public static Point getBlockUnderMousePoint() {
+    public static Point2i getBlockUnderMousePoint() {
         int blockX = (int) Math.max(0, Math.min(getWorldMousePoint().x / TextureDrawing.blockSize, SizeX));
         int blockY = (int) Math.max(0, Math.min(getWorldMousePoint().y / TextureDrawing.blockSize, SizeY));
 
-        return new Point(blockX, blockY);
+        return new Point2i(blockX, blockY);
     }
 
     public static Point2D.Float getWorldMousePoint() {
@@ -28,7 +28,7 @@ public class WorldUtils {
         return (int) Math.abs((DynamicObjects.getFirst().getX() / TextureDrawing.blockSize - getBlockUnderMousePoint().x) + (DynamicObjects.getFirst().getY() / TextureDrawing.blockSize - getBlockUnderMousePoint().y));
     }
 
-    public static int getDistanceBetweenBlocks(Point mainPoint, Point secondPoint) {
+    public static int getDistanceBetweenBlocks(Point2i mainPoint, Point2i secondPoint) {
         return Math.abs(mainPoint.x - secondPoint.x) + Math.abs(mainPoint.y - secondPoint.y);
     }
 }

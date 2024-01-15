@@ -9,8 +9,7 @@ import core.World.StaticWorldObjects.Structures.Factories;
 import core.Utils.SimpleColor;
 import core.World.Textures.TextureDrawing;
 import core.g2d.Fill;
-
-import java.awt.Point;
+import core.math.Point2i;
 import java.util.Properties;
 
 import static core.Global.*;
@@ -20,7 +19,7 @@ import static core.World.Textures.TextureDrawing.*;
 public class BuildMenu {
     private static boolean create, isOpen = true, infoCreated;
     private static Items[][] items = new Items[5][30];
-    private static Point currentObject;
+    private static Point2i currentObject;
     private static float scroll = 0;
 
     public static void create() {
@@ -77,10 +76,10 @@ public class BuildMenu {
     private static void updateBuildButton() {
         //todo press -> click
         if (isOpen && EventHandler.getRectanglePress(1769, 325, 1810, 366)) {
-            Point[] required = hasRequiredItems();
+            Point2i[] required = hasRequiredItems();
 
             if (required != null) {
-                for (Point obj : required) {
+                for (Point2i obj : required) {
                     if (obj != null) {
                         Inventory.decrementItem(obj.x, obj.y);
                     }
@@ -127,18 +126,18 @@ public class BuildMenu {
         }
     }
 
-    private static Point[] hasRequiredItems() {
-        Point menuCurrent = currentObject;
+    private static Point2i[] hasRequiredItems() {
+        Point2i menuCurrent = currentObject;
 
         if (menuCurrent != null && items[menuCurrent.x][menuCurrent.y].requiredForBuild != null) {
             Items[] required = items[menuCurrent.x][menuCurrent.y].requiredForBuild;
-            Point[] hasNeededObject = new Point[required.length];
+            Point2i[] hasNeededObject = new Point2i[required.length];
 
             for (int i = 0; i < required.length; i++) {
                 for (int x = 0; x < inventoryObjects.length; x++) {
                     for (int y = 0; y < inventoryObjects[x].length; y++) {
                         if (inventoryObjects[x][y] != null && inventoryObjects[x][y].id == required[i].id) {
-                            hasNeededObject[i] = new Point(x, y);
+                            hasNeededObject[i] = new Point2i(x, y);
                         }
                     }
                 }
@@ -162,7 +161,7 @@ public class BuildMenu {
                             Inventory.drawInventoryItem(xCoord, yCoord, items[x][y].texture);
 
                             if (EventHandler.getRectanglePress((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
-                                currentObject = new Point(x, y);
+                                currentObject = new Point2i(x, y);
                             }
                         }
                     }

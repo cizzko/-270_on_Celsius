@@ -15,7 +15,7 @@ public abstract class Element {
         this.height = height;
     }
 
-    public boolean contains(Point2i point) {
-        return Rectangle.contains(x, y, width, height, point);
+    public boolean contains(Point2i Point2i) {
+        return Rectangle.contains(x, y, width, height, Point2i);
     }
 }

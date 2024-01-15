@@ -19,7 +19,7 @@ import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.Textures.TextureDrawing;
 import core.World.Weather.Sun;
-import java.awt.Point;
+import core.math.Point2i;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -106,7 +106,7 @@ public class WorldGenerator {
 
         if (id != 0) {
             if (StaticObjectsConst.getConst(getId(id)).hasMotherBlock || StaticObjectsConst.getConst(getId(id)).optionalTiles != null) {
-                Point root = Player.findRoot(cellX, cellY);
+                Point2i root = Player.findRoot(cellX, cellY);
 
                 if (root != null) {
                     deleteTiles(getObject(root.x, root.y), root.x, root.y);
@@ -336,8 +336,8 @@ public class WorldGenerator {
     private static void generateEnvironments() {
         texts.get("WorldGeneratorState").text += "\\nFourth step: ";
 
-        generateTrees();
-        generateDecorStones();
+        //generateTrees();
+        //generateDecorStones();
         Structures.clearStructuresMap();
     }
 

@@ -12,7 +12,7 @@ import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.WorldGenerator;
 import core.math.Point2i;
 
-import java.awt.Point;
+
 import static core.Window.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.WorldGenerator.destroyObject;
@@ -23,7 +23,7 @@ import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
 public class DebugTools {
     public static boolean selectionBlocksCopy = false, selectionBlocksDelete = false, mousePressed = false;
-    private static Point lastMousePosBlocks = new Point(0, 0), lastMousePos = new Point(0, 0);
+    private static Point2i lastMousePosBlocks = new Point2i(0, 0), lastMousePos = new Point2i(0, 0);
 
     public static void startUpdate() {
         Logger.log("Debug module has started");
@@ -33,10 +33,11 @@ public class DebugTools {
                 if (selectionBlocksCopy || selectionBlocksDelete) {
                     if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
                         Point2i mousePos = Global.input.mousePos();
+
                         if (!mousePressed) {
                             mousePressed = true;
                             lastMousePosBlocks = getBlockUnderMousePoint();
-                            lastMousePos.setLocation(mousePos.x, mousePos.y);
+                            lastMousePos.set(mousePos.x, mousePos.y);
                         }
                         CreateElement.createPanel(lastMousePos.x, lastMousePos.y, mousePos.x - lastMousePos.x, mousePos.y - lastMousePos.y, "debugPanel", true, "debugModule");
                     }

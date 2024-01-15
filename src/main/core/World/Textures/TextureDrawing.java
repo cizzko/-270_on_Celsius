@@ -19,6 +19,7 @@ import core.World.WorldUtils;
 import core.g2d.Fill;
 import core.g2d.Font;
 import core.graphic.Layer;
+import core.math.Point2i;
 import core.math.Rectangle;
 
 import java.awt.*;
@@ -27,7 +28,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Global.*;
 import static core.UI.GUI.CreateElement.*;
@@ -111,16 +111,16 @@ public class TextureDrawing {
         }
     }
 
-    public static void drawPointArray(Point[] points) {
+    public static void drawPointArray(Point2i[] points) {
         glLineWidth(4);
 
         batch.color(SimpleColor.fromRGBA(0, 0, 0, 1));
         float d = blockSize + 8;
         for (int i = 0; i < points.length; i++) {
             if (i + 1 < points.length) {
-                Point point = points[i];
-                Point next = points[i + 1];
-                Fill.line(point.x * d, point.y * d, next.x * d, next.y * d);
+                Point2i Point2i = points[i];
+                Point2i next = points[i + 1];
+                Fill.line(Point2i.x * d, Point2i.y * d, next.x * d, next.y * d);
             }
         }
     }
@@ -203,8 +203,10 @@ public class TextureDrawing {
     }
 
     public static void updatePlayerPos() {
-        playerX = DynamicObjects.getFirst().getX();
-        playerY = DynamicObjects.getFirst().getY();
+        DynamicWorldObjects player = DynamicObjects.getFirst();
+
+        playerX = player.getX();
+        playerY = player.getY();
 
         camera.position.set(playerX + 32, playerY + 200);
         camera.update();
@@ -256,7 +258,7 @@ public class TextureDrawing {
                         color = SimpleColor.fromRGBA(color.getRed() - a, color.getGreen() - (a / 2), color.getBlue(), color.getAlpha());
                     }
 
-                    StaticWAnimations.AnimData currentFrame = StaticWAnimations.getCurrentFrame(obj, new Point(x, y));
+                    StaticWAnimations.AnimData currentFrame = StaticWAnimations.getCurrentFrame(obj, new Point2i(x, y));
                     if (currentFrame != null) {
                         drawTexture(xBlock, yBlock, currentFrame.width(), currentFrame.height(), 1, false, currentFrame.currentFrame() + StaticWorldObjects.getId(obj), currentFrame.currentFrameImage(), color);
                         continue;
@@ -283,8 +285,8 @@ public class TextureDrawing {
 
     private static void updateBlocksInteraction() {
         char interactionChar = 'E';
-        Point mousePos = WorldUtils.getBlockUnderMousePoint();
-        Point root = findRoot(mousePos.x, mousePos.y);
+        Point2i mousePos = WorldUtils.getBlockUnderMousePoint();
+        Point2i root = findRoot(mousePos.x, mousePos.y);
         boolean interactionButtonPressed = input.pressed(interactionChar);
 
         if (root != null) {

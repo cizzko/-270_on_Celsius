@@ -1,5 +1,6 @@
 package core.World.Creatures;
 
+import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Logger;
 import core.World.Textures.TextureDrawing;
 
@@ -20,6 +21,9 @@ public class CreaturesGenerate {
 
             while (!glfwWindowShouldClose(glfwWindow)) {
                 if (System.nanoTime() - lastUpdate >= 1.0 / generateSpeed * 1000000000) {
+                    EventHandler.addDebugValue(true, "Creatures fps: ", "CreaturesFPS");
+                    EventHandler.addDebugValue(false, "Creatures count: " + currentCreaturesCount, "CreaturesCount");
+
                     lastUpdate = System.nanoTime();
 
                     if (System.currentTimeMillis() - lastGenerate >= 10000 && currentCreaturesCount < maxCreaturesCount && Math.random() * 30 < 1) {
@@ -47,18 +51,18 @@ public class CreaturesGenerate {
 
     public static void generate() {
         switch ((int) (Math.random() * 2)) {
+            //todo до переписи логики птиц, а то они летят нормально, врезаются в любую кочку, и летят на месте
             //case 0 -> generateBird();
             case 1 -> generateButterfly();
         }
+        currentCreaturesCount++;
     }
 
     private static void generateButterfly() {
         DynamicObjects.add(DynamicWorldObjects.createDynamic("butterfly", (float) (Math.random() * (SizeX * TextureDrawing.blockSize))));
-        currentCreaturesCount++;
     }
 
     private static void generateBird() {
         DynamicObjects.add(DynamicWorldObjects.createDynamic("bird", 100));
-        currentCreaturesCount++;
     }
 }

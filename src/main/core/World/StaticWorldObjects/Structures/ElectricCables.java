@@ -7,33 +7,34 @@ import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
 import core.World.WorldUtils;
-import java.awt.*;
+import core.math.Point2i;
+
 import java.util.*;
 
 public class ElectricCables implements InventoryEvents {
-    private LinkedHashSet<Point> points;
+    private LinkedHashSet<Point2i> points;
     private float currentVoltage = 0, currentHp = 100;
     private final float maxVoltage = 1;
     private long lastDamageTime = System.currentTimeMillis();
 
-    private static Point lastPlacedCable;
+    private static Point2i lastPlacedCable;
     private static ArrayDeque<ElectricCables> cables = new ArrayDeque<>();
 
     @Override
     public void itemDropped(int blockX, int blockY, Items item) {
         if (StaticWorldObjects.getType(WorldGenerator.getObject(blockX, blockY)) == StaticObjectsConst.Types.SOLID && item.name.toLowerCase().equals("electric cable")) {
             if (lastPlacedCable != null) {
-                if (WorldUtils.getDistanceBetweenBlocks(lastPlacedCable, new Point(blockX, blockY)) <= 15) {
-                    placeCable(lastPlacedCable, new Point(blockX, blockY));
+                if (WorldUtils.getDistanceBetweenBlocks(lastPlacedCable, new Point2i(blockX, blockY)) <= 15) {
+                    placeCable(lastPlacedCable, new Point2i(blockX, blockY));
                 }
                 lastPlacedCable = null;
             } else {
-                lastPlacedCable = new Point(blockX, blockY);
+                lastPlacedCable = new Point2i(blockX, blockY);
             }
         }
     }
 
-    public static ElectricCables getNetworkIsHere(Point pos) {
+    public static ElectricCables getNetworkIsHere(Point2i pos) {
         for (ElectricCables cable : cables) {
             if (cable.points.contains(pos)) {
                 return cable;
@@ -42,7 +43,7 @@ public class ElectricCables implements InventoryEvents {
         return null;
     }
 
-    private static void placeCable(Point from, Point to) {
+    private static void placeCable(Point2i from, Point2i to) {
         ElectricCables fromContainsCable = getNetworkIsHere(from);
         ElectricCables toContainsCable = getNetworkIsHere(to);
 
@@ -50,11 +51,11 @@ public class ElectricCables implements InventoryEvents {
         if (fromContainsCable != null && toContainsCable != null) {
             fromContainsCable.points.addAll(toContainsCable.points);
 
-            //if the cable is pulled from a point without cable to a point with cable
+            //if the cable is pulled from a Point2i without cable to a Point2i with cable
         } else if (toContainsCable != null) {
             toContainsCable.points.add(from);
 
-            //if the cable is pulled from a point with cable to a point without cable
+            //if the cable is pulled from a Point2i with cable to a Point2i without cable
         } else if (fromContainsCable != null) {
             fromContainsCable.points.add(to);
 
@@ -71,7 +72,7 @@ public class ElectricCables implements InventoryEvents {
 
     public static void drawCables() {
         for (ElectricCables cable : cables) {
-            TextureDrawing.drawPointArray(cable.points.toArray(new Point[0]));
+            TextureDrawing.drawPointArray(cable.points.toArray(new Point2i[0]));
             updateCables(cable);
         }
     }

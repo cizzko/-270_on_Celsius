@@ -1,5 +1,6 @@
 package core.World.Creatures;
 
+import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.Menu.Pause;
@@ -13,8 +14,8 @@ import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
+import core.math.Point2i;
 
-import java.awt.*;
 import java.util.Iterator;
 
 import static core.Window.glfwWindow;
@@ -29,13 +30,12 @@ import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 //version 1.5
 public class Physics {
     //default 400
-    public static int physicsSpeed = 400, updates = 0, worldSaveDelay = Integer.parseInt(Config.getFromConfig("AutosaveWorldFrequency"));
+    public static int physicsSpeed = 400, worldSaveDelay = Integer.parseInt(Config.getFromConfig("AutosaveWorldFrequency"));
     private static boolean stop = false;
     public static int lastSpeed = physicsSpeed;
 
     public static void restart() {
         physicsSpeed = 400;
-        updates = 0;
         stop = false;
         initPhysics();
 
@@ -54,7 +54,7 @@ public class Physics {
                     updatePhys();
                     updateWorldInteractions();
 
-                    updates++;
+                    EventHandler.addDebugValue(true, "Physics fps: ", "PhysicsFPS");
                     lastUpdate = System.nanoTime();
                 }
                 if ((Settings.createdSettings || Pause.created) && !stop) {
@@ -89,7 +89,7 @@ public class Physics {
     private static void updateHorizontalSpeed(DynamicWorldObjects dynamicObject, Sized size) {
         dynamicObject.setMotionVectorX(dynamicObject.getMotionVectorX() * (1 - (getTotalResistanceInside(dynamicObject) / 100f)));
 
-        boolean intersR = checkIntersStaticR(dynamicObject.getX() + dynamicObject.getMotionVectorX() * 60, dynamicObject.getY(), size.width(), size.height());
+        boolean intersR = checkIntersStaticR(dynamicObject.getX() + dynamicObject.getMotionVectorX() * 61, dynamicObject.getY(), size.width(), size.height());
         boolean intersL = checkIntersStaticL(dynamicObject.getX() + dynamicObject.getMotionVectorX(), dynamicObject.getY(), size.height());
 
         if (!intersR && dynamicObject.getMotionVectorX() > 0) {
@@ -118,15 +118,15 @@ public class Physics {
         float vectorY = object.getMotionVectorY();
 
         if (vectorX > minVectorIntersDamage || vectorX < -minVectorIntersDamage || vectorY > minVectorIntersDamage || vectorY < -minVectorIntersDamage) {
-            Point[] staticObjectPoint = HitboxMap.checkIntersOutside(object.getX() + vectorX * 2, object.getY() + vectorY, object.getTexture().width(), object.getTexture().height() + 4);
+            Point2i[] staticObjectPoint = HitboxMap.checkIntersOutside(object.getX() + vectorX * 2, object.getY() + vectorY, object.getTexture().width(), object.getTexture().height() + 4);
 
             if (staticObjectPoint != null) {
                 float damage = 0;
-                for (Point point : staticObjectPoint) {
-                    short staticObject = WorldGenerator.getObject(point.x, point.y);
+                for (Point2i Point2i : staticObjectPoint) {
+                    short staticObject = WorldGenerator.getObject(Point2i.x, Point2i.y);
                     float currentDamage = ((((StaticWorldObjects.getResistance(staticObject) / 100) * StaticWorldObjects.getDensity(staticObject)) + (object.getWeight() + (Math.max(Math.abs(vectorY), Math.abs(vectorX)) - minVectorIntersDamage)) * intersDamageMultiplier)) / staticObjectPoint.length;
                     damage += currentDamage;
-                    WorldGenerator.setObject(point.x, point.y, StaticWorldObjects.decrementHp(staticObject, (int) (currentDamage + (getResistance(staticObject) / 100) * StaticWorldObjects.getDensity(staticObject)) / staticObjectPoint.length));
+                    WorldGenerator.setObject(Point2i.x, Point2i.y, StaticWorldObjects.decrementHp(staticObject, (int) (currentDamage + (getResistance(staticObject) / 100) * StaticWorldObjects.getDensity(staticObject)) / staticObjectPoint.length));
                 }
                 object.incrementCurrentHP(-damage);
 
@@ -183,6 +183,7 @@ public class Physics {
 
     private static void updateWorldSave() {
         if (System.currentTimeMillis() - Saves.lastSaved >= worldSaveDelay) {
+            Logger.log("Creating world backup..");
             Saves.createWorldBackup();
         }
     }

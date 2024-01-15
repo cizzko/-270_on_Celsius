@@ -2,8 +2,6 @@ package core.World.Creatures.Player;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
-import core.g2d.Texture;
-import core.graphic.Layer;
 import core.Utils.SimpleColor;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
@@ -16,7 +14,10 @@ import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.TextureDrawing;
 import core.g2d.Fill;
-import java.awt.*;
+import core.g2d.Texture;
+import core.graphic.Layer;
+import core.math.Point2i;
+
 import static core.Global.*;
 import static core.Window.start;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
@@ -80,6 +81,7 @@ public class Player {
                 player.setY(player.getY() + increment);
             }
         }
+        EventHandler.putDebugValue(false, "Player position: x - " + (int) player.getX() + ", y - " + (int) player.getY(), "PlayerPos");
     }
 
     public static void updateInventoryInteraction() {
@@ -89,13 +91,13 @@ public class Player {
     }
 
     private static void updatePlaceableInteraction() {
-        if (currentObjectType == Items.Types.PLACEABLE && input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+        if (currentObjectType == Items.Types.PLACEABLE && input.clicked(GLFW_MOUSE_BUTTON_LEFT)) {
             if (input.mousePos().x > (Inventory.inventoryOpen ? 1488 : 1866)) {
                 if (input.mousePos().y > 756) {
                     return;
                 }
             }
-            Point blockUMB = getBlockUnderMousePoint();
+            Point2i blockUMB = getBlockUnderMousePoint();
 
             if (getType(getObject(blockUMB.x, blockUMB.y)) == StaticObjectsConst.Types.GAS && getDistanceToMouse() < 9) {
                 Items item = Inventory.getCurrent();
@@ -142,7 +144,7 @@ public class Player {
         if (item != null && item.tool != null) {
 
             Tools tool = item.tool;
-            Point blockUMB = getBlockUnderMousePoint();
+            Point2i blockUMB = getBlockUnderMousePoint();
             int blockX = blockUMB.x;
             int blockY = blockUMB.y;
             short object = getObject(blockX, blockY);
@@ -175,7 +177,7 @@ public class Player {
     }
 
     private static void updateStructure(int blockX, int blockY, short object, Tools tool) {
-        Point root = findRoot(blockX, blockY);
+        Point2i root = findRoot(blockX, blockY);
 
         if (root != null) {
             blockX = root.x;
@@ -194,7 +196,7 @@ public class Player {
         }
     }
 
-    public static Point findRoot(int cellX, int cellY) {
+    public static Point2i findRoot(int cellX, int cellY) {
         if (!StaticObjectsConst.getConst(getId(getObject(cellX, cellY))).hasMotherBlock && StaticObjectsConst.getConst(getId(getObject(cellX, cellY))).optionalTiles == null) {
             return null;
         }
@@ -205,14 +207,14 @@ public class Player {
             for (int blockY = 0; blockY < maxCellsY; blockY++) {
                 StaticObjectsConst objConst = StaticObjectsConst.getConst(getId(getObject(cellX - blockX, cellY - blockY)));
                 if (objConst != null && objConst.optionalTiles != null) {
-                    return new Point(cellX - blockX, cellY - blockY);
+                    return new Point2i(cellX - blockX, cellY - blockY);
                 }
             }
         }
         return null;
     }
 
-    private static void decrementHpMulti(int cellX, int cellY, int hp, Point root) {
+    private static void decrementHpMulti(int cellX, int cellY, int hp, Point2i root) {
         if (root != null && getObject(root.x, root.y) != 0) {
             short rootObj = getObject(root.x, root.y);
 
@@ -236,14 +238,15 @@ public class Player {
         SimpleColor color = ShadowMap.getColor(cellX, cellY);
         int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
         SimpleColor blockColor = breakable ? SimpleColor.fromRGBA(Math.max(0, a - 150), Math.max(0, a - 150), a, 255) : SimpleColor.fromRGBA(a, Math.max(0, a - 150), Math.max(0, a - 150), 255);
-        int xBlock = cellX * TextureDrawing.blockSize;
-        int yBlock = cellY * TextureDrawing.blockSize;
+        float xBlock = cellX * TextureDrawing.blockSize;
+        float yBlock = cellY * TextureDrawing.blockSize;
 
         byte hp = getHp(obj);
         float maxHp = getMaxHp(obj);
 
         batch.color(blockColor);
         batch.draw(getTexture(obj), xBlock, yBlock);
+
         if (hp > maxHp / 1.5f) {
             // ???
         } else if (hp < maxHp / 3) {
@@ -258,10 +261,10 @@ public class Player {
         if (start) {
             Bullets.drawBullets();
             updateTemperatureEffect();
-            Inventory.update();
             BuildMenu.draw();
             updateToolInteraction();
             drawCurrentHP();
+            Inventory.update();
         }
     }
 

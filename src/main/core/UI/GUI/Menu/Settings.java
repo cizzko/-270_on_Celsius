@@ -6,8 +6,7 @@ import core.EventHandling.Logging.Json;
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.CreateElement;
 import core.Utils.SimpleColor;
-
-import java.awt.*;
+import core.math.Point2i;
 
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.EventHandling.Logging.Json.getName;
@@ -152,7 +151,7 @@ public class Settings {
             int pressedCount = 0;
             long lastPress = System.currentTimeMillis();
             long lastPosSwap = System.currentTimeMillis();
-            Point pos = new Point(2160, -480);
+            Point2i pos = new Point2i(2160, -480);
 
             while (createdSettings) {
                 if (EventHandler.getRectanglePress(1800, 0, 1920, 120) && !crawlingOut && System.currentTimeMillis() - lastPress >= 100) {

@@ -2,14 +2,13 @@ package core.World.Creatures;
 
 import core.EventHandling.Logging.Logger;
 import core.World.HitboxMap;
-import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
 import core.g2d.Atlas;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+
+import static core.World.Textures.TextureDrawing.blockSize;
 
 //dynamic objects, can have any coordinates within the world and be moved at any time
 public class DynamicWorldObjects implements Serializable {
@@ -32,13 +31,14 @@ public class DynamicWorldObjects implements Serializable {
     public static DynamicWorldObjects createDynamic(String name, float x) {
         byte id = generateId(name);
         DynamicObjectsConst obj = DynamicObjectsConst.bindDynamic(name, id);
-        ArrayList<Integer> topmostBlocks = new ArrayList<>(4);
+        int topmostBlock = WorldGenerator.findTopmostSolidBlock((int) (x / blockSize), 5) + 1;
 
-        for (int xSize = 0; xSize < (int) Math.ceil(obj.texture.width() / TextureDrawing.blockSize) + 1; xSize++) {
-            topmostBlocks.add(WorldGenerator.findTopmostSolidBlock((int) ((x / TextureDrawing.blockSize) + xSize), 5));
+        if (HitboxMap.checkIntersInside(x, topmostBlock * blockSize, obj.texture.width(), obj.texture.height()) != null) {
+            Logger.log("Unable spawning player at: x - " + x + ", y - " + topmostBlock * blockSize);
+            return createDynamic(name, x + blockSize);
         }
 
-        return new DynamicWorldObjects(generateId(name), x, (Collections.max(topmostBlocks) + 1) * TextureDrawing.blockSize, DynamicObjectsConst.getConst(id).maxHp);
+        return new DynamicWorldObjects(generateId(name), x, topmostBlock * blockSize, DynamicObjectsConst.getConst(id).maxHp);
     }
 
     public static DynamicWorldObjects createDynamic(String name, float x, float y) {
