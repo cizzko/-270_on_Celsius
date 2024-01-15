@@ -51,11 +51,11 @@ public class ElectricCables implements InventoryEvents {
         if (fromContainsCable != null && toContainsCable != null) {
             fromContainsCable.points.addAll(toContainsCable.points);
 
-            //if the cable is pulled from a Point2i without cable to a Point2i with cable
+            //if the cable is pulled from a point without cable to a point with cable
         } else if (toContainsCable != null) {
             toContainsCable.points.add(from);
 
-            //if the cable is pulled from a Point2i with cable to a Point2i without cable
+            //if the cable is pulled from a point with cable to a point without cable
         } else if (fromContainsCable != null) {
             fromContainsCable.points.add(to);
 

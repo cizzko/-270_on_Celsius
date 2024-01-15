@@ -118,9 +118,9 @@ public class TextureDrawing {
         float d = blockSize + 8;
         for (int i = 0; i < points.length; i++) {
             if (i + 1 < points.length) {
-                Point2i Point2i = points[i];
+                Point2i point = points[i];
                 Point2i next = points[i + 1];
-                Fill.line(Point2i.x * d, Point2i.y * d, next.x * d, next.y * d);
+                Fill.line(point.x * d, point.y * d, next.x * d, next.y * d);
             }
         }
     }

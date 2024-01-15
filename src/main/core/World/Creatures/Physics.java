@@ -122,11 +122,12 @@ public class Physics {
 
             if (staticObjectPoint != null) {
                 float damage = 0;
-                for (Point2i Point2i : staticObjectPoint) {
-                    short staticObject = WorldGenerator.getObject(Point2i.x, Point2i.y);
+                for (Point2i point : staticObjectPoint) {
+                    short staticObject = WorldGenerator.getObject(point.x, point.y);
                     float currentDamage = ((((StaticWorldObjects.getResistance(staticObject) / 100) * StaticWorldObjects.getDensity(staticObject)) + (object.getWeight() + (Math.max(Math.abs(vectorY), Math.abs(vectorX)) - minVectorIntersDamage)) * intersDamageMultiplier)) / staticObjectPoint.length;
+
                     damage += currentDamage;
-                    WorldGenerator.setObject(Point2i.x, Point2i.y, StaticWorldObjects.decrementHp(staticObject, (int) (currentDamage + (getResistance(staticObject) / 100) * StaticWorldObjects.getDensity(staticObject)) / staticObjectPoint.length));
+                    WorldGenerator.setObject(point.x, point.y, StaticWorldObjects.decrementHp(staticObject, (int) (currentDamage + (getResistance(staticObject) / 100) * StaticWorldObjects.getDensity(staticObject)) / staticObjectPoint.length));
                 }
                 object.incrementCurrentHP(-damage);
 
