@@ -143,7 +143,7 @@ public class WorldGenerator {
 
     public static void generateWorld() {
         new Thread(() -> {
-            createText(42, 170, "WorldGeneratorState", "First iteration: ", SimpleColor.DIRTY_BRIGHT_WHITE, "WorldGeneratorState");
+            createText(42, 170, "WorldGeneratorState", "First step: ", SimpleColor.DIRTY_BRIGHT_WHITE, "WorldGeneratorState");
 
             int sliderPos = getSliderPos("worldSize");
             int SizeX = sliderPos + 20;
@@ -177,7 +177,7 @@ public class WorldGenerator {
         generateFlatWorld();
 
         if (simple) {
-            texts.get("WorldGeneratorState").text += "\\nSecond iteration: generating shadows";
+            texts.get("WorldGeneratorState").text += "\\nSecond step: generating shadows";
             ShadowMap.generate();
             generateResources();
         } else {
@@ -185,7 +185,7 @@ public class WorldGenerator {
             smoothWorld();
             fillHollows();
 
-            texts.get("WorldGeneratorState").text += "\\nThird iteration: generating shadows";
+            texts.get("WorldGeneratorState").text += "\\nThird step: generating shadows";
             ShadowMap.generate();
             generateResources();
             generateEnvironments();
@@ -386,8 +386,8 @@ public class WorldGenerator {
     }
 
     private static void generateDecorStones() {
-        texts.get("WorldGeneratorState").text += ", generating decor stones";
         log("World generator: generating decor stones");
+        texts.get("WorldGeneratorState").text += ", generating decor stones";
 
         float chance = 40;
         for (int x = 0; x < SizeX; x++) {
