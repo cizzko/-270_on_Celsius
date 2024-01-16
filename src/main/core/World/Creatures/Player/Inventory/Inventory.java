@@ -54,10 +54,11 @@ public class Inventory {
     private static void drawInventory() {
         Atlas.Region inventory = atlas.byPath("UI/GUI/inventory/inventory" + (inventoryOpen ? "Open" : "Closed") + ".png");
         batch.draw(inventory, inventoryOpen ? 1488 : 1866, 756);
+        Items item;
 
         for (int x = inventoryOpen ? 0 : 7; x < inventoryObjects.length; x++) {
             for (int y = 0; y < inventoryObjects[x].length; y++) {
-                Items item = inventoryObjects[x][y];
+                item = inventoryObjects[x][y];
                 if (item != null) {
                     drawInventoryItem(1498 + x * 54, 766 + y * 54f, item.countInCell, item.texture);
                 }

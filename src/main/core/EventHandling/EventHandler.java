@@ -2,7 +2,6 @@ package core.EventHandling;
 
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
-import core.EventHandling.Logging.Logger;
 import core.UI.GUI.CreateElement;
 import core.UI.GUI.Menu.Pause;
 import core.UI.GUI.Menu.Settings;
@@ -13,10 +12,8 @@ import core.Utils.SimpleLongSummaryStatistics;
 import core.Window;
 import core.World.Creatures.Player.Player;
 import core.math.Point2i;
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
-import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.opengl.GL46;
 
 import java.util.HashMap;

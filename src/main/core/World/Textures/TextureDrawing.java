@@ -89,14 +89,13 @@ public class TextureDrawing {
 
         batch.color(SimpleColor.fromRGBA(0, 0, 0, 1));
         float d = blockSize + 8;
+
         for (int i = 0; i < points.length; i++) {
             if (i + 1 < points.length) {
-                Point2i point = points[i];
-                Point2i next = points[i + 1];
-                Fill.line(point.x * d, point.y * d, next.x * d, next.y * d);
+                Fill.line(points[i].x * d, points[i].y * d, points[i + 1].x * d, points[i + 1].y * d);
             }
         }
-	batch.resetColor();
+        batch.resetColor();
         Fill.resetLineWidth();
     }
 
