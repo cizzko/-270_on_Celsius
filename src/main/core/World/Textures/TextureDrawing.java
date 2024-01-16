@@ -25,7 +25,6 @@ import core.math.Rectangle;
 import java.awt.*;
 import java.nio.ByteBuffer;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import static core.EventHandling.Logging.Config.getFromConfig;
@@ -33,12 +32,10 @@ import static core.Global.*;
 import static core.UI.GUI.CreateElement.*;
 import static core.UI.GUI.Video.byteBuffer;
 import static core.UI.GUI.Video.video;
-import static core.Window.start;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.Weather.Sun.updateSun;
 import static core.World.WorldGenerator.*;
-import static org.lwjgl.opengl.GL13.*;
 
 public class TextureDrawing {
     public static final int blockSize = 48;
@@ -133,8 +130,9 @@ public class TextureDrawing {
     public static Dimension getTextSize(String text) {
         String longestLine = "";
         int width = 12;
-
         int linesCount = 0;
+
+        // find '\\n'
         for (String line : text.split("\\\\n")) {
             linesCount++;
             if (line.length() >= longestLine.replaceAll("\\s+", "").length()) {
@@ -216,6 +214,7 @@ public class TextureDrawing {
                 int yBlock = findY(x, y);
 
                 if (isOnCamera(xBlock, yBlock)) {
+                    //todo избавиться от такой жирной аллокации, и вообще переделать работу с колор
                     SimpleColor color = ShadowMap.getColor(x, y);
                     int upperLimit = 100;
                     int lowestLimit = -20;
@@ -232,12 +231,14 @@ public class TextureDrawing {
                         color = SimpleColor.fromRGBA(color.getRed() - a, color.getGreen() - (a / 2), color.getBlue(), color.getAlpha());
                     }
 
+                    //todo это тоже не шибко маленькая аллокация, особенно учитывая поинты и сам AnimData
                     StaticWAnimations.AnimData currentFrame = StaticWAnimations.getCurrentFrame(obj, new Point2i(x, y));
                     if (currentFrame != null) {
                         drawTexture(xBlock, yBlock, currentFrame.width(), currentFrame.height(), 1, false, currentFrame.currentFrame() + StaticWorldObjects.getId(obj), currentFrame.currentFrameImage(), color);
                         continue;
                     }
 
+                    //todo соотвесна сделать возможность отдавать напрямую инт
                     batch.color(color);
                     batch.draw(getTexture(obj), xBlock, yBlock);
 

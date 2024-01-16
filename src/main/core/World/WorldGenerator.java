@@ -237,11 +237,12 @@ public class WorldGenerator {
         texts.get("WorldGeneratorState").text += ", filling hollows";
 
         boolean[][] visited = new boolean[SizeX][SizeY];
+        List<int[]> area = new ArrayList<>();
 
         for (int x = 1; x < SizeX - 1; x++) {
             for (int y = 1; y < SizeY - 1; y++) {
                 if (getType(getObject(x, y)) == StaticObjectsConst.Types.GAS && !visited[x][y]) {
-                    List<int[]> area = new ArrayList<>();
+                    area.clear();
                     boolean isClosed = search(x, y, visited, area);
 
                     if (isClosed) {
