@@ -19,7 +19,7 @@ public class InputHandler {
     static final int PRESSED_ARRAY_SIZE = 349;
     static final int CLICKED_ARRAY_SIZE = 8; // GLFW_MOUSE_BUTTON_1 ~ GLFW_MOUSE_BUTTON_8
 
-    private final long[] pressed, clicked;
+    private final long[] pressed, clicked, repeated;
     private final long[] justPressed, justClicked;
     private final Point2i mousePos = new Point2i();
 
@@ -30,6 +30,7 @@ public class InputHandler {
         justPressed = createBitSet(PRESSED_ARRAY_SIZE);
         justClicked = createBitSet(CLICKED_ARRAY_SIZE);
 
+        repeated = createBitSet(PRESSED_ARRAY_SIZE);
         pressed = createBitSet(PRESSED_ARRAY_SIZE);
         clicked = createBitSet(CLICKED_ARRAY_SIZE);
     }
@@ -56,8 +57,10 @@ public class InputHandler {
                     }
                     case GLFW_RELEASE -> {
                         unsetBit(pressed, key);
+                        unsetBit(repeated, key);
                         setBit(justPressed, key);
                     }
+                    case GLFW_REPEAT -> setBit(repeated, key);
                 }
             }
         }));
@@ -107,6 +110,10 @@ public class InputHandler {
 
     public boolean pressed(int keycode) {
         return isSet(pressed, keycode);
+    }
+
+    public boolean repeated(int keycode) {
+        return isSet(repeated, keycode);
     }
 
     public boolean justPressed(int keycode) {

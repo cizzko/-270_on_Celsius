@@ -3,12 +3,8 @@ package core.Utils;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
-import core.Global;
 import core.Window;
 
-import java.awt.Toolkit;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -150,6 +146,9 @@ public class Commandline {
             } else {
                 Commandline.createLine();
             }
+        }
+        if (input.justPressed(GLFW_KEY_DELETE)) {
+            EventHandler.resetKeyLogginText();
         }
 
         if (created) {

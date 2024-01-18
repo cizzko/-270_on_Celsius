@@ -33,7 +33,7 @@ public class EventHandler {
 
     public static int width = defaultWidth, height = defaultHeight;
     private static HashMap<String, debugValue> debugValues = new HashMap<>();
-    private record debugValue(boolean statistics, String text, SimpleLongSummaryStatistics summaryStatistics) {}
+    private record debugValue(boolean statistics, String text, SimpleLongSummaryStatistics summaryStatistics) { }
 
     public static void setKeyLoggingText(String text) {
         keyLoggingText.setLength(0);
@@ -155,8 +155,9 @@ public class EventHandler {
             }
             Settings.delete();
         }
-        if (input.justPressed(GLFW_KEY_BACKSPACE) && isKeylogging()) {
+        if ((input.justPressed(GLFW_KEY_BACKSPACE) || input.repeated(GLFW_KEY_BACKSPACE)) && isKeylogging()) {
             int length = keyLoggingText.length();
+
             if (length > 0) {
                 keyLoggingText.deleteCharAt(length - 1);
             }
