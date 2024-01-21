@@ -6,6 +6,7 @@ import core.EventHandling.Logging.Json;
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.CreateElement;
 import core.Utils.SimpleColor;
+import core.World.Creatures.Physics;
 import core.math.Point2i;
 
 import static core.EventHandling.Logging.Config.getFromConfig;
@@ -52,7 +53,10 @@ public class Settings {
     }
 
     public static void createOtherSet() {
-        createSwapButton(310, 980, 32, 32, getName("SendAnonymousStatistics"), getName("SendAnonymousStatisticsPrompt"), false, true, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("SendAnonymousStatistics")), "SettingsOtherSwap");
+        //todo имхо уже бессмысленно, особенно если дело дойдет до стима, который сам собирает статистику
+        //createSwapButton(310, 980, 32, 32, getName("SendAnonymousStatistics"), getName("SendAnonymousStatisticsPrompt"), false, true, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("SendAnonymousStatistics")), "SettingsOtherSwap");
+
+        createSwapButton(310, 980, 32, 32, getName("Autopause"), getName("AutopausePrompt"), false, true, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("Autopause")), "SettingsOtherSwap");
     }
 
     public static void deleteGraphicsSet() {
@@ -84,6 +88,7 @@ public class Settings {
     }
 
     private static void exitBtn() {
+        Physics.resumePhysics();
         delete();
         if (!start) {
             Main.create();

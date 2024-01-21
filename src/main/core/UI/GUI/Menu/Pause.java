@@ -2,11 +2,11 @@ package core.UI.GUI.Menu;
 
 import core.EventHandling.Logging.Logger;
 import core.Utils.SimpleColor;
+import core.World.Creatures.Physics;
 import core.World.Saves;
 
 import static core.EventHandling.Logging.Json.getName;
 import static core.UI.GUI.CreateElement.*;
-import static core.Window.start;
 
 public class Pause {
     public static boolean created = false;
@@ -34,6 +34,7 @@ public class Pause {
     private static void continueBtn() {
         Pause.delete();
         Settings.delete();
+        Physics.resumePhysics();
     }
 
     private static void exitBtn() {
@@ -42,11 +43,7 @@ public class Pause {
 
     private static void settingsBtn() {
         Settings.create();
-        if (!start) {
-            Main.delete();
-        } else {
-            Pause.delete();
-        }
+        Pause.delete();
     }
 
     private static void saveButton() {

@@ -1,6 +1,7 @@
 package core.World.Textures;
 
 import core.EventHandling.EventHandler;
+import core.EventHandling.Logging.Config;
 import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.PanelObject;
 import core.UI.GUI.Objects.SliderObject;
@@ -21,12 +22,13 @@ import core.g2d.Font;
 import core.graphic.Layer;
 import core.math.Point2i;
 import core.math.Rectangle;
+import core.math.Vector2f;
 
 import java.awt.*;
 import java.nio.ByteBuffer;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
+
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Global.*;
 import static core.UI.GUI.CreateElement.*;
@@ -38,6 +40,8 @@ import static core.World.Weather.Sun.updateSun;
 import static core.World.WorldGenerator.*;
 
 public class TextureDrawing {
+    private static final ArrayDeque<Vector2f> smoothCameraX = new ArrayDeque<>(), smoothCameraY = new ArrayDeque<>();
+    private static final int multiplySmoothCameraX = Integer.parseInt(Config.getFromConfig("SmoothingCameraHorizontal")), multiplySmoothCameraY = Integer.parseInt(Config.getFromConfig("SmoothingCameraVertical"));
     public static final int blockSize = 48;
     public static float playerX = 0, playerY = 0;
 
@@ -174,11 +178,33 @@ public class TextureDrawing {
         }
     }
 
-    public static void updatePlayerPos() {
+    private static void updatePlayerPos() {
         DynamicWorldObjects player = DynamicObjects.getFirst();
 
         playerX = player.getX();
         playerY = player.getY();
+
+        //todo: интересный факт - работает как задумано только на 75 фпс, нужно сделать не покадровую плавную камеру, а каждые `n` мс.. и вообще это не финальная версия кода
+        if (Window.verticalSync >= 1) {
+            if (multiplySmoothCameraX > 0) {
+                smoothCameraX.add(new Vector2f(playerX, player.getMotionVectorX()));
+
+                if (smoothCameraX.size() > multiplySmoothCameraX) {
+                    playerX = smoothCameraX.getFirst().x - (smoothCameraX.getFirst().y * multiplySmoothCameraX);
+                    smoothCameraX.removeFirst();
+                }
+            }
+
+            if (multiplySmoothCameraY > 0) {
+                smoothCameraY.add(new Vector2f(playerY, player.getMotionVectorY()));
+
+                //по тех причинам тут пока без интерполяции
+                if (smoothCameraY.size() > multiplySmoothCameraY) {
+                    playerY = smoothCameraY.getFirst().x;
+                    smoothCameraY.removeFirst();
+                }
+            }
+        }
 
         camera.position.set(playerX + 32, playerY + 200);
         camera.update();
@@ -288,13 +314,10 @@ public class TextureDrawing {
     }
 
     public static boolean isOnCamera(int x, int y) {
-        //todo очень редко проскакивает белая полоска снизу, возможно есть смысл немного повысить дальность отрисовки снизу
-        DynamicWorldObjects player = DynamicObjects.getFirst();
-
-        float left = player.getX() - (1920 / 2.1f) - (32 + blockSize);
-        float right = player.getX() + (1920 / 1.7f) + (32 - blockSize);
-        float bottom = player.getY() - (1080 / 3.7f) - (32 + blockSize); //lower dividet number - higher drawing
-        float top = player.getY() + (1080 / 1.4f) + (32 - blockSize);
+        float left = playerX - (1920 / 2.1f) - (32 + blockSize);
+        float right = playerX + (1920 / 1.7f) + (32 - blockSize);
+        float bottom = playerY - (1080 / 3.7f) - (32 + blockSize); //lower dividet number - higher drawing
+        float top = playerY + (1080 / 1.4f) + (32 - blockSize);
 
         return !(x + 16 < left) && !(x > right) && !(y + 16 < bottom) && !(y > top);
     }

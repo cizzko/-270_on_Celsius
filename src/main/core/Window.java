@@ -3,6 +3,7 @@ package core;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
+import core.Utils.NativeResources;
 import core.g2d.Atlas;
 import core.g2d.Font;
 import core.graphic.Layer;
@@ -12,15 +13,14 @@ import core.assets.TextureLoader;
 import core.g2d.*;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
+import org.lwjgl.glfw.GLFWWindowFocusCallback;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.system.NativeResource;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import static core.EventHandling.Logging.Logger.log;
 import static core.Global.*;
+import static core.Utils.NativeResources.addResource;
 import static core.assets.TextureLoader.BufferedImageEncoder;
 import static core.assets.TextureLoader.readImage;
 import static org.lwjgl.glfw.GLFW.*;
@@ -29,12 +29,9 @@ import static org.lwjgl.opengl.GL46.*;
 public class Window {
     public static final String versionStamp = "0.0.56", version = "alpha " + versionStamp + " (non stable)";
     public static int defaultWidth = 1920, defaultHeight = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0;
-    public static boolean start = false;
+    public static boolean start = false, windowFocused = true;
     public static long glfwWindow;
-
     public static Font defaultFont;
-
-    private static final List<NativeResource> resources = new ArrayList<>();
 
     public void run() {
         init();
@@ -91,6 +88,13 @@ public class Window {
             Logger.printException("Error when pre-loading resources", e);
         }
 
+        glfwSetWindowFocusCallback(glfwWindow, addResource(new GLFWWindowFocusCallback() {
+            @Override
+            public void invoke(long window, boolean focused) {
+                windowFocused = focused;
+            }
+        }));
+
         input = new InputHandler();
         input.init();
 
@@ -108,12 +112,6 @@ public class Window {
         Main.create();
 
         log("Init status: true\n");
-    }
-
-    //todo убери куда нибудь вот это вот
-    public static <R extends NativeResource> R addResource(R resource) {
-        resources.add(resource);
-        return resource;
     }
 
     public void draw() {
@@ -148,9 +146,7 @@ public class Window {
         }
 
         glfwTerminate();
-        for (NativeResource resource : resources) {
-            resource.free();
-        }
+        NativeResources.terminateResources();
 
         batch.close();
         Logger.logExit(1863, "Main thread ending drawing", false);

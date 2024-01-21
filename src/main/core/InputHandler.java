@@ -11,7 +11,7 @@ import org.lwjgl.glfw.GLFWScrollCallback;
 import java.util.Arrays;
 
 import static core.EventHandling.Logging.Logger.printException;
-import static core.Window.addResource;
+import static core.Utils.NativeResources.addResource;
 import static core.Window.glfwWindow;
 import static org.lwjgl.glfw.GLFW.*;
 

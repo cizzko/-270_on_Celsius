@@ -3,8 +3,6 @@ package core.World.Creatures;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
-import core.UI.GUI.Menu.Pause;
-import core.UI.GUI.Menu.Settings;
 import core.Utils.Sized;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
@@ -50,23 +48,30 @@ public class Physics {
             long lastUpdate = System.nanoTime();
 
             while (!glfwWindowShouldClose(glfwWindow)) {
-                if (System.nanoTime() - lastUpdate >= 1.0 / physicsSpeed * 1000000000) {
+                if (physicsSpeed != 0 && System.nanoTime() - lastUpdate >= 1.0 / physicsSpeed * 1000000000) {
                     updatePhys();
                     updateWorldInteractions();
 
                     EventHandler.addDebugValue(true, "Physics fps: ", "PhysicsFPS");
                     lastUpdate = System.nanoTime();
                 }
-                if ((Settings.createdSettings || Pause.created) && !stop) {
-                    lastSpeed = physicsSpeed;
-                    physicsSpeed = 1;
-                    stop = true;
-                } else if (!Settings.createdSettings && !Pause.created && stop) {
-                    physicsSpeed = lastSpeed;
-                    stop = false;
-                }
             }
         }).start();
+    }
+
+    public static void stopPhysics() {
+        if (!stop) {
+            lastSpeed = physicsSpeed;
+            physicsSpeed = 0;
+            stop = true;
+        }
+    }
+
+    public static void resumePhysics() {
+        if (stop) {
+            physicsSpeed = lastSpeed;
+            stop = false;
+        }
     }
 
     private static void updateVerticalSpeed(DynamicWorldObjects dynamicObject, Sized size) {

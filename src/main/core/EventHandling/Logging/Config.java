@@ -16,7 +16,7 @@ public class Config {
         if (!configCheckMark) {
             Properties prop = getProperties(assets.assetsDir("config.properties"));
 
-            if (prop == null || prop.isEmpty() || prop.keys() == null) {
+            if (prop.isEmpty() || prop.keys() == null) {
                 try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("/log.txt")))) {
                     printWriter.println("Config empty or keys not found, it will be reset to default values");
                     resetConfig();

@@ -9,7 +9,7 @@ import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.SliderObject;
 import core.Utils.SimpleColor;
 import core.Utils.SimpleLongSummaryStatistics;
-import core.Window;
+import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Player;
 import core.math.Point2i;
 import org.lwjgl.glfw.GLFWCharCallback;
@@ -23,6 +23,7 @@ import static core.EventHandling.Logging.Logger.log;
 import static core.Global.*;
 import static core.UI.GUI.CreateElement.*;
 import static core.Utils.Commandline.updateLine;
+import static core.Utils.NativeResources.addResource;
 import static core.Window.*;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -33,7 +34,7 @@ public class EventHandler {
 
     public static int width = defaultWidth, height = defaultHeight;
     private static HashMap<String, debugValue> debugValues = new HashMap<>();
-    private record debugValue(boolean statistics, String text, SimpleLongSummaryStatistics summaryStatistics) { }
+    private record debugValue(boolean statistics, String text, SimpleLongSummaryStatistics summaryStatistics) {}
 
     public static void setKeyLoggingText(String text) {
         keyLoggingText.setLength(0);
@@ -43,7 +44,7 @@ public class EventHandler {
     private static void initCallbacks() {
         log("Thread: Event handling started");
 
-        glfwSetCharCallback(glfwWindow, Window.addResource(new GLFWCharCallback() {
+        glfwSetCharCallback(glfwWindow, addResource(new GLFWCharCallback() {
             @Override
             public void invoke(long window, int codepoint) {
                 if (keyLogging) {
@@ -51,7 +52,7 @@ public class EventHandler {
                 }
             }
         }));
-        glfwSetFramebufferSizeCallback(glfwWindow, Window.addResource(new GLFWFramebufferSizeCallback() {
+        glfwSetFramebufferSizeCallback(glfwWindow, addResource(new GLFWFramebufferSizeCallback() {
             @Override
             public void invoke(long window, int width, int height) {
                 EventHandler.width = width;
@@ -147,14 +148,23 @@ public class EventHandler {
     }
 
     private static void updateHotkeys() {
-        if (input.justPressed(GLFW_KEY_ESCAPE) && start) {
-            if (!Pause.created) {
-                Pause.create();
-            } else {
-                Pause.delete();
+        if (start) {
+            if (input.justPressed(GLFW_KEY_ESCAPE)) {
+                if (!Pause.created) {
+                    Pause.create();
+                    Physics.stopPhysics();
+                } else {
+                    Pause.delete();
+                    Physics.resumePhysics();
+                }
             }
-            Settings.delete();
+
+            if (!windowFocused && Boolean.parseBoolean(Config.getFromConfig("Autopause"))) {
+                Pause.create();
+                Physics.stopPhysics();
+            }
         }
+
         if ((input.justPressed(GLFW_KEY_BACKSPACE) || input.repeated(GLFW_KEY_BACKSPACE)) && isKeylogging()) {
             int length = keyLoggingText.length();
 
