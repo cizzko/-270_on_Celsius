@@ -184,25 +184,23 @@ public class TextureDrawing {
         playerX = player.getX();
         playerY = player.getY();
 
-        //todo: интересный факт - работает как задумано только на 75 фпс, нужно сделать не покадровую плавную камеру, а каждые `n` мс.. и вообще это не финальная версия кода
-        if (Window.verticalSync >= 1) {
-            if (multiplySmoothCameraX > 0) {
-                smoothCameraX.add(new Vector2f(playerX, player.getMotionVectorX()));
+        if (multiplySmoothCameraX > 0) {
+            smoothCameraX.add(new Vector2f(playerX, player.getMotionVectorX()));
 
-                if (smoothCameraX.size() > multiplySmoothCameraX) {
-                    playerX = smoothCameraX.getFirst().x - (smoothCameraX.getFirst().y * multiplySmoothCameraX);
-                    smoothCameraX.removeFirst();
-                }
+            //todo Math.max(Window.pfps - 75, 0) / 7 не воспринимать всерьез - это костыль просто для того, чтоб плавная камера работала на любом фпс, потом переделаю
+            if (smoothCameraX.size() > multiplySmoothCameraX + Math.max(Window.pfps - 75, 0) / 7) {
+                playerX = smoothCameraX.getFirst().x - (smoothCameraX.getFirst().y * multiplySmoothCameraX);
+                smoothCameraX.removeFirst();
             }
+        }
 
-            if (multiplySmoothCameraY > 0) {
-                smoothCameraY.add(new Vector2f(playerY, player.getMotionVectorY()));
+        if (multiplySmoothCameraY > 0) {
+            smoothCameraY.add(new Vector2f(playerY, player.getMotionVectorY()));
 
-                //по тех причинам тут пока без интерполяции
-                if (smoothCameraY.size() > multiplySmoothCameraY) {
-                    playerY = smoothCameraY.getFirst().x;
-                    smoothCameraY.removeFirst();
-                }
+            //по тех. причинам тут пока без интерполяции
+            if (smoothCameraY.size() > multiplySmoothCameraY + Math.max(Window.pfps - 75, 0) / 7) {
+                playerY = smoothCameraY.getFirst().x;
+                smoothCameraY.removeFirst();
             }
         }
 

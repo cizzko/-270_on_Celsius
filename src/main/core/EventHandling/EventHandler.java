@@ -31,8 +31,7 @@ public class EventHandler {
     private static long lastSecond = System.currentTimeMillis();
     private static boolean keyLogging = false;
     public static final StringBuilder keyLoggingText = new StringBuilder(256);
-
-    public static int width = defaultWidth, height = defaultHeight;
+    public static int width = defaultWidth, height = defaultHeight, debugLevel = Integer.parseInt(Config.getFromConfig("Debug"));
     private static HashMap<String, debugValue> debugValues = new HashMap<>();
     private record debugValue(boolean statistics, String text, SimpleLongSummaryStatistics summaryStatistics) {}
 
@@ -175,7 +174,7 @@ public class EventHandler {
     }
 
     private static void updateDebug() {
-        if (System.currentTimeMillis() - lastSecond >= 1000 && Integer.parseInt(Config.getFromConfig("Debug")) > 0) {
+        if (debugLevel > 0 && System.currentTimeMillis() - lastSecond >= 1000) {
             lastSecond = System.currentTimeMillis();
 
             int iterations = 0;
@@ -194,17 +193,21 @@ public class EventHandler {
     }
 
     public static void addDebugValue(boolean statistics, String text, String name) {
-        debugValue object = debugValues.getOrDefault(name, null);
+        if (debugLevel > 0) {
+            debugValue object = debugValues.getOrDefault(name, null);
 
-        if (object == null) {
-            debugValues.put(name, new debugValue(statistics, text, statistics ? new SimpleLongSummaryStatistics() : null));
-        } else if (statistics) {
-            object.summaryStatistics.add(1);
+            if (object == null) {
+                debugValues.put(name, new debugValue(statistics, text, statistics ? new SimpleLongSummaryStatistics() : null));
+            } else if (statistics) {
+                object.summaryStatistics.add(1);
+            }
         }
     }
 
     public static void putDebugValue(boolean statistics, String text, String name) {
-        debugValues.put(name, new debugValue(statistics, text, statistics ? new SimpleLongSummaryStatistics() : null));
+        if (debugLevel > 0) {
+            debugValues.put(name, new debugValue(statistics, text, statistics ? new SimpleLongSummaryStatistics() : null));
+        }
     }
 
     public static void init() {

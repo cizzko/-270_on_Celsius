@@ -26,6 +26,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import static core.EventHandling.Logging.Logger.log;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.*;
+import static core.World.StaticWorldObjects.StaticObjectsConst.getConst;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 
 public class WorldGenerator {
@@ -67,24 +68,25 @@ public class WorldGenerator {
         listeners.add(listener);
     }
 
-    public static void setObject(int x, int y, short object) {
+    //todo что насчет перегрузки для followingRules ?
+    public static void setObject(int x, int y, short object, boolean followingRules) {
         assert object != -1;
 
-        if (StaticObjectsConst.getConst(getId(object)).optionalTiles != null) {
-            new Thread(() -> {
-                short[][] tiles = StaticObjectsConst.getConst(getId(object)).optionalTiles;
+        if (getConst(getId(object)).optionalTiles != null) {
+            Thread.startVirtualThread(() -> {
+                short[][] tiles = getConst(getId(object)).optionalTiles;
 
                 for (int blockX = 0; blockX < tiles.length; blockX++) {
                     for (int blockY = 0; blockY < tiles[0].length; blockY++) {
                         if (getType(tiles[blockX][blockY]) != StaticObjectsConst.Types.GAS && tiles[blockX][blockY] != 0) {
-                            StaticObjects[(x + blockX) + SizeX * (y + blockY)] = tiles[blockX][blockY];
+                            placeStatic(x + blockX, y + blockY, tiles[blockX][blockY], followingRules);
                         }
                     }
                 }
-                StaticObjects[x + SizeX * y] = object;
-            }).start();
+                placeStatic(x, y, object, followingRules);
+            });
         } else {
-            StaticObjects[x + SizeX * y] = object;
+            placeStatic(x, y, object, followingRules);
         }
 
         if (start) {
@@ -92,6 +94,35 @@ public class WorldGenerator {
                 listener.placeStatic(x, y, object);
             }
         }
+    }
+
+    private static void placeStatic(int x, int y, short object, boolean followingRules) {
+        if (!followingRules || checkPlaceRules(x, y, object)) {
+            StaticObjects[x + SizeX * y] = object;
+        }
+    }
+
+    public static boolean checkPlaceRules(int x, int y, short root) {
+        if (getId(getObject(x, y)) != 0) {
+            return false;
+        }
+        if (getConst(getId(root)).optionalTiles != null) {
+            short[][] tiles = getConst(getId(root)).optionalTiles;
+
+            for (int xBlock = 0; xBlock < tiles.length; xBlock++) {
+                if (getResistance(getObject(x + xBlock, y - 1)) < 100) {
+                    return false;
+                }
+                for (int yBlock = 0; yBlock < tiles[0].length; yBlock++) {
+                    if (getId(getObject(x + xBlock, y)) != 0) {
+                        return false;
+                    }
+                }
+            }
+        } else {
+            return !(getResistance(getObject(x, y - 1)) < 100) || !(getResistance(getObject(x, y + 1)) < 100) || !(getResistance(getObject(x - 1, y)) < 100) || !(getResistance(getObject(x + 1, y)) < 100);
+        }
+        return true;
     }
 
     public static short getObject(int x, int y) {
@@ -105,14 +136,14 @@ public class WorldGenerator {
         short id = WorldGenerator.getObject(cellX, cellY);
 
         if (id != 0) {
-            if (StaticObjectsConst.getConst(getId(id)).hasMotherBlock || StaticObjectsConst.getConst(getId(id)).optionalTiles != null) {
+            if (getConst(getId(id)).hasMotherBlock || getConst(getId(id)).optionalTiles != null) {
                 Point2i root = Player.findRoot(cellX, cellY);
 
                 if (root != null) {
                     deleteTiles(getObject(root.x, root.y), root.x, root.y);
                 }
             } else {
-                WorldGenerator.setObject(cellX, cellY, (short) 0);
+                WorldGenerator.setObject(cellX, cellY, (short) 0, false);
                 ShadowMap.update();
             }
 
@@ -125,8 +156,8 @@ public class WorldGenerator {
     }
 
     private static void deleteTiles(short id, int cellX, int cellY) {
-        for (int blockX = 0; blockX < StaticObjectsConst.getConst(getId(id)).optionalTiles.length; blockX++) {
-            for (int blockY = 0; blockY < StaticObjectsConst.getConst(getId(id)).optionalTiles[0].length; blockY++) {
+        for (int blockX = 0; blockX < getConst(getId(id)).optionalTiles.length; blockX++) {
+            for (int blockY = 0; blockY < getConst(getId(id)).optionalTiles[0].length; blockY++) {
                 WorldGenerator.StaticObjects[(cellX + blockX) + SizeX * (cellY + blockY)] = (short) 0;
             }
         }
@@ -200,9 +231,9 @@ public class WorldGenerator {
         for (int x = 0; x < SizeX; x++) {
             for (int y = 0; y < SizeY; y++) {
                 if (y > SizeY / 1.5f) {
-                    setObject(x, y, createStatic("Blocks/air"));
+                    setObject(x, y, createStatic("Blocks/air"), false);
                 } else {
-                    setObject(x, y, createStatic("Blocks/grass"));
+                    setObject(x, y, createStatic("Blocks/grass"), false);
                 }
             }
         }
@@ -223,7 +254,7 @@ public class WorldGenerator {
                     randGrass += y / (mountainHeight * SizeY);
 
                     if ((getType(getObject(x + 1, y)) == StaticObjectsConst.Types.SOLID || getType(getObject(x - 1, y)) == StaticObjectsConst.Types.SOLID || getType(getObject(x, y + 1)) == StaticObjectsConst.Types.SOLID || getType(getObject(x, y - 1)) == StaticObjectsConst.Types.SOLID) && Math.random() * randGrass < 1) {
-                        setObject(x, y, createStatic("Blocks/grass"));
+                        setObject(x, y, createStatic("Blocks/grass"), false);
                     } else if (Math.random() * randAir < 1) {
                         destroyObject(x, y);
                     }
@@ -262,9 +293,9 @@ public class WorldGenerator {
         for (int x = 1; x < SizeX - 1; x++) {
             for (int y = 1; y < SizeY - 1; y++) {
                 if ((getType(getObject(x, y)) != StaticObjectsConst.Types.GAS && getType(getObject(x + 1, y)) == StaticObjectsConst.Types.SOLID && getType(getObject(x - 1, y)) == StaticObjectsConst.Types.SOLID && getType(getObject(x, y - 1)) == StaticObjectsConst.Types.SOLID) || (getType(getObject(x + 1, y + 1)) == StaticObjectsConst.Types.SOLID && getType(getObject(x - 1, y - 1)) == StaticObjectsConst.Types.SOLID) || getType(getObject(x - 1, y + 1)) == StaticObjectsConst.Types.SOLID && getType(getObject(x + 1, y - 1)) == StaticObjectsConst.Types.SOLID && Math.random() * smoothingChance < 1) {
-                    setObject(x, y, createStatic("Blocks/grass"));
+                    setObject(x, y, createStatic("Blocks/grass"), false);
                 } else if ((getType(getObject(x, y + 1)) == StaticObjectsConst.Types.SOLID && getType(getObject(x, y - 1)) == StaticObjectsConst.Types.SOLID) || (getType(getObject(x + 1, y)) == StaticObjectsConst.Types.SOLID && getType(getObject(x - 1, y)) == StaticObjectsConst.Types.SOLID) && Math.random() * smoothingChance < 1) {
-                    setObject(x, y, createStatic("Blocks/grass"));
+                    setObject(x, y, createStatic("Blocks/grass"), false);
                 }
             }
         }
@@ -315,7 +346,7 @@ public class WorldGenerator {
             for (int x = 0; x < objects.length; x++) {
                 for (int y = 0; y < objects[x].length; y++) {
                     if (cellX + x < SizeX && cellY + y < SizeY && cellX + x > 0 && cellY + y > 0 && getId(objects[x][y]) != 0 && getType(objects[x][y]) != StaticObjectsConst.Types.GAS) {
-                        setObject(cellX + x, cellY + y, createStatic(getFileName(objects[x][y])));
+                        setObject(cellX + x, cellY + y, createStatic(getFileName(objects[x][y])), false);
                     }
                 }
             }
@@ -326,7 +357,7 @@ public class WorldGenerator {
         for (int[] coord : area) {
             int x = coord[0];
             int y = coord[1];
-            setObject(x, y, createStatic("Blocks/grass"));
+            setObject(x, y, createStatic("Blocks/grass"), false);
         }
     }
 
@@ -339,6 +370,7 @@ public class WorldGenerator {
 
         generateTrees();
         generateDecorStones();
+        generateHerb();
         Structures.clearStructuresMap();
     }
 
@@ -346,44 +378,7 @@ public class WorldGenerator {
         log("World generator: generating trees");
         texts.get("WorldGeneratorState").text += "generating trees";
 
-        byte[] forests = new byte[SizeX];
-        float lastForest = 0;
-        float lastForestSize = 0;
-
-        //(maximum size + minimum) should not exceed 127
-        float chance = 80;
-        float maxForestSize = 20;
-        float minForestSize = 2;
-
-        //the first stage - plants seeds for the forests and sets the size
-        for (int x = 0; x < SizeX; x++) {
-            if (Math.random() * chance < 1 && lastForest != x && lastForest + lastForestSize < x) {
-                forests[x] = (byte) ((Math.random() * maxForestSize) + minForestSize);
-                lastForest = x;
-                lastForestSize = (float) ((forests[x] * Math.random() * 8) + 4);
-            }
-        }
-
-        //second stage - plants trees by seeds
-        for (int x = 0; x < forests.length; x++) {
-            if (forests[x] > 0) {
-                for (int i = 0; i < forests[x]; i++) {
-                    String name = "tree" + (int) (Math.random() * 2);
-                    int distance = (int) ((Math.random() * 8) + 4);
-                    int xTree = x + (i * distance);
-                    int yTree = findFreeVerticalCell(x + (i * distance));
-
-                    Structures structures;
-                    if (xTree > 0 && yTree > 0 && xTree < forests.length &&
-                            !checkInterInsideSolid(xTree, yTree, name) &&
-                            (structures = Structures.getStructure(name)) != null &&
-                            xTree + structures.lowestSolidBlock < SizeX && yTree - 1 < SizeY &&
-                            getType(getObject(xTree + structures.lowestSolidBlock, yTree - 1)) == StaticObjectsConst.Types.SOLID) {
-                        createStructure(xTree, yTree, name);
-                    }
-                }
-            }
-        }
+        generateForest(80, 2, 20, 4, 8, false, "tree0", "tree1");
     }
 
     private static void generateDecorStones() {
@@ -396,7 +391,55 @@ public class WorldGenerator {
                 int y = findFreeVerticalCell(x);
 
                 if (y - 1 > 0 && getType(getObject(x, y - 1)) == StaticObjectsConst.Types.SOLID && getResistance(getObject(x, y - 1)) == 100) {
-                    setObject(x, y, StaticWorldObjects.createStatic("Blocks/decorStone"));
+                    setObject(x, y, StaticWorldObjects.createStatic("Blocks/decorStone"), false);
+                }
+            }
+        }
+    }
+
+    private static void generateHerb() {
+        generateForest(10, 1, 20, 1, 0, true, "Blocks/herb");
+    }
+
+    private static void generateForest(int chance, int minForestSize, int maxForestSize, int minSpawnDistance, int maxSpawnDistance, boolean simpleStructure, String... structuresName) {
+        byte[] forests = new byte[SizeX];
+        float lastForest = 0;
+        float lastForestSize = 0;
+
+        //(maximum size + minimum) should not exceed 127
+        //the first stage - plants seeds for the forests and sets the size
+        for (int x = 0; x < SizeX; x++) {
+            if (Math.random() * chance < 1 && lastForest != x && lastForest + lastForestSize < x) {
+                forests[x] = (byte) ((Math.random() * maxForestSize) + minForestSize);
+                lastForest = x;
+                lastForestSize = (float) ((forests[x] * Math.random() * 8) + 4);
+            }
+        }
+
+        //second stage - plants structures by seeds
+        for (int x = 0; x < forests.length; x++) {
+            if (forests[x] > 0) {
+                for (int i = 0; i < forests[x]; i++) {
+                    String name = structuresName[(int) (Math.random() * structuresName.length)];
+                    int distance = (int) (Math.random() * (maxSpawnDistance - minSpawnDistance)) + minSpawnDistance;
+                    int xStruct = x + (i * distance);
+                    int yStruct = findFreeVerticalCell(x + (i * distance));
+
+                    if (xStruct > 0 && yStruct > 0 && xStruct < forests.length) {
+                        if (!simpleStructure) {
+                            Structures structures;
+
+                            if (!checkInterInsideSolid(xStruct, yStruct, name) && (structures = Structures.getStructure(name)) != null && xStruct + structures.lowestSolidBlock < SizeX && yStruct - 1 < SizeY && getType(getObject(xStruct + structures.lowestSolidBlock, yStruct - 1)) == StaticObjectsConst.Types.SOLID) {
+                                createStructure(xStruct, yStruct, name);
+                            }
+                        } else {
+                            short[][] blocks = getConst(getId(createStatic(name))).optionalTiles;
+
+                            if ((blocks != null && checkInterInsideSolid(xStruct, yStruct, blocks)) || (blocks == null && getType(getObject(xStruct, yStruct - 1)) == StaticObjectsConst.Types.SOLID && getType(getObject(xStruct, yStruct)) != StaticObjectsConst.Types.SOLID)) {
+                                setObject(xStruct, yStruct, StaticWorldObjects.createStatic(name), true);
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -412,6 +455,17 @@ public class WorldGenerator {
         for (int x = xCell; x < xCell + objects.length; x++) {
             for (int y = yCell; y < yCell + objects[0].length; y++) {
                 if (x > 0 && y > 0 && x < SizeX && y < SizeY && getType(getObject(x, y)) == StaticObjectsConst.Types.SOLID && getType(objects[x - xCell][y - yCell]) == StaticObjectsConst.Types.SOLID) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean checkInterInsideSolid(int xCell, int yCell, short[][] blocks) {
+        for (int x = xCell; x < xCell + blocks.length; x++) {
+            for (int y = yCell; y < yCell + blocks[0].length; y++) {
+                if (x > 0 && y > 0 && x < SizeX && y < SizeY && getType(getObject(x, y)) == StaticObjectsConst.Types.SOLID && getType(blocks[x - xCell][y - yCell]) == StaticObjectsConst.Types.SOLID) {
                     return true;
                 }
             }
@@ -438,20 +492,20 @@ public class WorldGenerator {
         for (int x = 0; x < SizeX; x++) {
             for (int y = 0; y < SizeY; y++) {
                 if (getType(getObject(x, y + 1)) != StaticObjectsConst.Types.GAS) { //Generating ground under grass blocks
-                    setObject(x, y, createStatic("Blocks/dirt"));
+                    setObject(x, y, createStatic("Blocks/dirt"), false);
                 }
 
                 if (ShadowMap.getDegree(x, y) >= 3) { //Generating stone
-                    setObject(x, y, createStatic("Blocks/stone"));
+                    setObject(x, y, createStatic("Blocks/stone"), false);
                 }
 
                 if (PerlinNoiseGenerator.noise[x][y] && ShadowMap.getDegree(x, y) >= 3) { //Generating ore
-                    setObject(x, y, createStatic("Blocks/ironOre"));
+                    setObject(x, y, createStatic("Blocks/ironOre"), false);
                 }
 
                 if (ShadowMap.getDegree(x, y) == 2) { //Generation of transitions between earth and stone
                     if (!getFileName(getObject(x, y + 1)).equals("Blocks/dirtStone")) {
-                        setObject(x, y, createStatic("Blocks/dirtStone"));
+                        setObject(x, y, createStatic("Blocks/dirtStone"), false);
                     }
                 }
             }

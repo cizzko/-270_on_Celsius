@@ -4,6 +4,8 @@ import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
 import core.Utils.NativeResources;
+import core.World.Creatures.Player.Inventory.Inventory;
+import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.g2d.Atlas;
 import core.g2d.Font;
 import core.graphic.Layer;
@@ -28,7 +30,7 @@ import static org.lwjgl.opengl.GL46.*;
 
 public class Window {
     public static final String versionStamp = "0.0.56", version = "alpha " + versionStamp + " (non stable)";
-    public static int defaultWidth = 1920, defaultHeight = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0;
+    public static int defaultWidth = 1920, defaultHeight = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0, fps, pfps;
     public static boolean start = false, windowFocused = true;
     public static long glfwWindow;
     public static Font defaultFont;
@@ -115,10 +117,15 @@ public class Window {
     }
 
     public void draw() {
+        Inventory.createElementTool("stick");
+        //Inventory.createElementTool("redHammer");
+        Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Blocks/grass"));
         log("Thread: Main thread started drawing");
+        long lastSwap = 0;
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
         while (!glfwWindowShouldClose(glfwWindow)) {
+            fps++;
             input.update();
             EventHandler.update();
 
@@ -143,12 +150,18 @@ public class Window {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             EventHandler.addDebugValue(true, "Drawing fps: ", "DrawingFPS");
+
+            if (System.currentTimeMillis() - lastSwap >= 1000) {
+                pfps = fps;
+                fps = 0;
+                lastSwap = System.currentTimeMillis();
+            }
         }
 
         glfwTerminate();
         NativeResources.terminateResources();
 
         batch.close();
-        Logger.logExit(1863, "Main thread ending drawing", false);
+        Logger.logExit(0, "Main thread ending drawing", false);
     }
 }

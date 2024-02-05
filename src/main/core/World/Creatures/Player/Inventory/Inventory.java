@@ -6,6 +6,7 @@ import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Player;
 import core.Utils.SimpleColor;
 import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.World.WorldGenerator;
 import core.g2d.Atlas;
 import core.math.Point2i;
 import core.math.Rectangle;
@@ -60,7 +61,7 @@ public class Inventory {
             for (int y = 0; y < inventoryObjects[x].length; y++) {
                 item = inventoryObjects[x][y];
                 if (item != null) {
-                    drawInventoryItem(1498 + x * 54, 766 + y * 54f, item.countInCell, item.texture);
+                    drawInventoryItem(1498 + x * 54, 766 + y * 54f, item.countInCell + 1, item.texture);
                 }
             }
         }
@@ -84,17 +85,17 @@ public class Inventory {
         float zoom = Items.computeZoom(region);
 
         batch.scale(zoom);
-        batch.draw(region, (x + 5) / (zoom * 1.5f), (y + 5) / (zoom * 1.5f));
+        batch.draw(region, (x + 5), (y + 5));
         batch.resetScale();
 
-        drawText(x + 31, y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell + 1), SimpleColor.DIRTY_BRIGHT_BLACK);
+        drawText(x + 31, y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell), SimpleColor.DIRTY_BRIGHT_BLACK);
     }
 
     public static void drawInventoryItem(float x, float y, Atlas.Region region) {
         float scale = Items.computeZoom(region);
 
         batch.scale(scale);
-        batch.draw(region, (x + 5) / (scale * 1.5f), (y + 5) / (scale * 1.5f));
+        batch.draw(region, (x + 5), (y + 5));
         batch.resetScale();
     }
 
@@ -128,7 +129,7 @@ public class Inventory {
                 float zoom = Items.computeZoom(focusedItems.texture);
 
                 batch.scale(zoom);
-                batch.draw(focusedItems.texture, (mousePos.x - 15) / (zoom * 1.5f), (mousePos.y - 15) / (zoom * 1.5f));
+                batch.draw(focusedItems.texture, (mousePos.x - 15), (mousePos.y - 15));
                 batch.resetScale();
             }
             if ((inventoryOpen || current.x > 6)) {
@@ -141,7 +142,7 @@ public class Inventory {
             int blockY = getBlockUnderMousePoint().y;
 
             if (placeable != 0 && underMouseItem == null && !Rectangle.contains(1488, 756, 500, 500, mousePos)) {
-                boolean isDeclined = getDistanceToMouse() < 8 && Player.canPlace(placeable, blockX, blockY);
+                boolean isDeclined = getDistanceToMouse() < 8 && WorldGenerator.checkPlaceRules(blockX, blockY, placeable);
                 Player.drawBlock(blockX, blockY, placeable, isDeclined);
             }
         }

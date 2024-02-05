@@ -8,6 +8,7 @@ import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.StaticWorldObjects.Structures.Factories;
 import core.Utils.SimpleColor;
 import core.World.Textures.TextureDrawing;
+import core.assets.AssetsManager;
 import core.g2d.Fill;
 import core.math.Point2i;
 import java.util.Properties;
@@ -17,18 +18,18 @@ import static core.World.Creatures.Player.Inventory.Inventory.*;
 import static core.World.Textures.TextureDrawing.*;
 
 public class BuildMenu {
-    private static boolean create, isOpen = true, infoCreated;
+    private static boolean created, isOpen = true, infoCreated;
     private static Items[][] items = new Items[5][30];
     private static Point2i currentObject;
     private static float scroll = 0;
 
     public static void create() {
         addDefaultItems();
-        create = true;
+        created = true;
     }
 
     private static void addDefaultItems() {
-        Properties defaultItems = Config.getProperties(assets.assetsDir("\\World\\ItemsCharacteristics\\BuildMenu\\DefaultBuildMenuItems.properties"));
+        Properties defaultItems = Config.getProperties(assets.assetsDir("\\World\\ItemsCharacteristics\\DefaultBuildMenuItems.properties"));
 
         //todo выглядит странно
         String[] details = ((String) defaultItems.getOrDefault("Details", "")).split(",");
@@ -37,35 +38,35 @@ public class BuildMenu {
         String[] weapons = ((String) defaultItems.getOrDefault("Weapons", "")).split(",");
         String[] placeables = ((String) defaultItems.getOrDefault("Placeables", "")).split(",");
 
-        if (details.length > 1) {
+        if (details[0].length() > 1) {
             for (String detail : details) {
-                createElementDetail(detail);
+                addItem(Items.createDetail(AssetsManager.normalizePath(detail)));
             }
         }
-        if (factories.length > 1) {
+        if (factories[0].length() > 1) {
             for (String factory : factories) {
-                createElementPlaceable((short) 0);
+
             }
         }
-        if (tools.length > 1) {
+        if (tools[0].length() > 1) {
             for (String tool : tools) {
-                createElementTool(tool);
+                addItem(Items.createTool(AssetsManager.normalizePath(tool)));
             }
         }
-        if (weapons.length > 1) {
+        if (weapons[0].length() > 1) {
             for (String weapon : weapons) {
-                createElementWeapon(weapon);
+                addItem(Items.createWeapon(AssetsManager.normalizePath(weapon)));
             }
         }
-        if (placeables.length > 1) {
+        if (placeables[0].length() > 1) {
             for (String placeable : placeables) {
-                createElementPlaceable(StaticWorldObjects.createStatic("Blocks/" + placeable));
+                addItem(Items.createPlaceable(StaticWorldObjects.createStatic(AssetsManager.normalizePath("Blocks/" + placeable))));
             }
         }
     }
 
     public static void updateLogic() {
-        if (create) {
+        if (created) {
             updateBuildButton();
             updateCollapseButton();
             updateInfoButton();
@@ -114,7 +115,6 @@ public class BuildMenu {
     }
 
     private static void updateScroll() {
-        // TODO на обсуждение. -1 Нужно поскольку OY инветирована
         double scrollM = -1 * input.getScrollOffset() * 6;
 
         if (scrollM >= -276 && scrollM <= 0) {
@@ -132,30 +132,33 @@ public class BuildMenu {
         if (menuCurrent != null && items[menuCurrent.x][menuCurrent.y].requiredForBuild != null) {
             Items[] required = items[menuCurrent.x][menuCurrent.y].requiredForBuild;
             Point2i[] hasNeededObject = new Point2i[required.length];
+            int neededCounter = 0;
 
             for (int i = 0; i < required.length; i++) {
                 for (int x = 0; x < inventoryObjects.length; x++) {
                     for (int y = 0; y < inventoryObjects[x].length; y++) {
                         if (inventoryObjects[x][y] != null && inventoryObjects[x][y].id == required[i].id) {
                             hasNeededObject[i] = new Point2i(x, y);
+                            neededCounter++;
                         }
                     }
                 }
             }
-            return hasNeededObject[hasNeededObject.length - 1] == null ? null : hasNeededObject;
+            return neededCounter == hasNeededObject.length ? hasNeededObject : null;
         }
         return null;
     }
 
     public static void draw() {
-        if (create && isOpen) {
+        if (created && isOpen) {
             batch.draw(atlas.byPath("UI/GUI/buildMenu/menuOpen.png"), 1650, 0);
 
             for (int x = 0; x < items.length; x++) {
                 for (int y = 0; y < items[x].length; y++) {
                     if (items[x][y] != null) {
                         float xCoord = 1660 + x * 54;
-                        float yCoord = 57 + scroll + (items[x][y].type.ordinal() * 20) + y * 54f;
+                        //float yCoord = 57 + scroll + (items[x][y].type.ordinal() * 20) + y * 54f;
+                        float yCoord = 57 + scroll + (y * 54f);
 
                         if (yCoord < 115 && yCoord > -60) {
                             Inventory.drawInventoryItem(xCoord, yCoord, items[x][y].texture);
@@ -168,12 +171,14 @@ public class BuildMenu {
                 }
             }
             if (currentObject != null && items[currentObject.x][currentObject.y] != null) {
-                float yCoord = 47 + scroll + (items[currentObject.x][currentObject.y].type.ordinal() * 20) + currentObject.y * 54;
+                //float yCoord = 47 + scroll + (items[currentObject.x][currentObject.y].type.ordinal() * 20) + currentObject.y * 54;
+                float yCoord = 47 + scroll + (currentObject.y * 54);
 
                 if (yCoord < 105 && yCoord > -60) {
                     batch.draw(atlas.byPath("UI/GUI/inventory/inventoryCurrent.png"), 1650 + currentObject.x * 54, yCoord);
                 }
             }
+            //scrollbar
             SimpleColor color = SimpleColor.fromRGBA(0, 0, 0, 200);
             Fill.rect(1915, (int) Math.abs(scroll / 2f) - 5, 4, 20, color);
 

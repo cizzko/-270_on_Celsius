@@ -6,6 +6,7 @@ import core.Utils.Sized;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.assets.AssetsManager;
 import core.g2d.Atlas;
 
 import java.io.Serializable;
@@ -49,24 +50,26 @@ public class Items implements Serializable {
 
     private static DefaultValues getDefault(Properties properties) {
         Atlas.Region texture = Global.atlas.byPath((String) properties.getOrDefault("Path", "/World/textureNotFound.png"));
-        String description = (String) properties.getOrDefault("Description", null);
-        String name = (String) properties.getOrDefault("Name", null);
+        String description = (String) properties.getOrDefault("Description", "");
+        String name = (String) properties.getOrDefault("Name", "");
         String requiredForBuild = (String) properties.getOrDefault("RequiredForBuild", null);
 
         if (requiredForBuild != null) {
             String[] required = requiredForBuild.split(",");
+            //required for build items
             Items[] output = new Items[required.length];
 
             for (int i = 0; i < required.length; i++) {
+                required[i] = AssetsManager.normalizePath(required[i]);
                 //todo хосподе
                 if (required[i].contains("Blocks")) {
                     output[i] = createPlaceable(StaticWorldObjects.createStatic(required[i]));
                 } else if (required[i].contains("Weapons")) {
-                    output[i] = createWeapon(required[i]);
+                    output[i] = createWeapon(required[i].substring(8));
                 } else if (required[i].contains("Details")) {
-                    output[i] = createDetail(required[i]);
+                    output[i] = createDetail(required[i].substring(8));
                 } else if (required[i].contains("Tools")) {
-                    output[i] = createTool(required[i]);
+                    output[i] = createTool(required[i].substring(6));
                 }
             }
             return new DefaultValues(name, texture, description, output);
@@ -76,7 +79,7 @@ public class Items implements Serializable {
     }
 
     public static Items createWeapon(String fileName) {
-        Properties weapon = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/BuildMenu/Weapons/" + fileName + ".properties"));
+        Properties weapon = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/Weapons/" + fileName + ".properties"));
         DefaultValues defaultValues = getDefault(weapon);
 
         int id = fileName.hashCode();
@@ -96,7 +99,7 @@ public class Items implements Serializable {
     }
 
     public static Items createTool(String fileName) {
-        Properties tool = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/BuildMenu/Tools/" + fileName + ".properties"));
+        Properties tool = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/Tools/" + fileName + ".properties"));
         DefaultValues defaultValues = getDefault(tool);
 
         int id = fileName.hashCode();
@@ -116,7 +119,7 @@ public class Items implements Serializable {
     }
 
     public static Items createDetail(String fileName) {
-        Properties detail = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/BuildMenu/Details/" + fileName + ".properties"));
+        Properties detail = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/Details/" + fileName + ".properties"));
         DefaultValues defaultValues = getDefault(detail);
         int id = fileName.hashCode();
 

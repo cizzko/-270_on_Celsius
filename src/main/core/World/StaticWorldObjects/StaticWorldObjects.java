@@ -1,6 +1,7 @@
 package core.World.StaticWorldObjects;
 
 import core.EventHandling.Logging.Logger;
+import core.assets.AssetsManager;
 import core.g2d.Atlas;
 
 import java.io.Serializable;
@@ -10,6 +11,8 @@ public abstract class StaticWorldObjects implements Serializable {
     public static final HashMap<String, Byte> ids = new HashMap<>();
 
     public static short createStatic(String name) {
+        name = AssetsManager.normalizePath(name);
+
         byte id = generateId(name);
         StaticObjectsConst.setConst(name, id);
 

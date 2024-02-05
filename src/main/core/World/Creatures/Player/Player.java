@@ -13,6 +13,7 @@ import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.TextureDrawing;
+import core.World.WorldGenerator;
 import core.g2d.Fill;
 import core.g2d.Texture;
 import core.graphic.Layer;
@@ -113,31 +114,11 @@ public class Player {
     }
 
     private static void updatePlaceableBlock(short placeable, int blockX, int blockY) {
-        if (canPlace(placeable, blockX, blockY)) {
+        if (WorldGenerator.checkPlaceRules(blockX, blockY, placeable)) {
             decrementItem(currentObject.x, currentObject.y);
-            setObject(blockX, blockY, placeable);
+            setObject(blockX, blockY, placeable, false);
             ShadowMap.update();
         }
-    }
-
-    public static boolean canPlace(short placeable, int blockX, int blockY) {
-        if (underMouseItem == null) {
-            if (StaticObjectsConst.getConst(getId(placeable)).optionalTiles == null && getType(getObject(blockX, blockY)) == StaticObjectsConst.Types.GAS && (getType(getObject(blockX, blockY + 1)) == StaticObjectsConst.Types.SOLID || getType(getObject(blockX, blockY - 1)) == StaticObjectsConst.Types.SOLID || getType(getObject(blockX + 1, blockY)) == StaticObjectsConst.Types.SOLID || getType(getObject(blockX - 1, blockY)) == StaticObjectsConst.Types.SOLID)) {
-                return true;
-            } else if (StaticObjectsConst.getConst(getId(placeable)).optionalTiles != null && getType(getObject(blockX, blockY - 1)) == StaticObjectsConst.Types.SOLID && getType(getObject(blockX, blockY)) == StaticObjectsConst.Types.GAS) {
-                short[][] tiles = StaticObjectsConst.getConst(getId(placeable)).optionalTiles;
-
-                for (int x = 0; x < tiles.length; x++) {
-                    for (int y = 0; y < tiles[0].length; y++) {
-                        if (getType(getObject(x + blockX, y + blockY)) == StaticObjectsConst.Types.SOLID && getType(tiles[x][y]) == StaticObjectsConst.Types.SOLID) {
-                            return false;
-                        }
-                    }
-                }
-                return true;
-            }
-        }
-        return false;
     }
 
     private static void updateToolInteraction() {
@@ -169,7 +150,7 @@ public class Player {
                     createElementPlaceable(object);
                     destroyObject(blockX, blockY);
                 } else {
-                    setObject(blockX, blockY, decrementHp(object, (int) tool.damage));
+                    setObject(blockX, blockY, decrementHp(object, (int) tool.damage), false);
                 }
             }
         } else {

@@ -80,7 +80,7 @@ public class Factories implements StaticBlocksEvents {
 
     public static void setFactoryConst(String name) {
         String originalName = name;
-        name = assets.assetsDir("World/ItemsCharacteristics/BuildMenu/Factories/" + name + ".properties");
+        name = assets.assetsDir("World/ItemsCharacteristics/Factories/" + name + ".properties");
 
         if (factoriesConst.get(name) == null) {
             byte id = StaticWorldObjects.generateId(name);
@@ -98,7 +98,7 @@ public class Factories implements StaticBlocksEvents {
             factoriesConst.put(originalName, new Factories(productionSpeed, needEnergy, maxHp,
                     maxStoredObjects, (short) ((((byte) maxHp & 0xFF) << 8) | (id & 0xFF)), assets.pathTo(path),
                     sound, factoryName, outputObjects, inputObjects));
-            Structures.bindStructure("\\BuildMenu\\Factories\\" + name);
+            Structures.bindStructure("\\Factories\\" + name);
         }
     }
 
@@ -183,6 +183,7 @@ public class Factories implements StaticBlocksEvents {
         }
     }
 
+    //todo вопрос на засыпку - почему оно в этом классе?
     public static void drawObjects(float x, float y, Items[] items, Atlas.Region iconRegion) {
         if (items != null && ArrayUtils.findFreeCell(items) != 0) {
             batch.draw(iconRegion, x, y + 16);

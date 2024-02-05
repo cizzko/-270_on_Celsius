@@ -67,7 +67,7 @@ public class Bullets {
 
                     if (staticObject > 0) {
                         float hp = StaticWorldObjects.getHp(staticObject);
-                        setObject(staticObjectPoint.x, staticObjectPoint.y, StaticWorldObjects.decrementHp(staticObject, (int) bullet.damage));
+                        setObject(staticObjectPoint.x, staticObjectPoint.y, StaticWorldObjects.decrementHp(staticObject, (int) bullet.damage), false);
                         bulletsIter.next().damage -= hp;
 
                         if (getObject(staticObjectPoint.x, staticObjectPoint.y) <= 0) {
