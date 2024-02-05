@@ -117,9 +117,6 @@ public class Window {
     }
 
     public void draw() {
-        Inventory.createElementTool("stick");
-        //Inventory.createElementTool("redHammer");
-        Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Blocks/grass"));
         log("Thread: Main thread started drawing");
         long lastSwap = 0;
 
