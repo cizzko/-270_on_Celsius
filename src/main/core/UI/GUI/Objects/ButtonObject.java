@@ -6,7 +6,6 @@ import core.g2d.Atlas;
 
 public class ButtonObject extends Element {
     public boolean visible, isClicked, simple, swapButton, isClickable;
-    public long lastClickTime;
     public SimpleColor color;
     public String name, prompt, group;
     public Atlas.Region texture;
@@ -28,17 +27,13 @@ public class ButtonObject extends Element {
         this.group = group;
         this.prompt = prompt;
         this.color = color;
-        this.lastClickTime = System.currentTimeMillis();
         this.taskOnClick = taskOnClick;
     }
 
-    public static Runnable onClickDropButton(String buttonName, String[] names) {
+    public static Runnable onClickDropButton(String[] names) {
         return () -> {
-            if (System.currentTimeMillis() - CreateElement.buttons.get(buttonName).lastClickTime >= 150) {
-                for (String s : names) {
-                    CreateElement.buttons.get(s).visible = !CreateElement.buttons.get(s).visible;
-                }
-                CreateElement.buttons.get(buttonName).lastClickTime = System.currentTimeMillis();
+            for (String s : names) {
+                CreateElement.buttons.get(s).visible = !CreateElement.buttons.get(s).visible;
             }
         };
     }

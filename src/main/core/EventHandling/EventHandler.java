@@ -71,11 +71,10 @@ public class EventHandler {
         keyLogging = false;
     }
 
-    public static boolean getRectanglePress(int x, int y, int x1, int y1) {
+    public static boolean getRectangleClick(int x, int y, int x1, int y1) {
         Point2i mousePos = input.mousePos();
 
-        return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 &&
-                input.justClicked(GLFW_MOUSE_BUTTON_LEFT);
+        return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 && input.justClicked(GLFW_MOUSE_BUTTON_LEFT);
     }
 
     private static void updateSliders() {
@@ -100,13 +99,11 @@ public class EventHandler {
             }
 
             if (button.swapButton) {
-                if (System.currentTimeMillis() - button.lastClickTime >= 150 &&
-                        EventHandler.getRectanglePress(button.x, button.y, button.width + button.x, button.height + button.y)) {
+                if (EventHandler.getRectangleClick(button.x, button.y, button.width + button.x, button.height + button.y)) {
                     button.isClicked = !button.isClicked;
-                    button.lastClickTime = System.currentTimeMillis();
                 }
             } else {
-                boolean press = EventHandler.getRectanglePress(button.x, button.y, button.width + button.x, button.height + button.y);
+                boolean press = EventHandler.getRectangleClick(button.x, button.y, button.width + button.x, button.height + button.y);
                 button.isClicked = press;
 
                 if (press && button.taskOnClick != null) {

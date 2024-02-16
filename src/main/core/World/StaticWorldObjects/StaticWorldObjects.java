@@ -9,6 +9,7 @@ import java.util.HashMap;
 
 public abstract class StaticWorldObjects implements Serializable {
     public static final HashMap<String, Byte> ids = new HashMap<>();
+    private static byte lastId = -128;
 
     public static short createStatic(String name) {
         name = AssetsManager.normalizePath(name);
@@ -28,20 +29,18 @@ public abstract class StaticWorldObjects implements Serializable {
             return 0;
         }
         byte id = ids.getOrDefault(name, (byte) 0);
+
         if (id != 0) {
             return id;
         } else {
-            for (byte i = -127; i < 127; i++) {
-                if (i != -1 && i != 0 && !ids.containsValue(i)) {
-                    ids.put(name, i);
-                    return i;
-                }
-                if (i == 126) {
-                    Logger.log("Number of id's static objects exceeded, errors will occur");
-                }
+            lastId++;
+
+            if (lastId == -128) {
+                Logger.log("Number of id's static objects exceeded, errors will occur");
             }
+            ids.put(name, lastId);
+            return lastId;
         }
-        return 0;
     }
 
     public static float getMaxHp(short id) {

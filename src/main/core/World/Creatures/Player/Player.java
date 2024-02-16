@@ -30,7 +30,7 @@ import static org.lwjgl.glfw.GLFW.*;
 
 public class Player {
     public static Thread currentInteraction;
-    public static boolean noClip = false;
+    public static boolean noClip = false, placeRules = true;
     private static int transparencyHPline = Config.getFromConfig("AlwaysOnPlayerHPLine").equals("true") ? 220 : 0;
     public static final int playerSize = 72;
     public static int lastDamage = 0;
@@ -114,7 +114,7 @@ public class Player {
     }
 
     private static void updatePlaceableBlock(short placeable, int blockX, int blockY) {
-        if (WorldGenerator.checkPlaceRules(blockX, blockY, placeable)) {
+        if (!placeRules || WorldGenerator.checkPlaceRules(blockX, blockY, placeable)) {
             decrementItem(currentObject.x, currentObject.y);
             setObject(blockX, blockY, placeable, false);
             ShadowMap.update();

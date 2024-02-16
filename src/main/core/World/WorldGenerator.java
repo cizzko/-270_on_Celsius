@@ -512,7 +512,7 @@ public class WorldGenerator {
         }
     }
 
-    //jabadoc
+    // jabadoc
     // Looks for the topmost solid block in the strip.
     // Checks each `period` block, and if it is solid, searches for air above it.
     // This increases the search speed by a factor of `period`,

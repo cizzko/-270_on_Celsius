@@ -6,7 +6,6 @@ package core.Utils;
 
 import core.EventHandling.Logging.Logger;
 import core.Global;
-import core.UI.GUI.CreateElement;
 import core.World.Textures.ShadowMap;
 import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.WorldGenerator;
@@ -39,11 +38,9 @@ public class DebugTools {
                             lastMousePosBlocks = getBlockUnderMousePoint();
                             lastMousePos.set(mousePos.x, mousePos.y);
                         }
-                        CreateElement.createPanel(lastMousePos.x, lastMousePos.y, mousePos.x - lastMousePos.x, mousePos.y - lastMousePos.y, "debugPanel", true, "debugModule");
                     }
-                    if (mousePressed && !Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+                    if (mousePressed && !Global.input.clicked(GLFW_MOUSE_BUTTON_LEFT)) {
                         mousePressed = false;
-                        CreateElement.panels.get("debugPanel").visible = false;
 
                         if (selectionBlocksCopy) {
                             copy();

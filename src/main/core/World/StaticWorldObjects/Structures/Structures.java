@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
+
 import static core.EventHandling.Logging.Logger.printException;
 import static core.Global.assets;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
@@ -90,19 +91,23 @@ public class Structures implements Serializable {
     }
 
     public static void createStructure(String name, short[][] blocks) {
-        int lowestSolidBlock = -1;
-        String[][] names = new String[blocks.length][blocks[0].length];
+        if (blocks.length > 0) {
+            int lowestSolidBlock = -1;
+            String[][] names = new String[blocks.length][blocks[0].length];
 
-        for (int x = 0; x < blocks.length; x++) {
-            for (int y = 0; y < blocks[x].length; y++) {
-                names[x][y] = StaticWorldObjects.getFileName(blocks[x][y]);
+            for (int x = 0; x < blocks.length; x++) {
+                for (int y = 0; y < blocks[x].length; y++) {
+                    names[x][y] = StaticWorldObjects.getFileName(blocks[x][y]);
 
-                if (lowestSolidBlock == -1 && y == 0 && getType(blocks[x][y]) == StaticObjectsConst.Types.SOLID) {
-                    lowestSolidBlock = x;
+                    if (lowestSolidBlock == -1 && y == 0 && getType(blocks[x][y]) == StaticObjectsConst.Types.SOLID) {
+                        lowestSolidBlock = x;
+                    }
                 }
             }
+            write(new Structures(lowestSolidBlock, names), name);
+        } else {
+            Logger.printException("Error when creating structure '" + name + "' because blocks[][] length is zero", new Exception());
         }
-        write(new Structures(lowestSolidBlock, names), name);
     }
 
     public static short bindStructure(String name) {

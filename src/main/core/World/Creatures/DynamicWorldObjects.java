@@ -13,6 +13,7 @@ import static core.World.Textures.TextureDrawing.blockSize;
 //dynamic objects, can have any coordinates within the world and be moved at any time
 public class DynamicWorldObjects implements Serializable {
     private static final HashMap<String, Byte> ids = new HashMap<>();
+    private static byte lastId = -128;
     private final byte id;
     private short currentFrame, motionVectorX, motionVectorY;
     private long lastFrameTime = System.currentTimeMillis();
@@ -52,20 +53,18 @@ public class DynamicWorldObjects implements Serializable {
             return 0;
         }
         byte id = ids.getOrDefault(name, (byte) 0);
+
         if (id != 0) {
             return id;
         } else {
-            for (byte i = -127; i < 127; i++) {
-                if (i != 0 && !ids.containsValue(i)) {
-                    ids.put(name, i);
-                    return i;
-                }
-                if (i == 126) {
-                    Logger.log("Number of id's dynamic objects exceeded, errors will occur");
-                }
+            lastId++;
+
+            if (lastId == 126) {
+                Logger.log("Number of id's dynamic objects exceeded, errors will occur");
             }
+            ids.put(name, lastId);
+            return lastId;
         }
-        return 0;
     }
 
     public void jump(float impulse) {

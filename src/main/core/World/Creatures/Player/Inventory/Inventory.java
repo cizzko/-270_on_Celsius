@@ -24,7 +24,6 @@ public class Inventory {
     public static Items[][] inventoryObjects = new Items[8][6];
     public static Point2i currentObject, underMouseItem;
     public static Items.Types currentObjectType;
-    private static long lastOpen = System.currentTimeMillis();
     private static final ArrayList<InventoryEvents> listeners = new ArrayList<>();
 
     public static void registerListener(InventoryEvents event) {
@@ -114,10 +113,8 @@ public class Inventory {
         updateUnderMouse();
         updateDropItem();
 
-        //todo press -> click
-        if (EventHandler.getRectanglePress(1875, 1035, 1920, 1080) && System.currentTimeMillis() - lastOpen > 150) {
+        if (EventHandler.getRectangleClick(1875, 1035, 1920, 1080)) {
             inventoryOpen = !inventoryOpen;
-            lastOpen = System.currentTimeMillis();
         }
 
         Point2i current = currentObject;
@@ -151,7 +148,7 @@ public class Inventory {
     private static void updateUnderMouse() {
         Point2i underMouse = getObjectUnderMouse();
 
-        if (underMouse != null && EventHandler.getRectanglePress(1488, 756, 1919, 1079) && underMouseItem == null) {
+        if (underMouse != null && EventHandler.getRectangleClick(1488, 756, 1919, 1079) && underMouseItem == null) {
             boolean hasUnderMouseItem = inventoryObjects[underMouse.x][underMouse.y] != null;
 
             if (currentObject != underMouse && hasUnderMouseItem) {

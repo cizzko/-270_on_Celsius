@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class AssetsManager {
-
     private static final String rootPath = normalizePath(Path.of("").toAbsolutePath().toString());
 
     // По сути, тут можно завернуть Texture и в WeakReference/SoftReference,
@@ -29,7 +28,7 @@ public final class AssetsManager {
     }
 
     public static String normalizePath(String path) {
-        return path.replace('\\', '/').replaceAll("//", "/");
+        return path == null ? null : path.replace('\\', '/').replaceAll("//", "/");
     }
 
     public Texture getTextureByPath(String path) {

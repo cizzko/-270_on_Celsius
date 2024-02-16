@@ -75,8 +75,7 @@ public class BuildMenu {
     }
 
     private static void updateBuildButton() {
-        //todo press -> click
-        if (isOpen && EventHandler.getRectanglePress(1769, 325, 1810, 366)) {
+        if (isOpen && EventHandler.getRectangleClick(1769, 325, 1810, 366)) {
             Point2i[] required = hasRequiredItems();
 
             if (required != null) {
@@ -99,17 +98,17 @@ public class BuildMenu {
     }
 
     private static void updateCollapseButton() {
-        if (isOpen && EventHandler.getRectanglePress(1832, 325, 1864, 366)) {
+        if (isOpen && EventHandler.getRectangleClick(1832, 325, 1864, 366)) {
             isOpen = false;
-        } else if (!isOpen && EventHandler.getRectanglePress(1832, 0, 1864, 40)) {
+        } else if (!isOpen && EventHandler.getRectangleClick(1832, 0, 1864, 40)) {
             isOpen = true;
         }
     }
 
     private static void updateInfoButton() {
-        if (currentObject != null && items[currentObject.x][currentObject.y] != null && isOpen && !infoCreated && EventHandler.getRectanglePress(1877, 325, 1918, 366)) {
+        if (currentObject != null && items[currentObject.x][currentObject.y] != null && isOpen && !infoCreated && EventHandler.getRectangleClick(1877, 325, 1918, 366)) {
             infoCreated = true;
-        } else if (infoCreated && EventHandler.getRectanglePress(607, 991, 649, 1032)) {
+        } else if (infoCreated && EventHandler.getRectangleClick(607, 991, 649, 1032)) {
             infoCreated = false;
         }
     }
@@ -163,7 +162,7 @@ public class BuildMenu {
                         if (yCoord < 115 && yCoord > -60) {
                             Inventory.drawInventoryItem(xCoord, yCoord, items[x][y].texture);
 
-                            if (EventHandler.getRectanglePress((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
+                            if (EventHandler.getRectangleClick((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
                                 currentObject = new Point2i(x, y);
                             }
                         }

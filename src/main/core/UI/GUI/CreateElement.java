@@ -20,7 +20,7 @@ public class CreateElement {
     }
 
     public static void createDropButton(int x, int y, int btnWidth, int btnHeight, String[] btnNames, String btnName, SimpleColor color, String group, Runnable[] tasks) {
-        buttons.put(btnName, new ButtonObject(false, false, x, y, btnHeight, btnWidth, btnName, null, color, group, ButtonObject.onClickDropButton(btnName, btnNames)));
+        buttons.put(btnName, new ButtonObject(false, false, x, y, btnHeight, btnWidth, btnName, null, color, group, ButtonObject.onClickDropButton(btnNames)));
 
         for (int i = 0; i < btnNames.length; i++) {
             buttons.put(btnNames[i], new ButtonObject(false, false, x, y - (btnHeight * (i + 1)) + (i * 6) + 6, btnHeight, btnWidth, btnNames[i], null, color, group, tasks == null ? null : tasks[i]));

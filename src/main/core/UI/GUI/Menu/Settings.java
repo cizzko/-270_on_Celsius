@@ -53,9 +53,6 @@ public class Settings {
     }
 
     public static void createOtherSet() {
-        //todo имхо уже бессмысленно, особенно если дело дойдет до стима, который сам собирает статистику
-        //createSwapButton(310, 980, 32, 32, getName("SendAnonymousStatistics"), getName("SendAnonymousStatisticsPrompt"), false, true, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("SendAnonymousStatistics")), "SettingsOtherSwap");
-
         createSwapButton(310, 980, 32, 32, getName("Autopause"), getName("AutopausePrompt"), false, true, SimpleColor.DIRTY_WHITE, Boolean.parseBoolean(getFromConfig("Autopause")), "SettingsOtherSwap");
     }
 
@@ -159,7 +156,7 @@ public class Settings {
             Point2i pos = new Point2i(2160, -480);
 
             while (createdSettings) {
-                if (EventHandler.getRectanglePress(1800, 0, 1920, 120) && !crawlingOut && System.currentTimeMillis() - lastPress >= 100) {
+                if (EventHandler.getRectangleClick(1800, 0, 1920, 120) && !crawlingOut && System.currentTimeMillis() - lastPress >= 100) {
                     pressedCount++;
                     lastPress = System.currentTimeMillis();
                 }
