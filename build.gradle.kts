@@ -13,9 +13,6 @@ sourceSets {
     }
 }
 
-// Generated with:
-// https://www.lwjgl.org/customize
-
 val lwjglVersion = "3.3.3"
 val lwjglNatives = Pair(
     System.getProperty("os.name")!!,
@@ -48,6 +45,7 @@ allprojects {
     }
 
     tasks.compileJava {
+        options.encoding = "UTF-8"
         options.release.set(21)
     }
 

@@ -141,9 +141,9 @@ public class Player {
 
     private static void updateNonStructure(int blockX, int blockY, short object, Tools tool) {
         if (getDistanceToMouse() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
-            drawBlock(blockX, blockY, object, true);
+            TextureDrawing.addToBlocksQueue(blockX, blockY, object, true);
 
-            if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
+            if (input.clicked(GLFW_MOUSE_BUTTON_LEFT) && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
                 tool.lastHitTime = System.currentTimeMillis();
 
                 if (getHp(decrementHp(object, (int) tool.damage)) <= 0) {
@@ -154,7 +154,7 @@ public class Player {
                 }
             }
         } else {
-            drawBlock(blockX, blockY, object, false);
+            TextureDrawing.addToBlocksQueue(blockX, blockY, object, false);
         }
     }
 
@@ -166,14 +166,14 @@ public class Player {
             blockY = root.y;
 
             if (getDistanceToMouse() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
-                drawBlock(blockX, blockY, getObject(root.x, root.y), true);
+                TextureDrawing.addToBlocksQueue(blockX, blockY, getObject(root.x, root.y), true);
 
                 if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
                     tool.lastHitTime = System.currentTimeMillis();
                     decrementHpMulti(blockX, blockY, (int) tool.damage, root);
                 }
             } else {
-                drawBlock(blockX, blockY, getObject(root.x, root.y), false);
+                TextureDrawing.addToBlocksQueue(blockX, blockY, getObject(root.x, root.y), false);
             }
         }
     }
@@ -215,31 +215,6 @@ public class Player {
                 }
             }
         }
-    }
-
-    public static void drawBlock(int cellX, int cellY, short obj, boolean breakable) {
-        SimpleColor color = ShadowMap.getColor(cellX, cellY);
-        int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
-        SimpleColor blockColor = breakable ? SimpleColor.fromRGBA(Math.max(0, a - 150), Math.max(0, a - 150), a, 255) : SimpleColor.fromRGBA(a, Math.max(0, a - 150), Math.max(0, a - 150), 255);
-        float xBlock = cellX * TextureDrawing.blockSize;
-        float yBlock = cellY * TextureDrawing.blockSize;
-
-        byte hp = getHp(obj);
-        float maxHp = getMaxHp(obj);
-
-        //todo упорно не хочет рисоваться, координаты правильные
-        //todo и вообще этот метод не очень под класс player подходит
-        batch.color(blockColor);
-        batch.draw(getTexture(obj), xBlock, yBlock);
-
-        if (hp > maxHp / 1.5f) {
-            // ???
-        } else if (hp < maxHp / 3) {
-            batch.draw(atlas.byPath("World/Blocks/damaged1.png"), xBlock, yBlock);
-        } else {
-            batch.draw(atlas.byPath("World/Blocks/damaged0.png"), xBlock, yBlock);
-        }
-        batch.resetColor();
     }
 
     public static void updatePlayerGUI() {

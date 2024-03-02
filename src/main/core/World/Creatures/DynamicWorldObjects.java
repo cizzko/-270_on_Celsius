@@ -70,7 +70,7 @@ public class DynamicWorldObjects implements Serializable {
     public void jump(float impulse) {
         Atlas.Region tex = DynamicObjectsConst.getConst(id).texture;
 
-        if (HitboxMap.checkIntersStaticD(x, y, tex.width(), tex.height()) && motionVectorY == 0) {
+        if (HitboxMap.checkIntersStaticD(x, y, tex.width(), tex.height())) {
             motionVectorY += (impulse * 1000);
         }
     }

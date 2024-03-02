@@ -92,7 +92,8 @@ public class Physics {
     }
 
     private static void updateHorizontalSpeed(DynamicWorldObjects dynamicObject, Sized size) {
-        dynamicObject.setMotionVectorX(dynamicObject.getMotionVectorX() * (1 - (getTotalResistanceInside(dynamicObject) / 100f)));
+        //возможно будут какие-то приколы возникать из-за делителя 10 вместо 100, но зато теперь боковое сопротивление работает нормально
+        dynamicObject.setMotionVectorX(dynamicObject.getMotionVectorX() * (1 - (getTotalResistanceInside(dynamicObject) / 10f)));
 
         boolean intersR = checkIntersStaticR(dynamicObject.getX() + dynamicObject.getMotionVectorX() * 61, dynamicObject.getY(), size.width(), size.height());
         boolean intersL = checkIntersStaticL(dynamicObject.getX() + dynamicObject.getMotionVectorX(), dynamicObject.getY(), size.height());
@@ -167,11 +168,11 @@ public class Physics {
         }
     }
 
-    public static float getTotalResistanceInside(DynamicWorldObjects dynamicObject) {
+    private static float getTotalResistanceInside(DynamicWorldObjects dynamicObject) {
         int tarX = (int) (dynamicObject.getX() / TextureDrawing.blockSize);
         int tarY = (int) (dynamicObject.getY() / TextureDrawing.blockSize);
-        int tarYSize = (int) Math.ceil(dynamicObject.getTexture().height() / TextureDrawing.blockSize);
-        int tarXSize = (int) Math.ceil(dynamicObject.getTexture().width() / TextureDrawing.blockSize);
+        int tarYSize = (int) Math.ceil((float) (dynamicObject.getTexture().height()) / TextureDrawing.blockSize);
+        int tarXSize = (int) Math.ceil((float) (dynamicObject.getTexture().width()) / TextureDrawing.blockSize);
         float totalResistance = 0;
 
         for (int xPos = 0; xPos < tarXSize; xPos++) {
@@ -179,12 +180,13 @@ public class Physics {
                 if (tarX + tarXSize > SizeX || tarY + tarYSize > SizeY || getObject(tarX + xPos, tarY + yPos) == -1 || getObject(tarX + tarXSize, tarY + tarYSize) == -1) {
                     continue;
                 }
-                if (getResistance(getObject(tarX + xPos, tarY + yPos)) < 100 && getType(getObject(tarX + xPos, tarY + yPos)) == StaticObjectsConst.Types.SOLID) {
+                if (getResistance(getObject(tarX + xPos, tarY + yPos)) < 100) {
                     totalResistance += getResistance(getObject(tarX + xPos, tarY + yPos));
                 }
             }
         }
-        return totalResistance > 90 ? 90 : totalResistance;
+
+        return Math.min(90, totalResistance);
     }
 
     private static void updateWorldSave() {

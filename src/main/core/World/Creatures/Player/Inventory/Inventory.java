@@ -3,9 +3,9 @@ package core.World.Creatures.Player.Inventory;
 import core.EventHandling.EventHandler;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Items.Items;
-import core.World.Creatures.Player.Player;
 import core.Utils.SimpleColor;
 import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
 import core.g2d.Atlas;
 import core.math.Point2i;
@@ -140,7 +140,7 @@ public class Inventory {
 
             if (placeable != 0 && underMouseItem == null && !Rectangle.contains(1488, 756, 500, 500, mousePos)) {
                 boolean isDeclined = getDistanceToMouse() < 8 && WorldGenerator.checkPlaceRules(blockX, blockY, placeable);
-                Player.drawBlock(blockX, blockY, placeable, isDeclined);
+                TextureDrawing.addToBlocksQueue(blockX, blockY, placeable, isDeclined);
             }
         }
     }

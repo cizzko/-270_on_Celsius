@@ -40,10 +40,13 @@ import static core.World.Weather.Sun.updateSun;
 import static core.World.WorldGenerator.*;
 
 public class TextureDrawing {
+    private static final ArrayDeque<blockQueue> blocksQueue = new ArrayDeque<>();
     private static final ArrayDeque<Vector2f> smoothCameraX = new ArrayDeque<>(), smoothCameraY = new ArrayDeque<>();
     private static final int multiplySmoothCameraX = Integer.parseInt(Config.getFromConfig("SmoothingCameraHorizontal")), multiplySmoothCameraY = Integer.parseInt(Config.getFromConfig("SmoothingCameraVertical"));
     public static final int blockSize = 48;
     public static float playerX = 0, playerY = 0;
+
+    public record blockQueue(int cellX, int cellY, short obj, boolean breakable) {}
 
     // TODO Сломано сознательно, чуть позже доделаю
     @Deprecated(forRemoval = true)
@@ -223,63 +226,120 @@ public class TextureDrawing {
                 if (x < 0 || y < 0 || x > SizeX || y > SizeY) {
                     continue;
                 }
-                short obj = getObject(x, y);
-
-                if (obj == -1 || StaticWorldObjects.getId(obj) == 0 || getTexture(obj) == null) {
-                    continue;
-                }
-                byte hp = getHp(obj);
-                if (hp <= 0) {
-                    destroyObject(x, y);
-                    continue;
-                }
-
-                int xBlock = findX(x, y);
-                int yBlock = findY(x, y);
-
-                if (isOnCamera(xBlock, yBlock)) {
-                    //todo избавиться от такой жирной аллокации, и вообще переделать работу с колор
-                    SimpleColor color = ShadowMap.getColor(x, y);
-                    int upperLimit = 100;
-                    int lowestLimit = -20;
-                    int maxColor = 65;
-                    float temp = TemperatureMap.getTemp(x, y);
-
-                    int a;
-                    if (temp > upperLimit) {
-                        a = (int) Math.min(maxColor, Math.abs((temp - upperLimit) / 3));
-                        color = SimpleColor.fromRGBA(color.getRed(), color.getGreen() - (a / 2), color.getBlue() - a, color.getAlpha());
-
-                    } else if (temp < lowestLimit) {
-                        a = (int) Math.min(maxColor, Math.abs((temp + lowestLimit) / 3));
-                        color = SimpleColor.fromRGBA(color.getRed() - a, color.getGreen() - (a / 2), color.getBlue(), color.getAlpha());
-                    }
-
-                    //todo это тоже не шибко маленькая аллокация, особенно учитывая поинты и сам AnimData
-                    StaticWAnimations.AnimData currentFrame = StaticWAnimations.getCurrentFrame(obj, new Point2i(x, y));
-                    if (currentFrame != null) {
-                        drawTexture(xBlock, yBlock, currentFrame.width(), currentFrame.height(), 1, false, currentFrame.currentFrame() + StaticWorldObjects.getId(obj), currentFrame.currentFrameImage(), color);
-                        continue;
-                    }
-
-                    //todo соотвесна сделать возможность отдавать напрямую инт
-                    batch.color(color);
-                    batch.draw(getTexture(obj), xBlock, yBlock);
-
-                    float maxHp = getMaxHp(obj);
-                    if (hp > maxHp / 1.5f) {
-                        // ???
-                    } else if (hp < maxHp / 3) {
-                        batch.draw(atlas.byPath("World/Blocks/damaged1.png"), xBlock, yBlock);
-                    } else {
-                        batch.draw(atlas.byPath("World/Blocks/damaged0.png"), xBlock, yBlock);
-                    }
-                    batch.resetColor();
-                }
+                drawBlock(x, y);
             }
+        }
+
+        Iterator<blockQueue> iterator = blocksQueue.iterator();
+        while (iterator.hasNext()) {
+            blockQueue q = iterator.next();
+
+            drawBlock(q.cellX, q.cellY, q.breakable);
+            iterator.remove();
         }
         updateBlocksInteraction();
         Factories.update();
+    }
+
+    private static void drawBlock(int x, int y, boolean breakable) {
+        short obj = getObject(x, y);
+
+        if (obj == -1 || StaticWorldObjects.getId(obj) == 0 || getTexture(obj) == null) {
+            return;
+        }
+        byte hp = getHp(obj);
+        if (hp <= 0) {
+            destroyObject(x, y);
+            return;
+        }
+
+        int xBlock = findX(x, y);
+        int yBlock = findY(x, y);
+
+        if (isOnCamera(xBlock, yBlock)) {
+            SimpleColor color = ShadowMap.getColor(x, y);
+            int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
+            SimpleColor blockColor = breakable ? SimpleColor.fromRGBA(Math.max(0, a - 150), Math.max(0, a - 150), a, 255) : SimpleColor.fromRGBA(a, Math.max(0, a - 150), Math.max(0, a - 150), 255);
+
+            StaticWAnimations.AnimData currentFrame = StaticWAnimations.getCurrentFrame(obj, new Point2i(x, y));
+            if (currentFrame != null) {
+                drawTexture(xBlock, yBlock, currentFrame.width(), currentFrame.height(), 1, false, currentFrame.currentFrame() + StaticWorldObjects.getId(obj), currentFrame.currentFrameImage(), blockColor);
+                return;
+            }
+
+            batch.color(blockColor);
+            batch.draw(getTexture(obj), xBlock, yBlock);
+
+            float maxHp = getMaxHp(obj);
+            if (hp > maxHp / 1.5f) {
+                // ???
+            } else if (hp < maxHp / 3) {
+                batch.draw(atlas.byPath("World/Blocks/damaged1.png"), xBlock, yBlock);
+            } else {
+                batch.draw(atlas.byPath("World/Blocks/damaged0.png"), xBlock, yBlock);
+            }
+            batch.resetColor();
+        }
+    }
+
+    private static void drawBlock(int x, int y) {
+        short obj = getObject(x, y);
+
+        if (obj == -1 || StaticWorldObjects.getId(obj) == 0 || getTexture(obj) == null) {
+            return;
+        }
+        byte hp = getHp(obj);
+        if (hp <= 0) {
+            destroyObject(x, y);
+            return;
+        }
+
+        int xBlock = findX(x, y);
+        int yBlock = findY(x, y);
+
+        if (isOnCamera(xBlock, yBlock)) {
+            //todo избавиться от такой жирной аллокации, и вообще переделать работу с колор
+            SimpleColor color = ShadowMap.getColor(x, y);
+            int upperLimit = 100;
+            int lowestLimit = -20;
+            int maxColor = 65;
+            float temp = TemperatureMap.getTemp(x, y);
+
+            int a;
+            if (temp > upperLimit) {
+                a = (int) Math.min(maxColor, Math.abs((temp - upperLimit) / 3));
+                color = SimpleColor.fromRGBA(color.getRed(), color.getGreen() - (a / 2), color.getBlue() - a, color.getAlpha());
+
+            } else if (temp < lowestLimit) {
+                a = (int) Math.min(maxColor, Math.abs((temp + lowestLimit) / 3));
+                color = SimpleColor.fromRGBA(color.getRed() - a, color.getGreen() - (a / 2), color.getBlue(), color.getAlpha());
+            }
+
+            //todo это тоже не шибко маленькая аллокация, особенно учитывая поинты и сам AnimData
+            StaticWAnimations.AnimData currentFrame = StaticWAnimations.getCurrentFrame(obj, new Point2i(x, y));
+            if (currentFrame != null) {
+                drawTexture(xBlock, yBlock, currentFrame.width(), currentFrame.height(), 1, false, currentFrame.currentFrame() + StaticWorldObjects.getId(obj), currentFrame.currentFrameImage(), color);
+                return;
+            }
+
+            //todo соотвесна сделать возможность отдавать напрямую инт
+            batch.color(color);
+            batch.draw(getTexture(obj), xBlock, yBlock);
+
+            float maxHp = getMaxHp(obj);
+            if (hp > maxHp / 1.5f) {
+                // ???
+            } else if (hp < maxHp / 3) {
+                batch.draw(atlas.byPath("World/Blocks/damaged1.png"), xBlock, yBlock);
+            } else {
+                batch.draw(atlas.byPath("World/Blocks/damaged0.png"), xBlock, yBlock);
+            }
+            batch.resetColor();
+        }
+    }
+
+    public static void addToBlocksQueue(int cellX, int cellY, short obj, boolean breakable) {
+        blocksQueue.add(new TextureDrawing.blockQueue(cellX, cellY, obj, breakable));
     }
 
     private static void updateBlocksInteraction() {
@@ -419,6 +479,7 @@ public class TextureDrawing {
                 if (!button.isClickable) {
                     Fill.rect(button.x, button.y, button.width, button.height, SimpleColor.fromRGBA(0, 0, 0, 123));
                 }
+
                 drawText(button.x + 20, button.y + button.height / 2.8f, button.name);
                 drawPrompt(button);
             }
@@ -432,7 +493,7 @@ public class TextureDrawing {
             }
             Fill.rect(slider.x, slider.y, slider.width, slider.height, slider.sliderColor);
             batch.color(slider.dotColor);
-            Fill.circle(slider.sliderPos, slider.y - 5, slider.height * 1.5f);
+            Fill.circle(slider.sliderPos - (slider.height * 1.5f / 2), slider.y - 5, slider.height * 1.5f);
             batch.resetColor();
         }
     }

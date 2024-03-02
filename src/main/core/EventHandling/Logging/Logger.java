@@ -8,6 +8,7 @@ import java.awt.Toolkit;
 import java.io.*;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
@@ -33,7 +34,7 @@ public class Logger extends PrintStream {
             lastErrBuf = buf;
             StackTraceElement[] elements = Thread.currentThread().getStackTrace();
 
-            printStackTrace(Arrays.copyOfRange(elements, Integer.parseInt(Config.getFromConfig("TrimSystemErrStackTraceElements")), elements.length), "none", "none", new String(buf, off, len), "System.err");
+            printStackTrace(Arrays.copyOfRange(elements, Integer.parseInt(Config.getFromConfig("TrimSystemErrStackTraceElements")), elements.length), "none", "none", new String(buf, off, len, StandardCharsets.UTF_8), "System.err");
         }
     }
 
@@ -73,7 +74,7 @@ public class Logger extends PrintStream {
 
             if (!cleanup) {
                 try {
-                    try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("/log.txt")))) {
+                    try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("/log.txt"), StandardCharsets.UTF_8))) {
                         printWriter.print("");
                         cleanup = true;
                     }
