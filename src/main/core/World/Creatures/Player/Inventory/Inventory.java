@@ -1,6 +1,7 @@
 package core.World.Creatures.Player.Inventory;
 
 import core.EventHandling.EventHandler;
+import core.EventHandling.Logging.Config;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.Utils.SimpleColor;
@@ -132,15 +133,26 @@ public class Inventory {
             if ((inventoryOpen || current.x > 6)) {
                 batch.draw(atlas.byPath("UI/GUI/inventory/inventoryCurrent.png"), 1488 + current.x * 54, 756 + current.y * 54f);
             }
+        }
+    }
 
-            //update placeables preview
+    public static void updateStaticBlocksPreview() {
+        Point2i current = currentObject;
+
+        if (current != null) {
             short placeable = inventoryObjects[current.x][current.y].placeable;
             int blockX = getBlockUnderMousePoint().x;
             int blockY = getBlockUnderMousePoint().y;
 
-            if (placeable != 0 && underMouseItem == null && !Rectangle.contains(1488, 756, 500, 500, mousePos)) {
+            if (placeable != 0 && underMouseItem == null && !Rectangle.contains(1488, 756, 500, 500, input.mousePos())) {
                 boolean isDeclined = getDistanceToMouse() < 8 && WorldGenerator.checkPlaceRules(blockX, blockY, placeable);
                 TextureDrawing.addToBlocksQueue(blockX, blockY, placeable, isDeclined);
+
+                if (Config.getFromConfig("BuildGrid").equalsIgnoreCase("true")) {
+                    batch.color(SimpleColor.fromRGBA(230, 230, 230, 150));
+                    batch.draw(atlas.byPath("World/buildGrid.png"), WorldGenerator.findX(blockX, blockY) - 243f, WorldGenerator.findY(blockX, blockY) - 244f);
+                    batch.resetColor();
+                }
             }
         }
     }

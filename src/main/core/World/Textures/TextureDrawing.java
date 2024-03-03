@@ -11,6 +11,7 @@ import core.Utils.Commandline;
 import core.Utils.SimpleColor;
 import core.Window;
 import core.World.Creatures.DynamicWorldObjects;
+import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.StaticWorldObjects.StaticWAnimations;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.StaticWorldObjects.Structures.ElectricCables;
@@ -219,6 +220,7 @@ public class TextureDrawing {
         ElectricCables.drawCables();
         batch.resetZ();
 
+        //always before drawing the blocks!!!
         updatePlayerPos();
 
         for (int x = (int) (playerX / blockSize) - 20; x < playerX / blockSize + 21; x++) {
@@ -234,25 +236,22 @@ public class TextureDrawing {
         while (iterator.hasNext()) {
             blockQueue q = iterator.next();
 
-            drawBlock(q.cellX, q.cellY, q.breakable);
+            drawQueuedBlock(q.cellX, q.cellY, q.obj, q.breakable);
             iterator.remove();
         }
+
+        //todo превью не хочет рисоваться откуда должно, поэтому висит тут, может потом что то красивое придумаю
+        Inventory.updateStaticBlocksPreview();
         updateBlocksInteraction();
         Factories.update();
     }
 
-    private static void drawBlock(int x, int y, boolean breakable) {
-        short obj = getObject(x, y);
-
-        if (obj == -1 || StaticWorldObjects.getId(obj) == 0 || getTexture(obj) == null) {
+    private static void drawQueuedBlock(int x, int y, short obj, boolean breakable) {
+        if (obj == -1 || StaticWorldObjects.getTexture(obj) == null) {
             return;
         }
+
         byte hp = getHp(obj);
-        if (hp <= 0) {
-            destroyObject(x, y);
-            return;
-        }
-
         int xBlock = findX(x, y);
         int yBlock = findY(x, y);
 

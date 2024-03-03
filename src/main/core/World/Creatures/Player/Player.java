@@ -87,7 +87,7 @@ public class Player {
     }
 
     public static void updateInventoryInteraction() {
-        if (currentObject != null ) {
+        if (currentObject != null) {
             updatePlaceableInteraction();
         }
     }
@@ -101,7 +101,7 @@ public class Player {
             }
             Point2i blockUMB = getBlockUnderMousePoint();
 
-            if (getType(getObject(blockUMB.x, blockUMB.y)) == StaticObjectsConst.Types.GAS && getDistanceToMouse() < 9) {
+            if (getType(getObject(blockUMB.x, blockUMB.y)) == StaticObjectsConst.Types.GAS && getDistanceToMouse() <= 9) {
                 Items item = Inventory.getCurrent();
                 int blockX = blockUMB.x;
                 int blockY = blockUMB.y;
