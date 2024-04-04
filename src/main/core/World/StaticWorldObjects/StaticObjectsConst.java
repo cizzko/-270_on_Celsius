@@ -77,6 +77,7 @@ public class StaticObjectsConst implements Cloneable {
         this.lightTransmission = lightTransmission;
         this.optionalTiles = optionalTiles;
         this.resistance = resistance;
+
         if (new File(assets.assetsDir("/World/ItemsCharacteristics/BlocksInteractions" + objectName + ".java")).exists()) {
             this.onInteraction = generateRunnable(assets.assetsDir("/World/ItemsCharacteristics/BlocksInteractions" + objectName + ".java"));
         } else {

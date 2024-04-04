@@ -84,7 +84,7 @@ public class Logger extends PrintStream {
             }
 
             try {
-                try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("/log.txt"), true))) {
+                try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("/log.txt"), StandardCharsets.UTF_8, true))) {
                     printWriter.println(message);
                 }
             } catch (IOException e) {

@@ -4,6 +4,7 @@ import core.EventHandling.Logging.Config;
 import core.UI.Sounds.Sound;
 import core.Utils.ArrayUtils;
 import core.World.Creatures.Player.Inventory.Inventory;
+import core.World.Creatures.Player.Inventory.InventoryEvents;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Player;
 import core.Utils.SimpleColor;
@@ -13,6 +14,7 @@ import core.World.WorldGenerator;
 import core.World.WorldUtils;
 import core.g2d.Atlas;
 import core.g2d.Fill;
+import core.graphic.Layer;
 import core.math.Point2i;
 
 import java.util.*;
@@ -20,23 +22,24 @@ import java.util.*;
 import static core.Global.*;
 import static core.Utils.ArrayUtils.findEqualsObjects;
 import static core.World.Creatures.Player.Player.playerSize;
+import static core.World.Textures.TextureDrawing.drawText;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 //there is no need to put them manually, they are automatically added to the array if the placed static block is in the factories folder
-public class Factories implements StaticBlocksEvents {
+public class Factories implements StaticBlocksEvents, InventoryEvents {
     public float productionSpeed, needEnergy, currentHp, currentEnergy, maxHp, timeSinceBreakdown, x, y;
     public long lastProductionTime;
     public short id, maxStoredObjects;
     public String path, sound, name;
     public breaking breakingType;
     public Items[] outputObjects, outputStoredObjects, inputObjects, inputStoredObjects;
-    private static boolean mouseGrabbedItem = false;
     private static final HashMap<String, Factories> factoriesConst = new HashMap<>();
     private static final HashSet<Point2i> factories = new HashSet<>();
 
     @Override
     public void placeStatic(int cellX, int cellY, short id) {
-        if (id != 0 && id != -1 && StaticWorldObjects.getTexture(id) != null && StaticWorldObjects.getTexture(id).name().toLowerCase().contains("factory")) {
+        //костыль года
+        if (id != 0 && id != -1 && StaticWorldObjects.getTexture(id) != null && StaticWorldObjects.getFileName(id).toLowerCase().contains("factories")) {
             setFactoryConst(StaticWorldObjects.getFileName(id));
             factories.add(new Point2i(cellX, cellY));
         }
@@ -44,8 +47,38 @@ public class Factories implements StaticBlocksEvents {
 
     @Override
     public void destroyStatic(int cellX, int cellY, short id) {
-        if (id != 0 && id != -1 && StaticWorldObjects.getTexture(id) != null && StaticWorldObjects.getTexture(id).name().toLowerCase().contains("factory")) {
+        //костыль века
+        if (id != 0 && id != -1 && StaticWorldObjects.getTexture(id) != null && StaticWorldObjects.getTexture(id).name().toLowerCase().contains("factories")) {
             factories.remove(new Point2i(cellX, cellY));
+        }
+    }
+
+    @Override
+    public void itemDropped(int blockX, int blockY, Items item) {
+        if (WorldGenerator.getObject(blockX, blockY) != -1) {
+            Point2i root = Player.findRoot(blockX, blockY);
+
+            if (root == null) {
+                root = new Point2i(blockX, blockY);
+            }
+            if (factories.contains(root)) {
+                Factories factory = factoriesConst.get(StaticWorldObjects.getFileName(WorldGenerator.getObject(root.x, root.y)));
+
+                Point2i current = Inventory.currentObject;
+                int cell = ArrayUtils.findFreeCell(factory.inputStoredObjects);
+
+                if (cell != -1 && current != null) {
+                    for (int i = 0; i < factory.inputObjects.length; i++) {
+                        System.out.println(factory.inputObjects[i].id + " | " + factory.inputObjects[i].name + " | " + item.id + " | " + item.name);
+                        if (factory.inputObjects[i].id == item.id) {
+                            factory.inputStoredObjects[cell] = Inventory.getCurrent();
+                            Inventory.decrementItem(current.x, current.y);
+
+                            return;
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -80,7 +113,7 @@ public class Factories implements StaticBlocksEvents {
 
     public static void setFactoryConst(String name) {
         String originalName = name;
-        name = assets.assetsDir("World/ItemsCharacteristics/Factories/" + name + ".properties");
+        name = assets.assetsDir("World/ItemsCharacteristics/" + name + ".properties");
 
         if (factoriesConst.get(name) == null) {
             byte id = StaticWorldObjects.generateId(name);
@@ -98,7 +131,7 @@ public class Factories implements StaticBlocksEvents {
             factoriesConst.put(originalName, new Factories(productionSpeed, needEnergy, maxHp,
                     maxStoredObjects, (short) ((((byte) maxHp & 0xFF) << 8) | (id & 0xFF)), assets.pathTo(path),
                     sound, factoryName, outputObjects, inputObjects));
-            Structures.bindStructure("\\Factories\\" + name);
+            Structures.bindStructure(originalName);
         }
     }
 
@@ -107,11 +140,11 @@ public class Factories implements StaticBlocksEvents {
     }
 
     private static Items[] transformItems(String items) {
-        String[] inItems = items.split(", ");
+        String[] inItems = items.split(",");
         Items[] outItems = new Items[inItems.length];
 
         for (int i = 0; i < inItems.length; i++) {
-            outItems[i] = Items.createPlaceable(StaticWorldObjects.createStatic(inItems[i]));
+            outItems[i] = Items.createItem(inItems[i]);
         }
         return outItems;
     }
@@ -146,7 +179,7 @@ public class Factories implements StaticBlocksEvents {
                 float yMouse = input.mousePos().y;
                 boolean input = factory.inputStoredObjects != null;
                 boolean output = factory.outputStoredObjects != null;
-
+                
                 if (input && ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0) {
                     int width1 = ArrayUtils.findDistinctObjects(factory.inputStoredObjects) * 54 + playerSize;
                     SimpleColor color = SimpleColor.fromRGBA(40, 40, 40, 240);
@@ -156,28 +189,10 @@ public class Factories implements StaticBlocksEvents {
                 if (output && ArrayUtils.findFreeCell(factory.outputStoredObjects) != 0) {
                     xMouse += (ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0 ? 78 : 0);
 
-                    int width1 = ArrayUtils.findDistinctObjects(factory.outputStoredObjects) * 54 + playerSize;
+                    int width = ArrayUtils.findDistinctObjects(factory.outputStoredObjects) * 54 + playerSize;
                     SimpleColor color = SimpleColor.fromRGBA(40, 40, 40, 240);
-                    Fill.rect(xMouse, yMouse, width1, 64, color);
+                    Fill.rect(xMouse, yMouse, width, 64, color);
                     drawObjects(xMouse, yMouse, factory.outputStoredObjects, atlas.byPath("UI/GUI/buildMenu/factoryOut.png"));
-                }
-            }
-        }
-
-        if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && Inventory.currentObjectType != null) {
-            mouseGrabbedItem = true;
-        }
-        if (!input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && mouseGrabbedItem) {
-            mouseGrabbedItem = false;
-            Factories factoryUM = findFactoryUnderMouse();
-
-            if (factoryUM != null) {
-                int cell = ArrayUtils.findFreeCell(factoryUM.inputStoredObjects);
-                Point2i current = Inventory.currentObject;
-
-                if (cell != -1 && current != null) {
-                    factoryUM.inputStoredObjects[cell] = Inventory.getCurrent();
-                    Inventory.decrementItem(current.x, current.y);
                 }
             }
         }
@@ -190,7 +205,14 @@ public class Factories implements StaticBlocksEvents {
 
             for (int i = 0; i < ArrayUtils.findDistinctObjects(items); i++) {
                 if (items[i] != null) {
-                    Inventory.drawInventoryItem((x + (i * 54)) + playerSize, y + 10, findEqualsObjects(items, items[i]), items[i].texture);
+                    float zoom = Items.computeZoom(items[i].texture);
+                    int countInCell = findEqualsObjects(items, items[i]);
+
+                    drawText((x + (i * 54)) + playerSize + 31, y + 3, countInCell > 9 ? "9+" : String.valueOf(countInCell), SimpleColor.DIRTY_BRIGHT_BLACK);
+
+                    batch.scale(zoom);
+                    batch.draw(items[i].texture, ((x + (i * 54)) + playerSize + 5), (y + 15));
+                    batch.resetScale();
                 }
             }
         }
@@ -256,7 +278,10 @@ public class Factories implements StaticBlocksEvents {
         if (WorldGenerator.getObject(blockUnderMouse.x, blockUnderMouse.y) != -1) {
             Point2i root = Player.findRoot(blockUnderMouse.x, blockUnderMouse.y);
 
-            if (root != null && factories.contains(root)) {
+            if (root == null) {
+                root = new Point2i(blockUnderMouse.x, blockUnderMouse.y);
+            }
+            if (factories.contains(root)) {
                 return factoriesConst.get(StaticWorldObjects.getFileName(WorldGenerator.getObject(root.x, root.y)));
             }
         }

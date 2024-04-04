@@ -215,6 +215,7 @@ public class TextureDrawing {
     }
 
     public static void updateStaticObj() {
+        Factories.update();
         batch.z(Layer.BACKGROUND);
         updateSun();
         ElectricCables.drawCables();
@@ -243,7 +244,6 @@ public class TextureDrawing {
         //todo превью не хочет рисоваться откуда должно, поэтому висит тут, может потом что то красивое придумаю
         Inventory.updateStaticBlocksPreview();
         updateBlocksInteraction();
-        Factories.update();
     }
 
     private static void drawQueuedBlock(int x, int y, short obj, boolean breakable) {

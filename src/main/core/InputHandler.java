@@ -138,6 +138,7 @@ public class InputHandler {
         int idx = i >> 6;
         if (idx < 0 || idx >= bits.length) {
             printException("Unexpected button: " + i, new IllegalArgumentException());
+            return;
         }
         bits[idx] |= 1L << i;
     }
@@ -146,6 +147,7 @@ public class InputHandler {
         int idx = i >> 6;
         if (idx < 0 || idx >= bits.length) {
             printException("Unexpected button: " + i, new IllegalArgumentException());
+            return;
         }
         bits[idx] &= ~(1L << i);
     }
@@ -154,6 +156,7 @@ public class InputHandler {
         int idx = i >> 6;
         if (idx < 0 || idx >= bits.length) {
             printException("Unexpected button: " + i, new IllegalArgumentException());
+            return false;
         }
         return (bits[idx] & (1L << i)) != 0;
     }

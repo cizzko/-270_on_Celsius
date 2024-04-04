@@ -61,16 +61,7 @@ public class Items implements Serializable {
 
             for (int i = 0; i < required.length; i++) {
                 required[i] = AssetsManager.normalizePath(required[i]);
-                //todo хосподе
-                if (required[i].contains("Blocks")) {
-                    output[i] = createPlaceable(StaticWorldObjects.createStatic(required[i]));
-                } else if (required[i].contains("Weapons")) {
-                    output[i] = createWeapon(required[i].substring(8));
-                } else if (required[i].contains("Details")) {
-                    output[i] = createDetail(required[i].substring(8));
-                } else if (required[i].contains("Tools")) {
-                    output[i] = createTool(required[i].substring(6));
-                }
+                output[i] = createItem(required[i]);
             }
             return new DefaultValues(name, texture, description, output);
         }
@@ -79,7 +70,8 @@ public class Items implements Serializable {
     }
 
     public static Items createWeapon(String fileName) {
-        Properties weapon = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/Weapons/" + fileName + ".properties"));
+        Properties weapon = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/" + fileName + ".properties"));
+        fileName = AssetsManager.normalizePath(fileName);
         DefaultValues defaultValues = getDefault(weapon);
 
         int id = fileName.hashCode();
@@ -99,7 +91,8 @@ public class Items implements Serializable {
     }
 
     public static Items createTool(String fileName) {
-        Properties tool = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/Tools/" + fileName + ".properties"));
+        Properties tool = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/" + fileName + ".properties"));
+        fileName = AssetsManager.normalizePath(fileName);
         DefaultValues defaultValues = getDefault(tool);
 
         int id = fileName.hashCode();
@@ -112,18 +105,38 @@ public class Items implements Serializable {
     }
 
     public static Items createPlaceable(short placeable) {
+        Properties detail = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/" + StaticWorldObjects.getFileName(StaticWorldObjects.getId(placeable)) + ".properties"));
+        DefaultValues defaultValues = getDefault(detail);
         StaticObjectsConst placeableProp = StaticObjectsConst.getConst(StaticWorldObjects.getId(placeable));
         int id = StaticWorldObjects.getId(placeable);
 
-        return new Items(null, placeable, null, null, id, placeableProp.texture, "", placeableProp.objectName, StaticWorldObjects.getFileName(placeable), null, Types.PLACEABLE);
+        return new Items(null, placeable, null, null, id, placeableProp.texture, "", placeableProp.objectName, StaticWorldObjects.getFileName(placeable), defaultValues.requiredForBuild, Types.PLACEABLE);
     }
 
     public static Items createDetail(String fileName) {
-        Properties detail = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/Details/" + fileName + ".properties"));
+        Properties detail = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/" + fileName + ".properties"));
+        fileName = AssetsManager.normalizePath(fileName);
         DefaultValues defaultValues = getDefault(detail);
         int id = fileName.hashCode();
 
         return new Items(null, (short) 0, null, new Details(""), id, defaultValues.texture(), defaultValues.description, defaultValues.name, fileName, defaultValues.requiredForBuild, Types.DETAIL);
+    }
+
+    public static Items createItem(String fileName) {
+        if (fileName.toLowerCase().startsWith("blocks")) {
+            return createPlaceable(StaticWorldObjects.createStatic(fileName));
+        } else if (fileName.toLowerCase().startsWith("weapons")) {
+            return createWeapon(fileName);
+        } else if (fileName.toLowerCase().startsWith("details")) {
+            return createDetail(fileName);
+        } else if (fileName.toLowerCase().startsWith("tools")) {
+            return createTool(fileName);
+        }
+        return null;
+    }
+
+    public static Items createItem(short placeable) {
+        return createPlaceable(placeable);
     }
 
     public static float computeZoom(Sized size) {

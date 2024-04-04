@@ -33,34 +33,28 @@ public class BuildMenu {
 
         //todo выглядит странно
         String[] details = ((String) defaultItems.getOrDefault("Details", "")).split(",");
-        String[] factories = ((String) defaultItems.getOrDefault("Factories", "")).split(",");
         String[] tools = ((String) defaultItems.getOrDefault("Tools", "")).split(",");
         String[] weapons = ((String) defaultItems.getOrDefault("Weapons", "")).split(",");
         String[] placeables = ((String) defaultItems.getOrDefault("Placeables", "")).split(",");
 
         if (details[0].length() > 1) {
             for (String detail : details) {
-                addItem(Items.createDetail(AssetsManager.normalizePath(detail)));
-            }
-        }
-        if (factories[0].length() > 1) {
-            for (String factory : factories) {
-
+                addItem(Items.createItem(AssetsManager.normalizePath(detail)));
             }
         }
         if (tools[0].length() > 1) {
             for (String tool : tools) {
-                addItem(Items.createTool(AssetsManager.normalizePath(tool)));
+                addItem(Items.createItem(AssetsManager.normalizePath(tool)));
             }
         }
         if (weapons[0].length() > 1) {
             for (String weapon : weapons) {
-                addItem(Items.createWeapon(AssetsManager.normalizePath(weapon)));
+                addItem(Items.createItem(AssetsManager.normalizePath(weapon)));
             }
         }
         if (placeables[0].length() > 1) {
             for (String placeable : placeables) {
-                addItem(Items.createPlaceable(StaticWorldObjects.createStatic(AssetsManager.normalizePath("Blocks/" + placeable))));
+                addItem(Items.createItem(StaticWorldObjects.createStatic(AssetsManager.normalizePath(placeable))));
             }
         }
     }
@@ -84,7 +78,7 @@ public class BuildMenu {
                         Inventory.decrementItem(obj.x, obj.y);
                     }
                 }
-                //todo тоже выглядит стремно
+                //todo надо наверное унифицировать, создав общий метод createElement()
                 Items currentItem = items[currentObject.x][currentObject.y];
 
                 switch (items[currentObject.x][currentObject.y].type) {
@@ -192,10 +186,10 @@ public class BuildMenu {
             Fill.rect(560, 0, 800, 1080, SimpleColor.DIRTY_BLACK);
             batch.draw(atlas.byPath("UI/GUI/buildMenu/exitBtn.png"), 605, 989);
 
-            TextureDrawing.drawText(694, 730, items[currentObject.x][currentObject.y].description);
-            Inventory.drawInventoryItem(694, 915, items[currentObject.x][currentObject.y].texture);
+            TextureDrawing.drawText(650, 730, items[currentObject.x][currentObject.y].description);
+            Inventory.drawInventoryItem(650, 915, items[currentObject.x][currentObject.y].texture);
 
-            drawRequirements(694, 760);
+            drawRequirements(650, 760);
         }
     }
 

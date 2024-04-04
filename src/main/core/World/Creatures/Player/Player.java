@@ -92,8 +92,9 @@ public class Player {
         }
     }
 
+    //todo это наверное все же инвентарь, нежели игрок?
     private static void updatePlaceableInteraction() {
-        if (currentObjectType == Items.Types.PLACEABLE && input.clicked(GLFW_MOUSE_BUTTON_LEFT)) {
+        if (underMouseItem == null && currentObjectType == Items.Types.PLACEABLE && input.clicked(GLFW_MOUSE_BUTTON_LEFT)) {
             if (input.mousePos().x > (Inventory.inventoryOpen ? 1488 : 1866)) {
                 if (input.mousePos().y > 756) {
                     return;

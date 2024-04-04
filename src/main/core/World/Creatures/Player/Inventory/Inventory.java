@@ -185,7 +185,7 @@ public class Inventory {
 
     private static void updateDropItem() {
         if (!input.clicked(GLFW_MOUSE_BUTTON_LEFT) && underMouseItem != null) {
-            //hasItemsMouse - inventory cell under the mouse when the mouse button is released, underMouseItem - item selected for movement
+            //hasItemsMouse - inventory cell under the mouse when the mouse button is released, underMouseItem - item selected for movement or drop
             Point2i hasItemsMouse = getObjectUnderMouse();
 
             if (hasItemsMouse != null) {
@@ -242,7 +242,7 @@ public class Inventory {
 
         Point2i cell = findFreeCell();
         if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = Items.createTool(name);
+            inventoryObjects[cell.x][cell.y] = Items.createItem(name);
         }
     }
 
@@ -257,7 +257,7 @@ public class Inventory {
 
         Point2i cell = findFreeCell();
         if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = Items.createPlaceable(object);
+            inventoryObjects[cell.x][cell.y] = Items.createItem(object);
         }
     }
 
@@ -272,7 +272,7 @@ public class Inventory {
 
         Point2i cell = findFreeCell();
         if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = Items.createDetail(name);
+            inventoryObjects[cell.x][cell.y] = Items.createItem(name);
         }
     }
 
@@ -287,7 +287,7 @@ public class Inventory {
 
         Point2i cell = findFreeCell();
         if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = Items.createWeapon(name);
+            inventoryObjects[cell.x][cell.y] = Items.createItem(name);
         }
     }
 }
