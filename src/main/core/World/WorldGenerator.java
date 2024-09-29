@@ -21,8 +21,8 @@ import core.World.Textures.TextureDrawing;
 import core.World.Weather.Sun;
 import core.math.Point2i;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+
 import static core.EventHandling.Logging.Logger.log;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.*;
@@ -68,7 +68,6 @@ public class WorldGenerator {
         listeners.add(listener);
     }
 
-    //todo что насчет перегрузки для followingRules ?
     public static void setObject(int x, int y, short object, boolean followingRules) {
         assert object != -1;
 
@@ -143,7 +142,7 @@ public class WorldGenerator {
                     deleteTiles(getObject(root.x, root.y), root.x, root.y);
                 }
             } else {
-                WorldGenerator.setObject(cellX, cellY, (short) 0, false);
+                setObject(cellX, cellY, (short) 0, false);
                 ShadowMap.update();
             }
 
@@ -191,152 +190,132 @@ public class WorldGenerator {
             WorldGenerator.SizeX = SizeX;
             WorldGenerator.SizeY = SizeY;
 
-            generateBlocks(simple);
+            StaticObjectsConst.setDestroyed();
+            generateRelief();
+
+            ShadowMap.generate();
+            generateResources();
+
+            //todo пещеры независимо от радиуса создаются толщиной в один блок
+            //generateCaves();
+            generateEnvironments();
+            ShadowMap.generate();
+
             TemperatureMap.create();
             Player.createPlayer(randomSpawn);
 
             log("World generator: generating done!\n");
             texts.get("WorldGeneratorState").text += "\\nGenerating done! Starting world..";
 
-            try { Thread.sleep(1000); } catch (Exception e) {}
             start(creatures);
         }).start();
     }
 
-    private static void generateBlocks(boolean simple) {
-        StaticObjectsConst.setDestroyed();
-        generateFlatWorld();
+    private static void generateRelief() {
+        float lastX = 0;
+        float lastY = SizeY / 2f;
+        float angle = 90;
 
-        if (simple) {
-            texts.get("WorldGeneratorState").text += "\\nSecond step: generating shadows";
-            ShadowMap.generate();
-            generateResources();
-        } else {
-            generateMountains();
-            smoothWorld();
-            fillHollows();
+        //чем ближе к 90 тем меньше максимальный угол наклона линии генерации
+        int upperBorder = 20;
+        int bottomBorder = 160;
 
-            texts.get("WorldGeneratorState").text += "\\nThird step: generating shadows";
-            ShadowMap.generate();
-            generateResources();
-            generateEnvironments();
-            ShadowMap.generate();
-        }
-    }
+        do {
+            angle = Math.clamp(angle + ((float) (Math.random() * 60) - 30), Math.clamp(upperBorder + (lastY - SizeY / 2f), 20, 90), Math.clamp(bottomBorder - (SizeY / 2f - lastY), 90, 160));
 
-    private static void generateFlatWorld() {
-        log("World generator: generating flat world");
-        texts.get("WorldGeneratorState").text += "generating flat world";
+            int iters = (int) (Math.random() * (90 - Math.abs(90 - angle)));
 
-        for (int x = 0; x < SizeX; x++) {
-            for (int y = 0; y < SizeY; y++) {
-                if (y > SizeY / 1.5f) {
-                    setObject(x, y, createStatic("Blocks/air"), false);
+            for (int j = 0; j < iters; j++) {
+                float deltaY = (float) (Math.cos(Math.toRadians(angle)));
+                float deltaX = (float) (Math.sin(Math.toRadians(angle)));
+
+                lastY += deltaY;
+                lastX += deltaX;
+
+                if (lastX < SizeX && lastY > 0) {
+                    for (int y = 0; y < lastY; y++) {
+                        setObject((int) lastX, y, createStatic("Blocks/grass"), false);
+                    }
                 } else {
-                    setObject(x, y, createStatic("Blocks/grass"), false);
+                    break;
                 }
             }
+        } while (!(lastX + 1 > SizeX));
+    }
+
+    private static void generateCaves() {
+        for (int b = 0; b < SizeX / 600; b++) {
+            int minRadius = 2;
+            int maxRadius = 8;
+            int startRadius = Math.max(minRadius, (int) (Math.random() * maxRadius));
+            int x = (int) (Math.random() * SizeX);
+            int y = 0;
+
+            for (int i = 0; i < SizeY; i++) {
+                if (getObject(x, i) != -1) {
+                    y = i;
+                    break;
+                }
+            }
+
+            generateCave(x, y, startRadius, minRadius, maxRadius);
         }
     }
 
-    private static void generateMountains() {
-        log("World generator: generating mountain");
-        texts.get("WorldGeneratorState").text += ", generating mountains";
+    private static void generateCave(float x, float y, float radius, int minRadius, int maxRadius) {
+        if (minRadius <= 1 || minRadius == maxRadius) {
+            return;
+        }
 
-        float randGrass = 2f;           //chance of unevenness, the higher the number - the lower the chance
-        float randAir = 3.5f;           //chance of air appearing instead of a block, higher number - lower chance
-        float iterations = 3f;          //iterations of generations
-        float mountainHeight = 24000f;  //chance of high mountains appearing, higher number - higher chance
+        float startRadius = radius;
+        float angle = (float) ((Math.random() * 180) + 90);
 
-        for (int i = 0; i < iterations; i++) {
-            for (int x = 1; x < SizeX - 1; x++) {
-                for (int y = SizeY / 3; y < SizeY - 1; y++) {
-                    randGrass += y / (mountainHeight * SizeY);
+        do {
+            if (Math.random() * 30 < 1) {
+                radius = (int) Math.clamp(radius + (Math.random() * 2) - 1, minRadius, startRadius);
+            }
+            float start = 0;
+            float iters = (int) (Math.random() * 30);
+            angle = (float) Math.clamp(angle + ((Math.random() * 100) - 50), 87, 267);
 
-                    if ((getType(getObject(x + 1, y)) == StaticObjectsConst.Types.SOLID || getType(getObject(x - 1, y)) == StaticObjectsConst.Types.SOLID || getType(getObject(x, y + 1)) == StaticObjectsConst.Types.SOLID || getType(getObject(x, y - 1)) == StaticObjectsConst.Types.SOLID) && Math.random() * randGrass < 1) {
-                        setObject(x, y, createStatic("Blocks/grass"), false);
-                    } else if (Math.random() * randAir < 1) {
-                        destroyObject(x, y);
+            float deltaY = (float) (Math.cos(Math.toRadians(angle + 180)));
+            float deltaX = (float) (Math.sin(Math.toRadians(angle)));
+
+            if (x + deltaX * (iters + maxRadius) > SizeX || x + deltaX * (iters + maxRadius) < 0) {
+                break;
+            }
+
+            for (int j = 0; j < iters; j++) {
+                if (Math.random() * 50 < 1) {
+                    generateCave(x, y, radius, 1, (int) radius);
+                }
+
+                y += deltaY;
+                x += deltaX;
+
+                if (x < SizeX && y < SizeY && x > 0 && y > 0) {
+                    if (start == 0 && getObject((int) x, (int) y) != -1) {
+                        start = (int) y;
                     }
-                }
-            }
-        }
-    }
+                    destroyObject((int) x, (int) y);
 
-    private static void fillHollows() {
-        log("World generator: filling hollows");
-        texts.get("WorldGeneratorState").text += ", filling hollows";
-
-        boolean[][] visited = new boolean[SizeX][SizeY];
-        List<int[]> area = new ArrayList<>();
-
-        for (int x = 1; x < SizeX - 1; x++) {
-            for (int y = 1; y < SizeY - 1; y++) {
-                if (getType(getObject(x, y)) == StaticObjectsConst.Types.GAS && !visited[x][y]) {
-                    area.clear();
-                    boolean isClosed = search(x, y, visited, area);
-
-                    if (isClosed) {
-                        fillAreaWithGrass(area);
+                    for (int i = (int) (x - radius); i <= x + radius; i++) {
+                        for (int k = (int) (y - radius); k <= y + radius; k++) {
+                            if (i > 0 && i < SizeX && k > 0 && k < SizeY) {
+                                destroyObject((int) x, (int) y);
+                            }
+                        }
                     }
+                } else {
+                    break;
                 }
             }
-        }
+            if (start > 0 && Math.random() * SizeY < y / 150f) {
+                break;
+            }
+        } while (y < SizeY);
     }
 
-    private static void smoothWorld() {
-        log("World generator: smoothing world");
-        texts.get("WorldGeneratorState").text += "\\nSecond step: smoothing world";
-
-        float smoothingChance = 3f; //chance of smoothing, higher number - lower chance
-
-        for (int x = 1; x < SizeX - 1; x++) {
-            for (int y = 1; y < SizeY - 1; y++) {
-                if ((getType(getObject(x, y)) != StaticObjectsConst.Types.GAS && getType(getObject(x + 1, y)) == StaticObjectsConst.Types.SOLID && getType(getObject(x - 1, y)) == StaticObjectsConst.Types.SOLID && getType(getObject(x, y - 1)) == StaticObjectsConst.Types.SOLID) || (getType(getObject(x + 1, y + 1)) == StaticObjectsConst.Types.SOLID && getType(getObject(x - 1, y - 1)) == StaticObjectsConst.Types.SOLID) || getType(getObject(x - 1, y + 1)) == StaticObjectsConst.Types.SOLID && getType(getObject(x + 1, y - 1)) == StaticObjectsConst.Types.SOLID && Math.random() * smoothingChance < 1) {
-                    setObject(x, y, createStatic("Blocks/grass"), false);
-                } else if ((getType(getObject(x, y + 1)) == StaticObjectsConst.Types.SOLID && getType(getObject(x, y - 1)) == StaticObjectsConst.Types.SOLID) || (getType(getObject(x + 1, y)) == StaticObjectsConst.Types.SOLID && getType(getObject(x - 1, y)) == StaticObjectsConst.Types.SOLID) && Math.random() * smoothingChance < 1) {
-                    setObject(x, y, createStatic("Blocks/grass"), false);
-                }
-            }
-        }
-    }
-
-    private static boolean search(int x, int y, boolean[][] visited, List<int[]> area) {
-        java.util.Queue<int[]> queue = new LinkedList<>();
-        queue.offer(new int[]{x, y});
-        visited[x][y] = true;
-
-        boolean isClosed = true;
-        while (!queue.isEmpty()) {
-            int[] current = queue.poll();
-            int cx = current[0];
-            int cy = current[1];
-            area.add(current);
-
-            if (cx == 0 || cx == SizeX - 1 || cy == 0 || cy == SizeY - 1) {
-                isClosed = false;
-            }
-
-            if (cx > 0 && getType(getObject(cx - 1, cy)) == StaticObjectsConst.Types.GAS && !visited[cx - 1][cy]) {
-                queue.offer(new int[]{cx - 1, cy});
-                visited[cx - 1][cy] = true;
-            }
-            if (cx < SizeX - 1 &&  getType(getObject(cx + 1, cy)) == StaticObjectsConst.Types.GAS && !visited[cx + 1][cy]) {
-                queue.offer(new int[]{cx + 1, cy});
-                visited[cx + 1][cy] = true;
-            }
-            if (cy > 0 &&  getType(getObject(cx, cy - 1)) == StaticObjectsConst.Types.GAS && !visited[cx][cy - 1]) {
-                queue.offer(new int[]{cx, cy - 1});
-                visited[cx][cy - 1] = true;
-            }
-            if (cy < SizeY - 1 && getType( getObject(cx, cy + 1)) == StaticObjectsConst.Types.GAS && !visited[cx][cy + 1]) {
-                queue.offer(new int[]{cx, cy + 1});
-                visited[cx][cy + 1] = true;
-            }
-        }
-
-        return isClosed;
-    }
 
     public static void createStructure(int cellX, int cellY, String name) {
         Structures struct = Structures.getStructure(name);
@@ -351,18 +330,6 @@ public class WorldGenerator {
                 }
             }
         }
-    }
-
-    private static void fillAreaWithGrass(List<int[]> area) {
-        for (int[] coord : area) {
-            int x = coord[0];
-            int y = coord[1];
-            setObject(x, y, createStatic("Blocks/grass"), false);
-        }
-    }
-
-    private static void generateCanyons() {
-
     }
 
     private static void generateEnvironments() {

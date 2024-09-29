@@ -19,9 +19,7 @@ public class ShadowMap {
     //TODO: rewrite generation n update
 
     public static SimpleColor getShadow(int x, int y) {
-        assert (x + SizeX * y) < shadows.length;
-
-        return SimpleColor.toColor(shadows[x + SizeX * y]);
+        return x + SizeX * y < 0 || x + SizeX * y > shadows.length ? SimpleColor.CLEAR : SimpleColor.toColor(shadows[x + SizeX * y]);
     }
 
     public static void setShadow(int x, int y, SimpleColor color) {

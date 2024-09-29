@@ -35,7 +35,7 @@ public final class Atlas {
 
         HashMap<String, Region> tmpRegions = new HashMap<>();
         meta.getAsJsonObject("regions").asMap().forEach((regionName, regMeta) -> {
-            var regionObject = regMeta.getAsJsonObject();
+            JsonObject regionObject = regMeta.getAsJsonObject();
             int x = regionObject.get("x").getAsInt();
             int y = regionObject.get("y").getAsInt();
             int width = regionObject.get("width").getAsInt();

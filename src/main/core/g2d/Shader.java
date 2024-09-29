@@ -21,7 +21,7 @@ public final class Shader implements Disposable {
     public Shader(int program) {
         this.glHandle = program;
 
-        var tmpUniformLocations = new HashMap<String, Integer>();
+        HashMap<String, Integer> tmpUniformLocations = new HashMap<>();
         int uniformCount = glGetProgrami(glHandle, GL_ACTIVE_UNIFORMS);
         for (int i = 0; i < uniformCount; i++) {
             String name = glGetActiveUniformName(glHandle, i);

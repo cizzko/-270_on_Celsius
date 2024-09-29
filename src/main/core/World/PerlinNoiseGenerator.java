@@ -133,4 +133,43 @@ public class PerlinNoiseGenerator {
             }
         }
     }
+
+    //frequency - frequency of seeds, how many there will be
+    //expansion - how quickly the noise level will decrease
+    //minForce & maxForce - minimum and maximum possible seed value
+    //minSeedSize & maxSeedSize - minimum and maximum possible seed value
+    public static short[][] generateNoise(int sizeX, int sizeY, int frequency, int minSeedSize, int maxSeedSize, int minForce, int maxForce, boolean directed) {
+        short[][] noise = new short[sizeX][sizeY];
+
+        //first step - place seeds
+        for (int x = 0; x < noise.length; x++) {
+            for (int y = 0; y < noise[0].length; y++) {
+                if ((Math.random() * (frequency + (directed ? sizeY - y : 0))) < 1) {
+                    short seedSize = (short) Math.max(Math.random() * maxSeedSize, Math.max(1, minSeedSize));
+                    short seedNumber = (short) Math.max(Math.random() * maxForce, minForce);
+
+                    for (int xSeed = seedSize / -2; xSeed < seedSize / 2; xSeed++) {
+                        for (int ySeed = seedSize / -2; ySeed < seedSize / 2; ySeed++) {
+                            if (xSeed + x > 0 && ySeed + y > 0 && xSeed + x < noise.length && ySeed + y < noise[0].length) {
+                                noise[x + xSeed][y + ySeed] = seedNumber;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return noise;
+    }
+
+    public static short[][] smoothNoise(short[][] noise, int iterations) {
+        for (int i = 0; i < iterations; i++) {
+            for (int x = 1; x < noise.length - 1; x++) {
+                for (int y = 1; y < noise[0].length - 1; y++) {
+                    noise[x][y] = (short) ((noise[x][y - 1] + noise[x][y + 1] + noise[x - 1][y] + noise[x + 1][y]) / 4);
+                }
+            }
+        }
+        return noise;
+    }
 }
