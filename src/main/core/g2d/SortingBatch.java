@@ -5,6 +5,7 @@ import core.pool.Poolable;
 
 import java.util.PriorityQueue;
 
+// TODO пул есть только для "обычных" запросов, а не для общих штук типа Runnable
 public class SortingBatch extends Batch {
 
     private final Pool<RequestTexture> textureRequestsPool;
@@ -26,7 +27,7 @@ public class SortingBatch extends Batch {
     }
 
     public void draw(int z, Runnable runnable) {
-        requests.add(new RequestProcedure(z, blending, runnable));
+        requests.add(new RequestProcedure(z, runnable));
     }
 
     public void draw(Request request) {
@@ -59,6 +60,16 @@ public class SortingBatch extends Batch {
             super.flush();
         } else {
             flushing = true;
+            // TODO надо решить что делать со следующими ситуациями:
+            // 1) Если внутри Runnable происходит вызов любого draw().
+            // Сейчас это ConcurrentModificationException в случае попытке добавить в очередь.
+            // Можно воспринимать это действия "без очереди"
+            // 2) Для RequestTexture на самом деле не нужно хранить (x, y, x2, y2, x3, y3, x4, y4)
+            // Можно писать в промежуточный буфер вершин, который потом будет копироваться при отрисовке, а записывать в запрос лишь
+            // (offset, length). Разница в потреблении: 56 против 32 байт/объект.
+            //   Также хочу отметить, что это позволит сделать интерфейс для прямой записи вершин.
+            // Может потом пригодиться для сложных геометрических штук.
+            //   На самом деле интересно, как повлияет это копирование из одного массива в другой.
             for (Request request : requests) {
                 drawInternal(request);
             }
@@ -144,12 +155,10 @@ public class SortingBatch extends Batch {
     }
 
     public static final class RequestProcedure extends Request {
-        public final Blending blending;
         public final Runnable runnable;
 
-        public RequestProcedure(int z, Blending blending, Runnable runnable) {
+        public RequestProcedure(int z, Runnable runnable) {
             super(z);
-            this.blending = blending;
             this.runnable = runnable;
         }
     }

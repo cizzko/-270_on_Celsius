@@ -77,7 +77,7 @@ public class WorldGenerator {
 
                 for (int blockX = 0; blockX < tiles.length; blockX++) {
                     for (int blockY = 0; blockY < tiles[0].length; blockY++) {
-                        if (getType(tiles[blockX][blockY]) != StaticObjectsConst.Types.GAS && tiles[blockX][blockY] != 0) {
+                        if (tiles[blockX][blockY] != 0 && getType(tiles[blockX][blockY]) != StaticObjectsConst.Types.GAS) {
                             placeStatic(x + blockX, y + blockY, tiles[blockX][blockY], followingRules);
                         }
                     }
@@ -155,8 +155,9 @@ public class WorldGenerator {
     }
 
     private static void deleteTiles(short id, int cellX, int cellY) {
-        for (int blockX = 0; blockX < getConst(getId(id)).optionalTiles.length; blockX++) {
-            for (int blockY = 0; blockY < getConst(getId(id)).optionalTiles[0].length; blockY++) {
+        StaticObjectsConst objType = getConst(getId(id));
+        for (int blockX = 0; blockX < objType.optionalTiles.length; blockX++) {
+            for (int blockY = 0; blockY < objType.optionalTiles[0].length; blockY++) {
                 WorldGenerator.StaticObjects[(cellX + blockX) + SizeX * (cellY + blockY)] = (short) 0;
             }
         }

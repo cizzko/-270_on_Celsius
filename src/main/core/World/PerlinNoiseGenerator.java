@@ -54,7 +54,7 @@ public class PerlinNoiseGenerator {
 
         for (int i = 0; i < width; i++) {
             for (int j = 0; j < height; j++) {
-                baseNoise[i][j] = (float) random.nextDouble();
+                baseNoise[i][j] = random.nextFloat();
             }
         }
 
