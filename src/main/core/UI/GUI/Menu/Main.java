@@ -30,7 +30,7 @@ public class Main {
     private static void discordBtn() {
         try {
             Desktop desktop = Desktop.getDesktop();
-            desktop.browse(new URI("https:// discord.gg/gUS9X6exAQ"));
+            desktop.browse(new URI("https://discord.gg/gUS9X6exAQ"));
         } catch (Exception e) {
             printException("Error when open discord server", e);
         }
