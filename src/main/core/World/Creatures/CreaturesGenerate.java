@@ -51,8 +51,8 @@ public class CreaturesGenerate {
 
     public static void generate() {
         switch ((int) (Math.random() * 2)) {
-            //todo до переписи логики птиц, а то они летят нормально, врезаются в любую кочку, и летят на месте
-            //case 0 -> generateBird();
+            // todo переписать поведение птиц
+            // case 0 -> generateBird();
             case 1 -> generateButterfly();
         }
         currentCreaturesCount++;

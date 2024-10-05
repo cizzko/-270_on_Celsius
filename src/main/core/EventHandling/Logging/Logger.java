@@ -1,7 +1,6 @@
 package core.EventHandling.Logging;
 
 import com.sun.management.OperatingSystemMXBean;
-import core.Utils.AnonymousStatistics;
 import core.Window;
 import core.World.Weather.Sun;
 import java.awt.Toolkit;
@@ -98,7 +97,6 @@ public class Logger extends PrintStream {
             ended = true;
 
             StringBuilder exitMessage = getExitMessage(status, reason);
-            AnonymousStatistics.sendStateMessage("Session '" + sessionId + "' ended, " + exitMessage);
             log(exitMessage.toString());
 
             if (exitOnProgram) {
@@ -146,7 +144,6 @@ public class Logger extends PrintStream {
         StringBuilder message = getStartMessage();
         StringBuilder computerInfo = getComputerInfo();
 
-        AnonymousStatistics.sendStateMessageThread("Session '" + sessionId + "' started\n" + message + computerInfo);
         log(message.toString() + computerInfo);
     }
 

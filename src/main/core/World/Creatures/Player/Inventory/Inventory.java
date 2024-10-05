@@ -72,7 +72,7 @@ public class Inventory {
         int x = mousePos.x;
         int y = mousePos.y;
 
-        //1488 и 756 - нижний левый угол инвентаря, 54 - размер ячейки, так кнч лучше не делать, но что есть, то есть
+        // 1488 и 756 - нижний левый угол инвентаря, 54 - размер ячейки
         if (x > 1488 && y > 756) {
             x -= 1488;
             y -= 756;
@@ -185,7 +185,7 @@ public class Inventory {
 
     private static void updateDropItem() {
         if (!input.clicked(GLFW_MOUSE_BUTTON_LEFT) && underMouseItem != null) {
-            //hasItemsMouse - inventory cell under the mouse when the mouse button is released, underMouseItem - item selected for movement or drop
+            // hasItemsMouse - inventory cell under the mouse when the mouse button is released, underMouseItem - item selected for movement or drop
             Point2i hasItemsMouse = getObjectUnderMouse();
 
             if (hasItemsMouse != null) {

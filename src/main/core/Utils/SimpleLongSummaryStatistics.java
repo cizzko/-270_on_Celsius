@@ -2,7 +2,7 @@ package core.Utils;
 
 @SuppressWarnings("overloads")
 
-//isnt LongSummaryStatistics
+// isnt LongSummaryStatistics
 public class SimpleLongSummaryStatistics {
     private long max = Long.MIN_VALUE, min = Long.MAX_VALUE, sum, count, perSecond;
 

@@ -62,7 +62,7 @@ public class Saves {
     }
 
     public static void createWorldSave() {
-        //TODO: here need name
+        // todo имя сохранений
         createWorldSave("WorldSave" + (int) (Math.random() * 10000));
     }
 

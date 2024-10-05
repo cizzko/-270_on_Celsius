@@ -12,7 +12,7 @@ import static org.lwjgl.opengl.GL11.*;
 public final class Texture implements Drawable {
     final int glHandle;
 
-    private final int glTarget; // TODO возможно и не нужно, но пускай побудет
+    private final int glTarget; // todo just in case
     private final int width, height;
     private final float u, v, u2, v2;
 

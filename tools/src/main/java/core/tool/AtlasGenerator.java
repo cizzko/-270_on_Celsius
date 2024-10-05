@@ -139,7 +139,6 @@ public final class AtlasGenerator {
 
         BufferedImage atlasImage = new BufferedImage(packer.w, packer.h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D gr = atlasImage.createGraphics();
-        // Можно, но зачем?
         // gr.setColor(Color.BLACK);
         // gr.fillRect(0, 0, packer.w, packer.h);
 

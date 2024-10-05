@@ -17,7 +17,7 @@ public class StaticObjectsConst implements Cloneable {
     public float maxHp, density, resistance;
     public int lightTransmission;
     public boolean hasMotherBlock;
-    //original file name - filename, object name - name at file
+    // original file name - filename, object name - name at file
     public String originalFileName, objectName;
     public Atlas.Region texture;
     public Runnable onInteraction;
@@ -85,7 +85,7 @@ public class StaticObjectsConst implements Cloneable {
         }
     }
 
-    //todo генерация раннабле интеракции для возможности переопределить поведение блока
+    // todo генерация раннабле интеракции для возможности переопределить поведение блока
     private static Runnable generateRunnable(String path) {
         return null;
     }

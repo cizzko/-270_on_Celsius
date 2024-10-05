@@ -26,7 +26,7 @@ public final class Font {
         java.awt.Font font = null;
         try {
             font = java.awt.Font.createFont(java.awt.Font.PLAIN, new File(pathTTF));
-            //default 12
+            // default 12
             font = font.deriveFont(java.awt.Font.PLAIN, (float) (fontSize * Toolkit.getDefaultToolkit().getScreenResolution() / 72.0));
         } catch (IOException | FontFormatException e) {
             Logger.printException("Error when generate font", e);
@@ -49,12 +49,12 @@ public final class Font {
         record GlyphAndImage(Glyph glyph, BufferedImage image) {}
 
         // TODO:
-        //  Мне не понравилось работать с java.awt.Font
-        //  Совершенно нет идей как делать отрисовку глифов других параметров (italic, bold, другой размер и т.д.)
-        //  Я видел бинды на FreeType на манер LWJGL, может их и использовать?
-        //  P.S. Тут в коде очень опасная ситуация может быть. Дело в размере текстуры.
-        //  При превышении этого значения пойдут артефакты. Это можно решить разбив шрифт на "страницы",
-        //  но надо это ещё надо подумать...
+        // Мне не понравилось работать с java.awt.Font
+        // Совершенно нет идей как делать отрисовку глифов других параметров (italic, bold, другой размер и т.д.)
+        // Я видел бинды на FreeType на манер LWJGL, может их и использовать?
+        // P.S. Тут в коде очень опасная ситуация может быть. Дело в размере текстуры.
+        // При превышении этого значения пойдут артефакты. Это можно решить разбив шрифт на "страницы",
+        // но надо это ещё надо подумать...
 
         int maxTexSize = GL46.glGetInteger(GL46.GL_MAX_TEXTURE_SIZE);
         RectanglePacker packer = new RectanglePacker(64, 64);

@@ -17,6 +17,7 @@ public class Json {
 
     public static String lang, allLanguages;
 
+    // returns value from translate
     public static String getName(String key) {
         if (words.get(key) == null) {
             try (FileReader reader = new FileReader(translateFile, StandardCharsets.UTF_8)) {
@@ -37,6 +38,7 @@ public class Json {
         return keys.get(value);
     }
 
+    // returns all available languages
     public static String getAllLanguages() {
         if (allLanguages == null) {
             try (FileReader reader = new FileReader(translateFile, StandardCharsets.UTF_8)) {
@@ -52,6 +54,7 @@ public class Json {
         return allLanguages;
     }
 
+    // returns array of all available languages
     public static String[] getAllLanguagesArray() {
         String[] availableLanguages = null;
 
@@ -66,6 +69,7 @@ public class Json {
         return availableLanguages;
     }
 
+    // detect current system language
     public static void detectLanguage() {
         try {
             if (Config.getFromConfig("DetectLanguage").equals("true") && allLanguages.contains(lang = Locale.getDefault().getLanguage())) {

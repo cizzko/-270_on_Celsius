@@ -118,7 +118,7 @@ public class Structures implements Serializable {
             byte maxHp;
             short[][] blocks;
 
-            //if its simple structure (without .ser file)
+            // if its simple structure (without .ser file)
             if (new File(path).exists()) {
                 Properties prop = Config.getProperties(path);
                 Atlas.Region texture = Global.atlas.byPath((String) prop.get("Path"));

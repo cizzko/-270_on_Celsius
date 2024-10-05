@@ -25,7 +25,7 @@ import static core.World.Creatures.Player.Player.playerSize;
 import static core.World.Textures.TextureDrawing.drawText;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
-//there is no need to put them manually, they are automatically added to the array if the placed static block is in the factories folder
+// there is no need to put them manually, they are automatically added to the array if the placed static block is in the factories folder
 public class Factories implements StaticBlocksEvents, InventoryEvents {
     public float productionSpeed, needEnergy, currentHp, currentEnergy, maxHp, timeSinceBreakdown, x, y;
     public long lastProductionTime;
@@ -38,7 +38,7 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
 
     @Override
     public void placeStatic(int cellX, int cellY, short id) {
-        //костыль года
+        // todo костыль года
         if (id != 0 && id != -1 && StaticWorldObjects.getTexture(id) != null && StaticWorldObjects.getFileName(id).toLowerCase().contains("factories")) {
             setFactoryConst(StaticWorldObjects.getFileName(id));
             factories.add(new Point2i(cellX, cellY));
@@ -47,7 +47,7 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
 
     @Override
     public void destroyStatic(int cellX, int cellY, short id) {
-        //костыль века
+        // todo костыль века
         if (id != 0 && id != -1 && StaticWorldObjects.getTexture(id) != null && StaticWorldObjects.getTexture(id).name().toLowerCase().contains("factories")) {
             factories.remove(new Point2i(cellX, cellY));
         }
@@ -83,11 +83,11 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
     }
 
     public enum breaking {
-        WEAK_SLOW, //slow working
-        WEAK_OVERCONSUMPTION, //high consumption
-        AVERAGE_STOP, //stop working
-        AVERAGE_MISWORKING, //misworking
-        CRITICAL //full stop working, need rebuild
+        WEAK_SLOW, // slow working
+        WEAK_OVERCONSUMPTION, // high consumption
+        AVERAGE_STOP, // stop working
+        AVERAGE_MISWORKING, // misworking
+        CRITICAL // full stop working, need rebuild
     }
 
     public Factories() {}
@@ -198,7 +198,7 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
         }
     }
 
-    //todo вопрос на засыпку - почему оно в этом классе?
+    // todo вопрос на засыпку - почему оно в этом классе?
     public static void drawObjects(float x, float y, Items[] items, Atlas.Region iconRegion) {
         if (items != null && ArrayUtils.findFreeCell(items) != 0) {
             batch.draw(iconRegion, x, y + 16);

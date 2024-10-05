@@ -49,7 +49,7 @@ public class TextureDrawing {
 
     public record blockQueue(int cellX, int cellY, short obj, boolean breakable) {}
 
-    // TODO Сломано сознательно, чуть позже доделаю
+    // todo Сломано сознательно, чуть позже доделаю
     @Deprecated(forRemoval = true)
     public static void drawTexture(float x, float y, int w, int h, float zoom, boolean isStatic, int id, ByteBuffer buffer, SimpleColor color) {
     }
@@ -191,7 +191,7 @@ public class TextureDrawing {
         if (multiplySmoothCameraX > 0) {
             smoothCameraX.add(new Vector2f(playerX, player.getMotionVectorX()));
 
-            //todo Math.max(Window.pfps - 75, 0) / 7 не воспринимать всерьез - это костыль просто для того, чтоб плавная камера работала на любом фпс, потом переделаю
+            // todo Math.max(Window.pfps - 75, 0) / 7 не воспринимать всерьез - это костыль просто для того, чтоб плавная камера работала на любом фпс, потом переделаю
             if (smoothCameraX.size() > multiplySmoothCameraX + Math.max(Window.pfps - 75, 0) / 7) {
                 playerX = smoothCameraX.getFirst().x - (smoothCameraX.getFirst().y * multiplySmoothCameraX);
                 smoothCameraX.removeFirst();
@@ -201,7 +201,7 @@ public class TextureDrawing {
         if (multiplySmoothCameraY > 0) {
             smoothCameraY.add(new Vector2f(playerY, player.getMotionVectorY()));
 
-            //по тех. причинам тут пока без интерполяции
+            // по тех. причинам тут пока без интерполяции
             if (smoothCameraY.size() > multiplySmoothCameraY + Math.max(Window.pfps - 75, 0) / 7) {
                 playerY = smoothCameraY.getFirst().x;
                 smoothCameraY.removeFirst();
@@ -221,7 +221,7 @@ public class TextureDrawing {
         ElectricCables.drawCables();
         batch.resetZ();
 
-        //always before drawing the blocks!!!
+        // always before drawing the blocks!!!
         updatePlayerPos();
 
         for (int x = (int) (playerX / blockSize) - 20; x < playerX / blockSize + 21; x++) {
@@ -241,7 +241,7 @@ public class TextureDrawing {
             iterator.remove();
         }
 
-        //todo превью не хочет рисоваться откуда должно, поэтому висит тут, может потом что то красивое придумаю
+        // todo превью не хочет рисоваться откуда должно, поэтому висит тут, может потом что то красивое придумаю
         Inventory.updateStaticBlocksPreview();
         updateBlocksInteraction();
     }
@@ -297,7 +297,6 @@ public class TextureDrawing {
         int yBlock = findY(x, y);
 
         if (isOnCamera(xBlock, yBlock)) {
-            //todo избавиться от такой жирной аллокации, и вообще переделать работу с колор
             SimpleColor color = ShadowMap.getColor(x, y);
             int upperLimit = 100;
             int lowestLimit = -20;
@@ -314,14 +313,12 @@ public class TextureDrawing {
                 color = SimpleColor.fromRGBA(color.getRed() - a, color.getGreen() - (a / 2), color.getBlue(), color.getAlpha());
             }
 
-            //todo это тоже не шибко маленькая аллокация, особенно учитывая поинты и сам AnimData
             StaticWAnimations.AnimData currentFrame = StaticWAnimations.getCurrentFrame(obj, new Point2i(x, y));
             if (currentFrame != null) {
                 drawTexture(xBlock, yBlock, currentFrame.width(), currentFrame.height(), 1, false, currentFrame.currentFrame() + StaticWorldObjects.getId(obj), currentFrame.currentFrameImage(), color);
                 return;
             }
 
-            //todo соотвесна сделать возможность отдавать напрямую инт
             batch.color(color);
             batch.draw(getTexture(obj), xBlock, yBlock);
 
@@ -373,7 +370,7 @@ public class TextureDrawing {
     public static boolean isOnCamera(int x, int y) {
         float left = playerX - (1920 / 2.1f) - (32 + blockSize);
         float right = playerX + (1920 / 1.7f) + (32 - blockSize);
-        float bottom = playerY - (1080 / 3.7f) - (32 + blockSize); //lower dividet number - higher drawing
+        float bottom = playerY - (1080 / 3.7f) - (32 + blockSize); // lower dividet number - higher drawing
         float top = playerY + (1080 / 1.4f) + (32 - blockSize);
 
         return !(x + 16 < left) && !(x > right) && !(y + 16 < bottom) && !(y > top);
@@ -390,8 +387,8 @@ public class TextureDrawing {
                         batch.draw(dynamicObject.getTexture(), dynamicObject.getX(), dynamicObject.getY());
                         batch.resetColor();
                     } else {
-                        //todo дописать
-                        //drawTexture(dynamicObject.getPath() + dynamicObject.getCurrentFrame() + ".png", dynamicObject.getX(), dynamicObject.getY(), ShadowMap.getColorDynamic(), false, false);
+                        // todo дописать
+                        // drawTexture(dynamicObject.getPath() + dynamicObject.getCurrentFrame() + ".png", dynamicObject.getX(), dynamicObject.getY(), ShadowMap.getColorDynamic(), false, false);
                     }
                 }
             }
@@ -444,7 +441,7 @@ public class TextureDrawing {
                 Fill.rect(button.x, button.y, button.width, button.height, button.color);
                 drawText(button.x * 1.1f, button.y + button.height / 3f, button.name);
             } else {
-                //if swap and not simple
+                // if swap and not simple
                 if (button.isClicked) {
                     Fill.rectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
                     batch.draw(atlas.byPath("UI/GUI/checkMarkTrue.png"), button.x, button.y);

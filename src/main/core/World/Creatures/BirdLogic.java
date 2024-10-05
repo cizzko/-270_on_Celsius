@@ -3,11 +3,11 @@ package core.World.Creatures;
 import java.util.HashMap;
 
 public class BirdLogic {
-    //soar time
+    // soar time
     private static final HashMap<DynamicWorldObjects, Integer> birdFlying = new HashMap<>();
     private static final int maxSoarTime = 2000;
 
-    //TODO: rewrite
+    // todo переписать
     public static void update(DynamicWorldObjects object) {
         if (object.getTexture().name().contains("bird")) {
             if (birdFlying.get(object) != null) {

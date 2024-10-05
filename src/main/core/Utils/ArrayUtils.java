@@ -13,7 +13,7 @@ public class ArrayUtils {
                 }
             }
         }
-        return -1; //not found or null
+        return -1; // not found or null
     }
 
     public static int findEqualsObjects(Object[] array, Object equalsObject) {

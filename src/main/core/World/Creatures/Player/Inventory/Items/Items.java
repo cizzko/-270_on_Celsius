@@ -56,7 +56,7 @@ public class Items implements Serializable {
 
         if (requiredForBuild != null) {
             String[] required = requiredForBuild.split(",");
-            //required for build items
+            // required for build items
             Items[] output = new Items[required.length];
 
             for (int i = 0; i < required.length; i++) {
@@ -140,7 +140,7 @@ public class Items implements Serializable {
     }
 
     public static float computeZoom(Sized size) {
-        //32 - целевой размер текстуры
+        // 32 - target structure size
         return 32f / (Math.max(size.width(), size.height()));
     }
 }

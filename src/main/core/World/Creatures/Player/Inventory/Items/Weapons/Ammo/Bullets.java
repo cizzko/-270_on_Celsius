@@ -94,7 +94,7 @@ public class Bullets {
         Atlas.Region bulletRegion = atlas.byPath("World/Items/someBullet.png");
 
         for (Bullets bullet : bullets) {
-            //TODO: add paths
+            // todo пути для пуль
             if (bullet != null && !(bullet.x > DynamicObjects.getFirst().getX() + 350 || bullet.x < DynamicObjects.getFirst().getX() - 350)) {
                 batch.draw(bulletRegion, bullet.x, bullet.y);
             }

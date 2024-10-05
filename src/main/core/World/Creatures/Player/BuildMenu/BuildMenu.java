@@ -31,7 +31,6 @@ public class BuildMenu {
     private static void addDefaultItems() {
         Properties defaultItems = Config.getProperties(assets.assetsDir("\\World\\ItemsCharacteristics\\DefaultBuildMenuItems.properties"));
 
-        //todo выглядит странно
         String[] details = ((String) defaultItems.getOrDefault("Details", "")).split(",");
         String[] tools = ((String) defaultItems.getOrDefault("Tools", "")).split(",");
         String[] weapons = ((String) defaultItems.getOrDefault("Weapons", "")).split(",");
@@ -78,7 +77,6 @@ public class BuildMenu {
                         Inventory.decrementItem(obj.x, obj.y);
                     }
                 }
-                //todo надо наверное унифицировать, создав общий метод createElement()
                 Items currentItem = items[currentObject.x][currentObject.y];
 
                 switch (items[currentObject.x][currentObject.y].type) {
@@ -150,7 +148,7 @@ public class BuildMenu {
                 for (int y = 0; y < items[x].length; y++) {
                     if (items[x][y] != null) {
                         float xCoord = 1660 + x * 54;
-                        //float yCoord = 57 + scroll + (items[x][y].type.ordinal() * 20) + y * 54f;
+                        // float yCoord = 57 + scroll + (items[x][y].type.ordinal() * 20) + y * 54f;
                         float yCoord = 57 + scroll + (y * 54f);
 
                         if (yCoord < 115 && yCoord > -60) {
@@ -164,14 +162,14 @@ public class BuildMenu {
                 }
             }
             if (currentObject != null && items[currentObject.x][currentObject.y] != null) {
-                //float yCoord = 47 + scroll + (items[currentObject.x][currentObject.y].type.ordinal() * 20) + currentObject.y * 54;
+                // float yCoord = 47 + scroll + (items[currentObject.x][currentObject.y].type.ordinal() * 20) + currentObject.y * 54;
                 float yCoord = 47 + scroll + (currentObject.y * 54);
 
                 if (yCoord < 105 && yCoord > -60) {
                     batch.draw(atlas.byPath("UI/GUI/inventory/inventoryCurrent.png"), 1650 + currentObject.x * 54, yCoord);
                 }
             }
-            //scrollbar
+            // scrollbar
             SimpleColor color = SimpleColor.fromRGBA(0, 0, 0, 200);
             Fill.rect(1915, (int) Math.abs(scroll / 2f) - 5, 4, 20, color);
 
@@ -214,7 +212,7 @@ public class BuildMenu {
         }
     }
 
-    //todo categories
+    // todo categories
     public static void addItem(Items item) {
         for (int x = 0; x < items.length; x++) {
             for (int y = 0; y < items[0].length; y++) {

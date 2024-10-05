@@ -47,19 +47,19 @@ public class ElectricCables implements InventoryEvents {
         ElectricCables fromContainsCable = getNetworkIsHere(from);
         ElectricCables toContainsCable = getNetworkIsHere(to);
 
-        //if two cable lines need connected
+        // if two cable lines need connected
         if (fromContainsCable != null && toContainsCable != null) {
             fromContainsCable.points.addAll(toContainsCable.points);
 
-            //if the cable is pulled from a point without cable to a point with cable
+            // if the cable is pulled from a point without cable to a point with cable
         } else if (toContainsCable != null) {
             toContainsCable.points.add(from);
 
-            //if the cable is pulled from a point with cable to a point without cable
+            // if the cable is pulled from a point with cable to a point without cable
         } else if (fromContainsCable != null) {
             fromContainsCable.points.add(to);
 
-            //if start pulling new cable
+            // if start pulling new cable
         } else {
             ElectricCables cable = new ElectricCables();
             cable.points = new LinkedHashSet<>();
@@ -85,7 +85,7 @@ public class ElectricCables implements InventoryEvents {
             cable.lastDamageTime = System.currentTimeMillis();
         }
         if (cable.currentHp <= 0) {
-            //TODO: here need virtual thread?..
+            // todo а так ли нужен тут виртуальный поток?
             Thread.startVirtualThread(() -> cables.remove(cable)).start();
         }
     }

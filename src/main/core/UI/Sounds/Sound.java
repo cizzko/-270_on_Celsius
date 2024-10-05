@@ -18,7 +18,7 @@ public class Sound {
         EFFECT
     }
 
-    //only wav, dev 0.0.0.2
+    // only wav, dev 0.0.0.2
     public static void SoundPlay(String path, types type, boolean limitAmount) {
         if (path != null && (!sounds.contains(path) || !limitAmount)) {
             if (!suppVolumeLevel && !error) {
@@ -35,7 +35,7 @@ public class Sound {
                     AudioInputStream inputStream = AudioSystem.getAudioInputStream(new File(path));
                     AudioFormat format = inputStream.getFormat();
 
-                    //to PCM
+                    // to PCM
                     if (format.getEncoding() != AudioFormat.Encoding.PCM_SIGNED) {
                         format = new AudioFormat(AudioFormat.Encoding.PCM_SIGNED, format.getSampleRate(), format.getSampleSizeInBits() * 2, format.getChannels(), format.getFrameSize() * 2, format.getFrameRate(), true);
                         inputStream = AudioSystem.getAudioInputStream(format, inputStream);

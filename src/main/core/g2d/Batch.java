@@ -40,7 +40,7 @@ public class Batch implements Disposable {
 
     private boolean disposed;
 
-    // Состояние по умолчанию / кеш
+    // default state / cache
     private float prevColorBits;
     private Blending prevBlending;
     private float prevXScale = 1f, prevYScale = 1f;
@@ -48,7 +48,7 @@ public class Batch implements Disposable {
     // region Изменение параметров
 
     public final void blending(Blending blending) {
-        flush(); // Иначе будут артефакты и неконсистентность
+        flush(); // remove artifacts
         this.prevBlending = this.blending;
         this.blending = blending;
     }
@@ -160,7 +160,7 @@ public class Batch implements Disposable {
         vertexCount = 0;
     }
 
-    // Отрисовка
+    // drawing
 
     public final void draw(Drawable drawable) {
         draw(drawable, 0, 0);
@@ -173,7 +173,7 @@ public class Batch implements Disposable {
     public final void draw(Drawable drawable, float x, float y, float width, float height) {
         float x2 = x + width;
         float y2 = y + height;
-        drawTexture(drawable, x, y, x, y2, x2, y2, x2, y); // С учётом индексов!!
+        drawTexture(drawable, x, y, x, y2, x2, y2, x2, y); // index!!!
     }
 
     public final void rect(Drawable drawable,

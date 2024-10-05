@@ -52,7 +52,7 @@ public class Player {
     }
 
     public static void updatePlayerMove() {
-        // TODO тут надо проверять элемент UI на фокусировку, т.е. на порядок отображения (фокусирован = самый последний элемент)
+        // todo тут надо проверять элемент UI на фокусировку, т.е. на порядок отображения (фокусирован = самый последний элемент)
         if (EventHandler.isKeylogging()) {
             return;
         }
@@ -92,7 +92,7 @@ public class Player {
         }
     }
 
-    //todo это наверное все же инвентарь, нежели игрок?
+    // todo это наверное все же инвентарь, нежели игрок?
     private static void updatePlaceableInteraction() {
         if (underMouseItem == null && currentObjectType == Items.Types.PLACEABLE && input.clicked(GLFW_MOUSE_BUTTON_LEFT)) {
             if (input.mousePos().x > (Inventory.inventoryOpen ? 1488 : 1866)) {
@@ -179,7 +179,7 @@ public class Player {
         }
     }
 
-    //ищет корень структуры в радиусе 4 блока
+    // searches for the root of a structure within a radius of 4 blocks
     public static Point2i findRoot(int cellX, int cellY) {
         if (!StaticObjectsConst.getConst(getId(getObject(cellX, cellY))).hasMotherBlock && StaticObjectsConst.getConst(getId(getObject(cellX, cellY))).optionalTiles == null) {
             return null;

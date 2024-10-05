@@ -25,9 +25,9 @@ import static core.World.StaticWorldObjects.Structures.Factories.updateFactories
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
-//version 1.5
+// version 1.5
 public class Physics {
-    //default 400
+    // default 400
     public static int physicsSpeed = 400, worldSaveDelay = Integer.parseInt(Config.getFromConfig("AutosaveWorldFrequency"));
     private static boolean stop = false;
     public static int lastSpeed = physicsSpeed;
@@ -92,7 +92,7 @@ public class Physics {
     }
 
     private static void updateHorizontalSpeed(DynamicWorldObjects dynamicObject, Sized size) {
-        //возможно будут какие-то приколы возникать из-за делителя 10 вместо 100, но зато теперь боковое сопротивление работает нормально
+        // todo боковое сопротивление в листве становится отрицательным
         dynamicObject.setMotionVectorX(dynamicObject.getMotionVectorX() * (1 - (getTotalResistanceInside(dynamicObject) / 10f)));
 
         boolean intersR = checkIntersStaticR(dynamicObject.getX() + dynamicObject.getMotionVectorX() * 61, dynamicObject.getY(), size.width(), size.height());
@@ -137,7 +137,7 @@ public class Physics {
                 }
                 object.incrementCurrentHP(-damage);
 
-                //TODO: rewrite
+                // todo переписать
                 if (object.getTexture().name().toLowerCase().contains("player")) {
                     lastDamage = (int) damage;
                     lastDamageTime = System.currentTimeMillis();

@@ -19,6 +19,7 @@ public final class Atlas {
     private Region errorRegion;
     private Map<String, Region> regions;
 
+    // returns atlas of all loaded image, the './gradlew genatlas' call is required to generate the atlas
     public static Atlas load(String atlasBaseName) throws IOException {
         Path atlasPath = Path.of(atlasBaseName + ATLAS_EXT);
         Path atlasMetaPath = Path.of(atlasBaseName + META_EXT);

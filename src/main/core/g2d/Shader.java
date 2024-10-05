@@ -62,7 +62,7 @@ public final class Shader implements Disposable {
     private static int compileShader(int type, String source) {
         int glHandle = glCreateShader(type);
         if (glHandle == 0) {
-            return 0; // Ошибка
+            return 0; // error
         }
         glShaderSource(glHandle, source);
         glCompileShader(glHandle);

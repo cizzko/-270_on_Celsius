@@ -16,7 +16,7 @@ public class ShadowMap {
     private static HashMap<DynamicWorldObjects, SimpleColor> shadowsDynamic = new HashMap<>();
     private static SimpleColor deletedColor = SimpleColor.CLEAR, deletedColorDynamic = SimpleColor.CLEAR, addedColor = SimpleColor.CLEAR, addedColorDynamic = SimpleColor.CLEAR;
 
-    //TODO: rewrite generation n update
+    // todo переписать генерацию и обновление теней
 
     public static SimpleColor getShadow(int x, int y) {
         return x + SizeX * y < 0 || x + SizeX * y > shadows.length ? SimpleColor.CLEAR : SimpleColor.toColor(shadows[x + SizeX * y]);

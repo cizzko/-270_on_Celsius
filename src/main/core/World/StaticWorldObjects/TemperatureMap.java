@@ -15,6 +15,7 @@ public class TemperatureMap {
     private static final float coreTemp = 4000;
     public static float dayTemperatureDecrement = 0.04f, currentWorldTemperature;
 
+    // todo как то криво работает
     public static void create() {
         currentWorldTemperature = currentTime / 100;
         temperature = new float[WorldGenerator.SizeY];
@@ -50,7 +51,7 @@ public class TemperatureMap {
             }
             return temp;
         }
-        //thermal conductivity
+        // thermal conductivity
         int n = 100;
         return Math.clamp(temperature[cellY] + (currentWorldTemperature / (temperature.length / (cellY + 1f))) / (101 - n), -270, coreTemp);
     }

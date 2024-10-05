@@ -11,7 +11,7 @@ public final class SimpleColor implements Serializable {
     public static final SimpleColor DIRTY_BRIGHT_BLACK = fromRGBA(10, 10, 10, 255);
     public static final SimpleColor DIRTY_BLACK = fromRGBA(10, 10, 10, 55);
 
-    private final int value; // argb?
+    private final int value;
 
     public static SimpleColor toColor(int value) {
         return SimpleColor.fromRGBA((value >> 16) & 0xFF, (value >> 8) & 0xFF, (value) & 0xFF, (value >> 24) & 0xff);

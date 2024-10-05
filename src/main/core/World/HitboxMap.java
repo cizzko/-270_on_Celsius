@@ -156,7 +156,7 @@ public class HitboxMap {
     }
 
     public static Point2i[] checkIntersOutside(float x, float y, int sizeX, int sizeY) {
-        //TODO: ужс, переписать
+        // todo ужс, переписать
 
         Point2i[] d = checkIntersStaticDP(x, y, sizeX, sizeY);
         if (d.length > 0) {

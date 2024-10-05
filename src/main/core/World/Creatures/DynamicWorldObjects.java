@@ -10,7 +10,7 @@ import java.util.HashMap;
 
 import static core.World.Textures.TextureDrawing.blockSize;
 
-//dynamic objects, can have any coordinates within the world and be moved at any time
+// dynamic objects, can have any coordinates within the world and be moved at any time
 public class DynamicWorldObjects implements Serializable {
     private static final HashMap<String, Byte> ids = new HashMap<>();
     private static byte lastId = -128;

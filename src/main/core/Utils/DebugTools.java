@@ -1,9 +1,5 @@
 package core.Utils;
 
-//start core.Utils.DebugTools.startUpdate
-//modify core.Utils.DebugTools.selectionBlocksCopy true
-//modify core.Utils.DebugTools.selectionBlocksDelete true
-
 import core.EventHandling.Logging.Logger;
 import core.Global;
 import core.World.Textures.ShadowMap;

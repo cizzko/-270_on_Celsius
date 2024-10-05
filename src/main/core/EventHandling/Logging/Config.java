@@ -12,6 +12,7 @@ public class Config {
     private static final HashMap<String, Properties> props = new HashMap<>(3);
     private static final HashMap<String, Object> values = new HashMap<>();
 
+    // checks if the startup configuration contains any parameters
     public static void checkConfig() {
         if (!configCheckMark) {
             Properties prop = getProperties(assets.assetsDir("config.properties"));
@@ -51,7 +52,7 @@ public class Config {
         }
     }
 
-    //if need caching values && prop
+    // when need caching values && properties
     public static Object getFromProp(String path, String key) {
         Object obj = values.get(key);
         if (obj != null) {
@@ -64,7 +65,7 @@ public class Config {
         return value;
     }
 
-    //if need caching only prop
+    // when need caching only properties
     public static Properties getProperties(String path) {
         Properties props = Config.props.get(path);
         if (props == null) {
@@ -84,7 +85,7 @@ public class Config {
         return (String) getFromProp(assets.assetsDir("config.properties"), key);
     }
 
-    //fast commands
+    // fast commands
     public static String getFromFC(String key) {
         return (String) getFromProp(assets.assetsDir("fastCommands.properties"), key);
     }

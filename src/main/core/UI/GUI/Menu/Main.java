@@ -13,7 +13,7 @@ import static core.Window.*;
 
 public class Main {
     public static void create() {
-        //default coordinate system - full hd
+        // default coordinate system - full hd
         createPanel(0, 965, EventHandler.width, 115, "defPan", true, "MainMenu");
 
         createPictureButton(1830, 990, Global.atlas.byPath("UI/discordIcon.png"), "DiscordButton", "MainMenu", Main::discordBtn);
@@ -30,7 +30,7 @@ public class Main {
     private static void discordBtn() {
         try {
             Desktop desktop = Desktop.getDesktop();
-            desktop.browse(new URI("https://discord.gg/gUS9X6exAQ"));
+            desktop.browse(new URI("https:// discord.gg/gUS9X6exAQ"));
         } catch (Exception e) {
             printException("Error when open discord server", e);
         }

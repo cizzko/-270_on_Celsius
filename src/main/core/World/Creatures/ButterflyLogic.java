@@ -10,7 +10,7 @@ public class ButterflyLogic {
     private static final HashMap<DynamicWorldObjects, Long> lastSwapPos = new HashMap<>();
     private static final int swapPosTime = 200;
 
-    //TODO: rewrite
+    // todo переписать
     public static void update(DynamicWorldObjects object) {
         if (object.getTexture().name().contains("butterfly")) {
             if (lastSwapPos.get(object) != null) {
