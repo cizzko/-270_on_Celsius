@@ -25,7 +25,7 @@ public final class AssetsManager {
     }
 
     public static String normalizePath(String path) {
-        return path == null ? null : path.replace('\\', '/').replaceAll("// ", "/");
+        return path == null ? null : path.replace('\\', '/').replaceAll("//", "/");
     }
 
     public Texture getTextureByPath(String path) {
