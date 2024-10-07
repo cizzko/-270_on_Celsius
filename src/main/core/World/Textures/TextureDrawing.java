@@ -508,23 +508,23 @@ public class TextureDrawing {
 
                 Fill.rect(slider.getSliderPos() - (triangle.width() / 2f) - (numbersWidth / 3.5f), slider.y + 47, 30 + numbersWidth / 1.75f, 30, SimpleColor.fromRGBA(0, 0, 0, 178));
                 batch.resetZ();
+
+                batch.color(SimpleColor.DIRTY_WHITE);
+
+                int x = slider.getSliderPos() - (numbersWidth / 2) + 5;
+                for (int i = 0; i < sliderValue.length(); i++) {
+                    char ch = sliderValue.charAt(i);
+
+                    if (ch == ' ') {
+                        x += Window.defaultFont.getGlyph('A').width();
+                        continue;
+                    }
+                    Font.Glyph glyph = Window.defaultFont.getGlyph(ch);
+                    batch.draw(glyph, x, slider.y + 47);
+                    x += glyph.width();
+                }
             } else {
                 // todo продолжить после возможности менять размер циферок и буковок
-            }
-
-            batch.color(SimpleColor.DIRTY_WHITE);
-
-            int x = slider.getSliderPos() - (numbersWidth / 2) + 5;
-            for (int i = 0; i < sliderValue.length(); i++) {
-                char ch = sliderValue.charAt(i);
-
-                if (ch == ' ') {
-                    x += Window.defaultFont.getGlyph('A').width();
-                    continue;
-                }
-                Font.Glyph glyph = Window.defaultFont.getGlyph(ch);
-                batch.draw(glyph, x, slider.y + 47);
-                x += glyph.width();
             }
             batch.resetColor();
 
