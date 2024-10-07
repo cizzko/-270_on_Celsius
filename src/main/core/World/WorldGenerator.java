@@ -50,7 +50,7 @@ public class WorldGenerator {
         objects.put("WorldMinVectorIntersDamage", minVectorIntersDamage);
         objects.put("WorldDayCount", dayCount);
         objects.put("WorldCurrentTime", Sun.currentTime);
-        objects.put("WorldGenerateCreatures", buttons.get(Json.getName("GenerateCreatures")).isClicked);
+        objects.put("WorldGenerateCreatures", buttons.get(Json.getName("GenerateCreatures")).isClicked());
 
         return objects;
     }
@@ -181,9 +181,9 @@ public class WorldGenerator {
             int SizeY = sliderPos + 20;
 
             //todo чтоб не вылетала ошибка, если игрок не переходил в другой раздел настроек генерации, и кнопка не была создана
-            boolean simple = buttons.containsKey(Json.getName("GenerateSimpleWorld")) && buttons.get(Json.getName("GenerateSimpleWorld")).isClicked;
-            boolean randomSpawn = buttons.containsKey(Json.getName("RandomSpawn")) && buttons.get(Json.getName("RandomSpawn")).isClicked;
-            boolean creatures = buttons.containsKey(Json.getName("GenerateCreatures")) && buttons.get(Json.getName("GenerateCreatures")).isClicked;
+            boolean simple = buttons.containsKey(Json.getName("GenerateSimpleWorld")) && buttons.get(Json.getName("GenerateSimpleWorld")).isClicked();
+            boolean randomSpawn = buttons.containsKey(Json.getName("RandomSpawn")) && buttons.get(Json.getName("RandomSpawn")).isClicked();
+            boolean creatures = buttons.containsKey(Json.getName("GenerateCreatures")) && buttons.get(Json.getName("GenerateCreatures")).isClicked();
 
             log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world with size: x - " + SizeX + ", y - " + SizeY);
 
@@ -206,7 +206,6 @@ public class WorldGenerator {
             Player.createPlayer(randomSpawn);
 
             log("World generator: generating done!\n");
-            texts.get("WorldGeneratorState").text += "\\nGenerating done! Starting world..";
 
             start(creatures);
         }).start();
@@ -334,8 +333,6 @@ public class WorldGenerator {
     }
 
     private static void generateEnvironments() {
-        texts.get("WorldGeneratorState").text += "\\nFourth step: ";
-
         generateTrees();
         generateDecorStones();
         generateHerb();
@@ -344,14 +341,12 @@ public class WorldGenerator {
 
     private static void generateTrees() {
         log("World generator: generating trees");
-        texts.get("WorldGeneratorState").text += "generating trees";
 
         generateForest(80, 2, 20, 4, 8, false, "tree0", "tree1");
     }
 
     private static void generateDecorStones() {
         log("World generator: generating decor stones");
-        texts.get("WorldGeneratorState").text += ", generating decor stones";
 
         float chance = 40;
         for (int x = 0; x < SizeX; x++) {

@@ -25,8 +25,8 @@ public class Pause {
 
     public static void delete() {
         if (created) {
-            buttons.values().stream().filter(button -> button.group.equals("Pause")).forEach(button -> button.visible = false);
-            panels.get("Panel").visible = false;
+            buttons.values().stream().filter(button -> button.getGroup().equals("Pause")).forEach(button -> button.setVisible(false));
+            panels.get("Panel").setVisible(false);
             created = false;
         }
     }

@@ -23,8 +23,8 @@ public class Main {
     }
 
     public static void delete() {
-        buttons.values().stream().filter(button -> button.group.equals("MainMenu")).forEach(button -> button.visible = false);
-        panels.get("defPan").visible = false;
+        buttons.values().stream().filter(button -> button.getGroup().equals("MainMenu")).forEach(button -> button.setVisible(false));
+        panels.get("defPan").setVisible(false);
     }
 
     private static void discordBtn() {

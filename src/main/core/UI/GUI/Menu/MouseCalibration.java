@@ -32,14 +32,14 @@ public class MouseCalibration {
     public static void delete() {
         glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
-        buttons.values().stream().filter(button -> button.group.equals("MouseCalibration")).forEach(button -> button.visible = false);
-        panels.values().stream().filter(button -> button.group.equals("MouseCalibration")).forEach(button -> button.visible = false);
-        texts.values().stream().filter(button -> button.group.equals("MouseCalibration")).forEach(button -> button.visible = false);
+        buttons.values().stream().filter(button -> button.getGroup().equals("MouseCalibration")).forEach(button -> button.setVisible(false));
+        panels.values().stream().filter(button -> button.getGroup().equals("MouseCalibration")).forEach(button -> button.setVisible(false));
+        texts.values().stream().filter(button -> button.getGroup().equals("MouseCalibration")).forEach(button -> button.setVisible(false));
     }
 
     public static void update() {
         new Thread(() -> {
-            while (!buttons.get(Json.getName("CalibrateMouseContinue")).isClicked) {
+            while (!buttons.get(Json.getName("CalibrateMouseContinue")).isClicked()) {
                 if (Global.input.pressed(GLFW_KEY_A) || Global.input.pressed(GLFW_KEY_LEFT)) {
                     xMultiplier -= 0.01f;
 

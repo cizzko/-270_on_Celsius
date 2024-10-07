@@ -11,7 +11,7 @@ public final class SimpleColor implements Serializable {
     public static final SimpleColor DIRTY_BRIGHT_BLACK = fromRGBA(10, 10, 10, 255);
     public static final SimpleColor DIRTY_BLACK = fromRGBA(10, 10, 10, 55);
 
-    private final int value;
+    private int value;
 
     public static SimpleColor toColor(int value) {
         return SimpleColor.fromRGBA((value >> 16) & 0xFF, (value >> 8) & 0xFF, (value) & 0xFF, (value >> 24) & 0xff);
@@ -70,6 +70,26 @@ public final class SimpleColor implements Serializable {
 
     public int getAlpha() {
         return (value >> 24) & 0xff;
+    }
+
+    public void setRed(int value) {
+        int r = clamp(value);
+        this.value = (getAlpha() << 24) | (r << 16) | (getGreen() << 8) | (getBlue());
+    }
+
+    public void setGreen(int value) {
+        int g = clamp(value);
+        this.value = (getAlpha() << 24) | (getRed() << 16) | (g << 8) | (getBlue());
+    }
+
+    public void setBlue(int value) {
+        int b = clamp(value);
+        this.value = (getAlpha() << 24) | (getRed() << 16) | (getGreen() << 8) | (b);
+    }
+
+    public void setAlpha(int value) {
+        int a = clamp(value);
+        this.value = (a << 24) | (getRed() << 16) | (getGreen() << 8) | (getBlue());
     }
 
     @Override

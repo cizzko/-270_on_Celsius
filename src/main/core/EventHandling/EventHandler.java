@@ -81,33 +81,35 @@ public class EventHandler {
         Point2i mousePos = input.mousePos();
 
         for (SliderObject slider : sliders.values()) {
-            if (!slider.visible) {
-                slider.isClicked = false;
+            if (!slider.isVisible()) {
+                slider.setClicked(false);
                 continue;
             }
 
+            slider.setSliderPos(slider.getLastSliderPos());
+
             if (slider.contains(mousePos) && input.clicked(GLFW_MOUSE_BUTTON_LEFT)) {
-                slider.sliderPos = mousePos.x;
+                slider.setLastSliderPos(mousePos.x);
             }
         }
     }
 
     private static void updateButtons() {
         for (ButtonObject button : buttons.values()) {
-            if (button == null || !button.visible || !button.isClickable) {
+            if (button == null || !button.isVisible() || !button.isClickable()) {
                 continue;
             }
 
-            if (button.swapButton) {
+            if (button.isSwapButton()) {
                 if (EventHandler.getRectangleClick(button.x, button.y, button.width + button.x, button.height + button.y)) {
-                    button.isClicked = !button.isClicked;
+                    button.setClicked(!button.isClicked());
                 }
             } else {
                 boolean press = EventHandler.getRectangleClick(button.x, button.y, button.width + button.x, button.height + button.y);
-                button.isClicked = press;
+                button.setClicked(press);
 
-                if (press && button.taskOnClick != null) {
-                    Thread.startVirtualThread(() -> button.taskOnClick.run());
+                if (press && button.getTaskOnClick() != null) {
+                    Thread.startVirtualThread(() -> button.getTaskOnClick().run());
                     return;
                 }
             }
@@ -115,20 +117,20 @@ public class EventHandler {
     }
 
     private static void updateClicks() {
-        if (Settings.createdSettings && !buttons.get(Json.getName("SettingsSave")).isClicked) {
-            int count = (int) buttons.values().stream().filter(currentButton -> currentButton.isClicked &&
-                    currentButton.visible && (currentButton.group.contains("Swap") || currentButton.group.contains("Drop"))).count();
+        if (Settings.createdSettings && !buttons.get(Json.getName("SettingsSave")).isClicked()) {
+            int count = (int) buttons.values().stream().filter(currentButton -> currentButton.isClicked() &&
+                    currentButton.isVisible() && (currentButton.getGroup().contains("Swap") || currentButton.getGroup().contains("Drop"))).count();
 
             if (Settings.needUpdateCount) {
                 Settings.pressedCount = count;
                 Settings.needUpdateCount = false;
             } else if (count != Settings.pressedCount) {
-                buttons.get(Json.getName("SettingsSave")).isClickable = true;
+                buttons.get(Json.getName("SettingsSave")).setClickable(true);
             }
         }
 
-        if (sliders.get("worldSize") != null && sliders.get("worldSize").visible) {
-            float worldSize = sliders.get("worldSize").max;
+        if (sliders.get("worldSize") != null && sliders.get("worldSize").isVisible()) {
+            float worldSize = sliders.get("worldSize").getMax();
             String pic;
 
             int sliderPos = getSliderPos("worldSize");
@@ -139,7 +141,7 @@ public class EventHandler {
             } else {
                 pic = "planetMini.png";
             }
-            panels.get("planet").texture = atlas.byPath("World/WorldGenerator/" + pic);
+            panels.get("planet").setTexture(atlas.byPath("World/WorldGenerator/" + pic));
         }
     }
 

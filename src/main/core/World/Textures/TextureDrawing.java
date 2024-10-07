@@ -18,6 +18,7 @@ import core.World.StaticWorldObjects.Structures.ElectricCables;
 import core.World.StaticWorldObjects.Structures.Factories;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.WorldUtils;
+import core.g2d.Atlas;
 import core.g2d.Fill;
 import core.g2d.Font;
 import core.graphic.Layer;
@@ -83,8 +84,8 @@ public class TextureDrawing {
 
     public static void drawPrompt(ButtonObject button) {
         if (getFromConfig("ShowPrompts").equals("true")) {
-            if (Rectangle.contains(button.x, button.y, button.width, button.height, input.mousePos()) && System.currentTimeMillis() - input.getLastMouseMoveTimestamp() >= 1000 && button.prompt != null) {
-                drawRectangleText(input.mousePos().x, input.mousePos().y, 0, button.prompt, false, SimpleColor.fromRGBA(40, 40, 40, 240));
+            if (Rectangle.contains(button.x, button.y, button.width, button.height, input.mousePos()) && System.currentTimeMillis() - input.getLastMouseMoveTimestamp() >= 1000 && button.getPrompt() != null) {
+                drawRectangleText(input.mousePos().x, input.mousePos().y, 0, button.getPrompt(), false, SimpleColor.fromRGBA(40, 40, 40, 240));
             }
         }
     }
@@ -405,21 +406,21 @@ public class TextureDrawing {
     }
 
     private static void updatePanels() {
-        List<PanelObject> sortedPanels = panels.values().stream().sorted(Comparator.comparingInt(p -> p.layer)).toList();
+        List<PanelObject> sortedPanels = panels.values().stream().sorted(Comparator.comparingInt(PanelObject::getLayer)).toList();
 
         for (PanelObject panel : sortedPanels) {
-            if (!panel.visible) {
+            if (!panel.isVisible()) {
                 continue;
             }
 
-            if (panel.texture != null) {
-                batch.draw(panel.texture, panel.x, panel.y);
+            if (panel.getTexture() != null) {
+                batch.draw(panel.getTexture(), panel.x, panel.y);
             } else {
-                if (!panel.simple) {
-                    Fill.rect(panel.x, panel.y, panel.width, panel.height, panel.color);
-                    Fill.rectangleBorder(panel.x, panel.y, panel.width, panel.height, 20, panel.color);
+                if (!panel.isSimple()) {
+                    Fill.rect(panel.x, panel.y, panel.width, panel.height, panel.getColor());
+                    Fill.rectangleBorder(panel.x, panel.y, panel.width, panel.height, 20, panel.getColor());
                 } else {
-                    Fill.rect(panel.x, panel.y, panel.width, panel.height, panel.color);
+                    Fill.rect(panel.x, panel.y, panel.width, panel.height, panel.getColor());
                 }
             }
 
@@ -429,27 +430,27 @@ public class TextureDrawing {
     private static void updateSwapButtons() {
         for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
             ButtonObject button = entry.getValue();
-            if (!button.visible || !button.swapButton) {
+            if (!button.isVisible() || !button.isSwapButton()) {
                 continue;
             }
 
-            if (button.simple && button.isClicked) {
-                Fill.rect(button.x, button.y, button.width, button.height, button.color);
+            if (button.isSimple() && button.isClicked()) {
+                Fill.rect(button.x, button.y, button.width, button.height, button.getColor());
                 batch.draw(atlas.byPath("UI/GUI/checkMarkTrue.png"), button.x + button.width / 1.3f, button.y + button.height / 3f);
-                drawText(button.x * 1.1f, button.y + button.height / 3f, button.name);
-            } else if (button.simple) {
-                Fill.rect(button.x, button.y, button.width, button.height, button.color);
-                drawText(button.x * 1.1f, button.y + button.height / 3f, button.name);
+                drawText(button.x * 1.1f, button.y + button.height / 3f, button.getName());
+            } else if (button.isSimple()) {
+                Fill.rect(button.x, button.y, button.width, button.height, button.getColor());
+                drawText(button.x * 1.1f, button.y + button.height / 3f, button.getName());
             } else {
                 // if swap and not simple
-                if (button.isClicked) {
-                    Fill.rectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
+                if (button.isClicked()) {
+                    Fill.rectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.getColor());
                     batch.draw(atlas.byPath("UI/GUI/checkMarkTrue.png"), button.x, button.y);
-                    drawText(button.width + button.x + 24, button.y, button.name);
+                    drawText(button.width + button.x + 24, button.y, button.getName());
                 } else {
-                    Fill.rectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.color);
+                    Fill.rectangleBorder(button.x - 6, button.y - 6, button.width, button.height, 6, button.getColor());
                     batch.draw(atlas.byPath("UI/GUI/checkMarkFalse.png"), button.x, button.y);
-                    drawText(button.width + button.x + 24, button.y, button.name);
+                    drawText(button.width + button.x + 24, button.y, button.getName());
                 }
             }
             drawPrompt(button);
@@ -459,24 +460,24 @@ public class TextureDrawing {
     private static void updateButtons() {
         for (Map.Entry<String, ButtonObject> entry : buttons.entrySet()) {
             ButtonObject button = entry.getValue();
-            if (!button.visible || button.swapButton) {
+            if (!button.isVisible() || button.isSwapButton()) {
                 continue;
             }
 
-            if (button.texture != null) {
-                batch.draw(button.texture, button.x, button.y);
+            if (button.getTexture() != null) {
+                batch.draw(button.getTexture(), button.x, button.y);
             } else {
-                if (button.simple) {
-                    Fill.rect(button.x, button.y, button.width, button.height, button.color);
+                if (button.isSimple()) {
+                    Fill.rect(button.x, button.y, button.width, button.height, button.getColor());
                 } else {
-                    Fill.rectangleBorder(button.x, button.y, button.width, button.height, 6, button.color);
+                    Fill.rectangleBorder(button.x, button.y, button.width, button.height, 6, button.getColor());
                 }
 
-                if (!button.isClickable) {
+                if (!button.isClickable()) {
                     Fill.rect(button.x, button.y, button.width, button.height, SimpleColor.fromRGBA(0, 0, 0, 123));
                 }
 
-                drawText(button.x + 20, button.y + button.height / 2.8f, button.name);
+                drawText(button.x + 20, button.y + button.height / 2.8f, button.getName());
                 drawPrompt(button);
             }
         }
@@ -484,22 +485,58 @@ public class TextureDrawing {
 
     private static void updateSliders() {
         for (SliderObject slider : sliders.values()) {
-            if (!slider.visible) {
+            if (!slider.isVisible()) {
                 continue;
             }
-            Fill.rect(slider.x, slider.y, slider.width, slider.height, slider.sliderColor);
-            batch.color(slider.dotColor);
-            Fill.circle(slider.sliderPos - (slider.height * 1.5f / 2), slider.y - 5, slider.height * 1.5f);
+            //line before dot
+            SimpleColor sliderColor = slider.getSliderColor();
+            Fill.rect(slider.x, slider.y, slider.getSliderPos() - slider.x, slider.height, sliderColor);
+            //all line
+            int lastColor = sliderColor.getAlpha();
+            sliderColor.setAlpha(lastColor - 100);
+            Fill.rect(slider.x, slider.y, slider.width, slider.height, sliderColor);
+            sliderColor.setAlpha(lastColor);
+
+            Atlas.Region triangle = atlas.byPath("UI/GUI/numberBoardTriangle.png");
+            String sliderValue = String.valueOf(slider.getSliderValue());
+
+            // todo нужен примитив треугольника
+            if (slider.getLastSliderValue() != slider.getSliderValue()) {
+                batch.z(Layer.GUI);
+                batch.draw(triangle, slider.getSliderPos() - (triangle.width() / 2f), slider.y + 40);
+
+                Fill.rect(slider.getSliderPos() - (triangle.width() / 2f), slider.y + 47, 30, 30, SimpleColor.fromRGBA(0, 0, 0, 178));
+                batch.color(SimpleColor.DIRTY_WHITE);
+
+                // todo сделать расширение прямоугольника текста
+                int x = slider.getSliderPos() - (getTextSize(sliderValue).width / 2) + 5;
+                for (int i = 0; i < sliderValue.length(); i++) {
+                    char ch = sliderValue.charAt(i);
+
+                    if (ch == ' ') {
+                        x += Window.defaultFont.getGlyph('A').width();
+                        continue;
+                    }
+                    Font.Glyph glyph = Window.defaultFont.getGlyph(ch);
+                    batch.draw(glyph, x, slider.y + 47);
+                    x += glyph.width();
+                }
+                batch.resetColor();
+                batch.resetZ();
+            }
+
+            batch.color(slider.getDotColor());
+            Fill.circle(slider.getSliderPos() - (slider.height * 0.875f), slider.y - 5, slider.height * 1.75f);
             batch.resetColor();
         }
     }
 
     private static void updateTexts() {
         for (TextObject text : texts.values()) {
-            if (!text.visible) {
+            if (!text.isVisible()) {
                 continue;
             }
-            drawText(text.x, text.y, text.text, text.color);
+            drawText(text.getX(), text.getY(), text.getText(), text.getColor());
         }
 
         if (Commandline.created) {

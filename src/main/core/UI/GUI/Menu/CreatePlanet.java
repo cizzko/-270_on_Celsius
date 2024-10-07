@@ -29,11 +29,11 @@ public class CreatePlanet {
     }
 
     public static void delete() {
-        panels.values().stream().filter(button -> button.group.equals("WorldGenerator")).forEach(button -> button.visible = false);
-        buttons.values().stream().filter(button -> button.group.contains("WorldGenerator")).forEach(button -> button.visible = false);
-        texts.values().stream().filter(button -> button.group.equals("WorldGeneratorState")).forEach(button -> button.visible = false);
+        panels.values().stream().filter(button -> button.getGroup().equals("WorldGenerator")).forEach(button -> button.setVisible(false));
+        buttons.values().stream().filter(button -> button.getGroup().contains("WorldGenerator")).forEach(button -> button.setVisible(false));
+        texts.values().stream().filter(button -> button.getGroup().equals("WorldGeneratorState")).forEach(button -> button.setVisible(false));
 
-        sliders.get("worldSize").visible = false;
+        sliders.get("worldSize").setVisible(false);
     }
 
     private static void returnBtn() {
@@ -46,9 +46,9 @@ public class CreatePlanet {
         deletePhysicsSet();
         createBasicSet();
 
-        buttons.get("Basic").isClickable = false;
-        buttons.get("Generation").isClickable = true;
-        buttons.get("Physics").isClickable = true;
+        buttons.get("Basic").setClickable(false);
+        buttons.get("Generation").setClickable(true);
+        buttons.get("Physics").setClickable(true);
     }
 
     private static void generationBtn() {
@@ -56,9 +56,9 @@ public class CreatePlanet {
         deletePhysicsSet();
         createGenerationSet();
 
-        buttons.get("Basic").isClickable = true;
-        buttons.get("Generation").isClickable = false;
-        buttons.get("Physics").isClickable = true;
+        buttons.get("Basic").setClickable(true);
+        buttons.get("Generation").setClickable(false);
+        buttons.get("Physics").setClickable(true);
     }
 
     private static void physicsBtn() {
@@ -66,9 +66,9 @@ public class CreatePlanet {
         deleteBasicSet();
         createPhysicsSet();
 
-        buttons.get("Basic").isClickable = true;
-        buttons.get("Generation").isClickable = true;
-        buttons.get("Physics").isClickable = false;
+        buttons.get("Basic").setClickable(true);
+        buttons.get("Generation").setClickable(true);
+        buttons.get("Physics").setClickable(false);
     }
 
     private static void createBasicSet() {
@@ -85,14 +85,14 @@ public class CreatePlanet {
     }
 
     private static void deleteBasicSet() {
-        buttons.values().stream().filter(button -> button.group.equals("WorldGeneratorBasicSwap")).forEach(button -> button.visible = false);
+        buttons.values().stream().filter(button -> button.getGroup().equals("WorldGeneratorBasicSwap")).forEach(button -> button.setVisible(false));
     }
 
     private static void deleteGenerationSet() {
-        buttons.values().stream().filter(button -> button.group.equals("WorldGeneratorGenerationSwap")).forEach(button -> button.visible = false);
+        buttons.values().stream().filter(button -> button.getGroup().equals("WorldGeneratorGenerationSwap")).forEach(button -> button.setVisible(false));
     }
 
     private static void deletePhysicsSet() {
-        buttons.values().stream().filter(button -> button.group.equals("WorldGeneratorPhysicsSwap")).forEach(button -> button.visible = false);
+        buttons.values().stream().filter(button -> button.getGroup().equals("WorldGeneratorPhysicsSwap")).forEach(button -> button.setVisible(false));
     }
 }

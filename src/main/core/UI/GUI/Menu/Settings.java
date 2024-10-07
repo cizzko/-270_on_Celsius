@@ -30,8 +30,8 @@ public class Settings {
         createButton(40, 200, 240, 65, getName("SettingsBasic"), null, true, SimpleColor.DIRTY_BLACK, "Settings", Settings::basicBtn);
         createButton(40, 100, 240, 65, getName("SettingsOther"), null, true, SimpleColor.DIRTY_BLACK, "Settings", Settings::otherBtn);
 
-        buttons.get(Json.getName("SettingsSave")).isClickable = false;
-        buttons.get(getName("SettingsGraphics")).isClickable = false;
+        buttons.get(Json.getName("SettingsSave")).setClickable(false);
+        buttons.get(getName("SettingsGraphics")).setClickable(false);
 
         createdSettings = true;
         createGraphicsSet();
@@ -57,21 +57,21 @@ public class Settings {
     }
 
     public static void deleteGraphicsSet() {
-        buttons.values().stream().filter(button -> button.group.contains("SettingsGraphics")).forEach(button -> button.visible = false);
+        buttons.values().stream().filter(button -> button.getGroup().contains("SettingsGraphics")).forEach(button -> button.setVisible(false));
     }
 
     public static void deleteBasicSet() {
-        buttons.values().stream().filter(button -> button.group.contains("SettingsBasic")).forEach(button -> button.visible = false);
-        panels.values().stream().filter(button -> button.group.contains("SettingsBasic")).forEach(button -> button.visible = false);
+        buttons.values().stream().filter(button -> button.getGroup().contains("SettingsBasic")).forEach(button -> button.setVisible(false));
+        panels.values().stream().filter(button -> button.getGroup().contains("SettingsBasic")).forEach(button -> button.setVisible(false));
     }
 
     public static void deleteOtherSet() {
-        buttons.values().stream().filter(button -> button.group.contains("SettingsOther")).forEach(button -> button.visible = false);
+        buttons.values().stream().filter(button -> button.getGroup().contains("SettingsOther")).forEach(button -> button.setVisible(false));
     }
 
     public static void delete() {
-        panels.values().stream().filter(button -> button.group.equals("Settings")).forEach(button -> button.visible = false);
-        buttons.values().stream().filter(button -> button.group.equals("Settings")).forEach(button -> button.visible = false);
+        panels.values().stream().filter(button -> button.getGroup().equals("Settings")).forEach(button -> button.setVisible(false));
+        buttons.values().stream().filter(button -> button.getGroup().equals("Settings")).forEach(button -> button.setVisible(false));
 
         deleteGraphicsSet();
         deleteBasicSet();
@@ -80,7 +80,7 @@ public class Settings {
     }
 
     public static void updateConfigAll() {
-        buttons.values().stream().filter(button -> button.group.contains("Swap") && button.visible).forEach(button -> Config.updateConfig(Json.getKey(button.name), String.valueOf(button.isClicked)));
+        buttons.values().stream().filter(button -> button.getGroup().contains("Swap") && button.isVisible()).forEach(button -> Config.updateConfig(Json.getKey(button.getName()), String.valueOf(button.isClicked())));
         Config.updateConfig("Language", newLang);
     }
 
@@ -93,7 +93,7 @@ public class Settings {
     }
 
     private static void saveBtn() {
-        buttons.get(Json.getName("SettingsSave")).isClickable = false;
+        buttons.get(Json.getName("SettingsSave")).setClickable(false);
         updateConfigAll();
     }
 
@@ -102,10 +102,10 @@ public class Settings {
         deleteOtherSet();
         createGraphicsSet();
 
-        buttons.get(Json.getName("SettingsGraphics")).isClickable = false;
-        buttons.get(Json.getName("SettingsBasic")).isClickable = true;
-        buttons.get(Json.getName("SettingsOther")).isClickable = true;
-        buttons.get(Json.getName("SettingsSave")).isClickable = false;
+        buttons.get(Json.getName("SettingsGraphics")).setClickable(false);
+        buttons.get(Json.getName("SettingsBasic")).setClickable(true);
+        buttons.get(Json.getName("SettingsOther")).setClickable(true);
+        buttons.get(Json.getName("SettingsSave")).setClickable(false);
         needUpdateCount = true;
     }
 
@@ -114,10 +114,10 @@ public class Settings {
         deleteOtherSet();
         deleteGraphicsSet();
 
-        buttons.get(Json.getName("SettingsBasic")).isClickable = false;
-        buttons.get(Json.getName("SettingsGraphics")).isClickable = true;
-        buttons.get(Json.getName("SettingsOther")).isClickable = true;
-        buttons.get(Json.getName("SettingsSave")).isClickable = false;
+        buttons.get(Json.getName("SettingsBasic")).setClickable(false);
+        buttons.get(Json.getName("SettingsGraphics")).setClickable(true);
+        buttons.get(Json.getName("SettingsOther")).setClickable(true);
+        buttons.get(Json.getName("SettingsSave")).setClickable(false);
         needUpdateCount = true;
     }
 
@@ -126,10 +126,10 @@ public class Settings {
         createOtherSet();
         deleteGraphicsSet();
 
-        buttons.get(Json.getName("SettingsOther")).isClickable = false;
-        buttons.get(Json.getName("SettingsGraphics")).isClickable = true;
-        buttons.get(Json.getName("SettingsBasic")).isClickable = true;
-        buttons.get(Json.getName("SettingsSave")).isClickable = false;
+        buttons.get(Json.getName("SettingsOther")).setClickable(false);
+        buttons.get(Json.getName("SettingsGraphics")).setClickable(true);
+        buttons.get(Json.getName("SettingsBasic")).setClickable(true);
+        buttons.get(Json.getName("SettingsSave")).setClickable(false);
         needUpdateCount = true;
     }
 
@@ -140,7 +140,7 @@ public class Settings {
             int finalI = i;
             tasks[i] = () -> {
               newLang = buttonNames[finalI];
-              buttons.get(getName("Language")).taskOnClick.run();
+              buttons.get(getName("Language")).getTaskOnClick().run();
             };
         }
         return tasks;
