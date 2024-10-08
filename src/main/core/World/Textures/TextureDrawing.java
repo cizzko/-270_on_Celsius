@@ -500,32 +500,42 @@ public class TextureDrawing {
             Atlas.Region triangle = atlas.byPath("UI/GUI/numberBoardTriangle.png");
             String sliderValue = String.valueOf(slider.getSliderValue());
             int numbersWidth = getTextSize(sliderValue).width;
+            int rectHeight = 30;
+            int rectBrightness = 170;
+            int rectY = 45;
+            float rectWidth = 1.75f;
 
-            // todo нужен примитив треугольника
-            if (slider.getLastSliderValue() != slider.getSliderValue()) {
-                batch.z(Layer.GUI);
-                batch.draw(triangle, slider.getSliderPos() - (triangle.width() / 2f), slider.y + 40);
-
-                Fill.rect(slider.getSliderPos() - (triangle.width() / 2f) - (numbersWidth / 3.5f), slider.y + 47, 30 + numbersWidth / 1.75f, 30, SimpleColor.fromRGBA(0, 0, 0, 178));
-                batch.resetZ();
-
-                batch.color(SimpleColor.DIRTY_WHITE);
-
-                int x = slider.getSliderPos() - (numbersWidth / 2) + 5;
-                for (int i = 0; i < sliderValue.length(); i++) {
-                    char ch = sliderValue.charAt(i);
-
-                    if (ch == ' ') {
-                        x += Window.defaultFont.getGlyph('A').width();
-                        continue;
-                    }
-                    Font.Glyph glyph = Window.defaultFont.getGlyph(ch);
-                    batch.draw(glyph, x, slider.y + 47);
-                    x += glyph.width();
-                }
-            } else {
-                // todo продолжить после возможности менять размер циферок и буковок
+            if (slider.getLastSliderValue() == slider.getSliderValue()) {
+                rectHeight = 26;
+                rectWidth = 2.5f;
+                rectY = 40;
+                rectBrightness = 120;
             }
+
+            batch.z(Layer.GUI);
+            // todo нужен примитив треугольника
+            // todo 7 это высота текстуры треугольника
+            batch.draw(triangle, slider.getSliderPos() - (triangle.width() / 2f), slider.y + rectY - 7);
+
+            Fill.rect(slider.getSliderPos() - (triangle.width() / 2f) - (numbersWidth / (rectWidth * 2)), slider.y + rectY, 30 + numbersWidth / rectWidth, rectHeight, SimpleColor.fromRGBA(0, 0, 0, rectBrightness));
+            batch.resetZ();
+
+            batch.color(SimpleColor.DIRTY_WHITE);
+
+            //int text size;
+            int x = slider.getSliderPos() - (numbersWidth / 2) + 5;
+            for (int i = 0; i < sliderValue.length(); i++) {
+                char ch = sliderValue.charAt(i);
+
+                if (ch == ' ') {
+                    x += Window.defaultFont.getGlyph('A').width();
+                    continue;
+                }
+                Font.Glyph glyph = Window.defaultFont.getGlyph(ch);
+                batch.draw(glyph, x, slider.y + rectY);
+                x += glyph.width();
+            }
+
             batch.resetColor();
 
             batch.color(slider.getDotColor());
