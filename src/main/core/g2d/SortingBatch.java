@@ -27,10 +27,14 @@ public class SortingBatch extends Batch {
     }
 
     public void draw(int z, Runnable runnable) {
-        requests.add(new RequestProcedure(z, runnable));
+        draw(new RequestProcedure(z, runnable));
     }
 
     public void draw(Request request) {
+        if (flushing) {
+            drawInternal(request);
+            return;
+        }
         requests.add(request);
     }
 
@@ -70,9 +74,7 @@ public class SortingBatch extends Batch {
             //   Также хочу отметить, что это позволит сделать интерфейс для прямой записи вершин.
             // Может потом пригодиться для сложных геометрических штук.
             //   На самом деле интересно, как повлияет это копирование из одного массива в другой.
-            for (Request request : requests) {
-                drawInternal(request);
-            }
+            requests.forEach(this::drawInternal);
             requests.clear();
             super.flush();
             flushing = false;

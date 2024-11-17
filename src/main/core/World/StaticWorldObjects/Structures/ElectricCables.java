@@ -85,7 +85,6 @@ public class ElectricCables implements InventoryEvents {
             cable.lastDamageTime = System.currentTimeMillis();
         }
         if (cable.currentHp <= 0) {
-            // todo а так ли нужен тут виртуальный поток?
             Thread.startVirtualThread(() -> cables.remove(cable)).start();
         }
     }

@@ -110,22 +110,22 @@ public class Structures implements Serializable {
         }
     }
 
-    public static short bindStructure(String name) {
-        if (!StaticWorldObjects.idsContains(name)) {
-            String path = assets.assetsDir("World/ItemsCharacteristics/" + name + ".properties");
-            byte rootId = StaticWorldObjects.generateId(name);
+    public static void bindStructure(String name, byte id) {
+        String path = assets.assetsDir("World/ItemsCharacteristics/" + name + ".properties");
 
-            byte maxHp;
-            short[][] blocks;
+        byte maxHp;
+        short[][] blocks;
 
-            // if its simple structure (without .ser file)
-            if (new File(path).exists()) {
-                Properties prop = Config.getProperties(path);
-                Atlas.Region texture = Global.atlas.byPath((String) prop.get("Path"));
-                blocks = new short[texture.width() / TextureDrawing.blockSize][texture.height() / TextureDrawing.blockSize];
+        // if its simple structure (without .ser file)
+        if (new File(path).exists()) {
+            Properties prop = Config.getProperties(path);
+            Atlas.Region texture = Global.atlas.byPath((String) prop.get("Path"));
+            blocks = new short[texture.width() / TextureDrawing.blockSize][texture.height() / TextureDrawing.blockSize];
+
+            if (blocks.length > 1 || blocks[0].length > 1) {
                 maxHp = Byte.parseByte((String) prop.getOrDefault("MaxHp", "100"));
 
-                StaticObjectsConst rootConst = StaticObjectsConst.getConst(path);
+                StaticObjectsConst rootConst = StaticObjectsConst.getConst(id);
                 StaticObjectsConst tailConst = rootConst.clone();
 
                 tailConst.optionalTiles = null;
@@ -140,14 +140,11 @@ public class Structures implements Serializable {
                     }
                 }
                 rootConst.optionalTiles = blocks;
-                StaticObjectsConst.setConst(rootConst, rootId);
-            } else {
-                blocks = bindStructures(getStructure(name).blocks);
-                maxHp = (byte) StaticWorldObjects.getMaxHp(blocks[0][0]);
-                StaticObjectsConst.setConst(name, rootId, blocks);
+                StaticObjectsConst.setConst(rootConst, id);
             }
-            return (short) (((maxHp & 0xFF) << 8) | (rootId & 0xFF));
+        } else {
+            blocks = bindStructures(getStructure(name).blocks);
+            StaticObjectsConst.setConst(name, id, blocks);
         }
-        return StaticWorldObjects.generateId(name);
     }
 }

@@ -3,6 +3,7 @@ package core.World.StaticWorldObjects;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
 import core.Global;
+import core.World.StaticWorldObjects.Structures.Structures;
 import core.g2d.Atlas;
 
 import java.io.File;
@@ -40,33 +41,7 @@ public class StaticObjectsConst implements Cloneable {
         return null;
     }
 
-    private StaticObjectsConst(boolean hasMotherBlock, float maxHp, float density, float resistance, int lightTransmission, Atlas.Region texture, String objectName, String originalFileName, Types type) {
-        this.hasMotherBlock = hasMotherBlock;
-        this.maxHp = maxHp;
-        this.density = density;
-        this.texture = texture;
-        this.objectName = objectName;
-        this.originalFileName = originalFileName;
-        this.type = type;
-        this.lightTransmission = lightTransmission;
-        this.resistance = resistance;
-        this.optionalTiles = null;
-    }
-
     private StaticObjectsConst(boolean hasMotherBlock, float maxHp, float density, float resistance, int lightTransmission, Atlas.Region texture, String objectName, String originalFileName, short[][] optionalTiles, Types type) {
-        this.hasMotherBlock = hasMotherBlock;
-        this.maxHp = maxHp;
-        this.density = density;
-        this.texture = texture;
-        this.objectName = objectName;
-        this.originalFileName = originalFileName;
-        this.type = type;
-        this.lightTransmission = lightTransmission;
-        this.optionalTiles = optionalTiles;
-        this.resistance = resistance;
-    }
-
-    private StaticObjectsConst(boolean hasMotherBlock, float maxHp, float density, float resistance, int lightTransmission, Atlas.Region texture, String objectName, String originalFileName, short[][] optionalTiles, Types type, Runnable onInteraction) {
         this.hasMotherBlock = hasMotherBlock;
         this.maxHp = maxHp;
         this.density = density;
@@ -81,7 +56,7 @@ public class StaticObjectsConst implements Cloneable {
         if (new File(assets.assetsDir("/World/ItemsCharacteristics/BlocksInteractions" + objectName + ".java")).exists()) {
             this.onInteraction = generateRunnable(assets.assetsDir("/World/ItemsCharacteristics/BlocksInteractions" + objectName + ".java"));
         } else {
-            this.onInteraction = onInteraction;
+            this.onInteraction = null;
         }
     }
 
@@ -96,27 +71,32 @@ public class StaticObjectsConst implements Cloneable {
 
     public static void setConst(String name, byte id, short[][] optionalTiles) {
         if (constants.get(id) == null) {
-            StaticObjectsConst staticConst = getConst(assets.assetsDir("World/ItemsCharacteristics/" + name + ".properties"));
+            StaticObjectsConst staticConst = createConst(assets.assetsDir("World/ItemsCharacteristics/" + name + ".properties"), id);
             staticConst.optionalTiles = optionalTiles;
             staticConst.originalFileName = name;
 
             constants.put(id, staticConst);
+
+            Structures.bindStructure(name, id);
         }
     }
 
-    public static StaticObjectsConst getConst(String path) {
-        Properties props = Config.getProperties(path);
-        boolean hasMotherBlock = Boolean.parseBoolean((String) props.getOrDefault("HasMotherBlock", "false"));
-        float density = Float.parseFloat((String) props.getOrDefault("Density", "1"));
-        float resistance = Float.parseFloat((String) props.getOrDefault("Resistance", "100"));
-        int lightTransmission = Integer.parseInt((String) props.getOrDefault("LightTransmission", "100"));
-        int maxHp = Integer.parseInt((String) props.getOrDefault("MaxHp", "100"));
-        Atlas.Region texture = Global.atlas.byPath((String) props.get("Path"));
-        String enumType = (String) props.getOrDefault("Type", Types.SOLID.name());
-        String objectName = (String) props.getOrDefault("Name", "notFound");
+    public static StaticObjectsConst createConst(String path, byte id) {
+        if (!constants.contains(id)) {
+            Properties props = Config.getProperties(path);
+            boolean hasMotherBlock = Boolean.parseBoolean((String) props.getOrDefault("HasMotherBlock", "false"));
+            float density = Float.parseFloat((String) props.getOrDefault("Density", "1"));
+            float resistance = Float.parseFloat((String) props.getOrDefault("Resistance", "100"));
+            int lightTransmission = Integer.parseInt((String) props.getOrDefault("LightTransmission", "100"));
+            int maxHp = Integer.parseInt((String) props.getOrDefault("MaxHp", "100"));
+            Atlas.Region texture = Global.atlas.byPath((String) props.get("Path"));
+            String enumType = (String) props.getOrDefault("Type", Types.SOLID.name());
+            String objectName = (String) props.getOrDefault("Name", "notFound");
 
-        return new StaticObjectsConst(hasMotherBlock, maxHp, density, resistance, lightTransmission,
-                texture, objectName, null, null, Types.valueOf(enumType.toUpperCase()));
+            return new StaticObjectsConst(hasMotherBlock, maxHp, density, resistance, lightTransmission,
+                    texture, objectName, objectName, null, Types.valueOf(enumType.toUpperCase()));
+        }
+        return constants.get(id);
     }
 
     private static String getStorageFolder(String path) {
@@ -128,7 +108,7 @@ public class StaticObjectsConst implements Cloneable {
     }
 
     public static void setDestroyed() {
-        constants.put((byte) 0, new StaticObjectsConst(false, 0, 0, 0, 100, null, "Destroyed", null, Types.GAS));
+        constants.put((byte) 0, new StaticObjectsConst(false, 0, 0, 0, 100, null, "Destroyed", null, null, Types.GAS));
     }
 
     public static StaticObjectsConst getConst(byte id) {

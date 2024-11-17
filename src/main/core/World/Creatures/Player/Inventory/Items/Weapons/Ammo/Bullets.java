@@ -41,7 +41,7 @@ public class Bullets {
             if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && System.currentTimeMillis() - weapon.lastShootTime >= weapon.fireRate) {
                 weapon.lastShootTime = System.currentTimeMillis();
                 Bullets.createBullet(DynamicObjects.getFirst().getX(), DynamicObjects.getFirst().getY(), weapon.ammoSpeed, weapon.damage, Math.abs((float) Math.toDegrees(Math.atan2(input.mousePos().y - 540, input.mousePos().x - 960)) - 180));
-                Sound.SoundPlay(weapon.sound, Sound.types.EFFECT, false);
+                Sound.playSound(weapon.sound, Sound.types.EFFECT, false);
             }
         }
 
