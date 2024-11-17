@@ -231,6 +231,21 @@ public class Inventory {
         return findFreeCell();
     }
 
+    public static void createElement(Items item) {
+        int id = item.name.hashCode();
+
+        if (findCountID(id) > 1) {
+            Point2i cell = findItemByID(id);
+            inventoryObjects[cell.x][cell.y].countInCell++;
+            return;
+        }
+
+        Point2i cell = findFreeCell();
+        if (cell != null) {
+            inventoryObjects[cell.x][cell.y] = item;
+        }
+    }
+
     public static void createElementTool(String name) {
         int id = name.hashCode();
 

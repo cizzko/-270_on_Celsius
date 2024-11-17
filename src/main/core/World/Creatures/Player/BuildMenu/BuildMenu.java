@@ -106,15 +106,7 @@ public class BuildMenu {
     }
 
     private static void updateScroll() {
-        double scrollM = -1 * input.getScrollOffset() * 6;
-
-        if (scrollM >= -276 && scrollM <= 0) {
-            scroll = (float) scrollM;
-        } else if (scroll < -276) {
-            scroll = -276;
-        } else if (scroll > 0) {
-            scroll = -0f;
-        }
+        scroll = (float) Math.clamp(-1 * input.getScrollOffset() * 6, -276, 0);
     }
 
     private static Point2i[] hasRequiredItems() {

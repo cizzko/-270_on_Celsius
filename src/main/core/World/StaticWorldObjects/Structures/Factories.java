@@ -1,6 +1,7 @@
 package core.World.StaticWorldObjects.Structures;
 
 import core.EventHandling.Logging.Config;
+import core.Global;
 import core.UI.Sounds.Sound;
 import core.Utils.ArrayUtils;
 import core.World.Creatures.Player.Inventory.Inventory;
@@ -24,6 +25,7 @@ import static core.World.Creatures.Player.Player.playerSize;
 import static core.World.Textures.TextureDrawing.blockSize;
 import static core.World.Textures.TextureDrawing.drawText;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_E;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 // there is no need to put them manually, they are automatically added to the array if the placed static block is in the factories folder
 public class Factories implements StaticBlocksEvents, InventoryEvents {
@@ -33,6 +35,7 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
     public String path, sound, name;
     public breaking breakingType;
     public Items[] outputObjects, outputStoredObjects, inputObjects, inputStoredObjects, fuel, storedFuel;
+    private static long lastMouseClickTime;
     private static final HashMap<String, Factories> factoriesConst = new HashMap<>();
     private static final HashSet<Point2i> factories = new HashSet<>();
 
@@ -236,8 +239,27 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
         }
     }
 
+    //todo сделать нормально
+    private static boolean mouseDoubleClick() {
+        if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+            lastMouseClickTime = System.currentTimeMillis();
+        }
+
+        return System.currentTimeMillis() - lastMouseClickTime <= 60 && !Global.input.clicked(GLFW_MOUSE_BUTTON_LEFT);
+    }
+
     public static void updateFactoriesOutput() {
         Factories factory = findFactoryUnderMouse();
+
+        if (mouseDoubleClick() && factory != null && factory.outputStoredObjects[0] != null) {
+            for (int i = 0; i < factory.outputStoredObjects.length; i++) {
+                if (factory.outputStoredObjects[i] == null) {
+                    break;
+                }
+                Inventory.createElement(factory.outputStoredObjects[i]);
+                factory.outputStoredObjects[i] = null;
+            }
+        }
 
         if (factory != null && factory.fuel == null && factory.breakingType != Factories.breaking.CRITICAL && factory.currentEnergy >= factory.needEnergy) {
             int iconY = (int) ((factory.y * blockSize) + blockSize);
