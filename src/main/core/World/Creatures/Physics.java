@@ -20,12 +20,10 @@ import static core.Window.glfwWindow;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.HitboxMap.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getResistance;
-import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.StaticWorldObjects.Structures.Factories.updateFactoriesOutput;
 import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
-// version 1.5
 public class Physics {
     // default 400
     public static int physicsSpeed = 400, worldSaveDelay = Integer.parseInt(Config.getFromConfig("AutosaveWorldFrequency"));
