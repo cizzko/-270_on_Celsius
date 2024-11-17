@@ -82,7 +82,7 @@ public class InputHandler {
         glfwSetScrollCallback(glfwWindow, addResource(new GLFWScrollCallback() {
             @Override
             public void invoke(long window, double xoffset, double yoffset) {
-                scrollOffset += yoffset;
+                scrollOffset = Math.clamp(yoffset + scrollOffset, 0, 50);
             }
         }));
     }
