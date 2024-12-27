@@ -3,6 +3,7 @@ package core;
 import core.EventHandling.EventHandler;
 import core.UI.GUI.Menu.MouseCalibration;
 import core.math.Point2i;
+import core.math.Vector2f;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
 import org.lwjgl.glfw.GLFWKeyCallback;
 import org.lwjgl.glfw.GLFWMouseButtonCallback;
@@ -104,6 +105,16 @@ public class InputHandler {
         return lastMouseMoveTimestamp;
     }
 
+    private final Vector2f mouseWorldPos = new Vector2f();
+
+    // Позиция в мире
+    public Vector2f mouseWorldPos() {
+        // Поскольку мы в праве менять проекция камеры, то и значение worldPos() всегда должно быть актуальным
+        mouseWorldPos.set(mousePos.x, mousePos.y);
+        return Global.camera.unproject(mouseWorldPos);
+    }
+
+    // Позиция на экране
     public Point2i mousePos() {
         return mousePos;
     }

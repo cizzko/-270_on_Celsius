@@ -48,7 +48,6 @@ public class Batch implements Disposable {
     // region Изменение параметров
 
     public final void blending(Blending blending) {
-        flush(); // remove artifacts
         this.prevBlending = this.blending;
         this.blending = blending;
     }

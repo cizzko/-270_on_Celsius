@@ -54,7 +54,7 @@ public class SortingBatch extends Batch {
                                float x3, float y3,
                                float x4, float y4) {
         RequestTexture request = textureRequestsPool.obtain();
-        request.set(z, drawable, x, y, x2, y2, x3, y3, x4, y4, colorBits);
+        request.set(z, drawable, x, y, x2, y2, x3, y3, x4, y4, colorBits, blending);
         draw(request);
     }
 
@@ -86,11 +86,13 @@ public class SortingBatch extends Batch {
             case RequestProcedure proc -> proc.runnable.run();
             case RequestTexture tex -> {
                 color(tex.colorBits);
+                blending(tex.blending);
 
                 try {
                     super.drawTexture(tex.drawable, tex.x, tex.y, tex.x2, tex.y2, tex.x3, tex.y3, tex.x4, tex.y4);
                 } finally {
                     resetColor();
+                    resetBlending();
 
                     textureRequestsPool.free(tex);
                 }
@@ -108,7 +110,7 @@ public class SortingBatch extends Batch {
         }
 
         @Override
-        public int compareTo(Request o) {
+        public final int compareTo(Request o) {
             return Integer.compare(z, o.z);
         }
     }
@@ -118,6 +120,7 @@ public class SortingBatch extends Batch {
         public Drawable drawable;
         public float x, y, x2, y2, x3, y3, x4, y4;
         public float colorBits;
+        public Blending blending;
 
         public RequestTexture() {}
 
@@ -126,7 +129,7 @@ public class SortingBatch extends Batch {
                         float x2, float y2,
                         float x3, float y3,
                         float x4, float y4,
-                        float colorBits) {
+                        float colorBits, Blending blending) {
             this.z = z;
             this.drawable = drawable;
             this.x = x;
@@ -138,12 +141,14 @@ public class SortingBatch extends Batch {
             this.x4 = x4;
             this.y4 = y4;
             this.colorBits = colorBits;
+            this.blending = blending;
         }
 
         @Override
         public void reset() {
             z = 0;
             drawable = null;
+            blending = null;
             x = 0;
             y = 0;
             x2 = 0;
