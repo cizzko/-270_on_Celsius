@@ -25,7 +25,7 @@ public class InputHandler {
     private final Point2i mousePos = new Point2i();
 
     private long lastMouseMoveTimestamp;
-    private double scrollOffset = 1;
+    private float scrollOffset = 1;
 
     public InputHandler() {
         justPressed = createBitSet(PRESSED_ARRAY_SIZE);
@@ -83,7 +83,7 @@ public class InputHandler {
         glfwSetScrollCallback(glfwWindow, addResource(new GLFWScrollCallback() {
             @Override
             public void invoke(long window, double xoffset, double yoffset) {
-                scrollOffset = Math.clamp(yoffset + scrollOffset, 0, 50);
+                scrollOffset = Math.clamp((float)yoffset + scrollOffset, 0, 50);
             }
         }));
     }
@@ -97,7 +97,7 @@ public class InputHandler {
 
     // region Public API
 
-    public double getScrollOffset() {
+    public float getScrollOffset() {
         return scrollOffset;
     }
 

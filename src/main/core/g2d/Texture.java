@@ -31,6 +31,10 @@ public final class Texture implements Drawable {
 
     public static Texture load(BufferedImage bufferedImage, int glTarget, float u, float v, float u2, float v2) throws IOException {
         TextureLoader.ImageData image = readImage(bufferedImage);
+        return load(image, glTarget, u, v, u2, v2);
+    }
+
+    public static Texture load(TextureLoader.ImageData img, int glTarget, float u, float v, float u2, float v2) throws IOException {
         int glHandle = glGenTextures();
 
         glBindTexture(glTarget, glHandle);
@@ -39,9 +43,9 @@ public final class Texture implements Drawable {
         glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
         glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
-        int w = image.width();
-        int h = image.height();
-        glTexImage2D(glTarget, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.data());
+        int w = img.width();
+        int h = img.height();
+        glTexImage2D(glTarget, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data());
 
         glBindTexture(glTarget, 0);
         return new Texture(glHandle, glTarget, w, h, u, v, u2, v2);
