@@ -4,11 +4,11 @@ import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
 import core.Utils.Sized;
+import core.World.Background.DynamicBackground.Weather.Wind;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.HitboxMap;
 import core.World.Saves;
-import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
@@ -195,6 +195,7 @@ public class Physics {
     }
 
     private static void updateWorldInteractions() {
+        Wind.updateWind();
         updateInventoryInteraction();
         Weapons.updateAmmo();
         updateFactoriesOutput();

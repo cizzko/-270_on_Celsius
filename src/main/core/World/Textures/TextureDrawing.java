@@ -10,6 +10,7 @@ import core.UI.GUI.Video;
 import core.Utils.Commandline;
 import core.Utils.SimpleColor;
 import core.Window;
+import core.World.Background.DynamicBackground.Weather.Wind;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.StaticWorldObjects.StaticWAnimations;
@@ -38,7 +39,7 @@ import static core.UI.GUI.Video.byteBuffer;
 import static core.UI.GUI.Video.video;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
-import static core.World.Weather.Sun.updateSun;
+import static core.World.Background.DynamicBackground.Weather.Sun.updateSun;
 import static core.World.WorldGenerator.*;
 
 public class TextureDrawing {

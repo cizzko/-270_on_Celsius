@@ -2,12 +2,12 @@ package core.World.StaticWorldObjects;
 
 import core.Utils.Sized;
 import core.World.Textures.TextureDrawing;
-import core.World.Weather.Sun;
+import core.World.Background.DynamicBackground.Weather.Sun;
 import core.World.WorldGenerator;
 import core.math.Point2i;
 
 import java.util.HashMap;
-import static core.World.Weather.Sun.currentTime;
+import static core.World.Background.DynamicBackground.Weather.Sun.currentTime;
 
 public class TemperatureMap {
     private static HashMap<Point2i, Float> individualTemperature = new HashMap<>();

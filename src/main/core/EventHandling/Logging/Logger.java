@@ -2,7 +2,7 @@ package core.EventHandling.Logging;
 
 import com.sun.management.OperatingSystemMXBean;
 import core.Window;
-import core.World.Weather.Sun;
+import core.World.Background.DynamicBackground.Weather.Sun;
 import java.awt.Toolkit;
 import java.io.*;
 import java.lang.management.GarbageCollectorMXBean;

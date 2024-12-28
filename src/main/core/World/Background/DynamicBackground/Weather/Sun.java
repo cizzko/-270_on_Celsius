@@ -1,10 +1,9 @@
-package core.World.Weather;
+package core.World.Background.DynamicBackground.Weather;
 
 import core.Utils.SimpleColor;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
 import core.World.WorldGenerator;
-import core.g2d.Texture;
 
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Global.assets;
