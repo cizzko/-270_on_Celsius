@@ -1,13 +1,16 @@
 package core.tool;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonWriter;
-import core.graphic.RectanglePacker;
 import core.g2d.Atlas;
+import core.graphic.RectanglePacker;
 import core.math.MathUtil;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
@@ -15,10 +18,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Set;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public final class AtlasGenerator {
 
@@ -27,14 +31,15 @@ public final class AtlasGenerator {
     static final class Region {
         final Path path;
         final String name;
-        final BufferedImage regionImage;
+        BufferedImage regionImage;
+        final byte[] hash;
 
         int rx, ry;
 
-        public Region(Path path, String name, BufferedImage regionImage) {
+        public Region(Path path, String name, byte[] hash) {
             this.path = path;
             this.name = name;
-            this.regionImage = regionImage;
+            this.hash = hash;
         }
 
         int size() {
@@ -72,9 +77,37 @@ public final class AtlasGenerator {
                                String atlasBaseName,
                                Path sourceDir, Path errorImage,
                                Set<Path> ignore, int min, int max) throws IOException {
+        long beginTs = System.currentTimeMillis();
+        Path atlasMetaPath = outputDir.resolve(atlasBaseName + Atlas.META_EXT);
+
+        MessageDigest digest;
+        try {
+            digest = MessageDigest.getInstance("SHA-256");
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
         HashMap<String, Region> regionMap = new HashMap<>();
 
+        HashMap<Path, byte[]> oldHashes;
+        if (Files.exists(atlasMetaPath)) {
+            oldHashes = new HashMap<>();
+
+            JsonObject meta;
+            try (BufferedReader reader = Files.newBufferedReader(atlasMetaPath, StandardCharsets.UTF_8)) {
+                meta = JsonParser.parseReader(reader)
+                        .getAsJsonObject();
+            }
+            meta.getAsJsonObject("hash").asMap().forEach((relativePath, hexHash) -> {
+                oldHashes.put(Path.of(relativePath), HexFormat.of().parseHex(hexHash.getAsString()));
+            });
+        } else {
+            oldHashes = null;
+        }
+
         class WalkVisitor extends SimpleFileVisitor<Path> {
+
+            byte[] buf;
+
             @Override
             public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
                 if (ignore.contains(path)) {
@@ -93,16 +126,52 @@ public final class AtlasGenerator {
                                 relativePath + "' and '" +
                                 duplicate.path + "'");
                     }
-                    log("Loading image '" + relativePath + "'");
 
-                    BufferedImage regionImage = ImageIO.read(path.toFile());
-                    regionMap.put(regionName, new Region(relativePath, regionName, regionImage));
+                    if (buf == null)
+                        buf = new byte[8 * 1024];
+
+                    digest.reset();
+                    try (var fis = Files.newInputStream(path)) {
+                        int n;
+                        while ((n = fis.read(buf)) > 0) {
+                            digest.update(buf, 0, n);
+                        }
+                    }
+                    byte[] hash = digest.digest();
+                    regionMap.put(regionName, new Region(relativePath, regionName, hash));
                 }
                 return FileVisitResult.CONTINUE;
             }
         }
 
         Files.walkFileTree(sourceDir, new WalkVisitor());
+
+        if (oldHashes != null && oldHashes.size() == regionMap.size()) {
+            var byRelPath = regionMap.values().stream()
+                    .collect(Collectors.toMap(r -> r.path, Function.identity()));
+            boolean allMatched = true;
+            for (var entry : oldHashes.entrySet()) {
+                Path path = entry.getKey();
+                byte[] oldHash = entry.getValue();
+                var currentFile = byRelPath.get(path);
+                if (currentFile == null || !Arrays.equals(oldHash, currentFile.hash)) {
+                    allMatched = false;
+                }
+            }
+
+            if (allMatched) {
+                // Хеши файлов совпали, а также мы знаем, что никакой файл не был удалён.
+                // Пожалуй, сегодня не будем делать атлас...
+                log("Skipping atlas processing. All files are identical");
+                log("Processing time: " + ((System.currentTimeMillis() - beginTs)/1000f) + "s");
+                return;
+            }
+        }
+
+        for (Region reg : regionMap.values()) {
+            log("Loading image '" + reg.path + "'");
+            reg.regionImage = ImageIO.read(sourceDir.resolve(reg.path).toFile());
+        }
 
         ArrayList<Region> regions = new ArrayList<>(regionMap.values());
 
@@ -126,9 +195,9 @@ public final class AtlasGenerator {
                             "' is too large to pack into " + max + "x" + max);
                 }
                 if (increaseW) {
-                    packer.resize(MathUtil.ceilNextPowerOfTwo(packer.w + 1), packer.h);
+                    packer.resize(packer.w + region.ow(), packer.h);
                 } else {
-                    packer.resize(packer.w, MathUtil.ceilNextPowerOfTwo(packer.h + 1));
+                    packer.resize(packer.w, packer.h + region.oh());
                 }
             }
             region.rx = pos.x();
@@ -136,12 +205,10 @@ public final class AtlasGenerator {
         }
 
         log("Result atlas size: " + packer.w + "x" + packer.h);
+        log("Processing time: " + ((System.currentTimeMillis() - beginTs)/1000f) + "s");
 
         BufferedImage atlasImage = new BufferedImage(packer.w, packer.h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D gr = atlasImage.createGraphics();
-        // gr.setColor(Color.BLACK);
-        // gr.fillRect(0, 0, packer.w, packer.h);
-
         for (Region region : regions) {
             gr.drawImage(region.regionImage, region.rx, region.ry, null);
         }
@@ -152,7 +219,6 @@ public final class AtlasGenerator {
         Path atlasPath = outputDir.resolve(atlasBaseName + Atlas.ATLAS_EXT);
         ImageIO.write(atlasImage, "png", atlasPath.toFile());
 
-        Path atlasMetaPath = outputDir.resolve(atlasBaseName + Atlas.META_EXT);
         try (JsonWriter wr = new JsonWriter(Files.newBufferedWriter(atlasMetaPath, StandardCharsets.UTF_8))) {
             wr.beginObject();
             wr.name("error").value(errorRegion.name);
@@ -166,6 +232,12 @@ public final class AtlasGenerator {
                 wr.name("width").value(region.ow());
                 wr.name("height").value(region.oh());
                 wr.endObject();
+            }
+            wr.endObject();
+
+            wr.name("hash").beginObject();
+            for (Region region : regions) {
+                wr.name(region.path.toString()).value(HexFormat.of().formatHex(region.hash));
             }
             wr.endObject();
             wr.endObject();

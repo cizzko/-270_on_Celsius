@@ -29,6 +29,14 @@ public final class SimpleColor implements Serializable {
         value = (a << 24) | (r << 16) | (g << 8) | (b);
     }
 
+    public static int rgba(int r, int g, int b, int a) {
+        r = clamp(r);
+        g = clamp(g);
+        b = clamp(b);
+        a = clamp(a);
+        return (r << 24) | (g << 16) | (b << 8) | (a);
+    }
+
     public static int argbToRgba(int argb) {
         return  ((argb & 0x00FF0000) >> 16) |
                 ((argb & 0x0000FF00)) |

@@ -143,8 +143,11 @@ public class Structures implements Serializable {
                 StaticObjectsConst.setConst(rootConst, id);
             }
         } else {
-            blocks = bindStructures(getStructure(name).blocks);
-            StaticObjectsConst.setConst(name, id, blocks);
+            Structures str = getStructure(name);
+            if (str != null) {
+                blocks = bindStructures(str.blocks);
+                StaticObjectsConst.setConst(name, id, blocks);
+            }
         }
     }
 }

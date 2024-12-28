@@ -3,6 +3,11 @@ plugins {
 }
 
 sourceSets {
+    create("tools") {
+        java {
+            srcDir("src/tools")
+        }
+    }
     main {
         java {
             srcDir("src/main")
@@ -11,6 +16,26 @@ sourceSets {
             srcDir("src/assets")
         }
     }
+}
+
+tasks.named<JavaCompile>("compileToolsJava") {
+    dependsOn(tasks.compileJava)
+    classpath = sourceSets["main"].runtimeClasspath + sourceSets["main"].output
+}
+
+val genatlas = tasks.register<JavaExec>("genatlas") {
+    mustRunAfter(tasks.classes)
+    classpath = sourceSets["tools"].runtimeClasspath +
+            sourceSets["main"].runtimeClasspath +
+            sourceSets["main"].output
+
+    workingDir = rootDir
+    mainClass.set("core.tool.AtlasGenerator")
+}
+
+
+tasks.classes {
+    finalizedBy(genatlas)
 }
 
 val lwjglVersion = "3.3.3"
@@ -54,7 +79,6 @@ allprojects {
             languageVersion = JavaLanguageVersion.of(21)
         }
     }
-
 }
 
 dependencies {
