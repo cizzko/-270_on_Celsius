@@ -3,6 +3,7 @@ package core.World;
 import core.EventHandling.Logging.Json;
 import core.UI.GUI.Menu.CreatePlanet;
 import core.Window;
+import core.World.Background.DynamicBackground.Weather.Wind;
 import core.World.Creatures.CreaturesGenerate;
 import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Inventory;
@@ -18,7 +19,7 @@ import core.World.StaticWorldObjects.StaticBlocksEvents;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.Textures.TextureDrawing;
-import core.World.Weather.Sun;
+import core.World.Background.DynamicBackground.Weather.Sun;
 import core.math.Point2i;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -333,8 +334,8 @@ public class WorldGenerator {
     }
 
     private static void generateEnvironments() {
-        generateTrees();
-        generateDecorStones();
+        //generateTrees();
+        generateSmallStones();
         generateHerb();
         Structures.clearStructuresMap();
     }
@@ -345,16 +346,16 @@ public class WorldGenerator {
         generateForest(80, 2, 20, 4, 8, false, "tree0", "tree1");
     }
 
-    private static void generateDecorStones() {
+    private static void generateSmallStones() {
         log("World generator: generating decor stones");
 
-        float chance = 40;
+        float chance = 33;
         for (int x = 0; x < SizeX; x++) {
             if (Math.random() * chance < 1) {
                 int y = findFreeVerticalCell(x);
 
                 if (y - 1 > 0 && getType(getObject(x, y - 1)) == StaticObjectsConst.Types.SOLID && getResistance(getObject(x, y - 1)) == 100) {
-                    setObject(x, y, StaticWorldObjects.createStatic("Blocks/decorStone"), false);
+                    setObject(x, y, StaticWorldObjects.createStatic("Blocks/smallStone"), false);
                 }
             }
         }
@@ -463,7 +464,7 @@ public class WorldGenerator {
                 }
 
                 if (PerlinNoiseGenerator.noise[x][y] && ShadowMap.getDegree(x, y) >= 3) { //Generating ore
-                    setObject(x, y, createStatic("Blocks/ironOre"), false);
+                    setObject(x, y, createStatic("Blocks/aluminum"), false);
                 }
 
                 if (ShadowMap.getDegree(x, y) == 2) { //Generation of transitions between earth and stone
@@ -500,8 +501,9 @@ public class WorldGenerator {
         WorldGenerator.registerListener(new Factories());
         Inventory.registerListener(new ElectricCables());
         Inventory.registerListener(new Factories());
-        Sun.createSun();
+        //Sun.createSun();
         Physics.initPhysics();
+        Wind.createWind();
         if (generateCreatures) {
             CreaturesGenerate.initGenerating();
         }
