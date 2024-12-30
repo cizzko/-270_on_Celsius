@@ -19,7 +19,8 @@ public class ShadowMap {
     // todo переписать генерацию и обновление теней
 
     public static SimpleColor getShadow(int x, int y) {
-        return x + SizeX * y < 0 || x + SizeX * y > shadows.length ? SimpleColor.CLEAR : SimpleColor.toColor(shadows[x + SizeX * y]);
+        int idx = x + SizeX * y;
+        return idx < 0 || idx >= shadows.length ? SimpleColor.CLEAR : SimpleColor.toColor(shadows[idx]);
     }
 
     public static void setShadow(int x, int y, SimpleColor color) {

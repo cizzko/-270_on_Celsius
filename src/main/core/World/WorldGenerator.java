@@ -359,7 +359,7 @@ public class WorldGenerator {
                 int y = findFreeVerticalCell(x);
 
                 if (y - 1 > 0 && getType(getObject(x, y - 1)) == StaticObjectsConst.Types.SOLID && getResistance(getObject(x, y - 1)) == 100) {
-                    setObject(x, y, StaticWorldObjects.createStatic("Blocks/decorStone"), false);
+                    setObject(x, y, StaticWorldObjects.createStatic("Blocks/smallStone"), false);
                 }
             }
         }
