@@ -2,6 +2,7 @@ package core;
 
 import core.EventHandling.EventHandler;
 import core.UI.GUI.Menu.MouseCalibration;
+import core.World.Textures.TextureDrawing;
 import core.math.Point2i;
 import core.math.Vector2f;
 import org.lwjgl.glfw.GLFWCursorPosCallback;
@@ -105,7 +106,14 @@ public class InputHandler {
         return lastMouseMoveTimestamp;
     }
 
+    private final Point2i mouseBlockPos = new Point2i();
     private final Vector2f mouseWorldPos = new Vector2f();
+
+    public Point2i mouseBlockPos() {
+        var world = mouseWorldPos();
+        mouseWorldPos.set((int) (world.x / TextureDrawing.blockSize), (int) (world.y / TextureDrawing.blockSize));
+        return mouseBlockPos;
+    }
 
     // Позиция в мире
     public Vector2f mouseWorldPos() {

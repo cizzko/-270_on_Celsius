@@ -32,6 +32,10 @@ public final class Point2i {
         return add(other.x, other.y);
     }
 
+    public Point2i copy() {
+        return new Point2i(x, y);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

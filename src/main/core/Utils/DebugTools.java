@@ -31,7 +31,7 @@ public class DebugTools {
 
                         if (!mousePressed) {
                             mousePressed = true;
-                            lastMousePosBlocks = getBlockUnderMousePoint();
+                            lastMousePosBlocks = getBlockUnderMousePoint().copy();
                             lastMousePos.set(mousePos.x, mousePos.y);
                         }
                     }
