@@ -64,7 +64,7 @@ public class TextureDrawing {
             if (ch == ' ') {
                 x += Window.defaultFont.getGlyph('A').width();
                 continue;
-            } else if (ch == '\\' && text.charAt(i + 1) == 'n') {
+            } else if (ch == '\\' && i + 1 < text.length() && text.charAt(i + 1) == 'n') {
                 y -= 30;
                 i++;
                 x = startX;
@@ -95,10 +95,8 @@ public class TextureDrawing {
         batch.color(SimpleColor.fromRGBA(0, 0, 0, 1));
         float d = blockSize + 8;
 
-        for (int i = 0; i < points.length; i++) {
-            if (i + 1 < points.length) {
-                Fill.line(points[i].x * d, points[i].y * d, points[i + 1].x * d, points[i + 1].y * d);
-            }
+        for (int i = 0; i < points.length - 1; i++) {
+            Fill.line(points[i].x * d, points[i].y * d, points[i + 1].x * d, points[i + 1].y * d);
         }
         batch.resetColor();
         Fill.resetLineWidth();

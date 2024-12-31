@@ -4,6 +4,13 @@ public final class MathUtil {
     private MathUtil() {
     }
 
+    public static final Point2i[] CROSS_OFFSETS = {
+            new Point2i(0, -1),
+            new Point2i(0, +1),
+            new Point2i(-1, 0),
+            new Point2i(+1, 0),
+    };
+
     public static int ceilNextPowerOfTwo(int v) {
         v--;
         v |= v >> 1;

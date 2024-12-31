@@ -19,6 +19,7 @@ import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.Textures.TextureDrawing;
 import core.World.Weather.Sun;
+import core.math.MathUtil;
 import core.math.Point2i;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -119,13 +120,18 @@ public class WorldGenerator {
                 }
             }
         } else {
-            return !(getResistance(getObject(x, y - 1)) < 100) || !(getResistance(getObject(x, y + 1)) < 100) || !(getResistance(getObject(x - 1, y)) < 100) || !(getResistance(getObject(x + 1, y)) < 100);
+            for (Point2i d : MathUtil.CROSS_OFFSETS) {
+                if (!(getResistance(getObject(x + d.x, y + d.y)) < 100)) {
+                    return true;
+                }
+            }
+            return false;
         }
         return true;
     }
 
     public static short getObject(int x, int y) {
-        if (x < 0 || x > SizeX || y < 0 || y > SizeY) {
+        if (x < 0 || x >= SizeX || y < 0 || y >= SizeY) {
             return -1;
         }
         return StaticObjects[x + SizeX * y];
@@ -187,7 +193,7 @@ public class WorldGenerator {
 
             log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world with size: x - " + SizeX + ", y - " + SizeY);
 
-            StaticObjects = new short[(SizeX + 1) * (SizeY + 1)];
+            StaticObjects = new short[SizeX * SizeY];
             WorldGenerator.SizeX = SizeX;
             WorldGenerator.SizeY = SizeY;
 
@@ -226,10 +232,9 @@ public class WorldGenerator {
 
             int iters = (int) (Math.random() * (90 - Math.abs(90 - angle)));
 
+            float deltaX = (float) (Math.sin(Math.toRadians(angle)));
+            float deltaY = (float) (Math.cos(Math.toRadians(angle)));
             for (int j = 0; j < iters; j++) {
-                float deltaY = (float) (Math.cos(Math.toRadians(angle)));
-                float deltaX = (float) (Math.sin(Math.toRadians(angle)));
-
                 lastY += deltaY;
                 lastX += deltaX;
 
@@ -468,7 +473,7 @@ public class WorldGenerator {
                 }
 
                 if (PerlinNoiseGenerator.noise[x][y] && ShadowMap.getDegree(x, y) >= 3) { //Generating ore
-                    setObject(x, y, createStatic("Blocks/ironOre"), false);
+                    setObject(x, y, createStatic("Blocks/aluminum"), false);
                 }
 
                 if (ShadowMap.getDegree(x, y) == 2) { //Generation of transitions between earth and stone

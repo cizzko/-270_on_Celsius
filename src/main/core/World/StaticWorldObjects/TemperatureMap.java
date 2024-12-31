@@ -74,9 +74,19 @@ public class TemperatureMap {
         int count = 0;
         float totalTemp = 0;
 
-        for (int x = 0; x < Math.ceil(size.width()) / TextureDrawing.blockSize; x++) {
-            for (int y = 0; y < Math.ceil(size.height()) / TextureDrawing.blockSize; y++) {
-                totalTemp += getTemp((int) (xPos / TextureDrawing.blockSize + x), (int) (yPos / TextureDrawing.blockSize + y));
+        int blockX = (int) (xPos / TextureDrawing.blockSize);
+        int blockY = (int) (yPos / TextureDrawing.blockSize);
+
+        int w = (int) Math.ceil((float)size.width() / TextureDrawing.blockSize);
+        int h = (int) Math.ceil((float)size.height() / TextureDrawing.blockSize);
+        for (int dx = 0; dx < w; dx++) {
+            for (int dy = 0; dy < h; dy++) {
+                int x = blockX + dx;
+                int y = blockY + dy;
+                if (x < 0 || x >= WorldGenerator.SizeX || y < 0 || y >= WorldGenerator.SizeY) {
+                    continue;
+                }
+                totalTemp += getTemp(x, y);
                 count++;
             }
         }
