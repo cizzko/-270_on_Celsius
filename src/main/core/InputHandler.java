@@ -52,6 +52,10 @@ public class InputHandler {
         glfwSetKeyCallback(glfwWindow, addResource(new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
+                // При запуске с xwayland я получаю несколько ивентов с таким вот интересным параметром
+                if (key == GLFW_KEY_UNKNOWN) {
+                    return;
+                }
                 switch (action) {
                     case GLFW_PRESS -> {
                         setBit(pressed, key);
@@ -145,6 +149,23 @@ public class InputHandler {
 
     public boolean justClicked(int button) {
         return isSet(clicked, button) && isSet(justClicked, button);
+    }
+
+    // По сути этот метод должен возвращать значения float [-1, 1]
+    // если у нас есть аналоговая штука по типу геймпада, но на дискретных инпутах
+    // всё немного по-другому
+    public int axis(int keycodeMin, int keycodeMax) {
+        boolean isMin = pressed(keycodeMin);
+        boolean isMax = pressed(keycodeMax);
+        if (isMin && isMax) {
+            return 0;
+        } else if (isMin) {
+            return -1;
+        } else if (isMax) {
+            return 1;
+        } else {
+            return 0;
+        }
     }
 
     // endregion

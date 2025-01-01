@@ -57,33 +57,26 @@ public class Player {
             return;
         }
 
-        float increment = noClip ? 1.6f : 0.4f;
+        float speed = noClip ? 1.6f : 0.4f;
         DynamicWorldObjects player = DynamicObjects.getFirst();
 
+        int xf = input.axis(GLFW_KEY_A, GLFW_KEY_D);
+        int yf = input.axis(GLFW_KEY_S, GLFW_KEY_W);
+
         if (!noClip) {
-            if (input.pressed(GLFW_KEY_D)) {
-                player.setMotionVectorX(increment);
+            if (xf != 0) {
+                player.setMotionVectorX(speed * xf);
             }
-            if (input.pressed(GLFW_KEY_A)) {
-                player.setMotionVectorX(-increment);
+            if (yf != 0) {
+                player.setMotionVectorY(speed * yf);
             }
         } else {
             player.setMotionVectorY(0);
 
-            if (input.pressed(GLFW_KEY_D)) {
-                player.setX(player.getX() + increment);
-            }
-            if (input.pressed(GLFW_KEY_A)) {
-                player.setX(player.getX() - increment);
-            }
-            if (input.pressed(GLFW_KEY_S)) {
-                player.setY(player.getY() - increment);
-            }
-            if (input.pressed(GLFW_KEY_W)) {
-                player.setY(player.getY() + increment);
-            }
+            player.setX(player.getX() + speed * xf);
+            player.setY(player.getY() + speed * yf);
         }
-        EventHandler.putDebugValue(false, "Player position: x - " + (int) player.getX() + ", y - " + (int) player.getY(), "PlayerPos");
+        EventHandler.putDebugValue(false, "[Player] x: " + player.getX() + ", y: " + player.getY(), "PlayerPos");
     }
 
     public static void updateInventoryInteraction() {
