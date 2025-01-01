@@ -146,16 +146,10 @@ public class EventHandler {
     private static void updateHotkeys() {
         if (start) {
             if (input.justPressed(GLFW_KEY_ESCAPE)) {
-                if (!Pause.created) {
-                    Pause.create();
-                    Physics.stopPhysics();
-                } else {
-                    Pause.delete();
-                    Physics.resumePhysics();
-                }
+                Pause.toggle();
             }
 
-            if (!windowFocused && Boolean.parseBoolean(Config.getFromConfig("Autopause"))) {
+            if (!windowFocused && Config.getFromConfig("Autopause").equals("true")) {
                 Pause.create();
                 Physics.stopPhysics();
             }

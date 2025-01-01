@@ -1,6 +1,8 @@
 package core.World;
 
 import core.EventHandling.Logging.Json;
+import core.Global;
+import core.Time;
 import core.UI.GUI.Menu.CreatePlanet;
 import core.Window;
 import core.World.Creatures.CreaturesGenerate;
@@ -22,9 +24,9 @@ import core.World.Weather.Sun;
 import core.math.MathUtil;
 import core.math.Point2i;
 import java.util.*;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import static core.EventHandling.Logging.Logger.log;
+import static core.Global.*;
 import static core.UI.GUI.CreateElement.*;
 import static core.Window.*;
 import static core.World.StaticWorldObjects.StaticObjectsConst.getConst;
@@ -34,7 +36,7 @@ public class WorldGenerator {
     public static int SizeX, SizeY, dayCount = 0;
     public static float intersDamageMultiplier = 40f, minVectorIntersDamage = 1.8f;
     public static short[] StaticObjects;
-    private static final CopyOnWriteArrayList<StaticBlocksEvents> listeners = new CopyOnWriteArrayList<>();
+    private static final ArrayList<StaticBlocksEvents> listeners = new ArrayList<>();
     public static ArrayDeque<DynamicWorldObjects> DynamicObjects = new ArrayDeque<>();
 
     public static HashMap<String, Object> getWorldData() {
@@ -179,43 +181,51 @@ public class WorldGenerator {
     }
 
     public static void generateWorld() {
-        new Thread(() -> {
-            createText(42, 170, "WorldGeneratorState", "First step: ", SimpleColor.DIRTY_BRIGHT_WHITE, "WorldGeneratorState");
+        createText(42, 170, "WorldGeneratorState", "First step: ", SimpleColor.DIRTY_BRIGHT_WHITE, "WorldGeneratorState");
 
-            int sliderPos = getSliderPos("worldSize");
-            int SizeX = sliderPos + 20;
-            int SizeY = sliderPos + 20;
+        int sliderPos = getSliderPos("worldSize");
+        int SizeX = sliderPos + 20;
+        int SizeY = sliderPos + 20;
 
-            //todo чтоб не вылетала ошибка, если игрок не переходил в другой раздел настроек генерации, и кнопка не была создана
-            boolean simple = buttons.containsKey(Json.getName("GenerateSimpleWorld")) && buttons.get(Json.getName("GenerateSimpleWorld")).isClicked;
-            boolean randomSpawn = buttons.containsKey(Json.getName("RandomSpawn")) && buttons.get(Json.getName("RandomSpawn")).isClicked;
-            boolean creatures = buttons.containsKey(Json.getName("GenerateCreatures")) && buttons.get(Json.getName("GenerateCreatures")).isClicked;
+        //todo чтоб не вылетала ошибка, если игрок не переходил в другой раздел настроек генерации, и кнопка не была создана
+        boolean simple = buttons.containsKey(Json.getName("GenerateSimpleWorld")) && buttons.get(Json.getName("GenerateSimpleWorld")).isClicked;
+        boolean randomSpawn = buttons.containsKey(Json.getName("RandomSpawn")) && buttons.get(Json.getName("RandomSpawn")).isClicked;
+        boolean creatures = buttons.containsKey(Json.getName("GenerateCreatures")) && buttons.get(Json.getName("GenerateCreatures")).isClicked;
 
-            log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world with size: x - " + SizeX + ", y - " + SizeY);
+        log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world with size: x - " + SizeX + ", y - " + SizeY);
 
-            StaticObjects = new short[SizeX * SizeY];
-            WorldGenerator.SizeX = SizeX;
-            WorldGenerator.SizeY = SizeY;
+        StaticObjects = new short[SizeX * SizeY];
+        WorldGenerator.SizeX = SizeX;
+        WorldGenerator.SizeY = SizeY;
 
-            StaticObjectsConst.setDestroyed();
-            generateRelief();
+        StaticObjectsConst.setDestroyed();
+        step(() -> generateRelief());
 
-            ShadowMap.generate();
-            generateResources();
+        step(() -> ShadowMap.generate());
+        step(() -> generateResources());
 
-            //todo пещеры независимо от радиуса создаются толщиной в один блок
-            //generateCaves();
-            generateEnvironments();
-            ShadowMap.generate();
+        //todo пещеры независимо от радиуса создаются толщиной в один блок
+        //generateCaves();
+        step(() -> generateEnvironments());
+        step(() -> ShadowMap.generate());
 
-            TemperatureMap.create();
-            Player.createPlayer(randomSpawn);
+        step(() -> TemperatureMap.create());
+        step(() -> Player.createPlayer(randomSpawn));
 
+        step(() -> {
             log("World generator: generating done!\n");
-            texts.get("WorldGeneratorState").text += "\\nGenerating done! Starting world..";
+            appendLog("\\nGenerating done! Starting world..");
 
-            start(creatures);
-        }).start();
+            scheduler.post(() -> start(creatures), Time.delta * Time.ONE_SECOND * 10);
+        });
+    }
+
+    private static void step(Runnable step) {
+        scheduler.post(step);
+    }
+
+    private static void appendLog(String text) {
+        scheduler.post(() -> texts.get("WorldGeneratorState").text += text, 0.5f * Time.delta * Time.ONE_SECOND);
     }
 
     private static void generateRelief() {
@@ -339,7 +349,7 @@ public class WorldGenerator {
     }
 
     private static void generateEnvironments() {
-        texts.get("WorldGeneratorState").text += "\\nFourth step: ";
+        appendLog("\\nFourth step: ");
 
         generateTrees();
         generateDecorStones();
@@ -349,14 +359,14 @@ public class WorldGenerator {
 
     private static void generateTrees() {
         log("World generator: generating trees");
-        texts.get("WorldGeneratorState").text += "generating trees";
+        appendLog("generating trees");
 
         generateForest(80, 2, 20, 4, 8, false, "tree0", "tree1");
     }
 
     private static void generateDecorStones() {
         log("World generator: generating decor stones");
-        texts.get("WorldGeneratorState").text += ", generating decor stones";
+        appendLog(", generating decor stones");
 
         float chance = 40;
         for (int x = 0; x < SizeX; x++) {

@@ -2,6 +2,7 @@ package core.World.Textures;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
+import core.Global;
 import core.UI.GUI.Objects.ButtonObject;
 import core.UI.GUI.Objects.PanelObject;
 import core.UI.GUI.Objects.SliderObject;
@@ -193,7 +194,7 @@ public class TextureDrawing {
             smoothCameraX.add(new Vector2f(playerX, player.getMotionVectorX()));
 
             // todo Math.max(Window.pfps - 75, 0) / 7 не воспринимать всерьез - это костыль просто для того, чтоб плавная камера работала на любом фпс, потом переделаю
-            if (smoothCameraX.size() > multiplySmoothCameraX + Math.max(Window.pfps - 75, 0) / 7) {
+            if (smoothCameraX.size() > multiplySmoothCameraX + Math.max(app.getFpsMeasurement() - 75, 0) / 7) {
                 playerX = smoothCameraX.getFirst().x - (smoothCameraX.getFirst().y * multiplySmoothCameraX);
                 smoothCameraX.removeFirst();
             }
@@ -203,7 +204,7 @@ public class TextureDrawing {
             smoothCameraY.add(new Vector2f(playerY, player.getMotionVectorY()));
 
             // по тех. причинам тут пока без интерполяции
-            if (smoothCameraY.size() > multiplySmoothCameraY + Math.max(Window.pfps - 75, 0) / 7) {
+            if (smoothCameraY.size() > multiplySmoothCameraY + Math.max(app.getFpsMeasurement() - 75, 0) / 7) {
                 playerY = smoothCameraY.getFirst().x;
                 smoothCameraY.removeFirst();
             }

@@ -52,6 +52,9 @@ public class Physics {
 
                     EventHandler.addDebugValue(true, "Physics fps: ", "PhysicsFPS");
                     lastUpdate = System.nanoTime();
+                } else {
+                    // Без этой штуки мой ноутбук превращается в обогреватель
+                    Thread.yield();
                 }
             }
         }).start();

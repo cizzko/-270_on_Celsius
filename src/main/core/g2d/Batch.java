@@ -135,7 +135,7 @@ public class Batch implements Disposable {
     }
 
     protected final void prepareTexture(Texture tex) {
-        if (currentTexture != tex || vertices.remaining() < VERTEX_PER_SPRITE) {
+        if (currentTexture != tex || vertices.remaining() < VERTEX_FORMAT.vertexByteSize()*VERTEX_PER_SPRITE) {
             flush();
             currentTexture = tex;
         }

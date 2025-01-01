@@ -3,16 +3,15 @@ package core;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
-import core.Utils.NativeResources;
-import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.StaticWorldObjects.StaticWorldObjects;
-import core.g2d.Atlas;
-import core.g2d.Font;
-import core.graphic.Layer;
 import core.UI.GUI.Menu.Main;
+import core.Utils.NativeResources;
 import core.World.Textures.TextureDrawing;
 import core.assets.TextureLoader;
-import core.g2d.*;
+import core.g2d.Atlas;
+import core.g2d.Camera2;
+import core.g2d.Font;
+import core.g2d.SortingBatch;
+import core.graphic.Layer;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWWindowFocusCallback;
@@ -20,6 +19,7 @@ import org.lwjgl.opengl.GL;
 import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
+
 import static core.EventHandling.Logging.Logger.log;
 import static core.Global.*;
 import static core.Utils.NativeResources.addResource;
@@ -28,9 +28,9 @@ import static core.assets.TextureLoader.readImage;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;
 
-public class Window {
+public class Window extends Application {
     public static final String versionStamp = "0.0.56", version = "alpha " + versionStamp + " (non stable)";
-    public static int defaultWidth = 1920, defaultHeight = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0, fps, pfps;
+    public static int defaultWidth = 1920, defaultHeight = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0;
     public static boolean start = false, windowFocused = true;
     public static long glfwWindow;
     public static Font defaultFont;
@@ -113,18 +113,31 @@ public class Window {
 
         Main.create();
 
+        addListener(new AutoSaveListener());
+
         log("Init status: true\n");
     }
 
     public void draw() {
         log("Thread: Main thread started drawing");
-        long lastSwap = 0;
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
+
         while (!glfwWindowShouldClose(glfwWindow)) {
-            fps++;
+            updateTime();
+
             input.update();
+            for (ApplicationListener listener : listeners) {
+                try {
+                    listener.update();
+                } catch (Exception e) {
+                    Logger.printException("Failed to update ApplicationListener: " + listener, e);
+                }
+            }
+
             EventHandler.update();
+
+            scheduler.executeAll();
 
             TextureDrawing.updateVideo();
             batch.z(Layer.STATIC_OBJECTS);
@@ -147,12 +160,6 @@ public class Window {
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
             EventHandler.addDebugValue(true, "Drawing fps: ", "DrawingFPS");
-
-            if (System.currentTimeMillis() - lastSwap >= 1000) {
-                pfps = fps;
-                fps = 0;
-                lastSwap = System.currentTimeMillis();
-            }
         }
 
         glfwTerminate();
