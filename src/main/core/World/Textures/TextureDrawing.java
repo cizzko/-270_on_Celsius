@@ -9,6 +9,7 @@ import core.UI.GUI.Objects.TextObject;
 import core.UI.GUI.Video;
 import core.Utils.Commandline;
 import core.Utils.SimpleColor;
+import core.Utils.Sized;
 import core.Window;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.Inventory.Inventory;
@@ -46,6 +47,8 @@ public class TextureDrawing {
     private static final int multiplySmoothCameraX = Integer.parseInt(Config.getFromConfig("SmoothingCameraHorizontal")), multiplySmoothCameraY = Integer.parseInt(Config.getFromConfig("SmoothingCameraVertical"));
     public static final int blockSize = 48;
     public static float playerX = 0, playerY = 0;
+
+    public static Rectangle viewport = new Rectangle();
 
     public record blockQueue(int cellX, int cellY, short obj, boolean breakable) {}
 
@@ -253,7 +256,7 @@ public class TextureDrawing {
         int xBlock = findX(x, y);
         int yBlock = findY(x, y);
 
-        if (isOnCamera(xBlock, yBlock)) {
+        if (isOnCamera(xBlock, yBlock, getTexture(obj))) {
             SimpleColor color = ShadowMap.getColor(x, y);
             int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
             SimpleColor blockColor = breakable ? SimpleColor.fromRGBA(Math.max(0, a - 150), Math.max(0, a - 150), a, 255) : SimpleColor.fromRGBA(a, Math.max(0, a - 150), Math.max(0, a - 150), 255);
@@ -294,7 +297,7 @@ public class TextureDrawing {
         int xBlock = findX(x, y);
         int yBlock = findY(x, y);
 
-        if (isOnCamera(xBlock, yBlock)) {
+        if (isOnCamera(xBlock, yBlock, getTexture(obj))) {
             SimpleColor color = ShadowMap.getColor(x, y);
             int upperLimit = 100;
             int lowestLimit = -20;
@@ -365,13 +368,10 @@ public class TextureDrawing {
         }
     }
 
-    public static boolean isOnCamera(int x, int y) {
-        float left = playerX - (1920 / 2.1f) - (32 + blockSize);
-        float right = playerX + (1920 / 1.7f) + (32 - blockSize);
-        float bottom = playerY - (1080 / 3.7f) - (32 + blockSize); // lower dividet number - higher drawing
-        float top = playerY + (1080 / 1.4f) + (32 - blockSize);
+    public static boolean isOnCamera(float x, float y, Sized texture) {
+        camera.getBounds(viewport);
 
-        return !(x + 16 < left) && !(x > right) && !(y + 16 < bottom) && !(y > top);
+        return viewport.contains(x, y, texture.width(), texture.height());
     }
 
     public static void updateDynamicObj() {
@@ -379,7 +379,7 @@ public class TextureDrawing {
             if (dynamicObject != null) {
                 dynamicObject.incrementCurrentFrame();
 
-                if (isOnCamera((int) dynamicObject.getX(), (int) dynamicObject.getY())) {
+                if (isOnCamera(dynamicObject.getX(), dynamicObject.getY(), dynamicObject.getTexture())) {
                     if (dynamicObject.getFramesCount() == 0) {
                         batch.color(ShadowMap.getColorDynamic(dynamicObject));
                         batch.draw(dynamicObject.getTexture(), dynamicObject.getX(), dynamicObject.getY());

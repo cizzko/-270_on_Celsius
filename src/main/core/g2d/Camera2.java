@@ -1,6 +1,7 @@
 package core.g2d;
 
 import core.math.Mat3;
+import core.math.Rectangle;
 import core.math.Vector2f;
 
 public class Camera2 {
@@ -50,5 +51,9 @@ public class Camera2 {
         screenCoordinates.y = (2 * screenCoordinates.y) / height - 1;
         screenCoordinates.mul(invProjection);
         return screenCoordinates;
+    }
+
+    public void getBounds(Rectangle out) {
+        out.setSize(width, height).setCenter(position.x, position.y);
     }
 }
