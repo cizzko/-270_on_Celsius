@@ -200,8 +200,8 @@ public final class AtlasGenerator {
                     packer.resize(packer.w, packer.h + region.oh());
                 }
             }
-            region.rx = pos.x();
-            region.ry = pos.y();
+            region.rx = pos.x;
+            region.ry = pos.y;
         }
 
         log("Result atlas size: " + packer.w + "x" + packer.h);

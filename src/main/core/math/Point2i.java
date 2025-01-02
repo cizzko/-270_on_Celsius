@@ -3,10 +3,13 @@ package core.math;
 public final class Point2i {
     public int x, y;
 
-    public Point2i() {}
+    public Point2i() {
+    }
+
     public Point2i(int x, int y) {
         set(x, y);
     }
+
     public Point2i(Point2i other) {
         set(other);
     }
@@ -36,6 +39,28 @@ public final class Point2i {
         return new Point2i(x, y);
     }
 
+    public float dst2(int x, int y) {
+        int dx = x - this.x;
+        int dy = y - this.y;
+        return dx * dx + dy * dy;
+    }
+
+    public float dst2(Point2i other) {
+        return dst2(other.x, other.y);
+    }
+
+    public float dst(Point2i other) {
+        return (float) Math.sqrt(dst2(other));
+    }
+
+    public boolean within(int x, int y, int dst) {
+        return dst2(x, y) <= dst * dst;
+    }
+
+    public boolean within(Point2i other, int dst) {
+        return dst2(other) <= dst * dst;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -56,7 +81,7 @@ public final class Point2i {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "(" + x + ", " + y + ")";
     }
 }

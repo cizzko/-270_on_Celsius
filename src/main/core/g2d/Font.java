@@ -103,8 +103,8 @@ public final class Font {
                     packer.resize(packer.w, MathUtil.ceilNextPowerOfTwo(packer.h + 1));
                 }
             }
-            gl.x = pos.x();
-            gl.y = pos.y();
+            gl.x = pos.x;
+            gl.y = pos.y;
         }
 
         BufferedImage atlasImage = new BufferedImage(packer.w, packer.h, BufferedImage.TYPE_INT_ARGB);

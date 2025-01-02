@@ -2,7 +2,7 @@ package core.Utils;
 
 public interface Disposable extends AutoCloseable {
 
-    boolean isDisposed();
+    default boolean isDisposed() { return false; }
 
     @Override
     void close();

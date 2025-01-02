@@ -83,6 +83,8 @@ public final class RectanglePacker {
         this.h = h;
     }
 
+    private final Position pos = new Position();
+
     public Position pack(int w, int h) {
         int bestIDX = -1, bestX = -1, bestY = -1;
         int bestH = this.h, bestW = this.w;
@@ -104,9 +106,11 @@ public final class RectanglePacker {
 
         if (bestIDX != -1) {
             addRegion(bestIDX, bestX, bestY, w, h);
-            return new Position(bestX, bestY);
+            pos.set(bestX, bestY);
+        } else {
+            pos.set(-1, -1);
         }
-        return new Position(-1, -1);
+        return pos;
     }
 
     private static class Region {
@@ -119,7 +123,14 @@ public final class RectanglePacker {
         }
     }
 
-    public record Position(int x, int y) {
+    public static class Position {
+        public int x, y;
+
+        public void set(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+
         public boolean isInvalid() {
             return x < 0 || y < 0;
         }
