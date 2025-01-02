@@ -29,7 +29,7 @@ public class BuildMenu {
     }
 
     private static void addDefaultItems() {
-        Properties defaultItems = Config.getProperties(assets.assetsDir("\\World\\ItemsCharacteristics\\DefaultBuildMenuItems.properties"));
+        Properties defaultItems = Config.getProperties(assets.assetsDir("World/ItemsCharacteristics/DefaultBuildMenuItems.properties"));
 
         String[] details = ((String) defaultItems.getOrDefault("Details", "")).split(",");
         String[] tools = ((String) defaultItems.getOrDefault("Tools", "")).split(",");
@@ -134,7 +134,7 @@ public class BuildMenu {
 
     public static void draw() {
         if (created && isOpen) {
-            batch.draw(atlas.byPath("UI/GUI/buildMenu/menuOpen.png"), 1650, 0);
+            batch.draw(atlas.byPath("UI/GUI/buildMenu/menuOpen"), 1650, 0);
 
             for (int x = 0; x < items.length; x++) {
                 for (int y = 0; y < items[x].length; y++) {
@@ -168,13 +168,13 @@ public class BuildMenu {
             drawRequirements(1663, 156);
 
         } else if (!isOpen) {
-            batch.draw(atlas.byPath("UI/GUI/buildMenu/menuClosed.png"), 1650, 0);
+            batch.draw(atlas.byPath("UI/GUI/buildMenu/menuClosed"), 1650, 0);
         }
 
         if (infoCreated && currentObject != null && items[currentObject.x][currentObject.y] != null) {
             Fill.rect(0, 0, 1920, 1080, SimpleColor.DIRTY_BLACK);
             Fill.rect(560, 0, 800, 1080, SimpleColor.DIRTY_BLACK);
-            batch.draw(atlas.byPath("UI/GUI/buildMenu/exitBtn.png"), 605, 989);
+            batch.draw(atlas.byPath("UI/GUI/buildMenu/exitBtn"), 605, 989);
 
             TextureDrawing.drawText(650, 730, items[currentObject.x][currentObject.y].description);
             Inventory.drawInventoryItem(650, 915, items[currentObject.x][currentObject.y].texture);

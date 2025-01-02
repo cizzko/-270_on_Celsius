@@ -2,7 +2,7 @@ package core.World.StaticWorldObjects.Structures;
 
 import core.EventHandling.Logging.Config;
 import core.Global;
-import core.UI.Sounds.Sound;
+import core.ui.Sounds.Sound;
 import core.Utils.ArrayUtils;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.InventoryEvents;

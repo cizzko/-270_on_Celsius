@@ -1,4 +1,4 @@
-package core.UI.GUI;
+package core.ui.GUI;
 
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentHashMap;

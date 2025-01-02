@@ -12,6 +12,7 @@ public final class Global {
     public static SortingBatch batch;
     public static AssetsManager assets;
     public static Camera2 camera;
+    public static Scene scene;
 
     public static final TaskScheduler scheduler = new TaskScheduler();
     public static Application app;

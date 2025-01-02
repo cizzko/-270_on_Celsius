@@ -1,8 +1,9 @@
 package core.World;
 
-import core.EventHandling.Logging.Json;
+import core.EventHandling.EventHandler;
 import core.Time;
-import core.UI.GUI.Menu.CreatePlanet;
+import core.UI;
+import core.ui.GUI.Menu.CreatePlanet;
 import core.Window;
 import core.World.Creatures.CreaturesGenerate;
 import core.World.Creatures.Physics;
@@ -14,7 +15,6 @@ import core.World.Creatures.Player.Player;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
-import core.Utils.SimpleColor;
 import core.World.StaticWorldObjects.StaticBlocksEvents;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.Structures.Structures;
@@ -26,7 +26,6 @@ import java.util.*;
 
 import static core.EventHandling.Logging.Logger.log;
 import static core.Global.*;
-import static core.UI.GUI.CreateElement.*;
 import static core.Window.*;
 import static core.World.StaticWorldObjects.StaticObjectsConst.getConst;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
@@ -52,7 +51,8 @@ public class WorldGenerator {
         objects.put("WorldMinVectorIntersDamage", minVectorIntersDamage);
         objects.put("WorldDayCount", dayCount);
         objects.put("WorldCurrentTime", Sun.currentTime);
-        objects.put("WorldGenerateCreatures", buttons.get(Json.getName("GenerateCreatures")).isClicked);
+        // TODO Это не должно читаться с кнопки. Нужно переместить во внутреннее состояние объекта
+        // objects.put("WorldGenerateCreatures", buttons.get(Json.getName("GenerateCreatures")).isClicked);
 
         return objects;
     }
@@ -179,17 +179,16 @@ public class WorldGenerator {
         return ((x + SizeX * y) / SizeX) * TextureDrawing.blockSize;
     }
 
-    public static void generateWorld() {
-        createText(42, 170, "WorldGeneratorState", "First step: ", SimpleColor.DIRTY_BRIGHT_WHITE, "WorldGeneratorState");
+    public static void generateWorld(CreatePlanet.GenerationParameters params) {
+        // createText(42, 170, "WorldGeneratorState", "First step: ", SimpleColor.DIRTY_BRIGHT_WHITE, "WorldGeneratorState");
 
-        int sliderPos = getSliderPos("worldSize");
-        int SizeX = sliderPos + 20;
-        int SizeY = sliderPos + 20;
+        int SizeX = params.size;
+        int SizeY = params.size;
 
         //todo чтоб не вылетала ошибка, если игрок не переходил в другой раздел настроек генерации, и кнопка не была создана
-        boolean simple = buttons.containsKey(Json.getName("GenerateSimpleWorld")) && buttons.get(Json.getName("GenerateSimpleWorld")).isClicked;
-        boolean randomSpawn = buttons.containsKey(Json.getName("RandomSpawn")) && buttons.get(Json.getName("RandomSpawn")).isClicked;
-        boolean creatures = buttons.containsKey(Json.getName("GenerateCreatures")) && buttons.get(Json.getName("GenerateCreatures")).isClicked;
+        boolean simple = params.simple;
+        boolean randomSpawn = params.randomSpawn;
+        boolean creatures = params.creatures;
 
         log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world with size: x - " + SizeX + ", y - " + SizeY);
 
@@ -224,7 +223,7 @@ public class WorldGenerator {
     }
 
     private static void appendLog(String text) {
-        scheduler.post(() -> texts.get("WorldGeneratorState").text += text, 0.5f * Time.ONE_SECOND);
+        // scheduler.post(() -> texts.get("WorldGeneratorState").text += text, 0.5f * Time.ONE_SECOND);
     }
 
     private static void generateRelief() {
@@ -487,7 +486,7 @@ public class WorldGenerator {
     }
 
     public static void start(boolean generateCreatures) {
-        CreatePlanet.delete();
+        UI.createPlanet().hide();
 
         WorldGenerator.registerListener(new Factories());
         Inventory.registerListener(new ElectricCables());
@@ -497,6 +496,13 @@ public class WorldGenerator {
         if (generateCreatures) {
             CreaturesGenerate.initGenerating();
         }
+        EventHandler.setDebugValue(() -> {
+            if (DynamicObjects.isEmpty()) {
+                return null;
+            }
+            var player = DynamicObjects.getFirst();
+            return "[Player] x: " + player.getX() + ", y: " + player.getY();
+        });
         Window.start = true;
     }
 }

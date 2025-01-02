@@ -1,14 +1,15 @@
-package core.UI.GUI;
+package core.ui.GUI;
 
-import core.UI.GUI.Objects.ButtonObject;
-import core.UI.GUI.Objects.PanelObject;
-import core.UI.GUI.Objects.SliderObject;
-import core.UI.GUI.Objects.TextObject;
+import core.ui.GUI.Objects.ButtonObject;
+import core.ui.GUI.Objects.PanelObject;
+import core.ui.GUI.Objects.SliderObject;
+import core.ui.GUI.Objects.TextObject;
 import core.Utils.SimpleColor;
 import core.g2d.Atlas;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+@Deprecated(forRemoval = true)
 public class CreateElement {
     public static ConcurrentHashMap<String, ButtonObject> buttons = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, SliderObject> sliders = new ConcurrentHashMap<>();

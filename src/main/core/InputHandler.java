@@ -1,7 +1,7 @@
 package core;
 
 import core.EventHandling.EventHandler;
-import core.UI.GUI.Menu.MouseCalibration;
+import core.ui.GUI.Menu.MouseCalibration;
 import core.World.Textures.TextureDrawing;
 import core.math.Point2i;
 import core.math.Vector2f;

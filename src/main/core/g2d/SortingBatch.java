@@ -170,6 +170,24 @@ public class SortingBatch extends Batch<SortingBatch.SortingState> {
             y4 = 0;
             color = null;
         }
+
+        @Override
+        public String toString() {
+            return "Tex{" +
+                    "z=" + z +
+                    ", blending=" + blending +
+                    ", color=" + color +
+                    ", y4=" + y4 +
+                    ", x4=" + x4 +
+                    ", y3=" + y3 +
+                    ", x3=" + x3 +
+                    ", y2=" + y2 +
+                    ", x2=" + x2 +
+                    ", y=" + y +
+                    ", x=" + x +
+                    ", drawable=" + drawable +
+                    '}';
+        }
     }
 
     public static final class RequestProcedure extends Request {
@@ -178,6 +196,14 @@ public class SortingBatch extends Batch<SortingBatch.SortingState> {
         public RequestProcedure(int z, Runnable runnable) {
             super(z);
             this.runnable = runnable;
+        }
+
+        @Override
+        public String toString() {
+            return "Proc{" +
+                    "z=" + z +
+                    ", runnable=" + runnable +
+                    '}';
         }
     }
 }

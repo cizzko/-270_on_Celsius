@@ -1,6 +1,7 @@
 package core.Utils;
 
 import java.io.Serializable;
+import java.util.Locale;
 
 public final class SimpleColor implements Serializable {
     public static final SimpleColor WHITE = fromRGBA(255, 255, 255, 255);
@@ -10,6 +11,7 @@ public final class SimpleColor implements Serializable {
     public static final SimpleColor DIRTY_BRIGHT_WHITE = fromRGBA(230, 230, 230, 255);
     public static final SimpleColor DIRTY_BRIGHT_BLACK = fromRGBA(10, 10, 10, 255);
     public static final SimpleColor DIRTY_BLACK = fromRGBA(10, 10, 10, 55);
+    public static final SimpleColor TEXT_COLOR = fromRGBA(210, 210, 210, 255);
 
     private int value;
 
@@ -108,5 +110,10 @@ public final class SimpleColor implements Serializable {
     @Override
     public int hashCode() {
         return value;
+    }
+
+    @Override
+    public String toString() {
+        return "#" + Integer.toHexString(value).toUpperCase(Locale.ROOT);
     }
 }

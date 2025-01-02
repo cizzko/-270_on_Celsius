@@ -8,6 +8,7 @@ import java.io.IOException;
 import static core.assets.TextureLoader.BufferedImageEncoder;
 import static core.assets.TextureLoader.readImage;
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL11.glTexParameteri;
 
 public final class Texture implements Drawable {
     final int glHandle;

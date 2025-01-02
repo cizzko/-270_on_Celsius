@@ -76,7 +76,6 @@ public class Player {
             player.setX(player.getX() + speed * xf);
             player.setY(player.getY() + speed * yf);
         }
-        EventHandler.putDebugValue(false, "[Player] x: " + player.getX() + ", y: " + player.getY(), "PlayerPos");
     }
 
     public static void updateInventoryInteraction() {
@@ -214,8 +213,8 @@ public class Player {
     public static void updatePlayerGUI() {
         if (start) {
             Bullets.drawBullets();
-            updateTemperatureEffect();
             BuildMenu.draw();
+            Inventory.draw();
             updateToolInteraction();
             drawCurrentHP();
             Inventory.update();
@@ -228,7 +227,7 @@ public class Player {
         }
     }
 
-    private static void updateTemperatureEffect() {
+    public static void updateTemperatureEffect() {
         DynamicWorldObjects player = DynamicObjects.getFirst();
         int temp = (int) TemperatureMap.getAverageTempAroundDynamic(player.getX(), player.getY(), player.getTexture());
         int upperLimit = 100;
@@ -248,12 +247,7 @@ public class Player {
         int b = temp > 0 ? 0 : a;
 
         Texture modifiedTemperature = assets.getTextureByPath(assets.assetsDir("/UI/GUI/modifiedTemperature.png"));
-
-        batch.pushState(() -> {
-            batch.z(Layer.EFFECTS);
-            batch.color(SimpleColor.fromRGBA(r, (int) (b / 2f), b, a));
-            batch.draw(modifiedTemperature);
-        });
+        batch.draw(Layer.EFFECTS, () -> batch.draw(modifiedTemperature, SimpleColor.fromRGBA(r, (int) (b / 2f), b, a)));
     }
 
     public static void playerMaxHP() {

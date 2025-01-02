@@ -11,6 +11,7 @@ import core.World.WorldGenerator;
 import core.g2d.Atlas;
 import core.math.Point2i;
 import core.math.Rectangle;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -40,21 +41,9 @@ public class Inventory {
         return null;
     }
 
-    public static void create() {
-        create = true;
-        BuildMenu.create();
-    }
-
-    public static void update() {
-        if (create) {
-            drawInventory();
-            updateCurrentItem();
-        }
-    }
-
-    private static void drawInventory() {
-        Atlas.Region inventory = atlas.byPath("UI/GUI/inventory/inventory" + (inventoryOpen ? "Open" : "Closed") + ".png");
-        batch.draw(inventory, inventoryOpen ? 1488 : 1866, 756);
+    public static void draw() {
+        String gridTex = "UI/GUI/inventory/inventory" + (inventoryOpen ? "Open" : "Closed");
+        batch.draw(atlas.byPath(gridTex), inventoryOpen ? 1488 : 1866, 756);
         Items item;
 
         for (int x = inventoryOpen ? 0 : 7; x < inventoryObjects.length; x++) {
@@ -64,6 +53,17 @@ public class Inventory {
                     drawInventoryItem(1498 + x * 54, 766 + y * 54f, item.countInCell + 1, item.texture);
                 }
             }
+        }
+    }
+
+    public static void create() {
+        create = true;
+        BuildMenu.create();
+    }
+
+    public static void update() {
+        if (create) {
+            updateCurrentItem();
         }
     }
 

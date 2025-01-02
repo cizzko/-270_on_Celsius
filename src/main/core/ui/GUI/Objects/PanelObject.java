@@ -1,4 +1,4 @@
-package core.UI.GUI.Objects;
+package core.ui.GUI.Objects;
 
 import core.Utils.SimpleColor;
 import core.g2d.Atlas;

@@ -1,39 +1,59 @@
 package core.EventHandling;
 
 import core.EventHandling.Logging.Config;
-import core.EventHandling.Logging.Json;
-import core.UI.GUI.CreateElement;
-import core.UI.GUI.Menu.Pause;
-import core.UI.GUI.Menu.Settings;
-import core.UI.GUI.Objects.ButtonObject;
-import core.UI.GUI.Objects.SliderObject;
+import core.Global;
+import core.UI;
+import core.graphic.Layer;
+import core.ui.Dialog;
 import core.Utils.SimpleColor;
-import core.Utils.SimpleLongSummaryStatistics;
 import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Player;
 import core.math.Point2i;
+import core.ui.Element;
+import core.ui.TextArea;
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
 import org.lwjgl.opengl.GL46;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.function.Supplier;
 
 import static core.EventHandling.Logging.Logger.log;
 import static core.Global.*;
-import static core.UI.GUI.CreateElement.*;
 import static core.Utils.Commandline.updateLine;
 import static core.Utils.NativeResources.addResource;
 import static core.Window.*;
+import static core.World.Textures.TextureDrawing.drawText;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class EventHandler {
-    private static long lastSecond = System.currentTimeMillis();
     private static boolean keyLogging = false;
     public static final StringBuilder keyLoggingText = new StringBuilder(256);
     public static int width = defaultWidth, height = defaultHeight, debugLevel = Integer.parseInt(Config.getFromConfig("Debug"));
-    private static HashMap<String, debugValue> debugValues = new HashMap<>();
-    private record debugValue(boolean statistics, String text, SimpleLongSummaryStatistics summaryStatistics) {}
+
+    private static final class DebugBox extends TextArea {
+        private final Supplier<String> format;
+
+        private DebugBox(Supplier<String> format) {
+            this.format = format;
+            this.color = SimpleColor.DIRTY_BRIGHT_BLACK;
+        }
+
+        @Override
+        public void update() {
+            text = format.get();
+        }
+
+        @Override
+        public void draw() {
+            if (!visible) {
+                return;
+            }
+            if (text != null) {
+                batch.draw(Layer.DEBUG, () -> drawText(x, y, text, color));
+            }
+        }
+    }
+    private static final Dialog debugDialog = new Dialog();
 
     public static void setKeyLoggingText(String text) {
         keyLoggingText.setLength(0);
@@ -42,6 +62,8 @@ public class EventHandler {
 
     private static void initCallbacks() {
         log("Thread: Event handling started");
+
+        debugDialog.show();
 
         glfwSetCharCallback(glfwWindow, addResource(new GLFWCharCallback() {
             @Override
@@ -71,86 +93,26 @@ public class EventHandler {
         keyLogging = false;
     }
 
+    public static boolean isMousePressed(Element element) {
+        return getRectangleClick(element.x(), element.y(), element.x() + element.width(), element.y() + element.height());
+    }
+
     public static boolean getRectangleClick(int x, int y, int x1, int y1) {
         Point2i mousePos = input.mousePos();
 
-        return mousePos.x >= x && mousePos.x <= x1 && mousePos.y >= y && mousePos.y <= y1 && input.justClicked(GLFW_MOUSE_BUTTON_LEFT);
-    }
-
-    private static void updateSliders() {
-        Point2i mousePos = input.mousePos();
-
-        for (SliderObject slider : sliders.values()) {
-            if (!slider.visible) {
-                slider.isClicked = false;
-                continue;
-            }
-
-            if (slider.contains(mousePos) && input.clicked(GLFW_MOUSE_BUTTON_LEFT)) {
-                slider.sliderPos = mousePos.x;
-            }
-        }
-    }
-
-    private static void updateButtons() {
-        for (ButtonObject button : buttons.values()) {
-            if (button == null || !button.visible || !button.isClickable) {
-                continue;
-            }
-
-            if (button.swapButton) {
-                if (EventHandler.getRectangleClick(button.x, button.y, button.width + button.x, button.height + button.y)) {
-                    button.isClicked = !button.isClicked;
-                }
-            } else {
-                boolean press = EventHandler.getRectangleClick(button.x, button.y, button.width + button.x, button.height + button.y);
-                button.isClicked = press;
-
-                if (press && button.taskOnClick != null) {
-                    Thread.startVirtualThread(() -> button.taskOnClick.run());
-                    return;
-                }
-            }
-        }
-    }
-
-    private static void updateClicks() {
-        if (Settings.createdSettings && !buttons.get(Json.getName("SettingsSave")).isClicked) {
-            int count = (int) buttons.values().stream().filter(currentButton -> currentButton.isClicked &&
-                    currentButton.visible && (currentButton.group.contains("Swap") || currentButton.group.contains("Drop"))).count();
-
-            if (Settings.needUpdateCount) {
-                Settings.pressedCount = count;
-                Settings.needUpdateCount = false;
-            } else if (count != Settings.pressedCount) {
-                buttons.get(Json.getName("SettingsSave")).isClickable = true;
-            }
-        }
-
-        if (sliders.get("worldSize") != null && sliders.get("worldSize").visible) {
-            float worldSize = sliders.get("worldSize").max;
-            String pic;
-
-            int sliderPos = getSliderPos("worldSize");
-            if (sliderPos >= worldSize / 1.5f) {
-                pic = "planetBig.png";
-            } else if (sliderPos >= worldSize / 3) {
-                pic = "planetAverage.png";
-            } else {
-                pic = "planetMini.png";
-            }
-            panels.get("planet").texture = atlas.byPath("World/WorldGenerator/" + pic);
-        }
+        return mousePos.x >= x && mousePos.x <= x1 &&
+                mousePos.y >= y && mousePos.y <= y1 &&
+                input.justClicked(GLFW_MOUSE_BUTTON_LEFT);
     }
 
     private static void updateHotkeys() {
         if (start) {
             if (input.justPressed(GLFW_KEY_ESCAPE)) {
-                Pause.toggle();
+                UI.pause().toggle();
             }
 
             if (!windowFocused && Config.getFromConfig("Autopause").equals("true")) {
-                Pause.create();
+                UI.pause().show();
                 Physics.stopPhysics();
             }
         }
@@ -164,57 +126,26 @@ public class EventHandler {
         }
     }
 
-    private static void updateDebug() {
-        if (debugLevel > 0 && System.currentTimeMillis() - lastSecond >= 1000) {
-            lastSecond = System.currentTimeMillis();
-
-            int iterations = 0;
-            for (Map.Entry<String, debugValue> iteration : debugValues.entrySet()) {
-                debugValue value = iteration.getValue();
-                String key = iteration.getKey();
-
-                iterations++;
-                if (value.statistics) {
-                    CreateElement.createText(5, 1080 - (25 * iterations), key, value.text + value.summaryStatistics.toString(), SimpleColor.DIRTY_BRIGHT_BLACK, null);
-                } else {
-                    CreateElement.createText(5, 1080 - (25 * iterations), key, value.text, SimpleColor.DIRTY_BRIGHT_BLACK, null);
-                }
-            }
-        }
-    }
-
-    public static void addDebugValue(boolean statistics, String text, String name) {
+    public static void setDebugValue(Supplier<String> format) {
         if (debugLevel > 0) {
-            debugValue object = debugValues.getOrDefault(name, null);
+            var elem = new DebugBox(format);
 
-            if (object == null) {
-                debugValues.put(name, new debugValue(statistics, text, statistics ? new SimpleLongSummaryStatistics() : null));
-            } else if (statistics) {
-                object.summaryStatistics.add(1);
-            }
-        }
-    }
-
-    public static void putDebugValue(boolean statistics, String text, String name) {
-        if (debugLevel > 0) {
-            debugValues.put(name, new debugValue(statistics, text, statistics ? new SimpleLongSummaryStatistics() : null));
+            debugDialog.add(elem);
+            int i = debugDialog.children().size();
+            elem.setPosition(5, 1080 - (25 * i));
         }
     }
 
     public static void init() {
         initCallbacks();
+
+        setDebugValue(() -> "[Render] fps: " + Global.app.getFps());
     }
 
     public static void update() {
         Player.updatePlayerGUILogic();
-        updateButtons();
-        updateClicks();
-        updateSliders();
         updateHotkeys();
         updateLine();
-        updateDebug();
-
-        addDebugValue(true, "Handler fps: ", "HandlerFPS");
     }
 
     public static boolean isKeylogging() {

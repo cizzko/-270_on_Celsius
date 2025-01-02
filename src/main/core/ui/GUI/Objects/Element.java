@@ -1,4 +1,4 @@
-package core.UI.GUI.Objects;
+package core.ui.GUI.Objects;
 
 import core.math.Point2i;
 import core.math.Rectangle;
@@ -17,5 +17,13 @@ public abstract class Element {
 
     public boolean contains(Point2i point) {
         return Rectangle.contains(x, y, width, height, point);
+    }
+
+    public void draw() {
+
+    }
+
+    public void update() {
+
     }
 }

@@ -21,8 +21,6 @@ public class CreaturesGenerate {
 
             while (!glfwWindowShouldClose(glfwWindow)) {
                 if (System.nanoTime() - lastUpdate >= 1.0 / generateSpeed * 1000000000) {
-                    EventHandler.addDebugValue(true, "Creatures fps: ", "CreaturesFPS");
-                    EventHandler.addDebugValue(false, "Creatures count: " + currentCreaturesCount, "CreaturesCount");
 
                     lastUpdate = System.nanoTime();
 

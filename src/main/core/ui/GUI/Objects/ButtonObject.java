@@ -1,6 +1,6 @@
-package core.UI.GUI.Objects;
+package core.ui.GUI.Objects;
 
-import core.UI.GUI.CreateElement;
+import core.ui.GUI.CreateElement;
 import core.Utils.SimpleColor;
 import core.g2d.Atlas;
 

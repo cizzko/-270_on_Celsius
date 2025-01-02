@@ -1,4 +1,4 @@
-package core.UI.Sounds;
+package core.ui.Sounds;
 
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;

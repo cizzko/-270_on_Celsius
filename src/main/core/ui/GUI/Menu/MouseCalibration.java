@@ -1,4 +1,4 @@
-package core.UI.GUI.Menu;
+package core.ui.GUI.Menu;
 
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
@@ -6,7 +6,7 @@ import core.Global;
 import core.Utils.SimpleColor;
 import java.awt.Robot;
 import static core.EventHandling.Logging.Logger.printException;
-import static core.UI.GUI.CreateElement.*;
+import static core.ui.GUI.CreateElement.*;
 import static core.Window.glfwWindow;
 import static org.lwjgl.glfw.GLFW.*;
 
