@@ -72,7 +72,7 @@ public class Saves {
 
     public static void loadWorldSave(String path) {
         HashMap<String, Object> data = new HashMap<>();
-        try (FileInputStream fis = new FileInputStream(path);
+        try (var fis = assets.resourceStream(path);
             InflaterInputStream iis = new InflaterInputStream(fis);
             ObjectInputStream ois = new ObjectInputStream(iis)) {
 

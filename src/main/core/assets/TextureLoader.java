@@ -22,7 +22,7 @@ public class TextureLoader {
     // returns BufferedImage target image
     public static BufferedImage BufferedImageEncoder(String path) {
         try {
-            return ImageIO.read(new File(path));
+            return ImageIO.read(ImageIO.createImageInputStream(Global.assets.resourceStream(path)));
         } catch (IOException e) {
             printException("Error at buffered image encoder, path: " + path, e);
             logExit(1);

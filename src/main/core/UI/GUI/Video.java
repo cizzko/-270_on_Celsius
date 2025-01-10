@@ -1,11 +1,5 @@
 package core.UI.GUI;
 
-import core.EventHandling.Logging.Logger;
-import core.assets.TextureLoader;
-import org.jcodec.api.FrameGrab;
-import org.jcodec.common.io.NIOUtils;
-import org.jcodec.scale.AWTUtil;
-import java.io.*;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,40 +24,40 @@ public class Video {
     }
 
     public static void drawVideo(String path, int layer, int fps, int x, int y, int width, int height) {
-        if (video.get(path) == null || !video.get(path).isPlaying) {
-            new Thread(() -> {
-                try {
-                    File videoFile = new File(path);
-                    FrameGrab grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(videoFile));
-
-                    int framesCount = grab.getVideoTrack().getMeta().getTotalFrames();
-                    long frameDuration = 1000 / fps;
-
-                    video.put(path, new Video(layer, fps, x, y, height, width));
-                    video.get(path).totalFrames = framesCount;
-                    video.get(path).isPlaying = true;
-
-                    for (int i = 0; i < framesCount;) {
-                        if (!video.get(path).isPlaying) {
-                            break;
-                        }
-
-                        long currentTime = System.currentTimeMillis();
-                        long elapsedTime = currentTime - video.get(path).lastFrameTime;
-
-                        if (elapsedTime >= frameDuration || video.get(path).frame == 1) {
-                            byteBuffer.put(path, TextureLoader.ByteBufferEncoder(AWTUtil.toBufferedImage(grab.getNativeFrame())));
-                            i++;
-
-                            video.get(path).lastFrameTime = System.currentTimeMillis();
-                            video.get(path).frame++;
-                        }
-                    }
-                } catch (Exception e) {
-                    Logger.printException("Error when reading video, path: " + path, e);
-                }
-            }).start();
-        }
+        // if (video.get(path) == null || !video.get(path).isPlaying) {
+        //     new Thread(() -> {
+        //         try {
+        //             File videoFile = new File(path);
+        //             FrameGrab grab = FrameGrab.createFrameGrab(NIOUtils.readableChannel(videoFile));
+        //
+        //             int framesCount = grab.getVideoTrack().getMeta().getTotalFrames();
+        //             long frameDuration = 1000 / fps;
+        //
+        //             video.put(path, new Video(layer, fps, x, y, height, width));
+        //             video.get(path).totalFrames = framesCount;
+        //             video.get(path).isPlaying = true;
+        //
+        //             for (int i = 0; i < framesCount;) {
+        //                 if (!video.get(path).isPlaying) {
+        //                     break;
+        //                 }
+        //
+        //                 long currentTime = System.currentTimeMillis();
+        //                 long elapsedTime = currentTime - video.get(path).lastFrameTime;
+        //
+        //                 if (elapsedTime >= frameDuration || video.get(path).frame == 1) {
+        //                     byteBuffer.put(path, TextureLoader.ByteBufferEncoder(AWTUtil.toBufferedImage(grab.getNativeFrame())));
+        //                     i++;
+        //
+        //                     video.get(path).lastFrameTime = System.currentTimeMillis();
+        //                     video.get(path).frame++;
+        //                 }
+        //             }
+        //         } catch (Exception e) {
+        //             Logger.printException("Error when reading video, path: " + path, e);
+        //         }
+        //     }).start();
+        // }
     }
 
     public static void deleteVideo(String path) {

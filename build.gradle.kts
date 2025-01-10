@@ -1,5 +1,6 @@
 plugins {
     java
+    id("org.beryx.jlink") version "3.1.1"
 }
 
 sourceSets {
@@ -13,7 +14,7 @@ sourceSets {
             srcDir("src/main")
         }
         resources {
-            srcDir("src/assets")
+            srcDirs("src/assets", "src/assets-gen")
         }
     }
 }
@@ -58,30 +59,24 @@ val lwjglNatives = Pair(
     }
 }
 
-allprojects {
-    repositories {
-        mavenCentral()
-    }
+repositories {
+    mavenCentral()
+}
 
-    apply(plugin = "java")
+tasks.compileJava {
+    options.encoding = "UTF-8"
+    options.release.set(21)
+}
 
-    dependencies {
-        implementation("com.google.code.gson:gson:2.10.1")
-    }
-
-    tasks.compileJava {
-        options.encoding = "UTF-8"
-        options.release.set(21)
-    }
-
-    java {
-        toolchain {
-            languageVersion = JavaLanguageVersion.of(21)
-        }
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
 dependencies {
+    implementation("com.google.code.gson:gson:2.10.1")
+
     implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.3")
     implementation("org.jcodec:jcodec:0.2.5")
     implementation("org.jcodec:jcodec-javase:0.2.5")
@@ -91,7 +86,28 @@ dependencies {
     implementation("org.lwjgl", "lwjgl-glfw")
     implementation("org.lwjgl", "lwjgl-opengl")
 
-    runtimeOnly("org.lwjgl", "lwjgl", classifier = lwjglNatives)
-    runtimeOnly("org.lwjgl", "lwjgl-glfw", classifier = lwjglNatives)
-    runtimeOnly("org.lwjgl", "lwjgl-opengl", classifier = lwjglNatives)
+    implementation("org.lwjgl", "lwjgl", classifier = lwjglNatives)
+    implementation("org.lwjgl", "lwjgl-glfw", classifier = lwjglNatives)
+    implementation("org.lwjgl", "lwjgl-opengl", classifier = lwjglNatives)
+}
+
+application {
+    mainClass = "core.Main"
+    mainModule = "core.main"
+}
+
+jlink {
+    enableCds()
+    options.addAll(listOf(
+        "--no-header-files",
+        "--no-man-pages",
+    ))
+    if (System.getProperty("os.name")!!.startsWith("Linux")) {
+        options.add("--strip-native-debug-symbols")
+        options.add("exclude-debuginfo-files");
+    }
+    launcher {
+        name = "celsius"
+        args = listOf("--packaged")
+    }
 }

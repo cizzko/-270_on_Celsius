@@ -6,6 +6,7 @@ import core.EventHandling.Logging.Logger;
 import core.UI.GUI.Menu.Main;
 import core.Utils.NativeResources;
 import core.World.Textures.TextureDrawing;
+import core.assets.AssetsManager;
 import core.assets.TextureLoader;
 import core.g2d.Atlas;
 import core.g2d.Camera2;
@@ -101,7 +102,7 @@ public class Window extends Application {
         input.init();
 
         try {
-            atlas = Atlas.load(assets.assetsDir("/out/sprites"));
+            atlas = Atlas.load(assets.assetsDir("sprites"));
         } catch (IOException e) {
             Logger.printException("Error when loading texture atlas", e);
         }

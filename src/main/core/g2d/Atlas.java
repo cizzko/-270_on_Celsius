@@ -2,7 +2,9 @@ package core.g2d;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import core.Global;
 
+import javax.swing.plaf.synth.Region;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -19,17 +21,13 @@ public final class Atlas {
     private Region errorRegion;
     private Map<String, Region> regions;
 
-    // returns atlas of all loaded image, the './gradlew genatlas' call is required to generate the atlas
     public static Atlas load(String atlasBaseName) throws IOException {
-        Path atlasPath = Path.of(atlasBaseName + ATLAS_EXT);
-        Path atlasMetaPath = Path.of(atlasBaseName + META_EXT);
-
-        Texture texture = Texture.load(atlasPath.toString());
+        Texture texture = Texture.load(atlasBaseName + ATLAS_EXT);
         Atlas atlas = new Atlas();
         atlas.texture = texture;
 
         JsonObject meta;
-        try (BufferedReader reader = Files.newBufferedReader(atlasMetaPath, StandardCharsets.UTF_8)) {
+        try (var reader = Global.assets.resourceReader(atlasBaseName + META_EXT)) {
             meta = JsonParser.parseReader(reader)
                     .getAsJsonObject();
         }

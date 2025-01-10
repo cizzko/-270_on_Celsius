@@ -73,7 +73,7 @@ public class Logger extends PrintStream {
 
             if (!cleanup) {
                 try {
-                    try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("/log.txt"), StandardCharsets.UTF_8))) {
+                    try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("log.txt"), StandardCharsets.UTF_8))) {
                         printWriter.print("");
                         cleanup = true;
                     }
@@ -83,7 +83,7 @@ public class Logger extends PrintStream {
             }
 
             try {
-                try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("/log.txt"), StandardCharsets.UTF_8, true))) {
+                try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("log.txt"), StandardCharsets.UTF_8, true))) {
                     printWriter.println(message);
                 }
             } catch (IOException e) {
