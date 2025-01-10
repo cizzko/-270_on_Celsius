@@ -97,7 +97,12 @@ application {
 }
 
 jlink {
-    options.addAll(listOf("--no-header-files", "--no-man-pages"))
+    enableCds()
+    options.addAll(listOf(
+        "--no-header-files",
+        "--no-man-pages",
+        "--strip-native-debug-symbols", "exclude-debuginfo-files"
+    ))
     launcher {
         name = "celsius"
         args = listOf("--packaged")
