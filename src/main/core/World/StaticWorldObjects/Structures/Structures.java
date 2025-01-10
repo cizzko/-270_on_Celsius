@@ -55,7 +55,7 @@ public class Structures implements Serializable {
     }
 
     private static Structures read(String path) {
-        try (FileInputStream fis = new FileInputStream(path);
+        try (var fis = assets.resourceStream(path);
              InflaterInputStream iis = new InflaterInputStream(fis);
              ObjectInputStream ois = new ObjectInputStream(iis)) {
 

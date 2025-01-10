@@ -1,7 +1,13 @@
 package core.EventHandling.Logging;
 
+import core.Global;
+
 import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Objects;
 import java.util.Properties;
 
 import static core.EventHandling.Logging.Logger.printException;
@@ -15,10 +21,10 @@ public class Config {
     // checks if the startup configuration contains any parameters
     public static void checkConfig() {
         if (!configCheckMark) {
-            Properties prop = getProperties(assets.assetsDir("config.properties"));
+            Properties prop = getProperties(assets.pathTo("config.properties"));
 
-            if (prop.isEmpty() || prop.keys() == null) {
-                try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("/log.txt")))) {
+            if (prop.isEmpty()) {
+                try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("log.txt"), StandardCharsets.UTF_8))) {
                     printWriter.println("Config empty or keys not found, it will be reset to default values");
                     resetConfig();
                 } catch (IOException e) {
@@ -30,25 +36,21 @@ public class Config {
     }
 
     private static void resetConfig() {
-        try (FileInputStream config = new FileInputStream(assets.assetsDir("config.properties"));
-             FileInputStream configDefault = new FileInputStream(assets.assetsDir("configDefault.properties"));
-             FileOutputStream out = new FileOutputStream(assets.assetsDir("config.properties"))) {
+        Properties configProp = new Properties();
+        Properties configDefaultProp = new Properties();
 
-            Properties configProp = new Properties();
-            Properties defaultConfig = new Properties();
+        try (var configDefault = assets.resourceStream(assets.assetsDir("configDefault.properties"))) {
+            configDefaultProp.load(configDefault);
+        } catch (IOException e) {
+            e.printStackTrace(); // Падает с рекурсией
+        }
 
-            configProp.load(config);
-            defaultConfig.load(configDefault);
+        configProp.putAll(configDefaultProp);
 
-            String[] defaultKeys = defaultConfig.values().toArray(new String[0]);
-            String[] defaultValues = defaultConfig.keySet().toArray(new String[0]);
-
-            for (int i = 0; i < defaultValues.length; i++) {
-                configProp.setProperty(defaultValues[i], defaultKeys[i]);
-            }
-            configProp.store(out, null);
-        } catch (Exception e) {
-            Logger.printException("Error when reset config: ", e);
+        try (var configOutput = Files.newOutputStream(Path.of(assets.pathTo("config.properties")))) {
+            configProp.store(configOutput, null);
+        } catch (IOException e) {
+            e.printStackTrace(); // Падает с рекурсией
         }
     }
 
@@ -71,8 +73,10 @@ public class Config {
         if (props == null) {
             props = new Properties();
             Config.props.put(path, props);
-            try {
-                props.load(new FileInputStream(path));
+            try (var in = assets.resourceStream(path)) {
+                if (in != null) {
+                    props.load(in);
+                }
             } catch (IOException e) {
                 Logger.printException("Error when get properties, file: " + path, e);
             }
@@ -91,17 +95,11 @@ public class Config {
     }
 
     public static void updateConfig(String key, String value) {
+        values.put(key, value);
         String configFile = assets.assetsDir("config.properties");
-
-        try (FileInputStream fis = new FileInputStream(configFile);
-             FileOutputStream fos = new FileOutputStream(configFile)) {
-            Properties configProp = props.get(configFile);
-
-            configProp.load(fis);
-            configProp.setProperty(key, value);
-            configProp.store(fos, null);
-            values.put(key, value);
-
+        Properties configProp = props.get(configFile);
+        try (var out = Files.newOutputStream(Path.of(configFile))) {
+            configProp.store(out, null);
         } catch (Exception e) {
             printException("Error when updating config at path: '" + configFile + "', key: '" + key + "' value: '" + value + "'", e);
         }

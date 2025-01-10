@@ -3,8 +3,6 @@ package core.EventHandling.Logging;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
-import java.io.FileReader;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Locale;
 
@@ -20,7 +18,7 @@ public class Json {
     // returns value from translate
     public static String getName(String key) {
         if (words.get(key) == null) {
-            try (FileReader reader = new FileReader(translateFile, StandardCharsets.UTF_8)) {
+            try (var reader = assets.resourceReader(translateFile)) {
                 Gson gson = new Gson();
                 JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
                 words.put(key, jsonObject.getAsJsonObject(lang).get(key).getAsString());
@@ -41,7 +39,7 @@ public class Json {
     // returns all available languages
     public static String getAllLanguages() {
         if (allLanguages == null) {
-            try (FileReader reader = new FileReader(translateFile, StandardCharsets.UTF_8)) {
+            try (var reader = assets.resourceReader(translateFile)) {
                 Gson gson = new Gson();
                 JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
 
@@ -58,7 +56,7 @@ public class Json {
     public static String[] getAllLanguagesArray() {
         String[] availableLanguages = null;
 
-        try (FileReader reader = new FileReader(translateFile, StandardCharsets.UTF_8)) {
+        try (var reader = assets.resourceReader(translateFile)) {
             Gson gson = new Gson();
             JsonObject jsonObject = gson.fromJson(reader, JsonObject.class);
 

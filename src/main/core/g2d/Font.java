@@ -1,6 +1,7 @@
 package core.g2d;
 
 import core.EventHandling.Logging.Logger;
+import core.Global;
 import core.graphic.RectanglePacker;
 import core.math.MathUtil;
 import org.lwjgl.opengl.GL46;
@@ -22,10 +23,10 @@ public final class Font {
     private Map<Character, Glyph> glyphTable;
     private Glyph unknownGlyph;
 
-    public static Font load(String pathTTF) throws IOException {
+    public static Font load(String path) throws IOException {
         java.awt.Font font = null;
-        try {
-            font = java.awt.Font.createFont(java.awt.Font.PLAIN, new File(pathTTF));
+        try (var in = Global.assets.resourceStream(path)) {
+            font = java.awt.Font.createFont(java.awt.Font.PLAIN, in);
             // default 12
             font = font.deriveFont(java.awt.Font.PLAIN, (float) (fontSize * Toolkit.getDefaultToolkit().getScreenResolution() / 72.0));
         } catch (IOException | FontFormatException e) {

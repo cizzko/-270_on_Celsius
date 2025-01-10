@@ -1,5 +1,6 @@
 package core.g2d;
 
+import core.Global;
 import core.Utils.Disposable;
 import core.math.Mat3;
 
@@ -32,8 +33,8 @@ public final class Shader implements Disposable {
     }
 
     public static Shader load(String basePath) throws IOException {
-        String vertSource = Files.readString(Path.of(basePath + ".vert"));
-        String fragSource = Files.readString(Path.of(basePath + ".frag"));
+        String vertSource = Global.assets.readString(basePath + ".vert");
+        String fragSource = Global.assets.readString(basePath + ".frag");
 
         return load(vertSource, fragSource);
     }
