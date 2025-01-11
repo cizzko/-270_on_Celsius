@@ -55,13 +55,15 @@ public class Structures implements Serializable {
     }
 
     private static Structures read(String path) {
-        try (var fis = assets.resourceStream(path);
-             InflaterInputStream iis = new InflaterInputStream(fis);
-             ObjectInputStream ois = new ObjectInputStream(iis)) {
+        if (new File(path).exists()) {
+            try (var fis = assets.resourceStream(path);
+                 InflaterInputStream iis = new InflaterInputStream(fis);
+                 ObjectInputStream ois = new ObjectInputStream(iis)) {
 
-            return (Structures) ois.readObject();
-        } catch (Exception e) {
-            printException("Error when load structure, path: " + path, e);
+                return (Structures) ois.readObject();
+            } catch (Exception e) {
+                printException("Error when load structure, path: " + path, e);
+            }
         }
         return null;
     }

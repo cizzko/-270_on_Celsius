@@ -30,7 +30,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;
 
 public class Window extends Application {
-    public static final String versionStamp = "0.0.56", version = "alpha " + versionStamp + " (non stable)";
+    public static final String versionStamp = "0.0.6", version = "alpha " + versionStamp + " (non stable)";
     public static int defaultWidth = 1920, defaultHeight = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0;
     public static boolean start = false, windowFocused = true;
     public static long glfwWindow;
