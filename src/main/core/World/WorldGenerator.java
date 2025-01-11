@@ -1,7 +1,6 @@
 package core.World;
 
 import core.EventHandling.Logging.Json;
-import core.Global;
 import core.Time;
 import core.UI.GUI.Menu.CreatePlanet;
 import core.Window;
@@ -332,22 +331,6 @@ public class WorldGenerator {
         } while (y < SizeY);
     }
 
-
-    public static void createStructure(int cellX, int cellY, String name) {
-        Structures struct = Structures.getStructure(name);
-        if (struct != null) {
-            short[][] objects = Structures.bindStructures(struct.blocks);
-
-            for (int x = 0; x < objects.length; x++) {
-                for (int y = 0; y < objects[x].length; y++) {
-                    if (cellX + x < SizeX && cellY + y < SizeY && cellX + x > 0 && cellY + y > 0 && getId(objects[x][y]) != 0 && getType(objects[x][y]) != StaticObjectsConst.Types.GAS) {
-                        setObject(cellX + x, cellY + y, createStatic(getFileName(objects[x][y])), false);
-                    }
-                }
-            }
-        }
-    }
-
     private static void generateEnvironments() {
         appendLog("\\nFourth step: ");
 
@@ -361,7 +344,8 @@ public class WorldGenerator {
         log("World generator: generating trees");
         appendLog("generating trees");
 
-        generateForest(80, 2, 20, 4, 8, false, "tree0", "tree1");
+        //todo проверить
+        //generateForest(80, 2, 20, 4, 8, "tree0", "tree1");
     }
 
     private static void generateDecorStones() {
@@ -381,10 +365,10 @@ public class WorldGenerator {
     }
 
     private static void generateHerb() {
-        generateForest(10, 1, 20, 1, 0, true, "Blocks/herb");
+        generateForest(10, 1, 20, 1, 0, "Blocks/herb");
     }
 
-    private static void generateForest(int chance, int minForestSize, int maxForestSize, int minSpawnDistance, int maxSpawnDistance, boolean simpleStructure, String... structuresName) {
+    private static void generateForest(int chance, int minForestSize, int maxForestSize, int minSpawnDistance, int maxSpawnDistance, String... structuresName) {
         byte[] forests = new byte[SizeX];
         float lastForest = 0;
         float lastForestSize = 0;
@@ -409,19 +393,7 @@ public class WorldGenerator {
                     int yStruct = findFreeVerticalCell(x + (i * distance));
 
                     if (xStruct > 0 && yStruct > 0 && xStruct < forests.length) {
-                        if (!simpleStructure) {
-                            Structures structures;
-
-                            if (!checkInterInsideSolid(xStruct, yStruct, name) && (structures = Structures.getStructure(name)) != null && xStruct + structures.lowestSolidBlock < SizeX && yStruct - 1 < SizeY && getType(getObject(xStruct + structures.lowestSolidBlock, yStruct - 1)) == StaticObjectsConst.Types.SOLID) {
-                                createStructure(xStruct, yStruct, name);
-                            }
-                        } else {
-                            short[][] blocks = getConst(getId(createStatic(name))).optionalTiles;
-
-                            if ((blocks != null && checkInterInsideSolid(xStruct, yStruct, blocks)) || (blocks == null && getType(getObject(xStruct, yStruct - 1)) == StaticObjectsConst.Types.SOLID && getType(getObject(xStruct, yStruct)) != StaticObjectsConst.Types.SOLID)) {
-                                setObject(xStruct, yStruct, StaticWorldObjects.createStatic(name), true);
-                            }
-                        }
+                        setObject(xStruct, yStruct, StaticWorldObjects.createStatic(name), true);
                     }
                 }
             }
