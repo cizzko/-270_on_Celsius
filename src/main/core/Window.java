@@ -5,8 +5,8 @@ import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
 import core.UI.GUI.Menu.Main;
 import core.Utils.NativeResources;
+import core.World.Creatures.Physics;
 import core.World.Textures.TextureDrawing;
-import core.assets.AssetsManager;
 import core.assets.TextureLoader;
 import core.g2d.Atlas;
 import core.g2d.Camera2;
@@ -144,6 +144,7 @@ public class Window extends Application {
             batch.z(Layer.STATIC_OBJECTS);
 
             if (start) {
+                Physics.updatePhysics();
                 TextureDrawing.updateStaticObj();
                 batch.z(Layer.DYNAMIC_OBJECTS);
                 TextureDrawing.updateDynamicObj();

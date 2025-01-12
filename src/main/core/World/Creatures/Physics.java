@@ -3,12 +3,12 @@ package core.World.Creatures;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
+import core.Time;
 import core.Utils.Sized;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.HitboxMap;
 import core.World.Saves;
-import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
@@ -16,18 +16,16 @@ import core.math.Point2i;
 
 import java.util.Iterator;
 
-import static core.Window.glfwWindow;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.HitboxMap.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getResistance;
 import static core.World.StaticWorldObjects.Structures.Factories.updateFactoriesOutput;
 import static core.World.WorldGenerator.*;
-import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
 public class Physics {
     // default 400
     public static int physicsSpeed = 400, worldSaveDelay = Integer.parseInt(Config.getFromConfig("AutosaveWorldFrequency"));
-    private static boolean stop = false;
+    private static boolean stop = false, started;
     public static int lastSpeed = physicsSpeed;
 
     public static void restart() {
@@ -39,25 +37,18 @@ public class Physics {
     }
 
     public static void initPhysics() {
-        new Thread(() -> {
-            Logger.log("Thread: Physics started");
-            Inventory.create();
+        Logger.log("Thread: Physics started");
+        Inventory.create();
+        started = true;
+    }
 
-            long lastUpdate = System.nanoTime();
+    public static void updatePhysics() {
+        if (started && physicsSpeed != 0) {
+            updatePhys();
+            updateWorldInteractions();
 
-            while (!glfwWindowShouldClose(glfwWindow)) {
-                if (physicsSpeed != 0 && System.nanoTime() - lastUpdate >= 1.0 / physicsSpeed * 1000000000) {
-                    updatePhys();
-                    updateWorldInteractions();
-
-                    EventHandler.addDebugValue(true, "Physics fps: ", "PhysicsFPS");
-                    lastUpdate = System.nanoTime();
-                } else {
-                    // Без этой штуки мой ноутбук превращается в обогреватель
-                    Thread.yield();
-                }
-            }
-        }).start();
+            EventHandler.addDebugValue(true, "Physics fps: ", "PhysicsFPS");
+        }
     }
 
     public static void stopPhysics() {
@@ -117,7 +108,7 @@ public class Physics {
             dynamicObject.setMotionVectorX(0);
         }
 
-        dynamicObject.incrementX(dynamicObject.getMotionVectorX());
+        dynamicObject.setX(dynamicObject.getX() + dynamicObject.getMotionVectorX() * Time.delta);
     }
 
     private static void decrementHp(DynamicWorldObjects object) {
