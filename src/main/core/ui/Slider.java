@@ -8,7 +8,7 @@ import static core.Global.input;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 
 public class Slider extends BaseElement<Slider> {
-    private int sliderPos;
+    private float sliderPos;
     private boolean isClicked;
     public int max;
     public SimpleColor sliderColor, dotColor;
@@ -76,7 +76,7 @@ public class Slider extends BaseElement<Slider> {
     }
 
     @Override
-    public Slider setX(int x) {
+    public Slider setX(float x) {
         this.sliderPos = x + 1;
         return super.setX(x);
     }

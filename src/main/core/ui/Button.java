@@ -1,14 +1,37 @@
 package core.ui;
 
-import core.Utils.SimpleColor;
 import core.g2d.Fill;
 
+import static core.Global.input;
 import static core.World.Textures.TextureDrawing.drawPrompt;
 import static core.World.Textures.TextureDrawing.drawText;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 
 public class Button extends BaseButton<Button> {
-    protected Button(Group panel) {
+    protected final Style.TextButton style;
+
+    protected Button(Group panel, Style.TextButton style) {
         super(panel);
+        this.style = style;
+    }
+
+    @Override
+    public void update() {
+        if (!visible) {
+            return;
+        }
+        if (!isClickable) {
+            return;
+        }
+        boolean press = hit(input.mousePos()) == this && input.justClicked(GLFW_MOUSE_BUTTON_1);
+        isClicked = press;
+        if (press && clickAction != null) {
+            clickAction.accept(this);
+        }
+
+        if (isClicked && oneShot) {
+            isClickable = false;
+        }
     }
 
     @Override
@@ -16,13 +39,22 @@ public class Button extends BaseButton<Button> {
         if (!visible) {
             return;
         }
-        if (simple) {
-            Fill.rect(x, y, width, height, color);
+
+        var backgroundColor = color;
+        if (backgroundColor == null) backgroundColor = style.backgroundColor;
+
+        float borderWidth = style.borderWidth;
+        if (borderWidth == 0) {
+            Fill.rect(x, y, width, height, backgroundColor);
         } else {
-            Fill.rectangleBorder(x, y, width, height, 6, color);
+            Fill.rectangleBorder(x, y, width, height, borderWidth, backgroundColor);
         }
-        if (!isClickable) {
-            Fill.rect(x, y, width, height, SimpleColor.fromRGBA(0, 0, 0, 123));
+
+        var disabledColor = style.disabledColor;
+        if (disabledColor != null) {
+            if (isClicked) {
+                Fill.rect(x, y, width, height, disabledColor);
+            }
         }
         if (name != null) {
             drawText(x + 20, y + height / 2.8f, name);

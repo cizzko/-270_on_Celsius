@@ -8,13 +8,13 @@ public interface Element {
     // @Nullable
     Group parent();
 
-    int x();
+    float x();
 
-    int y();
+    float y();
 
-    int width();
+    float width();
 
-    int height();
+    float height();
 
     boolean visible();
 
@@ -22,19 +22,19 @@ public interface Element {
 
     void update();
 
-    Element setSize(int size);
+    Element setSize(float size);
 
     Element setSize(Sized sized);
 
-    Element setSize(int width, int height);
+    Element setSize(float width, float height);
 
-    Element set(int x, int y, int width, int height);
+    Element set(float x, float y, float width, float height);
 
-    Element setX(int x);
+    Element setX(float x);
 
-    Element setY(int y);
+    Element setY(float y);
 
-    Element setPosition(int x, int y);
+    Element setPosition(float x, float y);
 
     Element setPosition(Point2i position);
 
@@ -42,7 +42,7 @@ public interface Element {
 
     Element toggleVisibility();
 
-    Element hit(int x, int y);
+    Element hit(float x, float y);
 
     default Element hit(Point2i point) {
         return hit(point.x, point.y);

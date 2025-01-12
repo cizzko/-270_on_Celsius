@@ -3,52 +3,48 @@ package core.ui.GUI.Menu;
 import core.UI;
 import core.Utils.SimpleColor;
 import core.World.WorldGenerator;
-import core.ui.Dialog;
-import core.ui.ImageElement;
-import core.ui.Styles;
+import core.ui.*;
 
 import static core.EventHandling.Logging.Json.getName;
 import static core.Global.atlas;
 
 public class CreatePlanet extends Dialog {
     private final ImageElement planet;
-    public final GenerationParameters parameters = new GenerationParameters();
-    public final Dialog basicParameters, generationParameters;
+    private final GenerationParameters parameters = new GenerationParameters();
+    private final Dialog basicParameters, generationParameters;
 
     public CreatePlanet() {
-        addPanel(20, 20, 1880, 200);
-        addPanel(20, 240, 1400, 820);
-        addPanel(1440, 240, 460, 820);
-        addPanel(40, 955, 1360, 85)
-                .setSimple(true);
+        addPanel(Styles.DEFAULT_PANEL, 20, 20, 1880, 200);
+        addPanel(Styles.DEFAULT_PANEL, 20, 240, 1400, 820);
+        addPanel(Styles.DEFAULT_PANEL, 1440, 240, 460, 820);
+        // Панель с вкладками
+        var upperPanel = addPanel(Styles.SIMPLE_PANEL, 40, 955, 1360, 85);
         addImage(1460, 620, atlas.byPath("World/WorldGenerator/skyBackgroundPlanet.png"));
         planet = addImage(1510, 670, atlas.byPath("World/WorldGenerator/planetMini.png"));
 
-        addButton(this::returnBtn)
-                .set(40, 975, 240, 65)
-                .setName(getName("Return"))
-                .setSimple(true)
-                .setColor(SimpleColor.DEFAULT_ORANGE);
-        addButton(this::basicBtn)
-                .set(640, 975, 240, 65)
-                .setName(getName("Basic"))
-                .setSimple(true)
-                .setColor(SimpleColor.DEFAULT_ORANGE);
-        addButton(this::generationBtn)
-                .set(900, 975, 240, 65)
-                .setName(getName("Generation"))
-                .setSimple(true)
-                .setColor(SimpleColor.DEFAULT_ORANGE);
-        addButton(this::physicsBtn)
-                .set(1160, 975, 240, 65)
-                .setName(getName("Physics"))
-                .setSimple(true)
-                .setColor(SimpleColor.DEFAULT_ORANGE);
-        addButton(() -> WorldGenerator.generateWorld(parameters))
+        addButton(Styles.SIMPLE_TEXT_BUTTON, b -> {
+            hide();
+            UI.mainMenu().show();
+        })
+        .set(40, 975, 240, 65)
+        .setName(getName("Return"));
+
+        upperPanel.oneOf(
+            // Поскольку сделать что-то с ресивером нельзя, то приходится страдать и тут указывать `upperPanel.`
+            upperPanel.addButton(Styles.SIMPLE_TEXT_BUTTON, this::basicBtn)
+                    .set(640, 975, 240, 65)
+                    .setName(getName("Basic")),
+            upperPanel.addButton(Styles.SIMPLE_TEXT_BUTTON, this::generationBtn)
+                    .set(900, 975, 240, 65)
+                    .setName(getName("Generation")),
+            addButton(Styles.SIMPLE_TEXT_BUTTON, () -> {})
+                    .set(1160, 975, 240, 65)
+                    .setName(getName("Physics"))
+        );
+        addButton(Styles.SIMPLE_TEXT_BUTTON, () -> WorldGenerator.generateWorld(parameters))
                 .set(1460, 260, 420, 65)
                 .setName(getName("GenerateWorld"))
-                .setSimple(true)
-                .setColor(SimpleColor.DEFAULT_ORANGE);
+                .setOneShot(true);
         addSlider(2500, (x, max) -> {
             String pic;
             if (x >= max / 1.5f) {
@@ -66,40 +62,29 @@ public class CreatePlanet extends Dialog {
                 .setDotColor(SimpleColor.DEFAULT_ORANGE);
         basicParameters = add(new Dialog() {{
             visible = true;
-            addToggleButton(() -> parameters.creatures = !parameters.creatures)
-                    .set(70, 890, 44, 44)
-                    .setName(getName("GenerateCreatures"))
-                    .setColor(SimpleColor.DIRTY_WHITE);
-            addToggleButton(() -> parameters.randomSpawn = !parameters.randomSpawn)
-                    .set(70, 820, 44, 44)
-                    .setName(getName("RandomSpawn"))
-                    .setColor(SimpleColor.DIRTY_WHITE);
+            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> parameters.creatures = !parameters.creatures)
+                    .setPosition(70, 890)
+                    .setName(getName("GenerateCreatures"));
+            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> parameters.randomSpawn = !parameters.randomSpawn)
+                    .setPosition(70, 820)
+                    .setName(getName("RandomSpawn"));
         }});
         generationParameters = add(new Dialog() {{
             visible = false;
-            addToggleButton(() -> parameters.simple = !parameters.simple)
-                    .set(70, 890, 44, 44)
-                    .setName(getName("GenerateSimpleWorld"))
-                    .setColor(SimpleColor.DIRTY_WHITE);
+            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> parameters.simple = !parameters.simple)
+                    .setPosition(70, 890)
+                    .setName(getName("GenerateSimpleWorld"));
         }});
     }
 
-    private void returnBtn() {
-        hide();
-        UI.mainMenu().show();
-    }
-
-    private void basicBtn() {
+    private void basicBtn(Button b) {
         generationParameters.setVisible(false);
         basicParameters.setVisible(true);
     }
 
-    private void generationBtn() {
+    private void generationBtn(Button b) {
         basicParameters.setVisible(false);
         generationParameters.setVisible(true);
-    }
-
-    private void physicsBtn() {
     }
 
     public static class GenerationParameters {

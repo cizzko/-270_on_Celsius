@@ -5,6 +5,7 @@ import core.EventHandling.Logging.Logger;
 import core.UI;
 import core.Utils.SimpleColor;
 import core.ui.Dialog;
+import core.ui.Styles;
 
 import java.awt.*;
 import java.net.URI;
@@ -16,27 +17,21 @@ import static core.Window.start;
 
 public class MainMenu extends Dialog {
     public MainMenu() {
-        addPanel()
-                .set(0, 965, EventHandler.width, 115)
-                .setSimple(true);
+        addPanel(Styles.SIMPLE_PANEL, 0, 965, EventHandler.width, 115);
         addImageButton(this::discordBtn)
                 .setPosition(1830, 990)
                 .setImage(atlas.byPath("UI/discordIcon.png"));
-        addButton(this::exitBtn)
+        addButton(Styles.TEXT_BUTTON, this::exitBtn)
                 .set(822, 990, 240, 65)
                 .setName(getName("Exit"))
-                .setSimple(false)
                 .setColor(SimpleColor.DIRTY_WHITE);
-        addButton(this::settingsBtn)
+        addButton(Styles.TEXT_BUTTON, this::settingsBtn)
                 .set(548, 990, 240, 65)
                 .setName(getName("Settings"))
-                .setSimple(false)
                 .setColor(SimpleColor.DIRTY_WHITE);
-        addButton(this::playButton)
+        addButton(Styles.TEXT_BUTTON, this::playButton)
                 .set(46, 990, 240, 65)
-                .setName(getName("Play"))
-                .setSimple(false)
-                .setColor(SimpleColor.DEFAULT_ORANGE);
+                .setName(getName("Play"));
     }
 
     private void discordBtn() {

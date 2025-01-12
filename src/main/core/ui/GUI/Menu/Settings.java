@@ -5,13 +5,7 @@ import core.EventHandling.Logging.Json;
 import core.Time;
 import core.UI;
 import core.Utils.SimpleColor;
-import core.math.Point2i;
-import core.ui.Button;
-import core.ui.Dialog;
-import core.ui.Group;
-import core.ui.ImageElement;
-
-import java.util.HashMap;
+import core.ui.*;
 
 import static core.EventHandling.Logging.Config.*;
 import static core.EventHandling.Logging.Json.getName;
@@ -25,72 +19,64 @@ public class Settings extends Dialog {
     private final Dialog basicSettings, otherSettings, graphicsSettings;
 
     public Settings() {
-        var mainPanel = addPanel(20, 20, 1880, 1040);
-        var categories = mainPanel.addPanel(40, 40, 240, 1000)
-                .setSimple(false);
-        categories.addButton(this::exitBtn)
+        var mainPanel = addPanel(Styles.DEFAULT_PANEL, 20, 20, 1880, 1040);
+        var categories = mainPanel.addPanel(Styles.DEFAULT_PANEL, 40, 40, 240, 1000);
+        categories.addButton(Styles.SIMPLE_TEXT_BUTTON, this::exitBtn)
                 .set(40, 900, 240, 65)
-                .setName(getName("Return"))
-                .setSimple(true)
-                .setColor(SimpleColor.DEFAULT_ORANGE);
-        categories.addButton(this::basicBtn)
-                .set(40, 200, 240, 65)
-                .setName(getName("SettingsBasic"))
-                .setSimple(true)
-                .setColor(SimpleColor.DIRTY_BLACK);
-        categories.addButton(this::otherBtn)
-                .set(40, 100, 240, 65)
-                .setName(getName("SettingsOther"))
-                .setSimple(true)
-                .setColor(SimpleColor.DIRTY_BLACK);
-        save = categories.addButton(this::saveBtn)
+                .setName(getName("Return"));
+
+        categories.oneOf(
+                categories.addButton(Styles.SIMPLE_TEXT_BUTTON, this::basicBtn)
+                        .set(40, 200, 240, 65)
+                        .setName(getName("SettingsBasic"))
+                        .setColor(SimpleColor.DIRTY_BLACK),
+                categories.addButton(Styles.SIMPLE_TEXT_BUTTON, this::otherBtn)
+                        .set(40, 100, 240, 65)
+                        .setName(getName("SettingsOther"))
+                        .setColor(SimpleColor.DIRTY_BLACK),
+                categories.addButton(Styles.SIMPLE_TEXT_BUTTON, this::graphicsBtn)
+                        .set(40, 300, 240, 65)
+                        .setName(getName("SettingsGraphics"))
+                        .setColor(SimpleColor.DIRTY_BLACK)
+        );
+
+        save = categories.addButton(Styles.TEXT_BUTTON, this::saveBtn)
                 .set(40, 800, 240, 65)
-                .setName(getName("SettingsSave"))
-                .setSimple(true)
-                .setColor(SimpleColor.DEFAULT_ORANGE);
-        categories.addButton(this::graphicsBtn)
-                .set(40, 300, 240, 65)
-                .setName(getName("SettingsGraphics"))
-                .setSimple(true)
-                .setColor(SimpleColor.DIRTY_BLACK);
+                .setName(getName("SettingsSave"));
         graphicsSettings = mainPanel.add(new Dialog() {{
             visible = true;
-            addToggleButton(() -> {
+            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
                 boolean newState = !Boolean.parseBoolean(getFromConfig(INTERPOLATE_SUNSET_KEY));
                 updateConfig(INTERPOLATE_SUNSET_KEY, Boolean.toString(newState));
             })
-                    .set(310, 980, 44, 44)
+                    .setPosition(310, 980)
                     .setName(getName(INTERPOLATE_SUNSET_KEY))
                     .setPrompt(getName("InterpolateSunsetPrompt"))
-                    .setColor(SimpleColor.DIRTY_WHITE)
                     .setClicked(Boolean.parseBoolean(getFromConfig(INTERPOLATE_SUNSET_KEY)));
-            addToggleButton(() -> {
+            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
                 boolean newState = !Boolean.parseBoolean(getFromConfig(PRELOAD_RESOURCES_KEY));
                 updateConfig(PRELOAD_RESOURCES_KEY, Boolean.toString(newState));
             })
-                    .set(310, 910, 44, 44)
+                    .setPosition(310, 910)
                     .setName(getName(PRELOAD_RESOURCES_KEY))
                     .setPrompt(getName("PreloadResourcesPrompt"))
-                    .setColor(SimpleColor.DIRTY_WHITE)
                     .setClicked(Boolean.parseBoolean(getFromConfig(PRELOAD_RESOURCES_KEY)));
-            addToggleButton(() -> {
+            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
                 boolean newState = !Boolean.parseBoolean(getFromConfig(VERTICAL_SYNC_KEY));
                 updateConfig(VERTICAL_SYNC_KEY, Boolean.toString(newState));
             })
-                    .set(310, 840, 44, 44)
+                    .setPosition(310, 840)
                     .setName(getName(VERTICAL_SYNC_KEY))
                     .setPrompt(getName("VerticalSyncPrompt"))
-                    .setColor(SimpleColor.DIRTY_WHITE)
                     .setClicked(Boolean.parseBoolean(getFromConfig(VERTICAL_SYNC_KEY)));
         }});
         otherSettings = mainPanel.add(new Dialog() {{
             visible = false;
-            addToggleButton(() -> {
+            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
             })
-                    .set(310, 980, 44, 44)
+                    .setPosition(310, 980)
                     .setName(getName(SEND_ANONYMOUS_STATISTIC_KEY))
                     .setPrompt(getName("SendAnonymousStatisticsPrompt"))
-                    .setColor(SimpleColor.DIRTY_WHITE)
                     .setClicked(Boolean.parseBoolean(getFromConfig(SEND_ANONYMOUS_STATISTIC_KEY)));
         }});
         basicSettings = mainPanel.add(new Dialog() {{
@@ -105,7 +91,7 @@ public class Settings extends Dialog {
                 int h = 65;
                 for (int i = 0; i < langs.length; i++) {
                     String lang = langs[i];
-                    addButton(() -> {
+                    addButton(Styles.TEXT_BUTTON, () -> {
                         newLang = lang;
                         dropDown.toggleVisibility();
                     })
@@ -114,23 +100,20 @@ public class Settings extends Dialog {
                             .setName(lang);
                 }
             }});
-            addButton(dropDownMenu::toggleVisibility)
+            addButton(Styles.TEXT_BUTTON, dropDownMenu::toggleVisibility)
                     .set(780, 950, 240, 65)
-                    .setName(Json.getName("Language"))
-                    .setColor(SimpleColor.DEFAULT_ORANGE);
-            addToggleButton(() -> {
+                    .setName(Json.getName("Language"));
+            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
             })
-                    .set(310, 980, 44, 44)
+                    .setPosition(310, 980)
                     .setName(getName(SHOW_PROMPTS_KEY))
                     .setPrompt(getName("ShowPromptsPrompt"))
-                    .setColor(SimpleColor.DIRTY_WHITE)
                     .setClicked(Boolean.parseBoolean(getFromConfig(SHOW_PROMPTS_KEY)));
-            addToggleButton(() -> {
+            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
             })
-                    .set(310, 910, 44, 44)
+                    .setPosition(310, 910)
                     .setName(getName(DETECT_LANGUAGE_KEY))
                     .setPrompt(getName("DetectLanguagePrompt"))
-                    .setColor(SimpleColor.DIRTY_WHITE)
                     .setClicked(Boolean.parseBoolean(getFromConfig(DETECT_LANGUAGE_KEY)));
             addImage(745, 965, atlas.byPath("UI/GUI/languageIcon.png"));
         }});
@@ -180,7 +163,7 @@ public class Settings extends Dialog {
 
         protected OtterBox(Group panel) {
             super(panel);
-            add(new Button(this) {
+            add(new Button(this, Styles.TEXT_BUTTON) {
                 { onClick(OtterBox.this::countOtters); }
                 @Override public void draw() {}
             })
@@ -211,8 +194,8 @@ public class Settings extends Dialog {
         }
 
         private void runOtter() {
-            int x = otterImage.x();
-            int y = otterImage.y();
+            float x = otterImage.x();
+            float y = otterImage.y();
 
             if (!out && x > 1770 && y < -90) {
                 x -= 1;

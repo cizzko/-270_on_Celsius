@@ -11,7 +11,6 @@ import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.StaticWorldObjects.StaticWAnimations;
 import core.World.StaticWorldObjects.StaticWorldObjects;
-import core.World.StaticWorldObjects.Structures.ElectricCables;
 import core.World.StaticWorldObjects.Structures.Factories;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.WorldUtils;

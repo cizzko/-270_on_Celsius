@@ -1,13 +1,14 @@
 package core.ui;
 
-import core.EventHandling.EventHandler;
 import core.Utils.SimpleColor;
 
+import java.util.function.Consumer;
+
 public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B> {
-    public boolean simple, isClickable = true, isClicked;
-    public SimpleColor color = SimpleColor.DEFAULT_ORANGE;
+    public boolean isClickable = true, isClicked, oneShot; // TODO перевести на битовые флаги.
+    public SimpleColor color;
     public String name, prompt;
-    public Runnable clickAction;
+    public Consumer<? super B> clickAction;
 
     protected BaseButton(Group panel) {
         super(panel);
@@ -23,13 +24,23 @@ public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B>
         return as();
     }
 
+    public B setOneShot(boolean oneShot) {
+        this.oneShot = oneShot;
+        return as();
+    }
+
     public B setName(String name) {
         this.name = name;
         return as();
     }
 
-    public B onClick(Runnable clickAction) {
+    public B onClick(Consumer<? super B> clickAction) {
         this.clickAction = clickAction;
+        return as();
+    }
+
+    public B onClick(Runnable clickAction) {
+        this.clickAction = b -> clickAction.run();
         return as();
     }
 
@@ -38,29 +49,14 @@ public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B>
         return as();
     }
 
-    public B setSimple(boolean simple) {
-        this.simple = simple;
-        return as();
-    }
-
     public B setClickable(boolean isClickable) {
         this.isClickable = isClickable;
         return as();
     }
 
-    @Override
-    public void update() {
-        if (!visible) {
-            return;
-        }
-        if (!isClickable) {
-            return;
-        }
-        boolean press = EventHandler.isMousePressed(this);
-        isClicked = press;
-        if (press && clickAction != null) {
-            clickAction.run();
-        }
+    public B toggleClickable() {
+        this.isClickable = !isClickable;
+        return as();
     }
 
     @Override

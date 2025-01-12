@@ -62,7 +62,7 @@ public abstract class BaseGroup<G extends BaseElement<G> & Group> extends BaseEl
     }
 
     @Override
-    public Element hit(int hx, int hy) {
+    public Element hit(float hx, float hy) {
         if (children != null) {
             for (Element child : children) {
                 var hit = child.hit(hx, hy);

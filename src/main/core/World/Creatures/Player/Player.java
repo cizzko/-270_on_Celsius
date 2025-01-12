@@ -246,7 +246,7 @@ public class Player {
         int r = temp > 0 ? a : 0;
         int b = temp > 0 ? 0 : a;
 
-        Texture modifiedTemperature = assets.getTextureByPath(assets.assetsDir("/UI/GUI/modifiedTemperature.png"));
+        Texture modifiedTemperature = assets.getTextureByPath(assets.assetsDir("UI/GUI/modifiedTemperature.png"));
         batch.draw(Layer.EFFECTS, () -> batch.draw(modifiedTemperature, SimpleColor.fromRGBA(r, (int) (b / 2f), b, a)));
     }
 

@@ -97,7 +97,7 @@ public class EventHandler {
         return getRectangleClick(element.x(), element.y(), element.x() + element.width(), element.y() + element.height());
     }
 
-    public static boolean getRectangleClick(int x, int y, int x1, int y1) {
+    public static boolean getRectangleClick(float x, float y, float x1, float y1) {
         Point2i mousePos = input.mousePos();
 
         return mousePos.x >= x && mousePos.x <= x1 &&

@@ -7,8 +7,8 @@ import core.math.Rectangle;
 public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     public final Group parent;
 
-    protected int x, y;
-    protected int width, height;
+    protected float x, y;
+    protected float width, height;
     protected boolean visible = true;
 
     protected BaseElement(Group parent) {
@@ -26,22 +26,22 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     }
 
     @Override
-    public final int x() {
+    public final float x() {
         return x;
     }
 
     @Override
-    public final int y() {
+    public final float y() {
         return y;
     }
 
     @Override
-    public final int width() {
+    public final float width() {
         return width;
     }
 
     @Override
-    public final int height() {
+    public final float height() {
         return height;
     }
 
@@ -51,7 +51,7 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     }
 
     @Override
-    public E setSize(int size) {
+    public E setSize(float size) {
         this.width = size;
         this.height = size;
         return as();
@@ -65,33 +65,33 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     }
 
     @Override
-    public E setSize(int width, int height) {
+    public E setSize(float width, float height) {
         this.width = width;
         this.height = height;
         return as();
     }
 
     @Override
-    public E set(int x, int y, int width, int height) {
+    public E set(float x, float y, float width, float height) {
         setPosition(x, y);
         setSize(width, height);
         return as();
     }
 
     @Override
-    public E setX(int x) {
+    public E setX(float x) {
         this.x = x;
         return as();
     }
 
     @Override
-    public E setY(int y) {
+    public E setY(float y) {
         this.y = y;
         return as();
     }
 
     @Override
-    public E setPosition(int x, int y) {
+    public E setPosition(float x, float y) {
         setX(x);
         setY(y);
         return as();
@@ -116,7 +116,7 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     }
 
     @Override
-    public Element hit(int hx, int hy) {
+    public Element hit(float hx, float hy) {
         return Rectangle.contains(x, y, width, height, hx, hy) ? this : null;
     }
 
