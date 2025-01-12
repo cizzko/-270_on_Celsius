@@ -4,7 +4,17 @@ public final class Rectangle {
     public float x, y;
     public float width, height;
 
-    public boolean contains(float rx, float ry, float rwidth, float rheight){
+    public boolean overlaps(Rectangle rect) {
+        return x <= rect.x + rect.width && x + width >= rect.x && y <= rect.y + rect.height && y + height >= rect.y;
+    }
+
+    public Vector2f getCenterTo(Vector2f vector) {
+        vector.x = x + width / 2;
+        vector.y = y + height / 2;
+        return vector;
+    }
+
+    public boolean contains(float rx, float ry, float rwidth, float rheight) {
         return x <= rx + rwidth && x + width >= rx && y <= ry + rheight && y + height >= ry;
     }
 

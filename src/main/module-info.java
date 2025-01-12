@@ -5,6 +5,7 @@ module core.main {
     requires java.compiler;
     requires com.google.gson;
     requires jdk.management;
+    requires it.unimi.dsi.fastutil;
 
     // Авто-модули
     // requires jcodec;
@@ -13,5 +14,4 @@ module core.main {
     requires transitive org.lwjgl.natives;
     requires transitive org.lwjgl.glfw.natives;
     requires transitive org.lwjgl.opengl.natives;
-    requires it.unimi.dsi.fastutil;
 }

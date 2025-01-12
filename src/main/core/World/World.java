@@ -57,6 +57,10 @@ public class World {
         }
     }
 
+    public boolean inBounds(int x, int y) {
+        return x >= 0 && x < sizeX && y >= 0 && y < sizeY;
+    }
+
     public short get(int x, int y) {
         // Global.app.ensureMainThread();
 

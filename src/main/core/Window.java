@@ -3,17 +3,17 @@ package core;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
+import core.Utils.Color;
 import core.Utils.NativeResources;
-import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
 import core.World.Weather.Sun;
+import core.World.Creatures.Physics;
 import core.assets.TextureLoader;
-import core.g2d.Atlas;
-import core.g2d.Camera2;
-import core.g2d.Font;
-import core.g2d.SortingBatch;
+import core.g2d.*;
 import core.graphic.Layer;
+import core.math.Rectangle;
+import core.math.Vector2f;
+import core.ui.Styles;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWWindowFocusCallback;
@@ -22,10 +22,13 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
 
+import static core.EventHandling.EventHandler.debugLevel;
 import static core.EventHandling.Logging.Logger.log;
 import static core.Global.*;
 import static core.Utils.NativeResources.addResource;
 import static core.World.Creatures.Player.Player.drawPlayerGui;
+import static core.World.Textures.TextureDrawing.blockSize;
+import static core.World.WorldGenerator.DynamicObjects;
 import static core.assets.TextureLoader.BufferedImageEncoder;
 import static core.assets.TextureLoader.readImage;
 import static org.lwjgl.glfw.GLFW.*;
@@ -163,6 +166,7 @@ public class Window extends Application {
             scene.update();
 
             if (start) {
+                Physics.updatePhysics();
                 TextureDrawing.updateWorld();
 
                 batch.z(Layer.BACKGROUND);
@@ -171,6 +175,8 @@ public class Window extends Application {
                 TextureDrawing.drawStatic();
                 batch.z(Layer.DYNAMIC_OBJECTS);
                 TextureDrawing.drawDynamic();
+
+                debugInfo();
             } else {
                 batch.draw(assets.getTextureByPath(assets.assetsDir("World/Other/background.png")));
             }
@@ -187,8 +193,62 @@ public class Window extends Application {
 
         glfwTerminate();
         NativeResources.terminateResources();
-
         batch.close();
-        Logger.logExit(0, "Main thread ending drawing", false);
+    }
+
+    static final Rectangle rect = new Rectangle();
+    static final Vector2f vec = new Vector2f();
+    static final Color green = Color.fromRgba8888(0, 255, 0, 255);
+    static final Color red = Color.fromRgba8888(255, 0, 0, 255);
+    static final Color blue = Color.fromRgba8888(0, 0, 255, 255);
+    static final Color white = Color.fromRgba8888(255, 255, 255, 255);
+    static final Color black = Color.fromRgba8888(0, 0, 0, 255);
+
+    private void debugInfo() {
+        if (debugLevel < 2) {
+            return;
+        }
+
+        var player = DynamicObjects.getFirst();
+        var size = player.getTexture();
+
+        player.getHitboxTo(rect);
+        var center = rect.getCenterTo(vec);
+
+        int cx = (int) Math.floor(center.x / blockSize);
+        int cy = (int) Math.floor(center.y / blockSize);
+
+        float width = size.width();
+        float height = size.height();
+        int w = (int) Math.ceil(width / blockSize);
+        int h = (int) Math.ceil(height / blockSize);
+
+        int minX = (int) Math.floor(player.getX() / blockSize);
+        int minY = (int) Math.floor(player.getY() / blockSize);
+
+        int maxX = (int) Math.floor((player.getX() + width) / blockSize);
+        int maxY = (int) Math.floor((player.getY() + height) / blockSize);
+
+        TextureDrawing.drawText(player.getX(), player.getY() + size.height() - 32,
+                "Fixture: " + player.hasFixture() + ", Velocity: " + player.velocity, black);
+
+        // Интегрированный прямоугольник, который используется как хитбокс
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                Fill.rectangleBorder(x * blockSize, y * blockSize, blockSize, blockSize, white);
+            }
+        }
+
+        TextureDrawing.drawText(player.getX(), player.getY() + size.height(),
+                "Size: " + w + "x" + h + " (" + size.width() + "x" + size.height() + ")", Styles.DIRTY_BRIGHT_BLACK);
+
+        // Ближайший к центру игрока блок
+        if (false) Fill.rectangleBorder(cx * blockSize, cy * blockSize, blockSize, blockSize, green);
+        // Прямоугольник, который показывает занятое текстурой пространство
+        Fill.rectangleBorder(player.getX(), player.getY(), size.width(), size.height(),  red);
+
+        // Две пересекающиеся перпендикулярные прямые, точкой пересечения которых является центр текстуры
+        Fill.line(player.getX() + size.width()/2f, player.getY(), player.getX() + size.width()/2f, player.getY() + size.height(), blue);
+        Fill.line(player.getX(), player.getY() + size.height() / 2f, player.getX() + size.width(), player.getY() + size.height() / 2f, blue);
     }
 }

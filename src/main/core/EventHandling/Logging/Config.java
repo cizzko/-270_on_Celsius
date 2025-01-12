@@ -1,13 +1,9 @@
 package core.EventHandling.Logging;
 
-import core.Global;
-
 import java.io.*;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
-import java.util.Objects;
 import java.util.Properties;
 
 import static core.EventHandling.Logging.Logger.printException;
@@ -28,36 +24,22 @@ public class Config {
     // checks if the startup configuration contains any parameters
     public static void checkConfig() {
         if (!configCheckMark) {
-            Properties prop = getProperties(assets.pathTo("config.properties"));
-
-            if (prop.isEmpty()) {
-                try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("log.txt"), StandardCharsets.UTF_8))) {
-                    printWriter.println("Config empty or keys not found, it will be reset to default values");
-                    resetConfig();
-                } catch (IOException e) {
-                    printException("Error when print to log", e);
-                }
-            }
+            copyFromResource("configDefault.properties", "config.properties");
+            copyFromResource("fastCommands.properties", "fastCommands.properties");
             configCheckMark = true;
         }
     }
 
-    private static void resetConfig() {
-        Properties configProp = new Properties();
-        Properties configDefaultProp = new Properties();
+    // TODO выглядит как неплохая функция для AssetsManager
+    static void copyFromResource(String resourceFileName, String externalFileName) {
 
-        try (var configDefault = assets.resourceStream(assets.assetsDir("configDefault.properties"))) {
-            configDefaultProp.load(configDefault);
-        } catch (IOException e) {
-            e.printStackTrace(); // Падает с рекурсией
-        }
-
-        configProp.putAll(configDefaultProp);
-
-        try (var configOutput = Files.newOutputStream(Path.of(assets.pathTo("config.properties")))) {
-            configProp.store(configOutput, null);
-        } catch (IOException e) {
-            e.printStackTrace(); // Падает с рекурсией
+        Path configPath = Path.of(assets.pathTo(externalFileName));
+        if (Files.notExists(configPath)) {
+            try (var in = assets.resourceStream(assets.assetsDir(resourceFileName)); var out = Files.newOutputStream(configPath)) {
+                in.transferTo(out);
+            } catch (IOException e) {
+                e.printStackTrace(); // Падает с рекурсией
+            }
         }
     }
 
@@ -93,17 +75,17 @@ public class Config {
 
     public static String getFromConfig(String key) {
         checkConfig();
-        return (String) getFromProp(assets.assetsDir("config.properties"), key);
+        return (String) getFromProp(assets.pathTo("config.properties"), key);
     }
 
     // fast commands
     public static String getFromFC(String key) {
-        return (String) getFromProp(assets.assetsDir("fastCommands.properties"), key);
+        return (String) getFromProp(assets.pathTo("fastCommands.properties"), key);
     }
 
     public static void updateConfig(String key, String value) {
         values.put(key, value);
-        String configFile = assets.assetsDir("config.properties");
+        String configFile = assets.pathTo("config.properties");
         Properties configProp = props.get(configFile);
         try (var out = Files.newOutputStream(Path.of(configFile))) {
             configProp.store(out, null);

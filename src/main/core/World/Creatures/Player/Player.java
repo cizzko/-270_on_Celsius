@@ -39,43 +39,6 @@ public class Player {
         DynamicObjects.addFirst(DynamicWorldObjects.createDynamic("player", randomSpawn ? (int) (Math.random() * (world.sizeX * TextureDrawing.blockSize)) : world.sizeX * 8f));
     }
 
-    public static void inputUpdate() {
-        if (EventHandler.isKeylogging()) {
-            return;
-        }
-
-        float speed = noClip ? 1.6f : 0.4f;
-        var player = DynamicObjects.getFirst();
-        int xf = input.axis(GLFW_KEY_A, GLFW_KEY_D);
-        int yf = noClip ? input.axis(GLFW_KEY_S, GLFW_KEY_W) : 0;
-
-        if (input.pressed(GLFW_KEY_SPACE)) {
-            player.jump(1.05f);
-        }
-
-        if (!noClip) {
-            if (xf != 0) {
-                player.setMotionVectorX(speed * xf);
-            }
-            if (yf != 0) {
-                player.setMotionVectorY(speed * yf);
-            }
-        } else {
-            player.setMotionVectorY(0);
-
-            player.setX(player.getX() + speed * xf);
-            player.setY(player.getY() + speed * yf);
-        }
-    }
-
-    public static void update() {
-
-    }
-
-    public static void draw() {
-
-    }
-
     public static void updateInventoryInteraction() {
         if (currentObject != null) {
             updatePlaceableInteraction();

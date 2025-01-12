@@ -102,8 +102,9 @@ public class EventHandler {
 
             if (!windowFocused && Config.getFromConfig("Autopause").equals("true")) {
                 UI.pause().show();
-                Physics.stopPhysics();
             }
+            // Сделать лучше(!?)
+            Physics.enable(!UI.pause().isShown());
         }
 
         if ((input.justPressed(GLFW_KEY_BACKSPACE) || input.repeated(GLFW_KEY_BACKSPACE)) && isKeylogging()) {

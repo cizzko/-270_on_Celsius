@@ -1,23 +1,36 @@
 package core.World.Creatures;
 
+import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Logger;
+import core.Time;
 import core.World.HitboxMap;
+import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.WorldGenerator;
 import core.g2d.Atlas;
+import core.math.Rectangle;
+import core.math.Vector2f;
 
 import java.io.Serializable;
 import java.util.HashMap;
 
+import static core.Global.*;
+import static core.World.Creatures.Player.Player.noClip;
+import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.Textures.TextureDrawing.blockSize;
+import static core.World.WorldGenerator.*;
+import static org.lwjgl.glfw.GLFW.*;
 
 // dynamic objects, can have any coordinates within the world and be moved at any time
 public class DynamicWorldObjects implements Serializable {
     private static final HashMap<String, Byte> ids = new HashMap<>();
     private static byte lastId = -128;
     private final byte id;
-    private short currentFrame, motionVectorX, motionVectorY;
+    private short currentFrame;
     private long lastFrameTime = System.currentTimeMillis();
     private float x, y, currentHp;
+    private float jumpedTicks; // откат прыжка
+
+    public Vector2f velocity = new Vector2f();
 
     private DynamicWorldObjects(byte id, float x, float y, float maxHp) {
         this.id = id;
@@ -25,8 +38,6 @@ public class DynamicWorldObjects implements Serializable {
         this.x = x;
         this.y = y;
         this.currentHp = maxHp;
-        this.motionVectorX = 0;
-        this.motionVectorY = 0;
     }
 
     public static DynamicWorldObjects createDynamic(String name, float x) {
@@ -67,12 +78,58 @@ public class DynamicWorldObjects implements Serializable {
         }
     }
 
-    public void jump(float impulse) {
-        Atlas.Region tex = DynamicObjectsConst.getConst(id).texture;
+    private static final Vector2f tmp = new Vector2f();
 
-        if (HitboxMap.checkIntersStaticD(x, y, tex.width(), tex.height())) {
-            motionVectorY += (impulse * 1000);
+    protected void updateInput() {
+        // todo тут надо проверять элемент UI на фокусировку, т.е. на порядок отображения (фокусирован = самый последний элемент)
+        if (EventHandler.isKeylogging()) {
+            return;
         }
+
+        float speed = noClip ? 2f : 1f;
+        if (input.pressed(GLFW_KEY_LEFT_SHIFT) || input.pressed(GLFW_KEY_RIGHT_SHIFT)) {
+            speed *= 1.5f;
+        }
+
+        int xf = input.axis(GLFW_KEY_A, GLFW_KEY_D);
+
+        if (!noClip) {
+            tmp.set(xf, 0).scale(speed);
+        } else {
+            velocity.set(0, 0);
+
+            setX(getX() + speed * xf);
+            int yf = input.axis(GLFW_KEY_S, GLFW_KEY_W);
+            setY(getY() + speed * yf);
+        }
+
+        if (jumpedTicks > 0) {
+            jumpedTicks = Math.max(jumpedTicks - Time.delta, 0);
+        } else {
+            boolean hasFixture = hasFixture();
+            if (hasFixture && input.pressed(GLFW_KEY_SPACE)) {
+                tmp.y += 5;
+                jumpedTicks = Time.ONE_SECOND/1.5f;
+            }
+        }
+
+        velocity.add(tmp);
+    }
+
+    public boolean hasFixture() {
+        int minX = (int) Math.floor(x / blockSize);
+        int maxX = (int) Math.floor((x + getTexture().width()) / blockSize);
+        int minY = (int) Math.floor((y - GAP) / blockSize);
+        for (int x = minX; x <= maxX; x++) {
+            short block = world.get(x, minY);
+            if (block == -1) {
+                return true;
+            }
+            if (getResistance(block) == 100 && getType(block) == StaticObjectsConst.Types.SOLID) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public float getX() {
@@ -162,26 +219,37 @@ public class DynamicWorldObjects implements Serializable {
     }
 
     public float getMotionVectorX() {
-        return motionVectorX / 1000f;
+        return velocity.x;
     }
 
     public void incrementMotionVectorX(float vectorX) {
-        this.motionVectorX += Math.clamp(vectorX * 1000, Short.MIN_VALUE, Short.MAX_VALUE);
+        this.velocity.x += vectorX;
     }
 
     public void setMotionVectorX(float vectorX) {
-        this.motionVectorX = (short) Math.clamp(vectorX * 1000, Short.MIN_VALUE, Short.MAX_VALUE);
+        this.velocity.x = vectorX;
     }
 
     public float getMotionVectorY() {
-        return motionVectorY / 1000f;
+        return velocity.y;
     }
 
     public void incrementMotionVectorY(float vectorY) {
-        this.motionVectorY += Math.clamp(vectorY * 1000, Short.MIN_VALUE, Short.MAX_VALUE);
+        this.velocity.y += vectorY;
     }
 
     public void setMotionVectorY(float vectorY) {
-        this.motionVectorY = (short) Math.clamp(vectorY * 1000, Short.MIN_VALUE, Short.MAX_VALUE);
+        this.velocity.y = vectorY;
+    }
+
+    // Лучшее решение, которое вообще можно принять.
+    // Из-за проблем с неточными числами можно просто 2-3 пикселя отступать и этого даже не будет заметно
+    public static final float GAP = 2f / blockSize;
+
+    public void getHitboxTo(Rectangle entityHitbox) {
+        var tex = getTexture();
+        entityHitbox.set(x, y, tex.width(), tex.height());
+        entityHitbox.width += GAP;
+        entityHitbox.height += GAP;
     }
 }
