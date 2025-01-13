@@ -85,6 +85,15 @@ public final class RectanglePacker {
 
     private final Position pos = new Position();
 
+    public Position pack(int w, int h, int padding) {
+        var res = pack(w + 2*padding, h + 2*padding);
+        if (!res.isInvalid()) {
+            res.x += padding;
+            res.y += padding;
+        }
+        return res;
+    }
+
     public Position pack(int w, int h) {
         int bestIDX = -1, bestX = -1, bestY = -1;
         int bestH = this.h, bestW = this.w;

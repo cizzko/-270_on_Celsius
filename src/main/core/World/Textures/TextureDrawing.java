@@ -61,7 +61,6 @@ public class TextureDrawing {
     public static void drawText(float x, float y, String text, SimpleColor color) {
         float startX = x;
 
-        batch.color(color);
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
 
@@ -75,10 +74,9 @@ public class TextureDrawing {
                 continue;
             }
             Font.Glyph glyph = Window.defaultFont.getGlyph(ch);
-            batch.draw(glyph, x, y);
+            batch.draw(glyph, color, x, y);
             x += glyph.width();
         }
-        batch.resetColor();
     }
 
     public static void drawText(float x, float y, String text) {
@@ -96,13 +94,12 @@ public class TextureDrawing {
     public static void drawPointArray(Point2i[] points) {
         Fill.lineWidth(4f);
 
-        batch.color(SimpleColor.fromRGBA(0, 0, 0, 1));
+        var color = SimpleColor.fromRGBA(0, 0, 0, 1);
         float d = blockSize + 8;
 
         for (int i = 0; i < points.length - 1; i++) {
-            Fill.line(points[i].x * d, points[i].y * d, points[i + 1].x * d, points[i + 1].y * d);
+            Fill.line(points[i].x * d, points[i].y * d, points[i + 1].x * d, points[i + 1].y * d, color);
         }
-        batch.resetColor();
         Fill.resetLineWidth();
     }
 
@@ -218,10 +215,12 @@ public class TextureDrawing {
 
     public static void updateStaticObj() {
         Factories.update();
-        batch.z(Layer.BACKGROUND);
-        updateSun();
-        ElectricCables.drawCables();
-        batch.resetZ();
+
+        batch.pushState(() -> {
+            batch.z(Layer.BACKGROUND);
+            updateSun();
+            ElectricCables.drawCables();
+        });
 
         // always before drawing the blocks!!!
         updatePlayerPos();
@@ -268,8 +267,7 @@ public class TextureDrawing {
                 return;
             }
 
-            batch.color(blockColor);
-            batch.draw(getTexture(obj), xBlock, yBlock);
+            batch.draw(getTexture(obj), blockColor, xBlock, yBlock);
 
             float maxHp = getMaxHp(obj);
             if (hp > maxHp / 1.5f) {
@@ -279,7 +277,6 @@ public class TextureDrawing {
             } else {
                 batch.draw(atlas.byPath("World/Blocks/damaged0.png"), xBlock, yBlock);
             }
-            batch.resetColor();
         }
     }
 
@@ -321,8 +318,7 @@ public class TextureDrawing {
                 return;
             }
 
-            batch.color(color);
-            batch.draw(getTexture(obj), xBlock, yBlock);
+            batch.draw(getTexture(obj), color, xBlock, yBlock);
 
             float maxHp = getMaxHp(obj);
             if (hp > maxHp / 1.5f) {
@@ -332,7 +328,6 @@ public class TextureDrawing {
             } else {
                 batch.draw(atlas.byPath("World/Blocks/damaged0.png"), xBlock, yBlock);
             }
-            batch.resetColor();
         }
     }
 
@@ -382,9 +377,8 @@ public class TextureDrawing {
 
                 if (isOnCamera(dynamicObject.getX(), dynamicObject.getY(), dynamicObject.getTexture())) {
                     if (dynamicObject.getFramesCount() == 0) {
-                        batch.color(ShadowMap.getColorDynamic(dynamicObject));
-                        batch.draw(dynamicObject.getTexture(), dynamicObject.getX(), dynamicObject.getY());
-                        batch.resetColor();
+                        var shadow = ShadowMap.getColorDynamic(dynamicObject);
+                        batch.draw(dynamicObject.getTexture(), shadow, dynamicObject.getX(), dynamicObject.getY());
                     } else {
                         // todo дописать
                         // drawTexture(dynamicObject.getPath() + dynamicObject.getCurrentFrame() + ".png", dynamicObject.getX(), dynamicObject.getY(), ShadowMap.getColorDynamic(), false, false);
@@ -487,9 +481,7 @@ public class TextureDrawing {
                 continue;
             }
             Fill.rect(slider.x, slider.y, slider.width, slider.height, slider.sliderColor);
-            batch.color(slider.dotColor);
-            Fill.circle(slider.sliderPos - (slider.height * 1.5f / 2), slider.y - 5, slider.height * 1.5f);
-            batch.resetColor();
+            Fill.circle(slider.sliderPos - (slider.height * 1.5f / 2), slider.y - 5, slider.height * 1.5f, slider.dotColor);
         }
     }
 

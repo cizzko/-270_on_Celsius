@@ -27,6 +27,11 @@ import java.util.stream.Collectors;
 public final class AtlasGenerator {
 
     private static final String IMAGE_EXT = ".png";
+    // Это способ исправления проблем с мерцающими текстурами.
+    // Поскольку мерцания происходят при смене кадров и причём при определённых действиях, то
+    // скорее всего это ошибка округления текстурных координат.
+    // Что-то типа наслаивания (?)
+    private static final int PIXEL_GAP = 2;
 
     static final class Region {
         final Path path;
@@ -187,7 +192,7 @@ public final class AtlasGenerator {
         for (Region region : regions) {
             RectanglePacker.Position pos;
 
-            while ((pos = packer.pack(region.ow(), region.oh())).isInvalid()) {
+            while ((pos = packer.pack(region.ow(), region.oh(), PIXEL_GAP)).isInvalid()) {
                 boolean increaseW = packer.w <= packer.h;
                 if (packer.w >= max && increaseW) {
                     throw new IllegalArgumentException("Image '" +
@@ -195,9 +200,9 @@ public final class AtlasGenerator {
                             "' is too large to pack into " + max + "x" + max);
                 }
                 if (increaseW) {
-                    packer.resize(packer.w + region.ow(), packer.h);
+                    packer.resize(nextBoundary(region.ow(), packer.w), packer.h);
                 } else {
-                    packer.resize(packer.w, packer.h + region.oh());
+                    packer.resize(packer.w, nextBoundary(region.oh(), packer.h));
                 }
             }
             region.rx = pos.x;
@@ -242,6 +247,13 @@ public final class AtlasGenerator {
             wr.endObject();
             wr.endObject();
         }
+    }
+
+    private static int nextBoundary(int ob, int b) {
+        if (true) {
+            return MathUtil.ceilNextPowerOfTwo(b + 1);
+        }
+        return ob + b;
     }
 
     private static void log(String str) {

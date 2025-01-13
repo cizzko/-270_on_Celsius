@@ -215,7 +215,7 @@ public class WorldGenerator {
             log("World generator: generating done!\n");
             appendLog("\\nGenerating done! Starting world..");
 
-            scheduler.post(() -> start(creatures), Time.delta * Time.ONE_SECOND * 10);
+            scheduler.post(() -> start(creatures), Time.ONE_SECOND);
         });
     }
 
@@ -224,7 +224,7 @@ public class WorldGenerator {
     }
 
     private static void appendLog(String text) {
-        scheduler.post(() -> texts.get("WorldGeneratorState").text += text, 0.5f * Time.delta * Time.ONE_SECOND);
+        scheduler.post(() -> texts.get("WorldGeneratorState").text += text, 0.5f * Time.ONE_SECOND);
     }
 
     private static void generateRelief() {

@@ -225,15 +225,18 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
             batch.draw(iconRegion, x, y + 16);
 
             for (int i = 0; i < ArrayUtils.findDistinctObjects(items); i++) {
-                if (items[i] != null) {
-                    float zoom = Items.computeZoom(items[i].texture);
-                    int countInCell = findEqualsObjects(items, items[i]);
+                Items item = items[i];
+                if (item != null) {
+                    float scale = Items.computeZoom(item.texture);
+                    int countInCell = findEqualsObjects(items, item);
 
                     drawText((x + (i * 54)) + playerSize + 31, y + 3, countInCell > 9 ? "9+" : String.valueOf(countInCell), SimpleColor.DIRTY_BRIGHT_BLACK);
 
-                    batch.scale(zoom);
-                    batch.draw(items[i].texture, ((x + (i * 54)) + playerSize + 5), (y + 15));
-                    batch.resetScale();
+                    int finalI = i;
+                    batch.pushState(() -> {
+                        batch.scale(scale);
+                        batch.draw(item.texture, ((x + (finalI * 54)) + playerSize + 5), (y + 15));
+                    });
                 }
             }
         }

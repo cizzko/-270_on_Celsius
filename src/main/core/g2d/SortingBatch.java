@@ -1,29 +1,47 @@
 package core.g2d;
 
+import core.Utils.SimpleColor;
 import core.pool.Pool;
 import core.pool.Poolable;
 
-import java.util.PriorityQueue;
+import java.util.ArrayList;
+import java.util.Comparator;
 
 // TODO пул есть только для "обычных" запросов, а не для общих штук типа Runnable
-public class SortingBatch extends Batch {
+public class SortingBatch extends Batch<SortingBatch.SortingState> {
 
     private final Pool<RequestTexture> textureRequestsPool;
-    private final PriorityQueue<Request> requests;
+    private final ArrayList<Request> requests;
 
-    protected int z;
+    public static class SortingState extends State {
+        private int z;
+
+        private SortingState() {
+            reset();
+        }
+
+        public void set(SortingState state) {
+            super.set(state);
+            this.z = state.z;
+        }
+
+        @Override
+        public void reset() {
+            super.reset();
+            this.z = 0;
+        }
+    }
+
     protected boolean flushing;
 
-    private int prevZ;
-
     public SortingBatch(int bufferSize, int poolSize, int queueSize) {
-        super(bufferSize);
+        super(bufferSize, SortingState::new, SortingState::set);
         this.textureRequestsPool = new Pool<>(RequestTexture::new, poolSize);
-        this.requests = new PriorityQueue<>(queueSize);
+        this.requests = new ArrayList<>(queueSize);
     }
 
     public void draw(Runnable runnable) {
-        draw(z, runnable);
+        draw(state.z, runnable);
     }
 
     public void draw(int z, Runnable runnable) {
@@ -39,22 +57,18 @@ public class SortingBatch extends Batch {
     }
 
     public void z(int z) {
-        this.prevZ = this.z;
-        this.z = z;
-    }
-
-    public final void resetZ() {
-        z = prevZ;
+        state.z = z;
     }
 
     @Override
     protected void drawTexture(Drawable drawable,
+                               SimpleColor color,
                                float x, float y,
                                float x2, float y2,
                                float x3, float y3,
                                float x4, float y4) {
         RequestTexture request = textureRequestsPool.obtain();
-        request.set(z, drawable, x, y, x2, y2, x3, y3, x4, y4, colorBits, blending);
+        request.set(state.z, drawable, x, y, x2, y2, x3, y3, x4, y4, color, state.blending);
         draw(request);
     }
 
@@ -74,6 +88,7 @@ public class SortingBatch extends Batch {
             //   Также хочу отметить, что это позволит сделать интерфейс для прямой записи вершин.
             // Может потом пригодиться для сложных геометрических штук.
             //   На самом деле интересно, как повлияет это копирование из одного массива в другой.
+            requests.sort(Comparator.naturalOrder());
             requests.forEach(this::drawInternal);
             requests.clear();
             super.flush();
@@ -85,15 +100,11 @@ public class SortingBatch extends Batch {
         switch (request) {
             case RequestProcedure proc -> proc.runnable.run();
             case RequestTexture tex -> {
-                color(tex.colorBits);
                 blending(tex.blending);
 
                 try {
-                    super.drawTexture(tex.drawable, tex.x, tex.y, tex.x2, tex.y2, tex.x3, tex.y3, tex.x4, tex.y4);
+                    super.drawTexture(tex.drawable, tex.color, tex.x, tex.y, tex.x2, tex.y2, tex.x3, tex.y3, tex.x4, tex.y4);
                 } finally {
-                    resetColor();
-                    resetBlending();
-
                     textureRequestsPool.free(tex);
                 }
             }
@@ -119,7 +130,7 @@ public class SortingBatch extends Batch {
 
         public Drawable drawable;
         public float x, y, x2, y2, x3, y3, x4, y4;
-        public float colorBits;
+        public SimpleColor color;
         public Blending blending;
 
         public RequestTexture() {}
@@ -129,7 +140,7 @@ public class SortingBatch extends Batch {
                         float x2, float y2,
                         float x3, float y3,
                         float x4, float y4,
-                        float colorBits, Blending blending) {
+                        SimpleColor color, Blending blending) {
             this.z = z;
             this.drawable = drawable;
             this.x = x;
@@ -140,7 +151,7 @@ public class SortingBatch extends Batch {
             this.y3 = y3;
             this.x4 = x4;
             this.y4 = y4;
-            this.colorBits = colorBits;
+            this.color = color;
             this.blending = blending;
         }
 
@@ -157,7 +168,7 @@ public class SortingBatch extends Batch {
             y3 = 0;
             x4 = 0;
             y4 = 0;
-            colorBits = 0;
+            color = null;
         }
     }
 

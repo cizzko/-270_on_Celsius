@@ -235,11 +235,13 @@ public class Player {
         int lowestLimit = -20;
         int maxColor = 90;
 
-        int a = 0;
+        int a;
         if (temp > upperLimit) {
             a = Math.min(maxColor, Math.abs((temp - upperLimit) / 3));
         } else if (temp < lowestLimit) {
             a = Math.min(maxColor, Math.abs((temp + lowestLimit) / 3));
+        } else {
+            a = 0;
         }
 
         int r = temp > 0 ? a : 0;
@@ -247,13 +249,11 @@ public class Player {
 
         Texture modifiedTemperature = assets.getTextureByPath(assets.assetsDir("/UI/GUI/modifiedTemperature.png"));
 
-        batch.z(Layer.EFFECTS);
-        batch.color(SimpleColor.fromRGBA(r, (int) (b / 2f), b, a));
-
-        batch.draw(modifiedTemperature);
-
-        batch.resetColor();
-        batch.resetZ();
+        batch.pushState(() -> {
+            batch.z(Layer.EFFECTS);
+            batch.color(SimpleColor.fromRGBA(r, (int) (b / 2f), b, a));
+            batch.draw(modifiedTemperature);
+        });
     }
 
     public static void playerMaxHP() {

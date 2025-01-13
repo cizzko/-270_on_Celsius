@@ -82,21 +82,17 @@ public class Inventory {
     }
 
     public static void drawInventoryItem(float x, float y, int countInCell, Atlas.Region region) {
-        float zoom = Items.computeZoom(region);
-
-        batch.scale(zoom);
-        batch.draw(region, (x + 5), (y + 5));
-        batch.resetScale();
-
+        drawInventoryItem(x, y, region);
         drawText(x + 31, y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell), SimpleColor.DIRTY_BRIGHT_BLACK);
     }
 
     public static void drawInventoryItem(float x, float y, Atlas.Region region) {
         float scale = Items.computeZoom(region);
 
-        batch.scale(scale);
-        batch.draw(region, (x + 5), (y + 5));
-        batch.resetScale();
+        batch.pushState(() -> {
+            batch.scale(scale);
+            batch.draw(region, x + 5, y + 5);
+        });
     }
 
     public static void decrementItem(int x, int y) {
@@ -124,11 +120,12 @@ public class Inventory {
             Point2i mousePos = input.mousePos();
             if (underMouseItem != null) {
                 Items focusedItems = inventoryObjects[underMouseItem.x][underMouseItem.y];
-                float zoom = Items.computeZoom(focusedItems.texture);
+                float scale = Items.computeZoom(focusedItems.texture);
 
-                batch.scale(zoom);
-                batch.draw(focusedItems.texture, (mousePos.x - 15), (mousePos.y - 15));
-                batch.resetScale();
+                batch.pushState(() -> {
+                    batch.scale(scale);
+                    batch.draw(focusedItems.texture, mousePos.x - 15, mousePos.y - 15);
+                });
             }
             if ((inventoryOpen || current.x > 6)) {
                 batch.draw(atlas.byPath("UI/GUI/inventory/inventoryCurrent.png"), 1488 + current.x * 54, 756 + current.y * 54f);
@@ -149,9 +146,8 @@ public class Inventory {
                 TextureDrawing.addToBlocksQueue(blockX, blockY, placeable, isDeclined);
 
                 if (Config.getFromConfig("BuildGrid").equalsIgnoreCase("true")) {
-                    batch.color(SimpleColor.fromRGBA(230, 230, 230, 150));
-                    batch.draw(atlas.byPath("World/buildGrid.png"), WorldGenerator.findX(blockX, blockY) - 243f, WorldGenerator.findY(blockX, blockY) - 244f);
-                    batch.resetColor();
+                    var color = SimpleColor.fromRGBA(230, 230, 230, 150);
+                    batch.draw(atlas.byPath("World/buildGrid.png"), color, WorldGenerator.findX(blockX, blockY) - 243f, WorldGenerator.findY(blockX, blockY) - 244f);
                 }
             }
         }

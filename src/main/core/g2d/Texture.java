@@ -92,4 +92,9 @@ public final class Texture implements Drawable {
     public float v2() {
         return v2;
     }
+
+    @Override
+    public String toString() {
+        return "Texture{" + "id=" + glHandle + ", w=" + width + ", h=" + height + '}';
+    }
 }

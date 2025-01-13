@@ -4,20 +4,26 @@ import core.Global;
 import core.Utils.Disposable;
 import core.Utils.SimpleColor;
 import core.math.Mat3;
+import core.pool.Pool;
+import core.pool.Poolable;
 import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryUtil;
 
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.util.ArrayDeque;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Supplier;
 
 import static core.g2d.VertexAttribute.*;
 import static org.lwjgl.opengl.GL46.*;
 
-public class Batch implements Disposable {
+public class Batch<S extends Batch.State> implements Disposable {
     private static final int VERTEX_PER_SPRITE   = 4;
     private static final int VERTEX_PER_TRIANGLE = 6;
+    private static final int MAX_NESTING = 16;
 
     private static final VertexFormat VERTEX_FORMAT = VertexFormat.of(List.of(
             create(2, Type.FLOAT, Interp.NORMAL),
@@ -25,12 +31,8 @@ public class Batch implements Disposable {
             create(2, Type.FLOAT, Interp.NORMAL)
     ));
 
-    protected Blending blending = Blending.NORMAL;
-    protected float colorBits = SimpleColor.WHITE.toABGRBits();
-
     protected final Mat3 matrix = new Mat3();
 
-    protected float xScale = 1f, yScale = 1f;
     protected Texture currentTexture;
 
     protected FloatBuffer vertices;
@@ -40,16 +42,73 @@ public class Batch implements Disposable {
 
     private boolean disposed;
 
-    // default state / cache
-    private float prevColorBits;
-    private Blending prevBlending;
-    private float prevXScale = 1f, prevYScale = 1f;
+    private final Disposable stackProcessor = this::popState0;
+
+    protected static class State implements Poolable {
+        protected Blending blending;
+        protected SimpleColor color;
+        protected float xScale, yScale;
+
+        protected State() {
+            reset();
+        }
+
+        protected void set(State old) {
+            this.blending = old.blending;
+            this.color = old.color;
+            this.xScale = old.xScale;
+            this.yScale = old.yScale;
+        }
+
+        @Override
+        public void reset() {
+            blending = Blending.NORMAL;
+            color = SimpleColor.WHITE;
+            xScale = yScale = 1f;
+        }
+    }
+
+    private final Pool<S> statePool;
+    private final BiConsumer<S, S> extender;
+    private final ArrayDeque<S> stack = new ArrayDeque<S>(MAX_NESTING);
+    protected S state;
+
+    private void popState0() {
+        stack.removeLast();
+        statePool.free(state);
+        state = stack.getLast();
+    }
+
+    private void pushState0() {
+        S newState = statePool.obtain();
+        stack.addLast(newState);
+        if (state != null)
+            extender.accept(newState, state);
+        state = newState;
+    }
 
     // region Изменение параметров
 
+    public final void pushState(Runnable run) {
+        pushState0();
+        try {
+            run.run();
+        } finally {
+            popState0();
+        }
+    }
+
+    public final Disposable pushState() {
+        pushState0();
+        return stackProcessor;
+    }
+
     public final void blending(Blending blending) {
-        this.prevBlending = this.blending;
-        this.blending = blending;
+        if (blending == state.blending) {
+            return;
+        }
+        flush();
+        state.blending = blending;
     }
 
     public final void scale(float scale) {
@@ -57,41 +116,19 @@ public class Batch implements Disposable {
     }
 
     public final void scale(float xScale, float yScale) {
-        this.prevXScale = this.xScale;
-        this.prevYScale = this.yScale;
-
-        this.xScale = xScale;
-        this.yScale = yScale;
-    }
-
-    public final void color(float colorBits) {
-        this.prevColorBits = this.colorBits;
-        this.colorBits = colorBits;
+        state.xScale = xScale;
+        state.yScale = yScale;
     }
 
     public final void color(SimpleColor color) {
-        color(color.toABGRBits());
-    }
-
-    // endregion
-    // region Восстановление состояния/параметров
-
-    public final void resetScale() {
-        xScale = prevXScale;
-        yScale = prevYScale;
-    }
-
-    public final void resetBlending() {
-        blending = prevBlending;
-    }
-
-    public final void resetColor() {
-        colorBits = prevColorBits;
+        state.color = color;
     }
 
     // endregion
 
-    public Batch(int bufferSize) {
+    public Batch(int bufferSize, Supplier<? extends S> constr, BiConsumer<S, S> extender) {
+        this.statePool = new Pool<>(constr, MAX_NESTING);
+        this.extender = extender;
         try {
             shader = Shader.load(Global.assets.assetsDir("Shaders/default"));
         } catch (IOException e) {
@@ -126,6 +163,8 @@ public class Batch implements Disposable {
         indexes.flip();
         mesh.updateIndexes(indexes);
         mesh.useIndexes(true);
+
+        pushState();
     }
 
     public final void matrix(Mat3 matrix) {
@@ -146,7 +185,7 @@ public class Batch implements Disposable {
             return;
         }
 
-        blending.apply();
+        state.blending.apply();
 
         shader.use();
         shader.setUniform("u_texture", currentTexture);
@@ -161,18 +200,30 @@ public class Batch implements Disposable {
 
     // drawing
 
+    public final void draw(Drawable drawable, SimpleColor color) {
+        draw(drawable, color, 0, 0);
+    }
+
     public final void draw(Drawable drawable) {
-        draw(drawable, 0, 0);
+        draw(drawable, state.color, 0, 0);
+    }
+
+    public final void draw(Drawable drawable, SimpleColor color, float x, float y) {
+        draw(drawable, color, x, y, drawable.width() * state.xScale, drawable.height() * state.yScale);
     }
 
     public final void draw(Drawable drawable, float x, float y) {
-        draw(drawable, x, y, drawable.width() * xScale, drawable.height() * yScale);
+        draw(drawable, state.color, x, y);
+    }
+
+    public final void draw(Drawable drawable, SimpleColor color, float x, float y, float width, float height) {
+        float x2 = x + width;
+        float y2 = y + height;
+        drawTexture(drawable, color, x, y, x, y2, x2, y2, x2, y); // index!!!
     }
 
     public final void draw(Drawable drawable, float x, float y, float width, float height) {
-        float x2 = x + width;
-        float y2 = y + height;
-        drawTexture(drawable, x, y, x, y2, x2, y2, x2, y); // index!!!
+        draw(drawable, state.color, x, y, width, height);
     }
 
     public final void rect(Drawable drawable,
@@ -180,10 +231,20 @@ public class Batch implements Disposable {
                            float x2, float y2,
                            float x3, float y3,
                            float x4, float y4) {
-        drawTexture(drawable, x, y, x2, y2, x3, y3, x4, y4);
+        rect(drawable, state.color, x, y, x2, y2, x3, y3, x4, y4);
+    }
+
+    public final void rect(Drawable drawable,
+                           SimpleColor color,
+                           float x, float y,
+                           float x2, float y2,
+                           float x3, float y3,
+                           float x4, float y4) {
+        drawTexture(drawable, color, x, y, x2, y2, x3, y3, x4, y4);
     }
 
     protected void drawTexture(Drawable drawable,
+                               SimpleColor color,
                                float x, float y,
                                float x2, float y2,
                                float x3, float y3,
@@ -193,7 +254,7 @@ public class Batch implements Disposable {
         rectInternal(x, y, x2, y2, x3, y3, x4, y4,
                 drawable.u(), drawable.v(),
                 drawable.u2(), drawable.v2(),
-                colorBits);
+                color.toABGRBits());
     }
 
     protected final Texture textureOf(Drawable drawable) {

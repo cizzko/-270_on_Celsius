@@ -8,7 +8,6 @@ import org.lwjgl.opengl.GL46;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +17,9 @@ import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 
 public final class Font {
     private static final int fontSize = 18;
+
+    // см. AtlasGenerator
+    private static final int PIXEL_GAP = 1;
 
     private Texture texture;
     private Map<Character, Glyph> glyphTable;
@@ -93,7 +95,7 @@ public final class Font {
             Glyph gl = image.glyph;
 
             RectanglePacker.Position pos;
-            while ((pos = packer.pack(gl.width, gl.height)).isInvalid()) {
+            while ((pos = packer.pack(gl.width, gl.height, PIXEL_GAP)).isInvalid()) {
                 boolean increaseW = packer.w <= packer.h;
                 if (packer.w >= maxTexSize && increaseW) {
                     throw new IllegalArgumentException();
@@ -202,6 +204,11 @@ public final class Font {
         @Override
         public float v2() {
             return v2;
+        }
+
+        @Override
+        public String toString() {
+            return "Glyph{'" + ch + "'}";
         }
     }
 }
