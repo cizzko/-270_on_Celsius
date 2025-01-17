@@ -14,7 +14,7 @@ public class Slider extends BaseElement<Slider> {
     private float sliderPos, prevSliderPos;
     private boolean isClicked;
 
-    public int max;
+    public int min, max;
     public SimpleColor sliderColor, dotColor;
     public MoveListener updater;
 
@@ -26,9 +26,9 @@ public class Slider extends BaseElement<Slider> {
         super(parent);
     }
 
-    public int getSliderPos() {
+    public int getSliderValue() {
         float relativePos = (sliderPos - x) / width;
-        return Math.round(relativePos * max);
+        return Math.round(relativePos * (max - min) + min);
     }
 
     public Slider onMove(MoveListener updater) {
@@ -36,7 +36,8 @@ public class Slider extends BaseElement<Slider> {
         return this;
     }
 
-    public Slider setMax(int max) {
+    public Slider setBounds(int min, int max) {
+        this.min = min;
         this.max = max;
         return this;
     }
@@ -82,7 +83,7 @@ public class Slider extends BaseElement<Slider> {
 
         batch.draw(triangle, sliderPos - (triangle.width() / 2f), y + rectY - 7);
 
-        String sliderValue = Integer.toString(getSliderPos());
+        String sliderValue = Integer.toString(getSliderValue());
         int numbersWidth = getTextSize(sliderValue).width;
 
         Fill.rect(sliderPos - (triangle.width() / 2f) - (numbersWidth / (rectWidth * 2)),
@@ -116,7 +117,7 @@ public class Slider extends BaseElement<Slider> {
                 prevSliderPos = sliderPos;
                 sliderPos = input.mousePos().x;
                 if (updater != null) {
-                    updater.update(getSliderPos(), max);
+                    updater.update(getSliderValue(), max);
                 }
             }
         } else {

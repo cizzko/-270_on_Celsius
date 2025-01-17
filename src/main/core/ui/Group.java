@@ -61,9 +61,9 @@ public interface Group extends Element {
                 .onClick(onClick);
     }
 
-    default Slider addSlider(int max, Slider.MoveListener onMove) {
+    default Slider addSlider(int min, int max, Slider.MoveListener onMove) {
         return add(new Slider(this))
-                .setMax(max)
+                .setBounds(min, max)
                 .onMove(onMove);
     }
 

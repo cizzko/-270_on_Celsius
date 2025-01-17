@@ -4,6 +4,9 @@ import core.Utils.SimpleColor;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.WorldGenerator;
+import core.math.MathUtil;
+import core.math.Point2i;
+
 import java.util.Arrays;
 import java.util.HashMap;
 
@@ -19,17 +22,17 @@ public class ShadowMap {
     // todo переписать генерацию и обновление теней
 
     public static SimpleColor getShadow(int x, int y) {
-        int idx = x + SizeX * y;
-        return idx < 0 || idx >= shadows.length ? SimpleColor.CLEAR : SimpleColor.toColor(shadows[idx]);
+        if (x < 0 || y < 0 || x >= SizeX || y >= SizeY) {
+            return SimpleColor.CLEAR;
+        }
+        return SimpleColor.toColor(shadows[x + SizeX * y]);
     }
 
     public static void setShadow(int x, int y, SimpleColor color) {
-        int idx = x + SizeX * y;
-        if (idx >= shadows.length) {
+        if (x < 0 || y < 0 || x >= SizeX || y >= SizeY) {
             return;
         }
-
-        shadows[idx] = color.getValueARGB();
+        shadows[x + SizeX * y] = color.getValueARGB();
     }
 
     public static int getDegree(int x, int y) {
@@ -38,7 +41,7 @@ public class ShadowMap {
     }
 
     public static void generate() {
-        shadows = new int[(WorldGenerator.SizeX + 1) * (WorldGenerator.SizeY + 1)];
+        shadows = new int[WorldGenerator.SizeX * WorldGenerator.SizeY];
         Arrays.fill(shadows, SimpleColor.WHITE.getValueARGB());
 
         generateShadows();
