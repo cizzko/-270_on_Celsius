@@ -4,6 +4,7 @@ import core.Global;
 import core.g2d.Font;
 import core.Utils.SimpleColor;
 import org.lwjgl.BufferUtils;
+
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
@@ -11,6 +12,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import static core.EventHandling.Logging.Logger.*;
 import static core.Window.*;
@@ -31,25 +33,19 @@ public class TextureLoader {
     }
 
     public static ImageData readImage(BufferedImage image) {
-        // decodes the image into rgba and loads each byte into the buffer
-        int BYTES_PER_PIXEL = 4;
         int[] pixels = new int[image.getWidth() * image.getHeight()];
         image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
-        ByteBuffer buffer = BufferUtils.createByteBuffer(image.getWidth() * image.getHeight() * BYTES_PER_PIXEL); // 4 bytes per pixel for RGBA, 3 for RGB
+        ByteBuffer buffer = BufferUtils.createByteBuffer(image.getWidth() * image.getHeight() * 4)
+                .order(ByteOrder.BIG_ENDIAN); // BufferedImage не умеет в адекватное API. Почему не нативный порядок?
 
-        // load pixels
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
-                int color = pixels[y * image.getWidth() + x]; // argb
-                buffer.putInt(SimpleColor.argbToRgba(color));
+                int argb = pixels[y * image.getWidth() + x];
+                buffer.putInt(SimpleColor.argbToRgba(argb));
             }
         }
 
         return new ImageData(image.getWidth(), image.getHeight(), buffer.flip());
-    }
-
-    public static ByteBuffer ByteBufferEncoder(String path) {
-        return readImage(BufferedImageEncoder(path)).data;
     }
 
     public static ByteBuffer ByteBufferEncoder(BufferedImage image) {

@@ -25,14 +25,14 @@ public class ShadowMap {
         if (x < 0 || y < 0 || x >= SizeX || y >= SizeY) {
             return SimpleColor.CLEAR;
         }
-        return SimpleColor.toColor(shadows[x + SizeX * y]);
+        return new SimpleColor(shadows[x + SizeX * y]);
     }
 
     public static void setShadow(int x, int y, SimpleColor color) {
         if (x < 0 || y < 0 || x >= SizeX || y >= SizeY) {
             return;
         }
-        shadows[x + SizeX * y] = color.getValueARGB();
+        shadows[x + SizeX * y] = color.rgba;
     }
 
     public static int getDegree(int x, int y) {
@@ -42,7 +42,7 @@ public class ShadowMap {
 
     public static void generate() {
         shadows = new int[WorldGenerator.SizeX * WorldGenerator.SizeY];
-        Arrays.fill(shadows, SimpleColor.WHITE.getValueARGB());
+        Arrays.fill(shadows, SimpleColor.WHITE.rgba);
 
         generateShadows();
     }

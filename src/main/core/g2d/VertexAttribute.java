@@ -32,13 +32,19 @@ public final class VertexAttribute {
     }
 
     public enum Interp {
-        NORMAL {
+        DIRECT_FLOAT {
             @Override
             void enable(int index, int size, int glType, int vertexByteSize, int offset) {
                 GL46.glVertexAttribPointer(index, size, glType, false, vertexByteSize, offset);
             }
         },
-        COLOR {
+        INTEGRAL {
+            @Override
+            void enable(int index, int size, int glType, int vertexByteSize, int offset) {
+                GL46.glVertexAttribIPointer(index, size, glType, vertexByteSize, offset);
+            }
+        },
+        NORMALIZED {
             @Override
             void enable(int index, int size, int glType, int vertexByteSize, int offset) {
                 GL46.glVertexAttribPointer(index, size, glType, true, vertexByteSize, offset);

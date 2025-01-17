@@ -26,9 +26,9 @@ public class Batch<S extends Batch.State> implements Disposable {
     private static final int MAX_NESTING = 16;
 
     private static final VertexFormat VERTEX_FORMAT = VertexFormat.of(List.of(
-            create(2, Type.FLOAT, Interp.NORMAL),
-            create(4, Type.UNSIGNED_BYTE, Interp.COLOR),
-            create(2, Type.FLOAT, Interp.NORMAL)
+            create(2, Type.FLOAT, Interp.DIRECT_FLOAT),
+            create(4, Type.UNSIGNED_BYTE, Interp.NORMALIZED),
+            create(2, Type.FLOAT, Interp.DIRECT_FLOAT)
     ));
 
     protected final Mat3 matrix = new Mat3();
@@ -254,7 +254,7 @@ public class Batch<S extends Batch.State> implements Disposable {
         rectInternal(x, y, x2, y2, x3, y3, x4, y4,
                 drawable.u(), drawable.v(),
                 drawable.u2(), drawable.v2(),
-                color.toABGRBits());
+                color.toGLBits());
     }
 
     protected final Texture textureOf(Drawable drawable) {
