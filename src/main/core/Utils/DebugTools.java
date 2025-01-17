@@ -4,14 +4,11 @@ import core.EventHandling.Logging.Logger;
 import core.Global;
 import core.World.Textures.ShadowMap;
 import core.World.StaticWorldObjects.Structures.Structures;
-import core.World.WorldGenerator;
 import core.math.Point2i;
 
-
+import static core.Global.world;
 import static core.Window.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
-import static core.World.WorldGenerator.destroyObject;
-import static core.World.WorldGenerator.getObject;
 import static core.World.WorldUtils.getBlockUnderMousePoint;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
@@ -63,9 +60,11 @@ public class DebugTools {
 
         for (int x = startX; x < targetX; x++) {
             for (int y = startY; y < targetY; y++) {
-                if (x < WorldGenerator.SizeX && y < WorldGenerator.SizeY && x > 0 && y > 0 && getObject(x, y) > 0 && getId(getObject(x, y)) != 0) {
-                    ShadowMap.setShadow(x, y, SimpleColor.fromRGBA(0, 0, 255, 255));
-                    objects[x - startX][y - startY] = getObject(x, y);
+                if (x < core.Global.world.sizeX && y < core.Global.world.sizeY && x > 0 && y > 0 && world.get(x, y) > 0) {
+                    if (getId(world.get(x, y)) != 0) {
+                        ShadowMap.setShadow(x, y, SimpleColor.fromRGBA(0, 0, 255, 255));
+                        objects[x - startX][y - startY] = world.get(x, y);
+                    }
                 }
             }
         }
@@ -75,8 +74,10 @@ public class DebugTools {
     private static void delete() {
         for (int x = lastMousePosBlocks.x; x < getBlockUnderMousePoint().x; x++) {
             for (int y = lastMousePosBlocks.y; y < getBlockUnderMousePoint().y; y++) {
-                if (x < WorldGenerator.SizeX && y < WorldGenerator.SizeY && x > 0 && y > 0 && getObject(x, y) > 0 && getId(getObject(x, y)) != 0) {
-                   destroyObject(x, y);
+                if (x < core.Global.world.sizeX && y < core.Global.world.sizeY && x > 0 && y > 0 && world.get(x, y) > 0) {
+                    if (getId(world.get(x, y)) != 0) {
+                        world.destroy(x, y);
+                    }
                 }
             }
         }

@@ -10,11 +10,11 @@ import core.World.HitboxMap;
 import core.World.Saves;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
-import core.World.WorldGenerator;
 import core.math.Point2i;
 
 import java.util.Iterator;
 
+import static core.Global.world;
 import static core.Window.glfwWindow;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.HitboxMap.*;
@@ -137,11 +137,12 @@ public class Physics {
             if (staticObjectPoint != null) {
                 float damage = 0;
                 for (Point2i point : staticObjectPoint) {
-                    short staticObject = WorldGenerator.getObject(point.x, point.y);
+                    short staticObject = world.get(point.x, point.y);
                     float currentDamage = ((((StaticWorldObjects.getResistance(staticObject) / 100) * StaticWorldObjects.getDensity(staticObject)) + (object.getWeight() + (Math.max(Math.abs(vectorY), Math.abs(vectorX)) - minVectorIntersDamage)) * intersDamageMultiplier)) / staticObjectPoint.length;
 
                     damage += currentDamage;
-                    WorldGenerator.setObject(point.x, point.y, StaticWorldObjects.decrementHp(staticObject, (int) (currentDamage + (getResistance(staticObject) / 100) * StaticWorldObjects.getDensity(staticObject)) / staticObjectPoint.length), false);
+                    short object1 = StaticWorldObjects.decrementHp(staticObject, (int) (currentDamage + (getResistance(staticObject) / 100) * StaticWorldObjects.getDensity(staticObject)) / staticObjectPoint.length);
+                    world.set(point.x, point.y, object1, false);
                 }
                 object.incrementCurrentHP(-damage);
 
@@ -185,11 +186,11 @@ public class Physics {
 
         for (int xPos = 0; xPos < tarXSize; xPos++) {
             for (int yPos = 0; yPos < tarYSize; yPos++) {
-                if (tarX + tarXSize > SizeX || tarY + tarYSize > SizeY || getObject(tarX + xPos, tarY + yPos) == -1 || getObject(tarX + tarXSize, tarY + tarYSize) == -1) {
+                if (tarX + tarXSize > world.sizeX || tarY + tarYSize > world.sizeY || world.get(tarX + xPos, tarY + yPos) == -1 || world.get(tarX + tarXSize, tarY + tarYSize) == -1) {
                     continue;
                 }
-                if (getResistance(getObject(tarX + xPos, tarY + yPos)) < 100) {
-                    totalResistance += getResistance(getObject(tarX + xPos, tarY + yPos));
+                if (getResistance(world.get(tarX + xPos, tarY + yPos)) < 100) {
+                    totalResistance += getResistance(world.get(tarX + xPos, tarY + yPos));
                 }
             }
         }
@@ -200,7 +201,7 @@ public class Physics {
     private static void updateWorldSave() {
         if (System.currentTimeMillis() - Saves.lastSaved >= worldSaveDelay) {
             Logger.log("Creating world backup..");
-            Saves.createWorldBackup();
+            // TODO реализовать
         }
     }
 

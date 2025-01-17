@@ -51,6 +51,6 @@ public class Pause extends Dialog {
     }
 
     private void saveButton() {
-        Saves.createWorldSave();
+        // TODO реализовать
     }
 }

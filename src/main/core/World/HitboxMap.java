@@ -6,6 +6,8 @@ import core.World.Textures.TextureDrawing;
 import core.math.Point2i;
 
 import java.util.ArrayList;
+
+import static core.Global.world;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getResistance;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.WorldGenerator.*;
@@ -19,7 +21,7 @@ public class HitboxMap {
         int tarYSize = (int) Math.ceil(sizeY / TextureDrawing.blockSize);
 
         for (int i = 0; i < tarYSize; i++) {
-            if (getObject(tarX + tarXSize, tarY + i + 1) == -1 || (getResistance(getObject(tarX + tarXSize, tarY + i + 1)) == 100 && x + sizeX >= (getType(getObject(tarX + tarXSize, tarY + i + 1)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + i + 1) : SizeX * TextureDrawing.blockSize))) {
+            if (world.get(tarX + tarXSize, tarY + i + 1) == -1 || (getResistance(world.get(tarX + tarXSize, tarY + i + 1)) == 100 && x + sizeX >= (getType(world.get(tarX + tarXSize, tarY + i + 1)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + i + 1) : world.sizeX * TextureDrawing.blockSize))) {
                 return true;
             }
         }
@@ -34,7 +36,7 @@ public class HitboxMap {
         ArrayList<Point2i> inters = new ArrayList<>(tarYSize);
 
         for (int i = 0; i < tarYSize; i++) {
-            if (getObject(tarX + tarXSize, tarY + i + 1) == -1 || (getResistance(getObject(tarX + tarXSize, tarY + i + 1)) == 100 && x + sizeX >= (getType(getObject(tarX + tarXSize, tarY + i + 1)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + i + 1) : SizeX * TextureDrawing.blockSize))) {
+            if (world.get(tarX + tarXSize, tarY + i + 1) == -1 || (getResistance(world.get(tarX + tarXSize, tarY + i + 1)) == 100 && x + sizeX >= (getType(world.get(tarX + tarXSize, tarY + i + 1)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + i + 1) : world.sizeX * TextureDrawing.blockSize))) {
                 inters.add(new Point2i(tarX + tarXSize, tarY + i + 1));
             }
         }
@@ -47,7 +49,7 @@ public class HitboxMap {
         int tarYSize = (int) Math.ceil(sizeY / TextureDrawing.blockSize);
 
         for (int i = 0; i < tarYSize; i++) {
-            if (tarX < 0 || tarY < 0 || getObject(tarX, tarY + i + 1) == -1 || (getResistance(getObject(tarX, tarY + i + 1)) == 100 && getType(getObject(tarX, tarY + i + 1)) == StaticObjectsConst.Types.SOLID)) {
+            if (tarX < 0 || tarY < 0 || world.get(tarX, tarY + i + 1) == -1 || (getResistance(world.get(tarX, tarY + i + 1)) == 100 && getType(world.get(tarX, tarY + i + 1)) == StaticObjectsConst.Types.SOLID)) {
                 return true;
             }
         }
@@ -61,7 +63,7 @@ public class HitboxMap {
         ArrayList<Point2i> inters = new ArrayList<>(tarYSize);
 
         for (int i = 0; i < tarYSize; i++) {
-            if (tarX < 0 || tarY < 0 || getObject(tarX, tarY + i + 1) == -1 || getResistance(getObject(tarX, tarY + i + 1)) == 100 && getType(getObject(tarX, tarY + i + 1)) == StaticObjectsConst.Types.SOLID) {
+            if (tarX < 0 || tarY < 0 || world.get(tarX, tarY + i + 1) == -1 || getResistance(world.get(tarX, tarY + i + 1)) == 100 && getType(world.get(tarX, tarY + i + 1)) == StaticObjectsConst.Types.SOLID) {
                 inters.add(new Point2i(tarX, tarY + i + 1));
             }
         }
@@ -73,12 +75,12 @@ public class HitboxMap {
         int tarY = (int) Math.floor(y / TextureDrawing.blockSize);
         int tarXSize = (int) Math.ceil(sizeX / TextureDrawing.blockSize);
 
-        if (getObject(tarX + tarXSize, tarY) == -1 || (getResistance(getObject(tarX + tarXSize, tarY)) == 100 && x + sizeX >= (getType(getObject(tarX + tarXSize, tarY)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY) : SizeX * TextureDrawing.blockSize))) {
+        if (world.get(tarX + tarXSize, tarY) == -1 || (getResistance(world.get(tarX + tarXSize, tarY)) == 100 && x + sizeX >= (getType(world.get(tarX + tarXSize, tarY)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY) : world.sizeX * TextureDrawing.blockSize))) {
             return true;
         }
 
         for (int i = 0; i < tarXSize; i++) {
-            if (getObject(tarX + i, tarY) == -1 || (getResistance(getObject(tarX + i, tarY)) == 100 && (y - sizeY <= (getType(getObject(tarX + i, tarY)) == StaticObjectsConst.Types.SOLID ? findY(tarX + i, tarY) : 0)))) {
+            if (world.get(tarX + i, tarY) == -1 || (getResistance(world.get(tarX + i, tarY)) == 100 && (y - sizeY <= (getType(world.get(tarX + i, tarY)) == StaticObjectsConst.Types.SOLID ? findY(tarX + i, tarY) : 0)))) {
                 return true;
             }
         }
@@ -92,7 +94,7 @@ public class HitboxMap {
         ArrayList<Point2i> inters = new ArrayList<>(tarXSize);
 
         for (int i = 0; i < tarXSize; i++) {
-            if (getObject(tarX + i, tarY) == -1 || (getResistance(getObject(tarX + i, tarY)) == 100 && (y - sizeY <= (getType(getObject(tarX + i, tarY)) == StaticObjectsConst.Types.SOLID ? findY(tarX + i, tarY) : 0)))) {
+            if (world.get(tarX + i, tarY) == -1 || (getResistance(world.get(tarX + i, tarY)) == 100 && (y - sizeY <= (getType(world.get(tarX + i, tarY)) == StaticObjectsConst.Types.SOLID ? findY(tarX + i, tarY) : 0)))) {
                 inters.add(new Point2i(tarX + i, tarY));
             }
         }
@@ -105,12 +107,12 @@ public class HitboxMap {
         int tarYSize = (int) Math.ceil(sizeY / TextureDrawing.blockSize);
         int tarXSize = (int) Math.ceil(sizeX / TextureDrawing.blockSize);
 
-        if (getObject(tarX + tarXSize, tarY + tarYSize) == -1 || (getResistance(getObject(tarX + tarXSize, tarY + tarYSize)) == 100 && x + sizeX >= (getType(getObject(tarX + tarXSize, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + tarYSize) : SizeX * TextureDrawing.blockSize))) {
+        if (world.get(tarX + tarXSize, tarY + tarYSize) == -1 || (getResistance(world.get(tarX + tarXSize, tarY + tarYSize)) == 100 && x + sizeX >= (getType(world.get(tarX + tarXSize, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + tarYSize) : world.sizeX * TextureDrawing.blockSize))) {
             return true;
         }
 
         for (int i = 0; i < tarXSize; i++) {
-            if (getObject(tarX + i, tarY + tarYSize) == -1 || (getResistance(getObject(tarX + i, tarY + tarYSize)) == 100 && (y + sizeY >= (getType(getObject(tarX + i, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID ? findY(tarX + i, tarY + tarYSize) : SizeY * TextureDrawing.blockSize)))) {
+            if (world.get(tarX + i, tarY + tarYSize) == -1 || (getResistance(world.get(tarX + i, tarY + tarYSize)) == 100 && (y + sizeY >= (getType(world.get(tarX + i, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID ? findY(tarX + i, tarY + tarYSize) : world.sizeY * TextureDrawing.blockSize)))) {
                 return true;
             }
         }
@@ -125,7 +127,7 @@ public class HitboxMap {
         ArrayList<Point2i> inters = new ArrayList<>(tarXSize);
 
         for (int i = 0; i < tarXSize; i++) {
-            if (getObject(tarX + i, tarY + tarYSize) == -1 || (getResistance(getObject(tarX + i, tarY + tarYSize)) == 100 && (y + sizeY >= (getType(getObject(tarX + i, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID ? findY(tarX + i, tarY + tarYSize) : SizeY * TextureDrawing.blockSize)))) {
+            if (world.get(tarX + i, tarY + tarYSize) == -1 || (getResistance(world.get(tarX + i, tarY + tarYSize)) == 100 && (y + sizeY >= (getType(world.get(tarX + i, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID ? findY(tarX + i, tarY + tarYSize) : world.sizeY * TextureDrawing.blockSize)))) {
                 inters.add(new Point2i(tarX + i, tarY + tarYSize));
             }
         }
@@ -138,16 +140,16 @@ public class HitboxMap {
         int tarYSize = (int) Math.ceil(sizeY / TextureDrawing.blockSize);
         int tarXSize = (int) Math.ceil(sizeX / TextureDrawing.blockSize);
 
-        if (getType(getObject(tarX + tarXSize, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID) {
+        if (getType(world.get(tarX + tarXSize, tarY + tarYSize)) == StaticObjectsConst.Types.SOLID) {
             return new Point2i(tarX +tarXSize, tarY + tarYSize);
         }
 
         for (int xPos = 0; xPos < tarXSize; xPos++) {
             for (int yPos = 0; yPos < tarYSize; yPos++) {
-                if (tarX + tarXSize > SizeX || tarY + tarYSize > SizeY || getObject(tarX + xPos, tarY + yPos) == -1 || getObject(tarX + tarXSize, tarY + tarYSize) == -1) {
+                if (tarX + tarXSize > world.sizeX || tarY + tarYSize > world.sizeY || world.get(tarX + xPos, tarY + yPos) == -1 || world.get(tarX + tarXSize, tarY + tarYSize) == -1) {
                     continue;
                 }
-                if (getType(getObject(tarX + xPos, tarY + yPos)) == StaticObjectsConst.Types.SOLID) {
+                if (getType(world.get(tarX + xPos, tarY + yPos)) == StaticObjectsConst.Types.SOLID) {
                     return new Point2i(tarX + xPos, tarY + yPos);
                 }
             }

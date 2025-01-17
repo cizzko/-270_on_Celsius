@@ -20,6 +20,7 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import static core.EventHandling.Logging.Logger.printException;
 import static core.Global.assets;
+import static core.Global.world;
 
 public class Saves {
     private static boolean saving = false;
@@ -59,58 +60,5 @@ public class Saves {
         map.put("DateCreation", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH:mm")));
 
         return map;
-    }
-
-    public static void createWorldSave() {
-        // todo имя сохранений
-        createWorldSave("WorldSave" + (int) (Math.random() * 10000));
-    }
-
-    public static void createWorldBackup() {
-        createWorldSave("WorldBackup");
-    }
-
-    public static void loadWorldSave(String path) {
-        HashMap<String, Object> data = new HashMap<>();
-        try (var fis = assets.resourceStream(path);
-            InflaterInputStream iis = new InflaterInputStream(fis);
-            ObjectInputStream ois = new ObjectInputStream(iis)) {
-
-            data = (HashMap<String, Object>) ois.readObject();
-        } catch (Exception e) {
-            printException("Error when load world save, path: " + path, e);
-        }
-
-        if (!data.get("VersionCreation").equals(Window.versionStamp)) {
-            Logger.log("Save: '" + path + "' maybe deprecated, current game version: '" + Window.versionStamp + "', game version at save: '" + data.get("VersionCreation") + "'");
-        }
-
-        ShadowMap.setAllData((HashMap<String, Object>) data.get("ShadowsData"));
-        Inventory.inventoryObjects = (Items[][]) data.get("Inventory");
-        Sun.currentTime = (float) data.get("WorldCurrentTime");
-
-        WorldGenerator.DynamicObjects = (ArrayDeque<DynamicWorldObjects>) data.get("DynamicWorldObjects");
-        WorldGenerator.SizeX = (int) data.get("WorldSizeX");
-        WorldGenerator.SizeY = (int) data.get("WorldSizeY");
-        WorldGenerator.intersDamageMultiplier = (float) data.get("WorldIntersDamageMultiplier");
-        WorldGenerator.minVectorIntersDamage = (float) data.get("WorldMinVectorIntersDamage");
-        WorldGenerator.dayCount = (int) data.get("WorldDayCount");
-
-        TemperatureMap.setData(data);
-        StaticObjectsConst.setDestroyed();
-        setBlocks((String[]) data.get("StaticWorldObjects"));
-        WorldGenerator.start(data.get("WorldGenerateCreatures").equals("true"));
-    }
-
-    public static String[] loadWorldSaves() {
-        return ArrayUtils.getAllFiles(assets.assetsDir("World/Saves/WorldSaves"), ".ser");
-    }
-
-    private static void setBlocks(String[] names) {
-        WorldGenerator.StaticObjects = new short[names.length];
-
-        for (int i = 0; i < names.length; i++) {
-            WorldGenerator.StaticObjects[i] = StaticWorldObjects.createStatic(names[i]);
-        }
     }
 }

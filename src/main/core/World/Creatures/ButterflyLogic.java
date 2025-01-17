@@ -3,6 +3,8 @@ package core.World.Creatures;
 import core.World.Textures.TextureDrawing;
 
 import java.util.HashMap;
+
+import static core.Global.world;
 import static core.World.HitboxMap.*;
 import static core.World.WorldGenerator.*;
 
@@ -18,7 +20,7 @@ public class ButterflyLogic {
                     int randX = (int) (Math.random() * 60) - 30;
                     int randY = (int) (Math.random() * 60) - 30;
 
-                    if (randX + object.getX() < SizeX * TextureDrawing.blockSize - 32 && randY + object.getY() < SizeY * TextureDrawing.blockSize - 32 && randX + object.getX() > 32 && randY + object.getY() > SizeY / 2f * TextureDrawing.blockSize) {
+                    if (randX + object.getX() < world.sizeX * TextureDrawing.blockSize - 32 && randY + object.getY() < world.sizeY * TextureDrawing.blockSize - 32 && randX + object.getX() > 32 && randY + object.getY() > world.sizeY / 2f * TextureDrawing.blockSize) {
                         object.incrementX((randX < 0 && !checkIntersStaticL(object.getX(), object.getY(), 32)) || (randX > 0 && !checkIntersStaticR(object.getX(), object.getY(), 32, 32)) ? randX : 0);
                         object.incrementY((randY < 0 && !checkIntersStaticD(object.getX(), object.getY(), 32, 32)) || (randY > 0 && !checkIntersStaticU(object.getX(), object.getY(), 32, 32)) ? randY : 0);
                     }

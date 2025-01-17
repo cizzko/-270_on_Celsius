@@ -5,11 +5,12 @@ import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
-import core.World.WorldGenerator;
 import core.World.WorldUtils;
 import core.math.Point2i;
 
 import java.util.*;
+
+import static core.Global.world;
 
 public class ElectricCables implements InventoryEvents {
     private LinkedHashSet<Point2i> points;
@@ -22,7 +23,7 @@ public class ElectricCables implements InventoryEvents {
 
     @Override
     public void itemDropped(int blockX, int blockY, Items item) {
-        if (StaticWorldObjects.getType(WorldGenerator.getObject(blockX, blockY)) == StaticObjectsConst.Types.SOLID && item.name.toLowerCase().equals("electric cable")) {
+        if (StaticWorldObjects.getType(world.get(blockX, blockY)) == StaticObjectsConst.Types.SOLID && item.name.toLowerCase().equals("electric cable")) {
             if (lastPlacedCable != null) {
                 if (WorldUtils.getDistanceBetweenBlocks(lastPlacedCable, new Point2i(blockX, blockY)) <= 15) {
                     placeCable(lastPlacedCable, new Point2i(blockX, blockY));

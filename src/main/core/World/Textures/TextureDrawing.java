@@ -219,7 +219,7 @@ public class TextureDrawing {
 
         for (int x = (int) (playerX / blockSize) - 20; x < playerX / blockSize + 21; x++) {
             for (int y = (int) (playerY / blockSize) - 8; y < playerY / blockSize + blockSize; y++) {
-                if (x < 0 || y < 0 || x > SizeX || y > SizeY) {
+                if (x < 0 || y < 0 || x > world.sizeX || y > world.sizeY) {
                     continue;
                 }
                 drawBlock(x, y);
@@ -273,14 +273,14 @@ public class TextureDrawing {
     }
 
     private static void drawBlock(int x, int y) {
-        short obj = getObject(x, y);
+        short obj = world.get(x, y);
 
         if (obj == -1 || StaticWorldObjects.getId(obj) == 0 || getTexture(obj) == null) {
             return;
         }
         byte hp = getHp(obj);
         if (hp <= 0) {
-            destroyObject(x, y);
+            world.destroy(x, y);
             return;
         }
 
@@ -334,7 +334,7 @@ public class TextureDrawing {
         boolean interactionButtonPressed = input.pressed(interactionChar);
 
         if (root != null) {
-            Runnable interaction = StaticWorldObjects.getOnInteraction(getObject(root.x, root.y));
+            Runnable interaction = StaticWorldObjects.getOnInteraction(world.get(root.x, root.y));
 
             if (currentInteraction != null && currentInteraction.isAlive() && interactionButtonPressed) {
                 currentInteraction.interrupt();

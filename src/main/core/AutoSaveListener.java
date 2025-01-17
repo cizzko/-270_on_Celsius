@@ -12,7 +12,7 @@ public class AutoSaveListener implements ApplicationListener {
         int worldSaveDelay = Integer.parseInt(Config.getFromConfig("AutosaveWorldFrequency"));
         if (System.currentTimeMillis() - lastSaveTimestamp >= worldSaveDelay) {
             Logger.log("Creating world backup..");
-            Saves.createWorldBackup();
+            // TODO реализовать
 
             lastSaveTimestamp = System.currentTimeMillis();
         }

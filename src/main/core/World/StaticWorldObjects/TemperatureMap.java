@@ -18,10 +18,10 @@ public class TemperatureMap {
     // todo как то криво работает
     public static void create() {
         currentWorldTemperature = currentTime / 100;
-        temperature = new float[WorldGenerator.SizeY];
+        temperature = new float[core.Global.world.sizeY];
 
         for (int i = 0; i < temperature.length; i++) {
-            temperature[i] = Math.min(coreTemp, (coreTemp / (i + 1)) * (WorldGenerator.SizeY / 1000f));
+            temperature[i] = Math.min(coreTemp, (coreTemp / (i + 1)) * (core.Global.world.sizeY / 1000f));
         }
     }
 
@@ -83,7 +83,7 @@ public class TemperatureMap {
             for (int dy = 0; dy < h; dy++) {
                 int x = blockX + dx;
                 int y = blockY + dy;
-                if (x < 0 || x >= WorldGenerator.SizeX || y < 0 || y >= WorldGenerator.SizeY) {
+                if (x < 0 || x >= core.Global.world.sizeX || y < 0 || y >= core.Global.world.sizeY) {
                     continue;
                 }
                 totalTemp += getTemp(x, y);

@@ -3,13 +3,11 @@ package core.World.Textures;
 import core.Utils.SimpleColor;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.WorldGenerator;
-import core.math.MathUtil;
-import core.math.Point2i;
 
 import java.util.Arrays;
 import java.util.HashMap;
 
+import static core.Global.world;
 import static core.Window.start;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.WorldGenerator.*;
@@ -22,17 +20,17 @@ public class ShadowMap {
     // todo переписать генерацию и обновление теней
 
     public static SimpleColor getShadow(int x, int y) {
-        if (x < 0 || y < 0 || x >= SizeX || y >= SizeY) {
+        if (x < 0 || y < 0 || x >= world.sizeX || y >= world.sizeY) {
             return SimpleColor.CLEAR;
         }
-        return new SimpleColor(shadows[x + SizeX * y]);
+        return new SimpleColor(shadows[x + world.sizeX * y]);
     }
 
     public static void setShadow(int x, int y, SimpleColor color) {
-        if (x < 0 || y < 0 || x >= SizeX || y >= SizeY) {
+        if (x < 0 || y < 0 || x >= world.sizeX || y >= world.sizeY) {
             return;
         }
-        shadows[x + SizeX * y] = color.rgba;
+        shadows[x + world.sizeX * y] = color.rgba;
     }
 
     public static int getDegree(int x, int y) {
@@ -41,15 +39,15 @@ public class ShadowMap {
     }
 
     public static void generate() {
-        shadows = new int[WorldGenerator.SizeX * WorldGenerator.SizeY];
+        shadows = new int[world.sizeX * world.sizeY];
         Arrays.fill(shadows, SimpleColor.WHITE.rgba);
 
         generateShadows();
     }
 
     private static void generateShadows() {
-        for (int x = 1; x < WorldGenerator.SizeX - 1; x++) {
-            for (int y = 1; y < WorldGenerator.SizeY - 1; y++) {
+        for (int x = 1; x < core.Global.world.sizeX - 1; x++) {
+            for (int y = 1; y < core.Global.world.sizeY - 1; y++) {
                 if (checkHasGasAround(x, y, 1)) {
                     setShadow(x, y, SimpleColor.fromRGBA(165, 165, 165, 255));
                 } else {
@@ -58,16 +56,16 @@ public class ShadowMap {
             }
         }
 
-        for (int x = 1; x < WorldGenerator.SizeX - 1; x++) {
-            for (int y = 1; y < WorldGenerator.SizeY - 1; y++) {
+        for (int x = 1; x < core.Global.world.sizeX - 1; x++) {
+            for (int y = 1; y < core.Global.world.sizeY - 1; y++) {
                 if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
                     setShadow(x, y, SimpleColor.fromRGBA(85, 85, 85, 255));
                 }
             }
         }
 
-        for (int x = 2; x < WorldGenerator.SizeX - 2; x++) {
-            for (int y = 2; y < WorldGenerator.SizeY - 2; y++) {
+        for (int x = 2; x < core.Global.world.sizeX - 2; x++) {
+            for (int y = 2; y < core.Global.world.sizeY - 2; y++) {
                 if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
                     setShadow(x, y, SimpleColor.DIRTY_BRIGHT_BLACK);
                 }
@@ -148,7 +146,7 @@ public class ShadowMap {
     }
 
     private static boolean checkHasGasAround(int x, int y, int radius) {
-        return getType(getObject(x - radius, y)) != StaticObjectsConst.Types.GAS && getType(getObject(x + radius, y)) != StaticObjectsConst.Types.GAS && getType(getObject(x, y - radius)) != StaticObjectsConst.Types.GAS && getType(getObject(x, y + radius)) != StaticObjectsConst.Types.GAS && getType(getObject(x, y)) != StaticObjectsConst.Types.GAS;
+        return getType(world.get(x - radius, y)) != StaticObjectsConst.Types.GAS && getType(world.get(x + radius, y)) != StaticObjectsConst.Types.GAS && getType(world.get(x, y - radius)) != StaticObjectsConst.Types.GAS && getType(world.get(x, y + radius)) != StaticObjectsConst.Types.GAS && getType(world.get(x, y)) != StaticObjectsConst.Types.GAS;
     }
 
     private static boolean checkHasDegreeAround(int x, int y, int radius) {

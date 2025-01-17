@@ -1,5 +1,6 @@
 package core;
 
+import core.World.World;
 import core.assets.AssetsManager;
 import core.g2d.Atlas;
 import core.g2d.*;
@@ -13,6 +14,8 @@ public final class Global {
     public static AssetsManager assets;
     public static Camera2 camera;
     public static Scene scene;
+
+    public static World world;
 
     public static final TaskScheduler scheduler = new TaskScheduler();
     public static Application app;

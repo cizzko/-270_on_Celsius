@@ -62,16 +62,16 @@ public class Bullets {
                 Point2i staticObjectPoint = HitboxMap.checkIntersInside(x, y, 8, 8);
 
                 if (staticObjectPoint != null) {
-                    short staticObject = getObject(staticObjectPoint.x, staticObjectPoint.y);
+                    short staticObject = world.get(staticObjectPoint.x, staticObjectPoint.y);
                     DynamicWorldObjects dynamicObject = HitboxMap.checkIntersectionsDynamic(x, y, 8, 8);
 
                     if (staticObject > 0) {
                         float hp = StaticWorldObjects.getHp(staticObject);
-                        setObject(staticObjectPoint.x, staticObjectPoint.y, StaticWorldObjects.decrementHp(staticObject, (int) bullet.damage), false);
+                        world.set(staticObjectPoint.x, staticObjectPoint.y, StaticWorldObjects.decrementHp(staticObject, (int) bullet.damage), false);
                         bulletsIter.next().damage -= hp;
 
-                        if (getObject(staticObjectPoint.x, staticObjectPoint.y) <= 0) {
-                            destroyObject(staticObjectPoint.x, staticObjectPoint.y);
+                        if (world.get(staticObjectPoint.x, staticObjectPoint.y) <= 0) {
+                            world.destroy(staticObjectPoint.x, staticObjectPoint.y);
                         }
                     } else if (dynamicObject != null) {
                         float hp = dynamicObject.getCurrentHP();
@@ -83,7 +83,7 @@ public class Bullets {
                         }
                     }
                 }
-                if (bullet.damage <= 0 || bullet.x < 0 || bullet.y < 0 || bullet.x / TextureDrawing.blockSize > SizeX || bullet.y / TextureDrawing.blockSize > SizeY) {
+                if (bullet.damage <= 0 || bullet.x < 0 || bullet.y < 0 || bullet.x / TextureDrawing.blockSize > world.sizeX || bullet.y / TextureDrawing.blockSize > world.sizeY) {
                     bulletsIter.remove();
                 }
             }

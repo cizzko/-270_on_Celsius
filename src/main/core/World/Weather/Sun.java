@@ -7,8 +7,7 @@ import core.World.WorldGenerator;
 import core.g2d.Texture;
 
 import static core.EventHandling.Logging.Config.getFromConfig;
-import static core.Global.assets;
-import static core.Global.batch;
+import static core.Global.*;
 import static core.World.WorldGenerator.DynamicObjects;
 
 public class Sun {
@@ -28,7 +27,7 @@ public class Sun {
                 currentTime++;
 
                 if (currentTime > 2400 || currentTime < 0) { // 2400 - 23:59
-                    WorldGenerator.dayCount++;
+                    world.dayCount++;
                     currentTime = 0;
                 }
                 x = DynamicObjects.getFirst().getX();

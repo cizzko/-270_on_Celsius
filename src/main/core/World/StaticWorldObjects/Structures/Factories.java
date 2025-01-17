@@ -11,7 +11,6 @@ import core.World.Creatures.Player.Player;
 import core.Utils.SimpleColor;
 import core.World.StaticWorldObjects.StaticBlocksEvents;
 import core.World.StaticWorldObjects.StaticWorldObjects;
-import core.World.WorldGenerator;
 import core.World.WorldUtils;
 import core.g2d.Atlas;
 import core.g2d.Fill;
@@ -58,14 +57,14 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
 
     @Override
     public void itemDropped(int blockX, int blockY, Items item) {
-        if (WorldGenerator.getObject(blockX, blockY) != -1) {
+        if (world.get(blockX, blockY) != -1) {
             Point2i root = Player.findRoot(blockX, blockY);
 
             if (root == null) {
                 root = new Point2i(blockX, blockY);
             }
             if (factories.contains(root)) {
-                Factories factory = factoriesConst.get(StaticWorldObjects.getFileName(WorldGenerator.getObject(root.x, root.y)));
+                Factories factory = factoriesConst.get(StaticWorldObjects.getFileName(world.get(root.x, root.y)));
 
                 Point2i current = Inventory.currentObject;
                 int cell = ArrayUtils.findFreeCell(factory.inputStoredObjects);
@@ -298,7 +297,7 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
         }
 
         for (Point2i factories : factories) {
-            factory = factoriesConst.get(StaticWorldObjects.getFileName(WorldGenerator.getObject(factories.x, factories.y)));
+            factory = factoriesConst.get(StaticWorldObjects.getFileName(world.get(factories.x, factories.y)));
 
             if (factory != null && factory.fuel != null && factory.breakingType != Factories.breaking.CRITICAL && factory.currentEnergy >= factory.needEnergy) {
                 factory.currentProductionProgress++;
@@ -358,14 +357,14 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
     private static Factories findFactoryUnderMouse() {
         Point2i blockUnderMouse = WorldUtils.getBlockUnderMousePoint();
 
-        if (WorldGenerator.getObject(blockUnderMouse.x, blockUnderMouse.y) != -1) {
+        if (world.get(blockUnderMouse.x, blockUnderMouse.y) != -1) {
             Point2i root = Player.findRoot(blockUnderMouse.x, blockUnderMouse.y);
 
             if (root == null) {
                 root = new Point2i(blockUnderMouse.x, blockUnderMouse.y);
             }
             if (factories.contains(root)) {
-                return factoriesConst.get(StaticWorldObjects.getFileName(WorldGenerator.getObject(root.x, root.y)));
+                return factoriesConst.get(StaticWorldObjects.getFileName(world.get(root.x, root.y)));
             }
         }
         return null;

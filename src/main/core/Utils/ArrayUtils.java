@@ -23,46 +23,4 @@ public class ArrayUtils {
     public static int findDistinctObjects(Object[] array) {
         return (int) Arrays.stream(array).filter(Objects::nonNull).distinct().count();
     }
-
-    public static String[] getAllFiles(String directory, String filesExtension) {
-        ArrayList<String> fileList = new ArrayList<>();
-        Stack<File> stack = new Stack<>();
-        stack.push(new File(directory));
-
-        while (!stack.isEmpty()) {
-            File currentFile = stack.pop();
-
-            if (currentFile.isDirectory()) {
-                File[] subFiles = currentFile.listFiles();
-                if (subFiles != null) {
-                    for (File subFile : subFiles) {
-                        stack.push(subFile);
-                    }
-                }
-            } else if (filesExtension == null || currentFile.getName().endsWith(filesExtension)) {
-                fileList.add(currentFile.getAbsolutePath().replace('\\', '/'));
-            }
-        }
-        return fileList.toArray(new String[0]);
-    }
-
-    public static String findFile(String directory, String fileName) {
-        Stack<File> stack = new Stack<>();
-        stack.push(new File(directory));
-
-        while (!stack.isEmpty()) {
-            File currentFile = stack.pop();
-            if (currentFile.isDirectory()) {
-                File[] subFiles = currentFile.listFiles();
-                if (subFiles != null) {
-                    for (File subFile : subFiles) {
-                        stack.push(subFile);
-                    }
-                }
-            } else if (currentFile.getName().equals(fileName)) {
-                return currentFile.getAbsolutePath().replace('\\', '/');
-            }
-        }
-        return null;
-    }
 }
