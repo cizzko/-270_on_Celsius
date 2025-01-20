@@ -1,4 +1,4 @@
-package core.ui.GUI.Menu;
+package core.ui.menu;
 
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
@@ -6,7 +6,6 @@ import core.Global;
 import core.Utils.SimpleColor;
 import java.awt.Robot;
 import static core.EventHandling.Logging.Logger.printException;
-import static core.ui.GUI.CreateElement.*;
 import static core.Window.glfwWindow;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -16,9 +15,9 @@ public class MouseCalibration {
     public static void create() {
         glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 
-        createPanel(400, 400, 1120, 400, "CalibratePan", true, "MouseCalibration");
-        createButton(860, 410, 240, 65, Json.getName("CalibrateMouseContinue"), null, true, SimpleColor.DEFAULT_ORANGE, "MouseCalibration", null);
-        createText(410, 770, "CalibratePanText", Json.getName("CalibrateMouseText"), SimpleColor.DIRTY_BRIGHT_WHITE, "MouseCalibration");
+        // createPanel(400, 400, 1120, 400, "CalibratePan", true, "MouseCalibration");
+        // createButton(860, 410, 240, 65, Json.getName("CalibrateMouseContinue"), null, true, SimpleColor.DEFAULT_ORANGE, "MouseCalibration", null);
+        // createText(410, 770, "CalibratePanText", Json.getName("CalibrateMouseText"), SimpleColor.DIRTY_BRIGHT_WHITE, "MouseCalibration");
 
         try {
             new Robot().mouseMove(960, 440);
@@ -26,17 +25,18 @@ public class MouseCalibration {
             printException("Error when moving mouse", e);
         }
 
-        update();
+        // update();
     }
 
     public static void delete() {
         glfwSetInputMode(glfwWindow, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 
-        buttons.values().stream().filter(button -> button.group.equals("MouseCalibration")).forEach(button -> button.visible = false);
-        panels.values().stream().filter(button -> button.group.equals("MouseCalibration")).forEach(button -> button.visible = false);
-        texts.values().stream().filter(button -> button.group.equals("MouseCalibration")).forEach(button -> button.visible = false);
+        // buttons.values().stream().filter(button -> button.group.equals("MouseCalibration")).forEach(button -> button.visible = false);
+        // panels.values().stream().filter(button -> button.group.equals("MouseCalibration")).forEach(button -> button.visible = false);
+        // texts.values().stream().filter(button -> button.group.equals("MouseCalibration")).forEach(button -> button.visible = false);
     }
 
+    /*
     public static void update() {
         new Thread(() -> {
             while (!buttons.get(Json.getName("CalibrateMouseContinue")).isClicked) {
@@ -64,4 +64,5 @@ public class MouseCalibration {
             delete();
         }).start();
     }
+     */
 }

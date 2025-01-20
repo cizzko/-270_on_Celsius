@@ -1,9 +1,9 @@
 package core;
 
-import core.ui.GUI.Menu.CreatePlanet;
-import core.ui.GUI.Menu.Pause;
-import core.ui.GUI.Menu.MainMenu;
-import core.ui.GUI.Menu.Settings;
+import core.ui.menu.CreatePlanet;
+import core.ui.menu.Pause;
+import core.ui.menu.MainMenu;
+import core.ui.menu.Settings;
 
 public class UI {
     private static MainMenu mainMenu;

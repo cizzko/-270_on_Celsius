@@ -1,4 +1,4 @@
-package core.ui.GUI.Menu;
+package core.ui.menu;
 
 import core.Constants;
 import core.UI;

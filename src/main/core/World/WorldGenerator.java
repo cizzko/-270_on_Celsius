@@ -4,7 +4,7 @@ import core.EventHandling.EventHandler;
 import core.Global;
 import core.Time;
 import core.UI;
-import core.ui.GUI.Menu.CreatePlanet;
+import core.ui.menu.CreatePlanet;
 import core.Window;
 import core.World.Creatures.CreaturesGenerate;
 import core.World.Creatures.Physics;
