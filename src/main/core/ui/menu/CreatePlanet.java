@@ -62,7 +62,7 @@ public class CreatePlanet extends Dialog {
                 .setSliderColor(Styles.DEFAULT_PANEL_COLOR)
                 .setDotColor(SimpleColor.DEFAULT_ORANGE);
         basicParameters = add(new Dialog() {{
-            visible = true;
+            setVisible(true);
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> parameters.creatures = !parameters.creatures)
                     .setPosition(70, 890)
                     .setName(getName("GenerateCreatures"));
@@ -71,7 +71,7 @@ public class CreatePlanet extends Dialog {
                     .setName(getName("RandomSpawn"));
         }});
         generationParameters = add(new Dialog() {{
-            visible = false;
+            setVisible(false);
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> parameters.simple = !parameters.simple)
                     .setPosition(70, 890)
                     .setName(getName("GenerateSimpleWorld"));

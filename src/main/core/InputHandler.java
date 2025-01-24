@@ -1,15 +1,15 @@
 package core;
 
 import core.EventHandling.EventHandler;
+import core.input.InputListener;
 import core.ui.menu.MouseCalibration;
 import core.World.Textures.TextureDrawing;
 import core.math.Point2i;
 import core.math.Vector2f;
-import org.lwjgl.glfw.GLFWCursorPosCallback;
-import org.lwjgl.glfw.GLFWKeyCallback;
-import org.lwjgl.glfw.GLFWMouseButtonCallback;
-import org.lwjgl.glfw.GLFWScrollCallback;
+import org.lwjgl.glfw.*;
+import org.lwjgl.opengl.GL46;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import static core.EventHandling.Logging.Logger.printException;
@@ -23,12 +23,19 @@ public class InputHandler {
 
     private final long[] pressed, clicked, repeated;
     private final long[] justPressed, justClicked;
+    private final ArrayList<InputListener> listeners = new ArrayList<>();
     private final Point2i mousePos = new Point2i();
+    private final Point2i mouseBlockPos = new Point2i();
+    private final Vector2f mouseWorldPos = new Vector2f();
 
     private long lastMouseMoveTimestamp;
     private float scrollOffset = 1;
+    private int width, height;
 
-    public InputHandler() {
+    public InputHandler(int width, int height) {
+        this.width = width;
+        this.height = height;
+
         justPressed = createBitSet(PRESSED_ARRAY_SIZE);
         justClicked = createBitSet(CLICKED_ARRAY_SIZE);
 
@@ -43,7 +50,7 @@ public class InputHandler {
             public void invoke(long window, double xpos, double ypos) {
                 int mouseX = (int) (xpos * MouseCalibration.xMultiplier);
                 int mouseY = (int) (ypos / MouseCalibration.yMultiplier);
-                int invertedY = EventHandler.height - mouseY;
+                int invertedY = height - mouseY;
 
                 lastMouseMoveTimestamp = System.currentTimeMillis();
                 mousePos.set(mouseX, invertedY);
@@ -91,6 +98,15 @@ public class InputHandler {
                 scrollOffset = Math.clamp((float)yoffset + scrollOffset, 0, 50);
             }
         }));
+        glfwSetWindowSizeCallback(glfwWindow, addResource(new GLFWWindowSizeCallback() {
+            @Override
+            public void invoke(long window, int w, int h) {
+                width = w;
+                height = h;
+                GL46.glViewport(0, 0, w, h);
+                onResize(w, h);
+            }
+        }));
     }
 
     public void update() {
@@ -100,7 +116,28 @@ public class InputHandler {
         glfwPollEvents();
     }
 
+    public void addListener(InputListener listener) {
+        if (listeners.contains(listener)) {
+            return;
+        }
+        listeners.add(listener);
+    }
+
+    // region InputListener
+
+    private void onResize(int w, int h) {
+        listeners.forEach(i -> i.onResize(w, h));
+    }
+
+    // endregion
     // region Public API
+
+    public int getWidth() {
+        return width;
+    }
+    public int getHeight() {
+        return height;
+    }
 
     public float getScrollOffset() {
         return scrollOffset;
@@ -109,9 +146,6 @@ public class InputHandler {
     public long getLastMouseMoveTimestamp() {
         return lastMouseMoveTimestamp;
     }
-
-    private final Point2i mouseBlockPos = new Point2i();
-    private final Vector2f mouseWorldPos = new Vector2f();
 
     public Point2i mouseBlockPos() {
         var world = mouseWorldPos();

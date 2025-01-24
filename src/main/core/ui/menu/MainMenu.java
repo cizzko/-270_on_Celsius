@@ -13,11 +13,12 @@ import java.net.URI;
 import static core.EventHandling.Logging.Json.getName;
 import static core.EventHandling.Logging.Logger.printException;
 import static core.Global.atlas;
+import static core.Global.input;
 import static core.Window.start;
 
 public class MainMenu extends Dialog {
     public MainMenu() {
-        addPanel(Styles.SIMPLE_PANEL, 0, 965, EventHandler.width, 115);
+        addPanel(Styles.SIMPLE_PANEL, 0, 965, input.getWidth(), 115);
         addImageButton(this::discordBtn)
                 .setPosition(1830, 990)
                 .setImage(atlas.byPath("UI/discordIcon.png"));

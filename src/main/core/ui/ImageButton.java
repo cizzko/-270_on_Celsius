@@ -30,7 +30,7 @@ public class ImageButton extends BaseElement<ImageButton> {
     }
 
     @Override
-    public void update() {
+    public void updateThis() {
         if (!isClickable) {
             return;
         }
@@ -43,7 +43,7 @@ public class ImageButton extends BaseElement<ImageButton> {
 
     @Override
     public void draw() {
-        if (!visible) {
+        if (!visible()) {
             return;
         }
         if (image != null) {

@@ -54,8 +54,12 @@ public final class SimpleColor implements Serializable {
         return new SimpleColor(r, g, b, a);
     }
 
-    public float toGLBits() {
+    public static float toGLBits(int rgba) {
         return Float.intBitsToFloat(Integer.reverseBytes(rgba) & 0xfeffffff);
+    }
+
+    public float toGLBits() {
+        return toGLBits(rgba);
     }
 
     public int getValueRGBA() {
@@ -112,12 +116,11 @@ public final class SimpleColor implements Serializable {
     }
 
     @Override
-    public int hashCode() {
-        return rgba;
+    public String toString() {
+        return toString(rgba);
     }
 
-    @Override
-    public String toString() {
+    public static String toString(int rgba) {
         int zeros = Integer.numberOfLeadingZeros(rgba);
         return "0".repeat(zeros / 4) + Integer.toHexString(rgba);
     }

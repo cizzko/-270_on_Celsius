@@ -58,9 +58,4 @@ public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B>
         this.isClickable = !isClickable;
         return as();
     }
-
-    @Override
-    public String toString() {
-        return super.toString() + " {name=" + name + "}";
-    }
 }

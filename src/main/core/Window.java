@@ -83,8 +83,11 @@ public class Window extends Application {
         // glEnable(GL_DEBUG_OUTPUT);
         // GLUtil.setupDebugMessageCallback();
 
-        scene = new Scene();
-        EventHandler.init();
+        scene = new Scene(defaultWidth, defaultHeight);
+        input = new InputHandler(defaultWidth, defaultHeight);
+        input.init();
+        input.addListener(scene);
+
         try {
             TextureLoader.preLoadResources();
         } catch (IOException e) {
@@ -98,14 +101,13 @@ public class Window extends Application {
             }
         }));
 
-        input = new InputHandler();
-        input.init();
-
         try {
             atlas = Atlas.load(assets.assetsDir("sprites"));
         } catch (IOException e) {
             Logger.printException("Error when loading texture atlas", e);
         }
+
+        EventHandler.init();
 
         camera = new Camera2();
         camera.setToOrthographic(defaultWidth, defaultHeight);

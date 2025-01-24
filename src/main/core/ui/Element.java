@@ -4,6 +4,8 @@ import core.Utils.Sized;
 import core.math.Point2i;
 
 public interface Element {
+    String id();
+
     // null если это корневой элемент интерфейса, т.е. специальная затычка
     // @Nullable
     Group parent();
@@ -22,21 +24,17 @@ public interface Element {
 
     void update();
 
-    Element setSize(float size);
-
-    Element setSize(Sized sized);
-
-    Element setSize(float width, float height);
-
-    Element set(float x, float y, float width, float height);
+    Element setId(String id);
 
     Element setX(float x);
-
     Element setY(float y);
+    Element setWidth(float width);
+    Element setHeight(float height);
 
     Element setPosition(float x, float y);
-
-    Element setPosition(Point2i position);
+    Element setSize(Sized sized);
+    Element setSize(float width, float height);
+    Element set(float x, float y, float width, float height);
 
     Element setVisible(boolean visible);
 

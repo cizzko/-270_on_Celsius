@@ -6,6 +6,10 @@ import core.World.Textures.ShadowMap;
 import core.World.StaticWorldObjects.Structures.Structures;
 import core.math.Point2i;
 
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
+
 import static core.Global.world;
 import static core.Window.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
@@ -14,6 +18,8 @@ import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
 public class DebugTools {
+    public static final DecimalFormat FLOATS = new DecimalFormat("#.#", new DecimalFormatSymbols(Locale.ROOT));
+
     public static boolean selectionBlocksCopy = false, selectionBlocksDelete = false, mousePressed = false;
     private static Point2i lastMousePosBlocks = new Point2i(0, 0), lastMousePos = new Point2i(0, 0);
 

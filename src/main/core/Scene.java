@@ -1,15 +1,22 @@
 package core;
 
 import core.EventHandling.Logging.Logger;
+import core.g2d.Camera2;
 import core.graphic.Layer;
+import core.input.InputListener;
 import core.ui.Element;
 
 import java.util.ArrayList;
 
 import static core.Global.*;
 
-public class Scene {
+public class Scene implements InputListener {
+    private final Camera2 view = new Camera2();
     private final ArrayList<Element> elements = new ArrayList<>();
+
+    public Scene(int width, int height) {
+        view.setToOrthographic(width, height);
+    }
 
     public void add(Element element) {
         if (contains(element)) {
@@ -40,8 +47,7 @@ public class Scene {
 
     public void draw() {
         batch.z(Layer.GUI);
-        camera.setToOrthographic(camera.width(), camera.height());
-        batch.matrix(camera.projection);
+        batch.matrix(view.projection);
 
         for (Element element : elements) {
             try {
@@ -60,5 +66,10 @@ public class Scene {
         for (Element element : elements) {
             System.out.println(element);
         }
+    }
+
+    @Override
+    public void onResize(int width, int height) {
+        view.setToOrthographic(width, height);
     }
 }

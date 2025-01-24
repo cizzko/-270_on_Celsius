@@ -20,7 +20,7 @@ public class Panel extends BaseGroup<Panel> {
 
     @Override
     public void draw() {
-        if (!visible) {
+        if (!visible()) {
             return;
         }
         var backgroundColor = color;

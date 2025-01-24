@@ -44,7 +44,7 @@ public class Settings extends Dialog {
                 .set(40, 800, 240, 65)
                 .setName(getName("SettingsSave"));
         graphicsSettings = mainPanel.add(new Dialog() {{
-            visible = true;
+            setVisible(true);
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
                 boolean newState = !Boolean.parseBoolean(getFromConfig(INTERPOLATE_SUNSET_KEY));
                 updateConfig(INTERPOLATE_SUNSET_KEY, Boolean.toString(newState));
@@ -71,7 +71,7 @@ public class Settings extends Dialog {
                     .setClicked(Boolean.parseBoolean(getFromConfig(VERTICAL_SYNC_KEY)));
         }});
         otherSettings = mainPanel.add(new Dialog() {{
-            visible = false;
+            setVisible(false);
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
             })
                     .setPosition(310, 980)
@@ -80,9 +80,9 @@ public class Settings extends Dialog {
                     .setClicked(Boolean.parseBoolean(getFromConfig(SEND_ANONYMOUS_STATISTIC_KEY)));
         }});
         basicSettings = mainPanel.add(new Dialog() {{
-            visible = false;
+            setVisible(false);
             var dropDownMenu = add(new Dialog() {{
-                visible = false;
+                setVisible(false);
                 var dropDown = this;
                 String[] langs = Json.getAllLanguagesArray();
                 int ox = 780;
@@ -180,9 +180,7 @@ public class Settings extends Dialog {
         }
 
         @Override
-        public void update() {
-            super.update();
-
+        public void updateThis() {
             if (otterClicks >= 5) {
                 otterClicks = 0;
                 otterImage.setVisible(true);

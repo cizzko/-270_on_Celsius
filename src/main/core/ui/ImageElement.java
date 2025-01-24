@@ -18,15 +18,11 @@ public class ImageElement extends BaseElement<ImageElement> {
 
     @Override
     public void draw() {
-        if (!visible) {
+        if (!visible()) {
             return;
         }
         if (image != null) {
             Global.batch.draw(image, x, y);
         }
-    }
-
-    @Override
-    public void update() {
     }
 }

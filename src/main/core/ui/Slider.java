@@ -54,7 +54,7 @@ public class Slider extends BaseElement<Slider> {
 
     @Override
     public void draw() {
-        if (!visible) {
+        if (!visible()) {
             return;
         }
 
@@ -106,7 +106,14 @@ public class Slider extends BaseElement<Slider> {
     }
 
     @Override
-    public void update() {
+    protected void resize() {
+        if ((flags & FLAG_X_CHANGED) != 0) {
+            this.prevSliderPos = this.sliderPos = x + 1;
+        }
+    }
+
+    @Override
+    public void updateThis() {
         boolean hit = hit(input.mousePos()) == this;
         if (hit) {
             if (input.justClicked(GLFW_MOUSE_BUTTON_1)) {
@@ -123,11 +130,5 @@ public class Slider extends BaseElement<Slider> {
         } else {
             isClicked = false;
         }
-    }
-
-    @Override
-    public Slider setX(float x) {
-        this.prevSliderPos = this.sliderPos = x + 1;
-        return super.setX(x);
     }
 }

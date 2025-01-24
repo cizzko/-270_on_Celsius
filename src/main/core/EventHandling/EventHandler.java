@@ -10,6 +10,7 @@ import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Player;
 import core.math.Point2i;
 import core.ui.Element;
+import core.ui.Styles;
 import core.ui.TextArea;
 import org.lwjgl.glfw.GLFWCharCallback;
 import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
@@ -28,29 +29,27 @@ import static org.lwjgl.glfw.GLFW.*;
 public class EventHandler {
     private static boolean keyLogging = false;
     public static final StringBuilder keyLoggingText = new StringBuilder(256);
-    public static int width = defaultWidth, height = defaultHeight, debugLevel = Integer.parseInt(Config.getFromConfig("Debug"));
+    public static int debugLevel = Integer.parseInt(Config.getFromConfig("Debug"));
 
     private static final class DebugBox extends TextArea {
         private final Supplier<String> format;
 
         private DebugBox(Supplier<String> format) {
+            super(debugDialog, Styles.DEBUG_TEXT);
             this.format = format;
-            this.color = SimpleColor.DIRTY_BRIGHT_BLACK;
         }
 
         @Override
-        public void update() {
-            text = format.get();
+        public void updateThis() {
+            setText(format.get());
         }
 
         @Override
         public void draw() {
-            if (!visible) {
+            if (!visible()) {
                 return;
             }
-            if (text != null) {
-                batch.draw(Layer.DEBUG, () -> drawText(x, y, text, color));
-            }
+            batch.draw(Layer.DEBUG, () -> super.draw());
         }
     }
     private static final Dialog debugDialog = new Dialog();
@@ -71,15 +70,6 @@ public class EventHandler {
                 if (keyLogging) {
                     keyLoggingText.appendCodePoint(codepoint);
                 }
-            }
-        }));
-        glfwSetFramebufferSizeCallback(glfwWindow, addResource(new GLFWFramebufferSizeCallback() {
-            @Override
-            public void invoke(long window, int width, int height) {
-                EventHandler.width = width;
-                EventHandler.height = height;
-
-                GL46.glViewport(0, 0, width, height);
             }
         }));
     }

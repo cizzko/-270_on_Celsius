@@ -19,8 +19,8 @@ public class ToggleButton extends BaseButton<ToggleButton> {
     }
 
     @Override
-    public void update() {
-        if (!visible) {
+    public void updateThis() {
+        if (!visible()) {
             return;
         }
         if (!isClickable) {
@@ -39,7 +39,7 @@ public class ToggleButton extends BaseButton<ToggleButton> {
 
     @Override
     public void draw() {
-        if (!visible) {
+        if (!visible()) {
             return;
         }
         float offset = style.borderOffset;

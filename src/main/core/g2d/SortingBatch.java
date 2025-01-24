@@ -1,5 +1,6 @@
 package core.g2d;
 
+import core.EventHandling.Logging.Logger;
 import core.Utils.SimpleColor;
 import core.pool.Pool;
 import core.pool.Poolable;
@@ -62,13 +63,13 @@ public class SortingBatch extends Batch<SortingBatch.SortingState> {
 
     @Override
     protected void drawTexture(Drawable drawable,
-                               SimpleColor color,
+                               int colorRgba,
                                float x, float y,
                                float x2, float y2,
                                float x3, float y3,
                                float x4, float y4) {
         RequestTexture request = textureRequestsPool.obtain();
-        request.set(state.z, drawable, x, y, x2, y2, x3, y3, x4, y4, color, state.blending);
+        request.set(state.z, drawable, x, y, x2, y2, x3, y3, x4, y4, colorRgba, state.blending);
         draw(request);
     }
 
@@ -98,12 +99,18 @@ public class SortingBatch extends Batch<SortingBatch.SortingState> {
 
     private void drawInternal(Request request) {
         switch (request) {
-            case RequestProcedure proc -> proc.runnable.run();
+            case RequestProcedure proc -> {
+                try {
+                    proc.runnable.run();
+                } catch (Exception e) {
+                    Logger.printException("Failed to execute procedure: " + proc.runnable, e);
+                }
+            }
             case RequestTexture tex -> {
                 blending(tex.blending);
 
                 try {
-                    super.drawTexture(tex.drawable, tex.color, tex.x, tex.y, tex.x2, tex.y2, tex.x3, tex.y3, tex.x4, tex.y4);
+                    super.drawTexture(tex.drawable, tex.colorRgba, tex.x, tex.y, tex.x2, tex.y2, tex.x3, tex.y3, tex.x4, tex.y4);
                 } finally {
                     textureRequestsPool.free(tex);
                 }
@@ -130,7 +137,7 @@ public class SortingBatch extends Batch<SortingBatch.SortingState> {
 
         public Drawable drawable;
         public float x, y, x2, y2, x3, y3, x4, y4;
-        public SimpleColor color;
+        public int colorRgba;
         public Blending blending;
 
         public RequestTexture() {}
@@ -140,7 +147,7 @@ public class SortingBatch extends Batch<SortingBatch.SortingState> {
                         float x2, float y2,
                         float x3, float y3,
                         float x4, float y4,
-                        SimpleColor color, Blending blending) {
+                        int colorRgba, Blending blending) {
             this.z = z;
             this.drawable = drawable;
             this.x = x;
@@ -151,7 +158,7 @@ public class SortingBatch extends Batch<SortingBatch.SortingState> {
             this.y3 = y3;
             this.x4 = x4;
             this.y4 = y4;
-            this.color = color;
+            this.colorRgba = colorRgba;
             this.blending = blending;
         }
 
@@ -168,7 +175,7 @@ public class SortingBatch extends Batch<SortingBatch.SortingState> {
             y3 = 0;
             x4 = 0;
             y4 = 0;
-            color = null;
+            colorRgba = 0;
         }
 
         @Override
@@ -176,7 +183,7 @@ public class SortingBatch extends Batch<SortingBatch.SortingState> {
             return "Tex{" +
                     "z=" + z +
                     ", blending=" + blending +
-                    ", color=" + color +
+                    ", color=" + SimpleColor.toString(colorRgba) +
                     ", y4=" + y4 +
                     ", x4=" + x4 +
                     ", y3=" + y3 +

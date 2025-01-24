@@ -2,8 +2,7 @@ package core.ui;
 
 import core.Global;
 import core.Utils.SimpleColor;
-
-import static core.World.Textures.TextureDrawing.drawText;
+import core.Window;
 
 public class Styles {
     // Задумка со стилями такая:
@@ -31,18 +30,18 @@ public class Styles {
     public static final Style.TextButton SIMPLE_TEXT_BUTTON = new Style.TextButton() {
         @Override
         public void load() {
-            this.borderWidth = 0;
-            this.disabledColor = SimpleColor.fromRGBA(0, 0, 0, 123);
-            this.backgroundColor = SimpleColor.DEFAULT_ORANGE;
+            borderWidth = 0;
+            disabledColor = SimpleColor.fromRGBA(0, 0, 0, 123);
+            backgroundColor = SimpleColor.DEFAULT_ORANGE;
         }
     };
 
     public static final Style.TextButton TEXT_BUTTON = new Style.TextButton() {
         @Override
         public void load() {
-            this.borderWidth = 6;
-            this.disabledColor = SimpleColor.fromRGBA(0, 0, 0, 123);
-            this.backgroundColor = SimpleColor.DEFAULT_ORANGE;
+            borderWidth = 6;
+            disabledColor = SimpleColor.fromRGBA(0, 0, 0, 123);
+            backgroundColor = SimpleColor.DEFAULT_ORANGE;
         }
     };
 
@@ -62,6 +61,22 @@ public class Styles {
         }
     };
 
+    public static final Style.Text DEFAULT_TEXT = new Style.Text() {
+        @Override
+        public void load() {
+            color = SimpleColor.TEXT_COLOR;
+            font = Window.defaultFont;
+        }
+    };
+
+    public static final Style.Text DEBUG_TEXT = new Style.Text() {
+        @Override
+        public void load() {
+            color = SimpleColor.DIRTY_BRIGHT_BLACK;
+            font = Window.defaultFont;
+        }
+    };
+
     static {
         loadAll();
     }
@@ -73,5 +88,7 @@ public class Styles {
         TEXT_BUTTON.load();
         DEFAULT_PANEL.load();
         SIMPLE_PANEL.load();
+        DEFAULT_TEXT.load();
+        DEBUG_TEXT.load();
     }
 }

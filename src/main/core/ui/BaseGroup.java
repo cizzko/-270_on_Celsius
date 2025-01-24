@@ -39,7 +39,7 @@ public abstract class BaseGroup<G extends BaseElement<G> & Group> extends BaseEl
 
     @Override
     public void draw() {
-        if (!visible) {
+        if (!visible()) {
             return;
         }
         if (children != null) {
@@ -51,9 +51,10 @@ public abstract class BaseGroup<G extends BaseElement<G> & Group> extends BaseEl
 
     @Override
     public void update() {
-        if (!visible) {
+        if (!visible()) {
             return;
         }
+        super.update();
         if (children != null) {
             for (Element child : new ArrayList<>(children)) {
                 child.update();
@@ -74,22 +75,17 @@ public abstract class BaseGroup<G extends BaseElement<G> & Group> extends BaseEl
         return super.hit(hx, hy);
     }
 
-
     @Override
-    public String toString() {
-        return printTree(1);
-    }
-
-    protected String printTree(int nesting) {
+    protected String toStringImpl(int indent) {
         StringJoiner ch = new StringJoiner("\n", "\n", "")
                 .setEmptyValue("");
         var children = children();
         for (int i = 0; i < children.size(); i++) {
             Element el = children.get(i);
-            String tab = " ".repeat(nesting);
-            String str = el instanceof BaseGroup<?> d ? d.printTree(nesting + 1) : el.toString();
-            ch.add(tab + i + ": " + str);
+            String tab = " ".repeat(indent);
+            String str = el instanceof BaseElement<?> d ? d.toStringImpl(indent + 1) : el.toString();
+            ch.add(tab + "[" + i + "] " + str);
         }
-        return super.toString() + ch;
+        return super.toStringImpl(indent) + ch;
     }
 }

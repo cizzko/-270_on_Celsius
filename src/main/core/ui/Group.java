@@ -1,5 +1,6 @@
 package core.ui;
 
+import core.Utils.Sized;
 import core.g2d.Drawable;
 
 import java.util.List;
@@ -13,26 +14,30 @@ public interface Group extends Element {
     void remove(Element element);
 
     // region ковариантное переопределение
-    @Override
-    Group set(float x, float y, float width, float height);
+
 
     @Override
-    Group setSize(float size);
-
-    @Override
-    Group setSize(float width, float height);
-
+    Group setId(String id);
     @Override
     Group setX(float x);
-
     @Override
     Group setY(float y);
-
+    @Override
+    Group setWidth(float width);
+    @Override
+    Group setHeight(float height);
     @Override
     Group setPosition(float x, float y);
-
     @Override
-    Group setVisible(boolean state);
+    Group setSize(Sized sized);
+    @Override
+    Group setSize(float width, float height);
+    @Override
+    Group set(float x, float y, float width, float height);
+    @Override
+    Group setVisible(boolean visible);
+    @Override
+    Group toggleVisibility();
 
     // endregion
     // region Дополнительные методы

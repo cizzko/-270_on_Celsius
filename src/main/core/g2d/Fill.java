@@ -35,7 +35,7 @@ public final class Fill {
         float kx = dx / len * lineWidth;
         float ky = dy / len * lineWidth;
 
-        batch.rect(atlas.byPath("World/white.png"), color, x - ky, y + kx, x + kx, y - kx, x2 + kx, y2 - kx, x2 - kx, y2 + kx);
+        batch.rect(atlas.byPath("World/white.png"), color.rgba, x - ky, y + kx, x + kx, y - kx, x2 + kx, y2 - kx, x2 - kx, y2 + kx);
     }
 
     public static void rectangleBorder(float x, float y, float width, float height, SimpleColor color) {
@@ -54,10 +54,10 @@ public final class Fill {
     }
 
     public static void rect(float x, float y, float width, float height, SimpleColor color) {
-        batch.draw(atlas.byPath("World/white.png"), color, x, y, width, height);
+        batch.draw(atlas.byPath("World/white.png"), color.rgba, x, y, width, height);
     }
 
     public static void circle(float x, float y, float radius, SimpleColor color) {
-        batch.draw(atlas.byPath("World/circle.png"), color, x, y, radius, radius);
+        batch.draw(atlas.byPath("World/circle.png"), color.rgba, x, y, radius, radius);
     }
 }

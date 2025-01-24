@@ -46,7 +46,7 @@ public class Batch<S extends Batch.State> implements Disposable {
 
     protected static class State implements Poolable {
         protected Blending blending;
-        protected SimpleColor color;
+        protected int colorRgba;
         protected float xScale, yScale;
 
         protected State() {
@@ -55,7 +55,7 @@ public class Batch<S extends Batch.State> implements Disposable {
 
         protected void set(State old) {
             this.blending = old.blending;
-            this.color = old.color;
+            this.colorRgba = old.colorRgba;
             this.xScale = old.xScale;
             this.yScale = old.yScale;
         }
@@ -63,7 +63,7 @@ public class Batch<S extends Batch.State> implements Disposable {
         @Override
         public void reset() {
             blending = Blending.NORMAL;
-            color = SimpleColor.WHITE;
+            colorRgba = SimpleColor.WHITE.rgba;
             xScale = yScale = 1f;
         }
     }
@@ -121,7 +121,7 @@ public class Batch<S extends Batch.State> implements Disposable {
     }
 
     public final void color(SimpleColor color) {
-        state.color = color;
+        state.colorRgba = color.rgba;
     }
 
     // endregion
@@ -205,46 +205,43 @@ public class Batch<S extends Batch.State> implements Disposable {
     }
 
     public final void draw(Drawable drawable) {
-        draw(drawable, state.color, 0, 0);
+        draw(drawable, state.colorRgba, 0, 0);
     }
 
     public final void draw(Drawable drawable, SimpleColor color, float x, float y) {
-        draw(drawable, color, x, y, drawable.width() * state.xScale, drawable.height() * state.yScale);
+        draw(drawable, color.rgba, x, y, drawable.width() * state.xScale, drawable.height() * state.yScale);
+    }
+
+    // Хмхмх. Лучше отказаться в этом классе от обёртки SimpleColor
+    public final void draw(Drawable drawable, int colorRgba, float x, float y) {
+        draw(drawable, colorRgba, x, y, drawable.width() * state.xScale, drawable.height() * state.yScale);
     }
 
     public final void draw(Drawable drawable, float x, float y) {
-        draw(drawable, state.color, x, y);
+        draw(drawable, state.colorRgba, x, y);
     }
 
-    public final void draw(Drawable drawable, SimpleColor color, float x, float y, float width, float height) {
+    public final void draw(Drawable drawable, int colorRgba, float x, float y, float width, float height) {
         float x2 = x + width;
         float y2 = y + height;
-        drawTexture(drawable, color, x, y, x, y2, x2, y2, x2, y); // index!!!
+        drawTexture(drawable, colorRgba, x, y, x, y2, x2, y2, x2, y); // index!!!
     }
 
     public final void draw(Drawable drawable, float x, float y, float width, float height) {
-        draw(drawable, state.color, x, y, width, height);
+        draw(drawable, state.colorRgba, x, y, width, height);
     }
 
     public final void rect(Drawable drawable,
+                           int colorRgba,
                            float x, float y,
                            float x2, float y2,
                            float x3, float y3,
                            float x4, float y4) {
-        rect(drawable, state.color, x, y, x2, y2, x3, y3, x4, y4);
-    }
-
-    public final void rect(Drawable drawable,
-                           SimpleColor color,
-                           float x, float y,
-                           float x2, float y2,
-                           float x3, float y3,
-                           float x4, float y4) {
-        drawTexture(drawable, color, x, y, x2, y2, x3, y3, x4, y4);
+        drawTexture(drawable, colorRgba, x, y, x2, y2, x3, y3, x4, y4);
     }
 
     protected void drawTexture(Drawable drawable,
-                               SimpleColor color,
+                               int color,
                                float x, float y,
                                float x2, float y2,
                                float x3, float y3,
@@ -254,7 +251,7 @@ public class Batch<S extends Batch.State> implements Disposable {
         rectInternal(x, y, x2, y2, x3, y3, x4, y4,
                 drawable.u(), drawable.v(),
                 drawable.u2(), drawable.v2(),
-                color.toGLBits());
+                SimpleColor.toGLBits(color));
     }
 
     protected final Texture textureOf(Drawable drawable) {

@@ -2,6 +2,7 @@ package core.ui;
 
 import core.Utils.SimpleColor;
 import core.g2d.Drawable;
+import core.g2d.Font;
 
 public abstract class Style {
 
@@ -24,5 +25,10 @@ public abstract class Style {
         public SimpleColor backgroundColor;
         public float borderOffset;
         public float textOffset;
+    }
+
+    public static abstract class Text extends Style {
+        public SimpleColor color;
+        public Font font;
     }
 }

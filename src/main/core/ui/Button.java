@@ -16,8 +16,8 @@ public class Button extends BaseButton<Button> {
     }
 
     @Override
-    public void update() {
-        if (!visible) {
+    public void updateThis() {
+        if (!visible()) {
             return;
         }
         if (!isClickable) {
@@ -36,7 +36,7 @@ public class Button extends BaseButton<Button> {
 
     @Override
     public void draw() {
-        if (!visible) {
+        if (!visible()) {
             return;
         }
 
