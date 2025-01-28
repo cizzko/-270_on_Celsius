@@ -6,11 +6,13 @@ import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.StaticWorldObjects.Structures.Factories;
-import core.Utils.SimpleColor;
+import core.Utils.Color;
 import core.World.Textures.TextureDrawing;
 import core.assets.AssetsManager;
 import core.g2d.Fill;
 import core.math.Point2i;
+import core.ui.Styles;
+
 import java.util.Properties;
 
 import static core.Global.*;
@@ -162,7 +164,7 @@ public class BuildMenu {
                 }
             }
             // scrollbar
-            SimpleColor color = SimpleColor.fromRGBA(0, 0, 0, 200);
+            Color color = Color.fromRgba8888(0, 0, 0, 200);
             Fill.rect(1915, (int) Math.abs(scroll / 2f) - 5, 4, 20, color);
 
             drawRequirements(1663, 156);
@@ -172,8 +174,8 @@ public class BuildMenu {
         }
 
         if (infoCreated && currentObject != null && items[currentObject.x][currentObject.y] != null) {
-            Fill.rect(0, 0, 1920, 1080, SimpleColor.DIRTY_BLACK);
-            Fill.rect(560, 0, 800, 1080, SimpleColor.DIRTY_BLACK);
+            Fill.rect(0, 0, 1920, 1080, Styles.DIRTY_BLACK);
+            Fill.rect(560, 0, 800, 1080, Styles.DIRTY_BLACK);
             batch.draw(atlas.byPath("UI/GUI/buildMenu/exitBtn"), 605, 989);
 
             TextureDrawing.drawText(650, 730, items[currentObject.x][currentObject.y].description);

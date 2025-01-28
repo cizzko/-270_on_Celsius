@@ -1,19 +1,19 @@
 package core.ui;
 
-import core.Utils.SimpleColor;
+import core.Utils.Color;
 import core.g2d.Fill;
 
 public class Panel extends BaseGroup<Panel> {
     public final Style.Panel style;
 
-    public SimpleColor color = Styles.DEFAULT_PANEL_COLOR;
+    public Color color = Styles.DEFAULT_PANEL_COLOR;
 
     public Panel(Group parent, Style.Panel style) {
         super(parent);
         this.style = style;
     }
 
-    public Panel setColor(SimpleColor color) {
+    public Panel setColor(Color color) {
         this.color = color;
         return this;
     }

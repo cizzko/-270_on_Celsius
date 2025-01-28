@@ -1,6 +1,6 @@
 package core.World.Weather;
 
-import core.Utils.SimpleColor;
+import core.Utils.Color;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
 
@@ -14,9 +14,9 @@ public class Sun {
     public static boolean visible = false;
     private static long lastTime = System.currentTimeMillis();
 
-    private static final SimpleColor skyColor = new SimpleColor();
-    private static final SimpleColor sunColor = new SimpleColor();
-    private static final SimpleColor sunsetColor = new SimpleColor();
+    private static final Color skyColor = new Color();
+    private static final Color sunColor = new Color();
+    private static final Color sunsetColor = new Color();
 
     public static void createSun() {
         visible = true;
@@ -51,7 +51,7 @@ public class Sun {
             updateNightBackground();
             updateGradient();
 
-            sunColor.setRGBA(255, green, 40, 220);
+            sunColor.set(255, green, 40, 220);
         }
     }
 
@@ -66,7 +66,7 @@ public class Sun {
         int aGradient = (int) (250 * alpha);
         aGradient = Math.max(0, Math.min(250, aGradient));
 
-        sunsetColor.setRGBA(aGradient, 0, 20, aGradient);
+        sunsetColor.set(aGradient, 0, 20, aGradient);
     }
 
     private static void updateNightBackground() {
@@ -81,17 +81,17 @@ public class Sun {
         int deleteGradient = Math.max(0, Math.min(150, aGradient));
         int backGradient = Math.max(0, Math.min(255, aGradient));
 
-        ShadowMap.deleteAllColor(SimpleColor.fromRGBA(deleteGradient, deleteGradient, deleteGradient, 0));
-        ShadowMap.deleteAllColorDynamic(SimpleColor.fromRGBA(deleteGradient, deleteGradient, deleteGradient, 0));
+        ShadowMap.deleteAllColor(Color.fromRgba8888(deleteGradient, deleteGradient, deleteGradient, 0));
+        ShadowMap.deleteAllColorDynamic(Color.fromRgba8888(deleteGradient, deleteGradient, deleteGradient, 0));
 
-        skyColor.setRGBA(255, 255, 255, backGradient);
+        skyColor.set(255, 255, 255, backGradient);
     }
 
     public static void draw() {
-        if (skyColor.getAlpha() > 0) {
+        if (skyColor.a() > 0) {
             batch.draw(assets.getTextureByPath(assets.assetsDir("World/Sky/skyBackground0.png")), skyColor);
         }
-        if (sunsetColor.getAlpha() > 0) {
+        if (sunsetColor.a() > 0) {
             String sunsetType = getFromConfig("InterpolateSunset").equals("true") ? "" : "non";
             batch.draw(assets.getTextureByPath(assets.assetsDir("World/Sun/" + sunsetType + "InterpolatedSunset.png")), sunsetColor);
         }

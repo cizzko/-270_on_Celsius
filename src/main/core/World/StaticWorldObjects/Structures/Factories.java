@@ -9,7 +9,7 @@ import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.InventoryEvents;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Player;
-import core.Utils.SimpleColor;
+import core.Utils.Color;
 import core.World.StaticWorldObjects.StaticBlocksEvents;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.WorldUtils;
@@ -198,7 +198,7 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
                 float yMouse = input.mousePos().y;
                 boolean input = factory.inputStoredObjects != null;
                 boolean output = factory.outputStoredObjects != null;
-                SimpleColor color = SimpleColor.fromRGBA(0, 0, 0, 170);
+                Color color = Color.fromRgba8888(0, 0, 0, 170);
 
                 if (input && ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0) {
                     int width1 = ArrayUtils.findDistinctObjects(factory.inputStoredObjects) * 54 + playerSize;

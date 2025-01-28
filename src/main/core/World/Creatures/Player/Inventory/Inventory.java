@@ -1,16 +1,15 @@
 package core.World.Creatures.Player.Inventory;
 
 import core.EventHandling.EventHandler;
-import core.Global;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Items.Items;
-import core.Utils.SimpleColor;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
 import core.g2d.Atlas;
 import core.math.Point2i;
 import core.math.Rectangle;
+import core.ui.Styles;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -107,7 +106,7 @@ public class Inventory {
 
     public static void drawInventoryItem(float x, float y, int countInCell, Atlas.Region region) {
         drawInventoryItem(x, y, region);
-        drawText(x + 31, y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell), SimpleColor.DIRTY_BRIGHT_BLACK);
+        drawText(x + 31, y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell), Styles.DIRTY_BRIGHT_BLACK);
     }
 
     public static void drawInventoryItem(float x, float y, Atlas.Region region) {

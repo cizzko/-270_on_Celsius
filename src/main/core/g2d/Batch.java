@@ -2,7 +2,7 @@ package core.g2d;
 
 import core.Global;
 import core.Utils.Disposable;
-import core.Utils.SimpleColor;
+import core.Utils.Color;
 import core.math.Mat3;
 import core.pool.Pool;
 import core.pool.Poolable;
@@ -25,11 +25,11 @@ public class Batch<S extends Batch.State> implements Disposable {
     private static final int VERTEX_PER_TRIANGLE = 6;
     private static final int MAX_NESTING = 16;
 
-    private static final VertexFormat VERTEX_FORMAT = VertexFormat.of(List.of(
-            create(2, Type.FLOAT, Interp.DIRECT_FLOAT),
-            create(4, Type.UNSIGNED_BYTE, Interp.NORMALIZED),
-            create(2, Type.FLOAT, Interp.DIRECT_FLOAT)
-    ));
+    private static final VertexFormat VERTEX_FORMAT = VertexFormat.of(
+            /* vec2 pos */   create(2, Type.FLOAT, Interp.DIRECT_FLOAT),
+            /* vec4 color */ create(4, Type.UNSIGNED_BYTE, Interp.NORMALIZED),
+            /* vec2 uv */    create(2, Type.FLOAT, Interp.DIRECT_FLOAT)
+    );
 
     protected final Mat3 matrix = new Mat3();
 
@@ -63,7 +63,7 @@ public class Batch<S extends Batch.State> implements Disposable {
         @Override
         public void reset() {
             blending = Blending.NORMAL;
-            colorRgba = SimpleColor.WHITE.rgba;
+            colorRgba = Color.WHITE.rgba8888();
             xScale = yScale = 1f;
         }
     }
@@ -120,8 +120,8 @@ public class Batch<S extends Batch.State> implements Disposable {
         state.yScale = yScale;
     }
 
-    public final void color(SimpleColor color) {
-        state.colorRgba = color.rgba;
+    public final void color(Color color) {
+        state.colorRgba = color.rgba8888();
     }
 
     // endregion
@@ -200,7 +200,7 @@ public class Batch<S extends Batch.State> implements Disposable {
 
     // drawing
 
-    public final void draw(Drawable drawable, SimpleColor color) {
+    public final void draw(Drawable drawable, Color color) {
         draw(drawable, color, 0, 0);
     }
 
@@ -208,8 +208,8 @@ public class Batch<S extends Batch.State> implements Disposable {
         draw(drawable, state.colorRgba, 0, 0);
     }
 
-    public final void draw(Drawable drawable, SimpleColor color, float x, float y) {
-        draw(drawable, color.rgba, x, y, drawable.width() * state.xScale, drawable.height() * state.yScale);
+    public final void draw(Drawable drawable, Color color, float x, float y) {
+        draw(drawable, color.rgba8888(), x, y, drawable.width() * state.xScale, drawable.height() * state.yScale);
     }
 
     // Хмхмх. Лучше отказаться в этом классе от обёртки SimpleColor
@@ -251,7 +251,7 @@ public class Batch<S extends Batch.State> implements Disposable {
         rectInternal(x, y, x2, y2, x3, y3, x4, y4,
                 drawable.u(), drawable.v(),
                 drawable.u2(), drawable.v2(),
-                SimpleColor.toGLBits(color));
+                Color.toGLBits(color));
     }
 
     protected final Texture textureOf(Drawable drawable) {

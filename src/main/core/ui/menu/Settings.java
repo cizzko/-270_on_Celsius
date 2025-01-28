@@ -4,7 +4,6 @@ import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
 import core.Time;
 import core.UI;
-import core.Utils.SimpleColor;
 import core.ui.*;
 
 import static core.EventHandling.Logging.Config.*;
@@ -29,15 +28,15 @@ public class Settings extends Dialog {
                 categories.addButton(Styles.SIMPLE_TEXT_BUTTON, this::basicBtn)
                         .set(40, 200, 240, 65)
                         .setName(getName("SettingsBasic"))
-                        .setColor(SimpleColor.DIRTY_BLACK),
+                        .setColor(Styles.DIRTY_BLACK),
                 categories.addButton(Styles.SIMPLE_TEXT_BUTTON, this::otherBtn)
                         .set(40, 100, 240, 65)
                         .setName(getName("SettingsOther"))
-                        .setColor(SimpleColor.DIRTY_BLACK),
+                        .setColor(Styles.DIRTY_BLACK),
                 categories.addButton(Styles.SIMPLE_TEXT_BUTTON, this::graphicsBtn)
                         .set(40, 300, 240, 65)
                         .setName(getName("SettingsGraphics"))
-                        .setColor(SimpleColor.DIRTY_BLACK)
+                        .setColor(Styles.DIRTY_BLACK)
         );
 
         save = categories.addButton(Styles.TEXT_BUTTON, this::saveBtn)
@@ -96,7 +95,7 @@ public class Settings extends Dialog {
                         dropDown.toggleVisibility();
                     })
                             .set(ox, oy - (h * (i + 1)) + (i * 6) + 6, w, h)
-                            .setColor(SimpleColor.DEFAULT_ORANGE)
+                            .setColor(Styles.DEFAULT_ORANGE)
                             .setName(lang);
                 }
             }});

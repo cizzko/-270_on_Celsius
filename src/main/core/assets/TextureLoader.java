@@ -2,7 +2,7 @@ package core.assets;
 
 import core.Global;
 import core.g2d.Font;
-import core.Utils.SimpleColor;
+import core.Utils.Color;
 import org.lwjgl.BufferUtils;
 
 import javax.imageio.ImageIO;
@@ -41,7 +41,7 @@ public class TextureLoader {
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
                 int argb = pixels[y * image.getWidth() + x];
-                buffer.putInt(SimpleColor.argbToRgba(argb));
+                buffer.putInt(Color.argbToRgba8888(argb));
             }
         }
 

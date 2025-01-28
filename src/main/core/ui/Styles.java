@@ -1,7 +1,7 @@
 package core.ui;
 
 import core.Global;
-import core.Utils.SimpleColor;
+import core.Utils.Color;
 import core.Window;
 
 public class Styles {
@@ -13,7 +13,13 @@ public class Styles {
     // TODO: пока концепт апи интерфейс ещё находится на начальной стадии разработки я не буду заниматься глубокой оптимизацией памяти этих штук,
     //   как и добавлять неиспользуемые в игре параметры элементов в соответствующие типы элементов
 
-    public static final SimpleColor DEFAULT_PANEL_COLOR = SimpleColor.fromRGBA(40, 40, 40, 240);
+    public static final Color DEFAULT_PANEL_COLOR = Color.fromRgba8888(40, 40, 40, 240);
+    public static final Color TEXT_COLOR = Color.fromRgba8888(210, 210, 210, 255);
+    public static final Color DIRTY_BRIGHT_BLACK = Color.fromRgba8888(10, 10, 10, 255);
+    public static final Color DIRTY_BRIGHT_WHITE = Color.fromRgba8888(230, 230, 230, 255);
+    public static final Color DIRTY_BLACK = Color.fromRgba8888(10, 10, 10, 55);
+    public static final Color DIRTY_WHITE = Color.fromRgba8888(230, 230, 230, 55);
+    public static final Color DEFAULT_ORANGE = Color.fromRgba8888(255, 80, 0, 55);
 
     public static final Style.ToggleButton DEFAULT_TOGGLE_BUTTON = new Style.ToggleButton() {
         @Override
@@ -21,7 +27,7 @@ public class Styles {
             checkUp = Global.atlas.byPath("UI/GUI/checkMarkTrue");
             checkDown = Global.atlas.byPath("UI/GUI/checkMarkFalse");
             width = height = 44;
-            backgroundColor = SimpleColor.DIRTY_WHITE;
+            backgroundColor = DIRTY_WHITE;
             borderOffset = 6;
             textOffset = 24;
         }
@@ -31,8 +37,8 @@ public class Styles {
         @Override
         public void load() {
             borderWidth = 0;
-            disabledColor = SimpleColor.fromRGBA(0, 0, 0, 123);
-            backgroundColor = SimpleColor.DEFAULT_ORANGE;
+            disabledColor = Color.fromRgba8888(0, 0, 0, 123);
+            backgroundColor = DEFAULT_ORANGE;
         }
     };
 
@@ -40,8 +46,8 @@ public class Styles {
         @Override
         public void load() {
             borderWidth = 6;
-            disabledColor = SimpleColor.fromRGBA(0, 0, 0, 123);
-            backgroundColor = SimpleColor.DEFAULT_ORANGE;
+            disabledColor = Color.fromRgba8888(0, 0, 0, 123);
+            backgroundColor = DEFAULT_ORANGE;
         }
     };
 
@@ -64,7 +70,7 @@ public class Styles {
     public static final Style.Text DEFAULT_TEXT = new Style.Text() {
         @Override
         public void load() {
-            color = SimpleColor.TEXT_COLOR;
+            color = TEXT_COLOR;
             font = Window.defaultFont;
         }
     };
@@ -72,7 +78,7 @@ public class Styles {
     public static final Style.Text DEBUG_TEXT = new Style.Text() {
         @Override
         public void load() {
-            color = SimpleColor.DIRTY_BRIGHT_BLACK;
+            color = DIRTY_BRIGHT_BLACK;
             font = Window.defaultFont;
         }
     };

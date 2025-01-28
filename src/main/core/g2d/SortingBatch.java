@@ -1,7 +1,7 @@
 package core.g2d;
 
 import core.EventHandling.Logging.Logger;
-import core.Utils.SimpleColor;
+import core.Utils.Color;
 import core.pool.Pool;
 import core.pool.Poolable;
 
@@ -183,7 +183,7 @@ public class SortingBatch extends Batch<SortingBatch.SortingState> {
             return "Tex{" +
                     "z=" + z +
                     ", blending=" + blending +
-                    ", color=" + SimpleColor.toString(colorRgba) +
+                    ", color=" + Color.toString(colorRgba) +
                     ", y4=" + y4 +
                     ", x4=" + x4 +
                     ", y3=" + y3 +

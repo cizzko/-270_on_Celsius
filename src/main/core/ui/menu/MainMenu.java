@@ -1,9 +1,7 @@
 package core.ui.menu;
 
-import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Logger;
 import core.UI;
-import core.Utils.SimpleColor;
 import core.ui.Dialog;
 import core.ui.Styles;
 
@@ -25,11 +23,11 @@ public class MainMenu extends Dialog {
         addButton(Styles.TEXT_BUTTON, this::exitBtn)
                 .set(822, 990, 240, 65)
                 .setName(getName("Exit"))
-                .setColor(SimpleColor.DIRTY_WHITE);
+                .setColor(Styles.DIRTY_WHITE);
         addButton(Styles.TEXT_BUTTON, this::settingsBtn)
                 .set(548, 990, 240, 65)
                 .setName(getName("Settings"))
-                .setColor(SimpleColor.DIRTY_WHITE);
+                .setColor(Styles.DIRTY_WHITE);
         addButton(Styles.TEXT_BUTTON, this::playButton)
                 .set(46, 990, 240, 65)
                 .setName(getName("Play"));

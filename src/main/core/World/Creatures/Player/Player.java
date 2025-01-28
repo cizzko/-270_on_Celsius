@@ -3,7 +3,7 @@ package core.World.Creatures.Player;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.Global;
-import core.Utils.SimpleColor;
+import core.Utils.Color;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Inventory;
@@ -15,8 +15,6 @@ import core.World.Textures.ShadowMap;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;
 import core.g2d.Fill;
-import core.g2d.Texture;
-import core.graphic.Layer;
 import core.math.Point2i;
 import core.math.Rectangle;
 
@@ -25,7 +23,6 @@ import static core.Window.start;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.WorldGenerator.*;
-import static core.World.WorldUtils.getBlockUnderMousePoint;
 import static core.World.WorldUtils.getDistanceToMouse;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -232,7 +229,7 @@ public class Player {
             var mousePos = input.mousePos();
             if (placeable != 0 && underMouseItem == null && !Rectangle.contains(1488, 756, 500, 500, mousePos)) {
                 batch.draw(atlas.byPath("World/buildGrid.png"),
-                        SimpleColor.rgba(230, 230, 230, 150),
+                        Color.rgba8888(230, 230, 230, 150),
                         mousePos.x - 243f, mousePos.y - 244f);
             }
         }
@@ -244,7 +241,7 @@ public class Player {
         }
     }
 
-    private static final SimpleColor temperatureColor = new SimpleColor();
+    private static final Color temperatureColor = new Color();
 
     public static void drawTemperatureEffect() {
         batch.draw(assets.getTextureByPath(assets.assetsDir("UI/GUI/modifiedTemperature.png")), temperatureColor);
@@ -268,7 +265,7 @@ public class Player {
 
         int r = temp > 0 ? a : 0;
         int b = temp > 0 ? 0 : a;
-        temperatureColor.setRGBA(r, (int) (b / 2f), b, a);
+        temperatureColor.set(r, (int) (b / 2f), b, a);
     }
 
     public static void playerMaxHP() {
@@ -295,11 +292,11 @@ public class Player {
         }
 
         if (transparencyHPline > 0) {
-            Fill.rectangleBorder(30, 30, 200, 35, SimpleColor.fromRGBA(10, 10, 10, transparencyHPline));
-            Fill.rect(31, 31, currentHp * 2 - 2, 33, SimpleColor.fromRGBA(150, 0, 20, transparencyHPline));
+            Fill.rectangleBorder(30, 30, 200, 35, Color.fromRgba8888(10, 10, 10, transparencyHPline));
+            Fill.rect(31, 31, currentHp * 2 - 2, 33, Color.fromRgba8888(150, 0, 20, transparencyHPline));
 
             if (lastDamage > 0) {
-                Fill.rect(29 + currentHp * 2, 31, Math.min(lastDamage * 2, 200), 33, SimpleColor.fromRGBA(252, 161, 3, transparencyHPline));
+                Fill.rect(29 + currentHp * 2, 31, Math.min(lastDamage * 2, 200), 33, Color.fromRgba8888(252, 161, 3, transparencyHPline));
             }
         }
     }

@@ -1,6 +1,6 @@
 package core.ui;
 
-import core.Utils.SimpleColor;
+import core.Utils.Color;
 import core.g2d.Drawable;
 import core.g2d.Fill;
 
@@ -42,7 +42,7 @@ public class ToggleButton extends BaseButton<ToggleButton> {
             return;
         }
         float offset = style.borderOffset;
-        SimpleColor c = color;
+        Color c = color;
         if (c == null) c = style.backgroundColor;
 
         Fill.rectangleBorder(x - offset, y - offset, width, height, offset, c);

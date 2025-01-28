@@ -13,4 +13,5 @@ module core.main {
     requires transitive org.lwjgl.natives;
     requires transitive org.lwjgl.glfw.natives;
     requires transitive org.lwjgl.opengl.natives;
+    requires it.unimi.dsi.fastutil;
 }

@@ -1,10 +1,9 @@
 package core.ui;
 
-import core.Utils.SimpleColor;
+import core.Utils.Color;
 import core.g2d.Font;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public final class GlyphCache {
     private final ArrayList<GlyphData> glyphs = new ArrayList<>();
@@ -14,7 +13,7 @@ public final class GlyphCache {
 
     public void setText(Font font,
                         CharSequence text, int begin, int length,
-                        SimpleColor color,
+                        Color color,
                         float x, float y) {
         this.count = length;
         resize(length);
@@ -26,7 +25,7 @@ public final class GlyphCache {
             var data = glyphs.get(i);
             data.x = gx;
             data.y = y;
-            data.colorRgba = color.rgba;
+            data.colorRgba = color.rgba8888();
             data.glyph = gl;
             gx += gl.width();
             gheight = Math.max(gheight, gl.height());

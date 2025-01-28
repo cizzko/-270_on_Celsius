@@ -76,6 +76,7 @@ java {
 
 dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
+    implementation("it.unimi.dsi:fastutil:8.5.15")
 
     implementation("org.jcodec:jcodec:0.2.5")
     implementation("org.jcodec:jcodec-javase:0.2.5")

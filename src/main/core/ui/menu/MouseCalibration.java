@@ -1,9 +1,7 @@
 package core.ui.menu;
 
 import core.EventHandling.Logging.Config;
-import core.EventHandling.Logging.Json;
-import core.Global;
-import core.Utils.SimpleColor;
+
 import java.awt.Robot;
 import static core.EventHandling.Logging.Logger.printException;
 import static core.Window.glfwWindow;

@@ -2,7 +2,6 @@ package core.ui.menu;
 
 import core.EventHandling.Logging.Logger;
 import core.UI;
-import core.Utils.SimpleColor;
 import core.ui.Dialog;
 import core.ui.Styles;
 
@@ -16,19 +15,19 @@ public class Pause extends Dialog {
         addButton(Styles.TEXT_BUTTON, this::continueBtn)
                 .set(840, 650, 240, 65)
                 .setName(getName("Continue"))
-                .setColor(SimpleColor.DEFAULT_ORANGE);
+                .setColor(Styles.DEFAULT_ORANGE);
         addButton(Styles.TEXT_BUTTON, this::saveButton)
                 .set(840, 550, 240, 65)
                 .setName(getName("SaveWorld"))
-                .setColor(SimpleColor.DEFAULT_ORANGE);
+                .setColor(Styles.DEFAULT_ORANGE);
         addButton(Styles.TEXT_BUTTON, this::exitBtn)
                 .set(840, 300, 240, 65)
                 .setName(getName("Exit"))
-                .setColor(SimpleColor.DIRTY_WHITE);
+                .setColor(Styles.DIRTY_WHITE);
         addButton(Styles.TEXT_BUTTON, this::settingsBtn)
                 .set(840, 400, 240, 65)
                 .setName(getName("Settings"))
-                .setColor(SimpleColor.DIRTY_WHITE);
+                .setColor(Styles.DIRTY_WHITE);
     }
 
     private void continueBtn() {

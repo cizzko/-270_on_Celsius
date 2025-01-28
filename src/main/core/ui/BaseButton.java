@@ -1,7 +1,7 @@
 package core.ui;
 
 import core.EventHandling.EventHandler;
-import core.Utils.SimpleColor;
+import core.Utils.Color;
 import core.World.Textures.TextureDrawing;
 
 import java.util.function.Consumer;
@@ -11,7 +11,7 @@ import static core.Global.input;
 
 public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B> {
     public boolean isClickable = true, isClicked, oneShot; // TODO перевести на битовые флаги.
-    public SimpleColor color;
+    public Color color;
     public String name, prompt;
     public Consumer<? super B> clickAction;
 
@@ -49,7 +49,7 @@ public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B>
         return as();
     }
 
-    public B setColor(SimpleColor color) {
+    public B setColor(Color color) {
         this.color = color;
         return as();
     }

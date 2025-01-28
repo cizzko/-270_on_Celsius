@@ -1,6 +1,6 @@
 package core.ui;
 
-import core.Utils.SimpleColor;
+import core.Utils.Color;
 import core.Window;
 import core.g2d.Atlas;
 import core.g2d.Fill;
@@ -15,7 +15,7 @@ public class Slider extends BaseElement<Slider> {
     private boolean isClicked;
 
     public int min, max;
-    public SimpleColor sliderColor, dotColor;
+    public Color sliderColor, dotColor;
     public MoveListener updater;
 
     public interface MoveListener {
@@ -42,12 +42,12 @@ public class Slider extends BaseElement<Slider> {
         return this;
     }
 
-    public Slider setSliderColor(SimpleColor color) {
+    public Slider setSliderColor(Color color) {
         this.sliderColor = color;
         return this;
     }
 
-    public Slider setDotColor(SimpleColor color) {
+    public Slider setDotColor(Color color) {
         this.dotColor = color;
         return this;
     }
@@ -60,10 +60,10 @@ public class Slider extends BaseElement<Slider> {
 
         Fill.rect(x, y, sliderPos - x, height, sliderColor);
 
-        int oa = sliderColor.getAlpha();
-        sliderColor.setAlpha(oa - 100);
+        int oa = sliderColor.a();
+        sliderColor.a(oa - 100);
         Fill.rect(x, y, width, height, sliderColor);
-        sliderColor.setAlpha(oa); // А что? Жава не может без выделения памяти в куче
+        sliderColor.a(oa); // А что? Жава не может без выделения памяти в куче
 
         int rectHeight = 30;
         int rectBrightness = 170;
@@ -88,7 +88,7 @@ public class Slider extends BaseElement<Slider> {
 
         Fill.rect(sliderPos - (triangle.width() / 2f) - (numbersWidth / (rectWidth * 2)),
                 y + rectY, 30 + numbersWidth / rectWidth, rectHeight,
-                SimpleColor.fromRGBA(0, 0, 0, rectBrightness));
+                Color.fromRgba8888(0, 0, 0, rectBrightness));
 
         float x = sliderPos - (numbersWidth / 2f) + 5;
         for (int i = 0; i < sliderValue.length(); i++) {
@@ -98,7 +98,7 @@ public class Slider extends BaseElement<Slider> {
                 continue;
             }
             Font.Glyph glyph = Window.defaultFont.getGlyph(ch);
-            batch.draw(glyph, SimpleColor.DIRTY_WHITE, x, y + rectY);
+            batch.draw(glyph, Styles.DIRTY_WHITE, x, y + rectY);
             x += glyph.width();
         }
 

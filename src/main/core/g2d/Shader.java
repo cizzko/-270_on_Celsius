@@ -3,6 +3,7 @@ package core.g2d;
 import core.Global;
 import core.Utils.Disposable;
 import core.math.Mat3;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,21 +16,19 @@ import static org.lwjgl.opengl.GL46.*;
 public final class Shader implements Disposable {
     private int glHandle;
 
-    private final Map<String, Integer> uniformLocations;
+    private final Object2IntArrayMap<String> uniformLocations;
 
     private final float[] mat4adapt = new float[16];
 
     public Shader(int program) {
         this.glHandle = program;
 
-        HashMap<String, Integer> tmpUniformLocations = new HashMap<>();
         int uniformCount = glGetProgrami(glHandle, GL_ACTIVE_UNIFORMS);
+        this.uniformLocations = new Object2IntArrayMap<>(uniformCount);
         for (int i = 0; i < uniformCount; i++) {
             String name = glGetActiveUniformName(glHandle, i);
-            tmpUniformLocations.put(name, i);
+            this.uniformLocations.put(name, i);
         }
-
-        uniformLocations = Map.copyOf(tmpUniformLocations);
     }
 
     public static Shader load(String basePath) throws IOException {
@@ -123,7 +122,7 @@ public final class Shader implements Disposable {
     }
 
     private int uniformLocation(String name) {
-        return uniformLocations.get(name);
+        return uniformLocations.getInt(name);
     }
 
     @Override

@@ -1,8 +1,9 @@
 package core.World.Textures;
 
-import core.Utils.SimpleColor;
+import core.Utils.Color;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.ui.Styles;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -14,60 +15,68 @@ import static core.World.WorldGenerator.*;
 
 public class ShadowMap {
     private static int[] shadows;
-    private static HashMap<DynamicWorldObjects, SimpleColor> shadowsDynamic = new HashMap<>();
-    private static SimpleColor deletedColor = SimpleColor.CLEAR, deletedColorDynamic = SimpleColor.CLEAR, addedColor = SimpleColor.CLEAR, addedColorDynamic = SimpleColor.CLEAR;
+    private static HashMap<DynamicWorldObjects, Color> shadowsDynamic = new HashMap<>();
+    private static Color deletedColor = Color.CLEAR, deletedColorDynamic = Color.CLEAR, addedColor = Color.CLEAR, addedColorDynamic = Color.CLEAR;
+
+    private static final Color tmp = new Color();
 
     // todo переписать генерацию и обновление теней
 
-    public static SimpleColor getShadow(int x, int y) {
-        if (x < 0 || y < 0 || x >= world.sizeX || y >= world.sizeY) {
-            return SimpleColor.CLEAR;
+    public static void getShadowTo(int x, int y, Color out) {
+        if (x >= 0 && y >= 0 && x < world.sizeX && y < world.sizeY) {
+            out.setRgba8888(shadows[x + world.sizeX * y]);
+        } else {
+            out.set(Color.CLEAR);
         }
-        return new SimpleColor(shadows[x + world.sizeX * y]);
     }
 
-    public static void setShadow(int x, int y, SimpleColor color) {
+    public static void setShadow(int x, int y, Color color) {
+        setShadow(x, y, color.rgba8888());
+    }
+
+    public static void setShadow(int x, int y, int rgba8888) {
         if (x < 0 || y < 0 || x >= world.sizeX || y >= world.sizeY) {
             return;
         }
-        shadows[x + world.sizeX * y] = color.rgba;
+        shadows[x + world.sizeX * y] = rgba8888;
     }
 
     public static int getDegree(int x, int y) {
-        int rgb = getShadow(x, y).getRed() + getShadow(x, y).getGreen() + getShadow(x, y).getBlue();
+        getShadowTo(x, y, tmp);
+        int rgb = tmp.r() + tmp.g() + tmp.b();
         return (int) Math.abs(Math.ceil(rgb / 198f - 4));
     }
 
     public static void generate() {
         shadows = new int[world.sizeX * world.sizeY];
-        Arrays.fill(shadows, SimpleColor.WHITE.rgba);
+        Arrays.fill(shadows, Color.WHITE.rgba8888());
 
         generateShadows();
     }
 
     private static void generateShadows() {
-        for (int x = 1; x < core.Global.world.sizeX - 1; x++) {
-            for (int y = 1; y < core.Global.world.sizeY - 1; y++) {
+        for (int x = 1; x < world.sizeX - 1; x++) {
+            for (int y = 1; y < world.sizeY - 1; y++) {
                 if (checkHasGasAround(x, y, 1)) {
-                    setShadow(x, y, SimpleColor.fromRGBA(165, 165, 165, 255));
+                    setShadow(x, y, Color.rgba8888(165, 165, 165, 255));
                 } else {
-                    setShadow(x, y, SimpleColor.WHITE);
+                    setShadow(x, y, Color.WHITE);
                 }
             }
         }
 
-        for (int x = 1; x < core.Global.world.sizeX - 1; x++) {
-            for (int y = 1; y < core.Global.world.sizeY - 1; y++) {
+        for (int x = 1; x < world.sizeX - 1; x++) {
+            for (int y = 1; y < world.sizeY - 1; y++) {
                 if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
-                    setShadow(x, y, SimpleColor.fromRGBA(85, 85, 85, 255));
+                    setShadow(x, y, Color.rgba8888(85, 85, 85, 255));
                 }
             }
         }
 
-        for (int x = 2; x < core.Global.world.sizeX - 2; x++) {
-            for (int y = 2; y < core.Global.world.sizeY - 2; y++) {
+        for (int x = 2; x < world.sizeX - 2; x++) {
+            for (int y = 2; y < world.sizeY - 2; y++) {
                 if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
-                    setShadow(x, y, SimpleColor.DIRTY_BRIGHT_BLACK);
+                    setShadow(x, y, Styles.DIRTY_BRIGHT_BLACK);
                 }
             }
         }
@@ -81,67 +90,59 @@ public class ShadowMap {
             for (int x = xPos / TextureDrawing.blockSize - 20; x < xPos / TextureDrawing.blockSize + 21; x++) {
                 for (int y = yPos / TextureDrawing.blockSize - 8; y < yPos / TextureDrawing.blockSize + 16; y++) {
                     if (checkHasGasAround(x, y, 1)) {
-                        setShadow(x, y, SimpleColor.fromRGBA(165, 165, 165, 255));
+                        setShadow(x, y, Color.rgba8888(165, 165, 165, 255));
                     } else {
-                        setShadow(x, y, SimpleColor.WHITE);
+                        setShadow(x, y, Color.WHITE);
                     }
                 }
             }
             for (int x = xPos / TextureDrawing.blockSize - 20; x < xPos / TextureDrawing.blockSize + 21; x++) {
                 for (int y = yPos / TextureDrawing.blockSize - 8; y < yPos / TextureDrawing.blockSize + 16; y++) {
                     if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
-                        setShadow(x, y, SimpleColor.fromRGBA(85, 85, 85, 255));
+                        setShadow(x, y, Color.rgba8888(85, 85, 85, 255));
                     }
                 }
             }
             for (int x = xPos / TextureDrawing.blockSize - 20; x < xPos / TextureDrawing.blockSize + 21; x++) {
                 for (int y = yPos / TextureDrawing.blockSize - 8; y < yPos / TextureDrawing.blockSize + 16; y++) {
                     if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
-                        setShadow(x, y, SimpleColor.DIRTY_BRIGHT_BLACK);
+                        setShadow(x, y, Styles.DIRTY_BRIGHT_BLACK);
                     }
                 }
             }
         }
     }
 
-    public static SimpleColor getColor(int x, int y) {
-        int r = getShadow(x, y).getRed() + addedColor.getRed() - deletedColor.getRed();
-        int g = getShadow(x, y).getGreen() + addedColor.getGreen() - deletedColor.getGreen();
-        int b = getShadow(x, y).getBlue() + addedColor.getBlue() - deletedColor.getBlue();
-        int a = getShadow(x, y).getAlpha() + addedColor.getAlpha() - deletedColor.getAlpha();
-
-        return SimpleColor.fromRGBA(r, g, b, a);
+    public static Color getColorTo(int x, int y, Color out) {
+        getShadowTo(x, y, out);
+        out.add(addedColor);
+        out.sub(deletedColor);
+        return out;
     }
 
-    public static SimpleColor getColorDynamic(DynamicWorldObjects object) {
-        SimpleColor color = shadowsDynamic.getOrDefault(object, null);
-
-        if (color == null) {
-            shadowsDynamic.put(object, SimpleColor.WHITE);
-            color = SimpleColor.WHITE;
-        }
-
-        int r = color.getRed() + addedColorDynamic.getRed() - deletedColorDynamic.getRed();
-        int g = color.getGreen() + addedColorDynamic.getGreen() - deletedColorDynamic.getGreen();
-        int b = color.getBlue() + addedColorDynamic.getBlue() - deletedColorDynamic.getBlue();
-        int a = color.getAlpha() + addedColorDynamic.getAlpha() - deletedColorDynamic.getAlpha();
-
-        return SimpleColor.fromRGBA(r, g, b, a);
+    public static Color getColorDynamic(DynamicWorldObjects object) {
+        Color color = shadowsDynamic.computeIfAbsent(object, k -> {
+            var c = new Color(Color.WHITE);
+            c.add(addedColorDynamic);
+            c.sub(deletedColorDynamic);
+            return c;
+        });
+        return color;
     }
 
-    public static void addAllColor(SimpleColor color) {
+    public static void addAllColor(Color color) {
         addedColor = color;
     }
 
-    public static void addAllColorDynamic(SimpleColor color) {
+    public static void addAllColorDynamic(Color color) {
         addedColorDynamic = color;
     }
 
-    public static void deleteAllColor(SimpleColor color) {
+    public static void deleteAllColor(Color color) {
         deletedColor = color;
     }
 
-    public static void deleteAllColorDynamic(SimpleColor color) {
+    public static void deleteAllColorDynamic(Color color) {
         deletedColorDynamic = color;
     }
 
@@ -168,10 +169,10 @@ public class ShadowMap {
 
     public static void setAllData(HashMap<String, Object> data) {
         shadows = (int[]) data.get("Shadows");
-        shadowsDynamic = (HashMap<DynamicWorldObjects, SimpleColor>) data.get("ShadowsDynamic");
-        deletedColor = (SimpleColor) data.get("DeletedColor");
-        deletedColorDynamic = (SimpleColor) data.get("DeletedColorDynamic");
-        addedColor = (SimpleColor) data.get("AddedColor");
-        addedColorDynamic = (SimpleColor) data.get("AddedColorDynamic");
+        shadowsDynamic = (HashMap<DynamicWorldObjects, Color>) data.get("ShadowsDynamic");
+        deletedColor = (Color) data.get("DeletedColor");
+        deletedColorDynamic = (Color) data.get("DeletedColorDynamic");
+        addedColor = (Color) data.get("AddedColor");
+        addedColorDynamic = (Color) data.get("AddedColorDynamic");
     }
 }

@@ -2,7 +2,6 @@ package core.ui.menu;
 
 import core.Constants;
 import core.UI;
-import core.Utils.SimpleColor;
 import core.World.WorldGenerator;
 import core.ui.*;
 
@@ -60,7 +59,7 @@ public class CreatePlanet extends Dialog {
         })
                 .set(1460, 340, 420, 20)
                 .setSliderColor(Styles.DEFAULT_PANEL_COLOR)
-                .setDotColor(SimpleColor.DEFAULT_ORANGE);
+                .setDotColor(Styles.DEFAULT_ORANGE);
         basicParameters = add(new Dialog() {{
             setVisible(true);
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> parameters.creatures = !parameters.creatures)

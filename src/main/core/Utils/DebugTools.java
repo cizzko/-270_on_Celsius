@@ -68,7 +68,7 @@ public class DebugTools {
             for (int y = startY; y < targetY; y++) {
                 if (x < core.Global.world.sizeX && y < core.Global.world.sizeY && x > 0 && y > 0 && world.get(x, y) > 0) {
                     if (getId(world.get(x, y)) != 0) {
-                        ShadowMap.setShadow(x, y, SimpleColor.fromRGBA(0, 0, 255, 255));
+                        ShadowMap.setShadow(x, y, Color.fromRgba8888(0, 0, 255, 255));
                         objects[x - startX][y - startY] = world.get(x, y);
                     }
                 }

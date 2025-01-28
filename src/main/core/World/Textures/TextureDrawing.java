@@ -7,7 +7,7 @@ import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.Creatures.Player.Player;
 import core.g2d.Atlas;
-import core.Utils.SimpleColor;
+import core.Utils.Color;
 import core.Utils.Sized;
 import core.Window;
 import core.World.Creatures.DynamicWorldObjects;
@@ -22,6 +22,7 @@ import core.g2d.Font;
 import core.math.Point2i;
 import core.math.Rectangle;
 import core.math.Vector2f;
+import core.ui.Styles;
 
 import java.awt.*;
 import java.nio.ByteBuffer;
@@ -55,7 +56,7 @@ public class TextureDrawing {
                     float scale = Items.computeZoom(item.texture);
                     int countInCell = findEqualsObjects(items, item);
 
-                    drawText((x + (i * 54)) + playerSize + 31, y + 3, countInCell > 9 ? "9+" : String.valueOf(countInCell), SimpleColor.DIRTY_BRIGHT_BLACK);
+                    drawText((x + (i * 54)) + playerSize + 31, y + 3, countInCell > 9 ? "9+" : String.valueOf(countInCell), Styles.DIRTY_BRIGHT_BLACK);
 
                     int finalI = i;
                     batch.pushState(() -> {
@@ -71,10 +72,10 @@ public class TextureDrawing {
 
     // todo Сломано сознательно, чуть позже доделаю
     @Deprecated(forRemoval = true)
-    public static void drawTexture(float x, float y, int w, int h, float zoom, boolean isStatic, int id, ByteBuffer buffer, SimpleColor color) {
+    public static void drawTexture(float x, float y, int w, int h, float zoom, boolean isStatic, int id, ByteBuffer buffer, Color color) {
     }
 
-    public static void drawText(float x, float y, String text, SimpleColor color) {
+    public static void drawText(float x, float y, String text, Color color) {
         float startX = x;
 
         for (int i = 0; i < text.length(); i++) {
@@ -96,13 +97,13 @@ public class TextureDrawing {
     }
 
     public static void drawText(float x, float y, String text) {
-        drawText(x, y, text, SimpleColor.TEXT_COLOR);
+        drawText(x, y, text, Styles.TEXT_COLOR);
     }
 
     public static void drawPointArray(Point2i[] points) {
         Fill.lineWidth(4f);
 
-        var color = SimpleColor.fromRGBA(0, 0, 0, 1);
+        var color = Color.fromRgba8888(0, 0, 0, 1);
         float d = blockSize + 8;
 
         for (int i = 0; i < points.length - 1; i++) {
@@ -111,7 +112,7 @@ public class TextureDrawing {
         Fill.resetLineWidth();
     }
 
-    public static void drawRectangleText(int x, int y, int maxWidth, String text, boolean staticTransfer, SimpleColor panColor) {
+    public static void drawRectangleText(int x, int y, int maxWidth, String text, boolean staticTransfer, Color panColor) {
         maxWidth = (maxWidth > 0 ? maxWidth : 1920 - x);
         y = staticTransfer ? y + getTextSize(text).width / maxWidth * blockSize : y;
 
@@ -230,6 +231,8 @@ public class TextureDrawing {
         blocksQueue.clear();
     }
 
+    private static final Color tmp = new Color();
+
     private static void drawQueuedBlock(int x, int y, short blockId, boolean breakable) {
         if (blockId == -1 || StaticWorldObjects.getTexture(blockId) == null) {
             return;
@@ -240,11 +243,15 @@ public class TextureDrawing {
         float wy = y * blockSize;
 
         if (isOnCamera(wx, wy, getTexture(blockId))) {
-            SimpleColor color = ShadowMap.getColor(x, y);
-            int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
-            SimpleColor blockColor = breakable ? SimpleColor.fromRGBA(Math.max(0, a - 150), Math.max(0, a - 150), a, 255) : SimpleColor.fromRGBA(a, Math.max(0, a - 150), Math.max(0, a - 150), 255);
+            Color color = ShadowMap.getColorTo(x, y, tmp);
+            int a = (color.r() + color.g() + color.b()) / 3;
+            if (breakable) {
+                color.set(Math.max(0, a - 150), Math.max(0, a - 150), a, 255);
+            } else {
+                color.set(a, Math.max(0, a - 150), Math.max(0, a - 150), 255);
+            }
 
-            batch.draw(getTexture(blockId), blockColor, wx, wy);
+            batch.draw(getTexture(blockId), color, wx, wy);
 
             float maxHp = getMaxHp(blockId);
             if (hp > maxHp / 1.5f) {
@@ -273,7 +280,7 @@ public class TextureDrawing {
         int yBlock = findY(x, y);
 
         if (isOnCamera(xBlock, yBlock, getTexture(obj))) {
-            SimpleColor color = ShadowMap.getColor(x, y);
+            Color color = ShadowMap.getColorTo(x, y, tmp);
             int upperLimit = 100;
             int lowestLimit = -20;
             int maxColor = 65;
@@ -282,17 +289,10 @@ public class TextureDrawing {
             int a;
             if (temp > upperLimit) {
                 a = (int) Math.min(maxColor, Math.abs((temp - upperLimit) / 3));
-                color = SimpleColor.fromRGBA(color.getRed(), color.getGreen() - (a / 2), color.getBlue() - a, color.getAlpha());
-
+                color.set(color.r(), color.g() - (a / 2), color.b() - a, color.a());
             } else if (temp < lowestLimit) {
                 a = (int) Math.min(maxColor, Math.abs((temp + lowestLimit) / 3));
-                color = SimpleColor.fromRGBA(color.getRed() - a, color.getGreen() - (a / 2), color.getBlue(), color.getAlpha());
-            }
-
-            StaticWAnimations.AnimData currentFrame = StaticWAnimations.getCurrentFrame(obj, new Point2i(x, y));
-            if (currentFrame != null) {
-                drawTexture(xBlock, yBlock, currentFrame.width(), currentFrame.height(), 1, false, currentFrame.currentFrame() + StaticWorldObjects.getId(obj), currentFrame.currentFrameImage(), color);
-                return;
+                color.set(color.r() - a, color.g() - (a / 2), color.b(), color.a());
             }
 
             batch.draw(getTexture(obj), color, xBlock, yBlock);
