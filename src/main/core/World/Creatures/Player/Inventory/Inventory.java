@@ -1,7 +1,7 @@
 package core.World.Creatures.Player.Inventory;
 
 import core.EventHandling.EventHandler;
-import core.EventHandling.Logging.Config;
+import core.Global;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.Utils.SimpleColor;
@@ -41,6 +41,23 @@ public class Inventory {
         return null;
     }
 
+    public static void create() {
+        create = true;
+        BuildMenu.create();
+    }
+
+    public static void inputUpdate() {
+        if (!create) {
+            return;
+        }
+        updateUnderMouse();
+        updateDropItem();
+
+        if (EventHandler.getRectangleClick(1875, 1035, 1920, 1080)) {
+            inventoryOpen = !inventoryOpen;
+        }
+    }
+
     public static void draw() {
         String gridTex = "UI/GUI/inventory/inventory" + (inventoryOpen ? "Open" : "Closed");
         batch.draw(atlas.byPath(gridTex), inventoryOpen ? 1488 : 1866, 756);
@@ -54,16 +71,23 @@ public class Inventory {
                 }
             }
         }
-    }
 
-    public static void create() {
-        create = true;
-        BuildMenu.create();
-    }
+        Point2i current = currentObject;
+        if (current != null) {
 
-    public static void update() {
-        if (create) {
-            updateCurrentItem();
+            Point2i mousePos = input.mousePos();
+            if (underMouseItem != null) {
+                Items focusedItems = inventoryObjects[underMouseItem.x][underMouseItem.y];
+                float scale = Items.computeZoom(focusedItems.texture);
+
+                batch.pushState(() -> {
+                    batch.scale(scale);
+                    batch.draw(focusedItems.texture, mousePos.x - 15, mousePos.y - 15);
+                });
+            }
+            if ((inventoryOpen || current.x > 6)) {
+                batch.draw(atlas.byPath("UI/GUI/inventory/inventoryCurrent.png"), 1488 + current.x * 54, 756 + current.y * 54f);
+            }
         }
     }
 
@@ -106,49 +130,18 @@ public class Inventory {
         }
     }
 
-    private static void updateCurrentItem() {
-        updateUnderMouse();
-        updateDropItem();
-
-        if (EventHandler.getRectangleClick(1875, 1035, 1920, 1080)) {
-            inventoryOpen = !inventoryOpen;
-        }
-
-        Point2i current = currentObject;
-        if (current != null) {
-
-            Point2i mousePos = input.mousePos();
-            if (underMouseItem != null) {
-                Items focusedItems = inventoryObjects[underMouseItem.x][underMouseItem.y];
-                float scale = Items.computeZoom(focusedItems.texture);
-
-                batch.pushState(() -> {
-                    batch.scale(scale);
-                    batch.draw(focusedItems.texture, mousePos.x - 15, mousePos.y - 15);
-                });
-            }
-            if ((inventoryOpen || current.x > 6)) {
-                batch.draw(atlas.byPath("UI/GUI/inventory/inventoryCurrent.png"), 1488 + current.x * 54, 756 + current.y * 54f);
-            }
-        }
-    }
-
     public static void updateStaticBlocksPreview() {
         Point2i current = currentObject;
 
         if (current != null) {
             short placeable = inventoryObjects[current.x][current.y].placeable;
-            int blockX = getBlockUnderMousePoint().x;
-            int blockY = getBlockUnderMousePoint().y;
+            Point2i mouseBlockPos = input.mouseBlockPos();
+            int blockX = mouseBlockPos.x;
+            int blockY = mouseBlockPos.y;
 
             if (placeable != 0 && underMouseItem == null && !Rectangle.contains(1488, 756, 500, 500, input.mousePos())) {
                 boolean isDeclined = getDistanceToMouse() < 8 && WorldGenerator.checkPlaceRules(blockX, blockY, placeable);
                 TextureDrawing.addToBlocksQueue(blockX, blockY, placeable, isDeclined);
-
-                if (Config.getFromConfig("BuildGrid").equalsIgnoreCase("true")) {
-                    var color = SimpleColor.fromRGBA(230, 230, 230, 150);
-                    batch.draw(atlas.byPath("World/buildGrid.png"), color, WorldGenerator.findX(blockX, blockY) - 243f, WorldGenerator.findY(blockX, blockY) - 244f);
-                }
             }
         }
     }

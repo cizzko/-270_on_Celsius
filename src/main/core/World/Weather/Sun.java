@@ -3,8 +3,6 @@ package core.World.Weather;
 import core.Utils.SimpleColor;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
-import core.World.WorldGenerator;
-import core.g2d.Texture;
 
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Global.*;
@@ -15,6 +13,10 @@ public class Sun {
     public static float currentTime = (float) (Math.random() * 2400), x, y = endYSun * (1 -  (currentTime - 2400) / (1 - 2400)) + startYSun * (currentTime - 2400) / (1 - 2400);
     public static boolean visible = false;
     private static long lastTime = System.currentTimeMillis();
+
+    private static final SimpleColor skyColor = new SimpleColor();
+    private static final SimpleColor sunColor = new SimpleColor();
+    private static final SimpleColor sunsetColor = new SimpleColor();
 
     public static void createSun() {
         visible = true;
@@ -49,8 +51,7 @@ public class Sun {
             updateNightBackground();
             updateGradient();
 
-            var color = SimpleColor.fromRGBA(255, green, 40, 220);
-            batch.draw(assets.getTextureByPath(assets.assetsDir("World/Sun/sun.png")), color, 580, y);
+            sunColor.setRGBA(255, green, 40, 220);
         }
     }
 
@@ -65,9 +66,7 @@ public class Sun {
         int aGradient = (int) (250 * alpha);
         aGradient = Math.max(0, Math.min(250, aGradient));
 
-        String sunsetType = getFromConfig("InterpolateSunset").equals("true") ? "" : "non";
-        var color = SimpleColor.fromRGBA(aGradient, 0, 20, aGradient);
-        batch.draw(assets.getTextureByPath(assets.assetsDir("World/Sun/" + sunsetType + "InterpolatedSunset.png")), color);
+        sunsetColor.setRGBA(aGradient, 0, 20, aGradient);
     }
 
     private static void updateNightBackground() {
@@ -85,8 +84,18 @@ public class Sun {
         ShadowMap.deleteAllColor(SimpleColor.fromRGBA(deleteGradient, deleteGradient, deleteGradient, 0));
         ShadowMap.deleteAllColorDynamic(SimpleColor.fromRGBA(deleteGradient, deleteGradient, deleteGradient, 0));
 
-        var color = SimpleColor.fromRGBA(255, 255, 255, backGradient);
-        batch.draw(assets.getTextureByPath(assets.assetsDir("World/Sky/skyBackground0.png")), color);
+        skyColor.setRGBA(255, 255, 255, backGradient);
+    }
+
+    public static void draw() {
+        if (skyColor.getAlpha() > 0) {
+            batch.draw(assets.getTextureByPath(assets.assetsDir("World/Sky/skyBackground0.png")), skyColor);
+        }
+        if (sunsetColor.getAlpha() > 0) {
+            String sunsetType = getFromConfig("InterpolateSunset").equals("true") ? "" : "non";
+            batch.draw(assets.getTextureByPath(assets.assetsDir("World/Sun/" + sunsetType + "InterpolatedSunset.png")), sunsetColor);
+        }
+        batch.draw(assets.getTextureByPath(assets.assetsDir("World/Sun/sun.png")), sunColor, 580, y);
     }
 
     private static double Lerp(double a, double b, double t) {

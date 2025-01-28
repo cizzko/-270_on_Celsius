@@ -4,8 +4,10 @@ import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
 import core.Utils.NativeResources;
+import core.World.Creatures.Player.Inventory.Inventory;
+import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
-import core.assets.AssetsManager;
+import core.World.Weather.Sun;
 import core.assets.TextureLoader;
 import core.g2d.Atlas;
 import core.g2d.Camera2;
@@ -23,6 +25,7 @@ import java.io.IOException;
 import static core.EventHandling.Logging.Logger.log;
 import static core.Global.*;
 import static core.Utils.NativeResources.addResource;
+import static core.World.Creatures.Player.Player.drawPlayerGui;
 import static core.assets.TextureLoader.BufferedImageEncoder;
 import static core.assets.TextureLoader.readImage;
 import static org.lwjgl.glfw.GLFW.*;
@@ -30,7 +33,7 @@ import static org.lwjgl.opengl.GL46.*;
 
 public class Window extends Application {
     public static final String versionStamp = "0.0.6", version = "alpha " + versionStamp + " (non stable)";
-    public static int defaultWidth = 1920, defaultHeight = 1080, verticalSync = Config.getFromConfig("VerticalSync").equals("true") ? 1 : 0;
+    public static int defaultWidth = 1920, defaultHeight = 1080;
     public static boolean start = false, windowFocused = true;
     public static long glfwWindow;
     public static Font defaultFont;
@@ -72,11 +75,16 @@ public class Window extends Application {
         addResource(glfwImg);
         glfwSetCursor(glfwWindow, glfwCreateCursor(glfwImg, 0, 0));
 
-        //vsync
-        glfwSwapInterval(verticalSync);
-        //display settings
+        if (Config.getFromConfig("VerticalSync").equals("true")) {
+            Logger.log("Running with Vertical Sync");
+            glfwSwapInterval(1);
+        } else {
+            glfwSwapInterval(0);
+            int targetFPS = Integer.parseInt(Config.getFromConfig("TargetFPS"));
+            Logger.log("Running with " + targetFPS + " fps");
+            setFramerate(targetFPS);
+        }
         glfwShowWindow(glfwWindow);
-        //connects library tools
         GL.createCapabilities();
 
         // Великий инструмент.
@@ -127,6 +135,17 @@ public class Window extends Application {
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
 
         while (!glfwWindowShouldClose(glfwWindow)) {
+            // Игровой цикл таков:
+            // 1) фиксация deltaTime
+            // 2) Считывание ввода
+            // 3) Выполнение запланированных задач
+            // 4) Обновление интерфейса
+            // 5) Обновление мира
+            //    1) Обновление статических объектов
+            //    2) Обновление динамических объектов
+            // TODO Почему порядок именно такой? Если думать о мире, как об объекте
+            //   с которым динамические сущности взаимодействуют, то разве не должен быть обратным порядок?
+            // 6) Отрисовка мира в порядке отображения
             updateTime();
 
             input.update();
@@ -138,26 +157,32 @@ public class Window extends Application {
                 }
             }
 
-            EventHandler.update();
+            EventHandler.inputUpdate();
 
             scheduler.executeAll();
-
-            TextureDrawing.updateVideo();
-            batch.z(Layer.STATIC_OBJECTS);
+            scene.update();
 
             if (start) {
-                TextureDrawing.updateStaticObj();
+                TextureDrawing.updateWorld();
+
+                batch.z(Layer.BACKGROUND);
+                Sun.draw();
+                batch.z(Layer.STATIC_OBJECTS);
+                TextureDrawing.drawStatic();
                 batch.z(Layer.DYNAMIC_OBJECTS);
-                TextureDrawing.updateDynamicObj();
+                TextureDrawing.drawDynamic();
             } else {
                 batch.draw(assets.getTextureByPath(assets.assetsDir("World/Other/background.png")));
             }
 
-            TextureDrawing.updateGUI();
+            scene.draw();
+            drawPlayerGui();
             batch.flush();
 
             glfwSwapBuffers(glfwWindow);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            nextFrame();
         }
 
         glfwTerminate();

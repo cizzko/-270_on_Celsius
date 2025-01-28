@@ -149,7 +149,7 @@ public class InputHandler {
 
     public Point2i mouseBlockPos() {
         var world = mouseWorldPos();
-        mouseWorldPos.set((int) (world.x / TextureDrawing.blockSize), (int) (world.y / TextureDrawing.blockSize));
+        mouseBlockPos.set((int) (world.x / TextureDrawing.blockSize), (int) (world.y / TextureDrawing.blockSize));
         return mouseBlockPos;
     }
 

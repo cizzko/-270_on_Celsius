@@ -139,7 +139,7 @@ public class Commandline {
         created = false;
     }
 
-    public static void updateLine() {
+    public static void update() {
         if (input.justPressed(GLFW_KEY_F5)) {
             if (created) {
                 Commandline.deleteLine();

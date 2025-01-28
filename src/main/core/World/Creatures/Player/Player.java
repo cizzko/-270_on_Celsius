@@ -2,13 +2,13 @@ package core.World.Creatures.Player;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
+import core.Global;
 import core.Utils.SimpleColor;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Inventory.Items.Tools;
-import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
@@ -18,6 +18,7 @@ import core.g2d.Fill;
 import core.g2d.Texture;
 import core.graphic.Layer;
 import core.math.Point2i;
+import core.math.Rectangle;
 
 import static core.Global.*;
 import static core.Window.start;
@@ -41,27 +42,19 @@ public class Player {
         DynamicObjects.addFirst(DynamicWorldObjects.createDynamic("player", randomSpawn ? (int) (Math.random() * (world.sizeX * TextureDrawing.blockSize)) : world.sizeX * 8f));
     }
 
-    public static void updatePlayerJump() {
-        if (EventHandler.isKeylogging()) {
-            return;
-        }
-
-        if (input.pressed(GLFW_KEY_SPACE)) {
-            DynamicObjects.getFirst().jump(1.05f);
-        }
-    }
-
-    public static void updatePlayerMove() {
-        // todo тут надо проверять элемент UI на фокусировку, т.е. на порядок отображения (фокусирован = самый последний элемент)
+    public static void inputUpdate() {
         if (EventHandler.isKeylogging()) {
             return;
         }
 
         float speed = noClip ? 1.6f : 0.4f;
-        DynamicWorldObjects player = DynamicObjects.getFirst();
-
+        var player = DynamicObjects.getFirst();
         int xf = input.axis(GLFW_KEY_A, GLFW_KEY_D);
-        int yf = input.axis(GLFW_KEY_S, GLFW_KEY_W);
+        int yf = noClip ? input.axis(GLFW_KEY_S, GLFW_KEY_W) : 0;
+
+        if (input.pressed(GLFW_KEY_SPACE)) {
+            player.jump(1.05f);
+        }
 
         if (!noClip) {
             if (xf != 0) {
@@ -78,6 +71,14 @@ public class Player {
         }
     }
 
+    public static void update() {
+
+    }
+
+    public static void draw() {
+
+    }
+
     public static void updateInventoryInteraction() {
         if (currentObject != null) {
             updatePlaceableInteraction();
@@ -92,15 +93,12 @@ public class Player {
                     return;
                 }
             }
-            Point2i blockUMB = getBlockUnderMousePoint();
+            Point2i blockUMB = Global.input.mouseBlockPos();
 
             if (getType(world.get(blockUMB.x, blockUMB.y)) == StaticObjectsConst.Types.GAS && getDistanceToMouse() <= 9) {
                 Items item = Inventory.getCurrent();
-                int blockX = blockUMB.x;
-                int blockY = blockUMB.y;
-
                 if (item != null && item.placeable != 0) {
-                    updatePlaceableBlock(item.placeable, blockX, blockY);
+                    updatePlaceableBlock(item.placeable, blockUMB.x, blockUMB.y);
                 }
             }
         }
@@ -114,12 +112,12 @@ public class Player {
         }
     }
 
-    private static void updateToolInteraction() {
+    public static void updateToolInteraction() {
         Items item = Inventory.getCurrent();
         if (item != null && item.tool != null) {
 
             Tools tool = item.tool;
-            Point2i blockUMB = getBlockUnderMousePoint();
+            Point2i blockUMB = Global.input.mouseBlockPos();
             int blockX = blockUMB.x;
             int blockY = blockUMB.y;
             short object = world.get(blockX, blockY);
@@ -214,14 +212,29 @@ public class Player {
         }
     }
 
-    public static void updatePlayerGUI() {
+    public static void drawPlayerGui() {
         if (start) {
-            Bullets.drawBullets();
             BuildMenu.draw();
             Inventory.draw();
-            updateToolInteraction();
             drawCurrentHP();
-            Inventory.update();
+            drawBuildGrid();
+        }
+    }
+
+    private static void drawBuildGrid() {
+        if (!Config.getFromConfig("BuildGrid").equalsIgnoreCase("true")) {
+            return;
+        }
+
+        Point2i current = currentObject;
+        if (current != null) {
+            short placeable = inventoryObjects[current.x][current.y].placeable;
+            var mousePos = input.mousePos();
+            if (placeable != 0 && underMouseItem == null && !Rectangle.contains(1488, 756, 500, 500, mousePos)) {
+                batch.draw(atlas.byPath("World/buildGrid.png"),
+                        SimpleColor.rgba(230, 230, 230, 150),
+                        mousePos.x - 243f, mousePos.y - 244f);
+            }
         }
     }
 
@@ -229,6 +242,12 @@ public class Player {
         if (start) {
             BuildMenu.updateLogic();
         }
+    }
+
+    private static final SimpleColor temperatureColor = new SimpleColor();
+
+    public static void drawTemperatureEffect() {
+        batch.draw(assets.getTextureByPath(assets.assetsDir("UI/GUI/modifiedTemperature.png")), temperatureColor);
     }
 
     public static void updateTemperatureEffect() {
@@ -249,9 +268,7 @@ public class Player {
 
         int r = temp > 0 ? a : 0;
         int b = temp > 0 ? 0 : a;
-
-        Texture modifiedTemperature = assets.getTextureByPath(assets.assetsDir("UI/GUI/modifiedTemperature.png"));
-        batch.draw(Layer.EFFECTS, () -> batch.draw(modifiedTemperature, SimpleColor.fromRGBA(r, (int) (b / 2f), b, a)));
+        temperatureColor.setRGBA(r, (int) (b / 2f), b, a);
     }
 
     public static void playerMaxHP() {

@@ -1,9 +1,12 @@
 package core.World.Textures;
 
-import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
-import core.ui.BaseButton;
-import core.ui.GUI.Video;
+import core.Utils.ArrayUtils;
+import core.World.Creatures.Player.Inventory.Items.Items;
+import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
+import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
+import core.World.Creatures.Player.Player;
+import core.g2d.Atlas;
 import core.Utils.SimpleColor;
 import core.Utils.Sized;
 import core.Window;
@@ -16,27 +19,24 @@ import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.WorldUtils;
 import core.g2d.Fill;
 import core.g2d.Font;
-import core.graphic.Layer;
 import core.math.Point2i;
 import core.math.Rectangle;
 import core.math.Vector2f;
-import core.ui.Styles;
 
 import java.awt.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Global.*;
-import static core.ui.GUI.Video.byteBuffer;
-import static core.ui.GUI.Video.video;
+import static core.Utils.ArrayUtils.findEqualsObjects;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
+import static core.World.StaticWorldObjects.Structures.Factories.updateFactoriesOutput;
 import static core.World.Weather.Sun.updateSun;
 import static core.World.WorldGenerator.*;
 
 public class TextureDrawing {
-    private static final ArrayDeque<blockQueue> blocksQueue = new ArrayDeque<>();
+    private static final ArrayDeque<BlockPreview> blocksQueue = new ArrayDeque<>();
     private static final ArrayDeque<Vector2f> smoothCameraX = new ArrayDeque<>(), smoothCameraY = new ArrayDeque<>();
     private static final int multiplySmoothCameraX = Integer.parseInt(Config.getFromConfig("SmoothingCameraHorizontal")), multiplySmoothCameraY = Integer.parseInt(Config.getFromConfig("SmoothingCameraVertical"));
     public static final int blockSize = 48;
@@ -44,7 +44,30 @@ public class TextureDrawing {
 
     public static Rectangle viewport = new Rectangle();
 
-    public record blockQueue(int cellX, int cellY, short obj, boolean breakable) {}
+    // todo вопрос на засыпку - почему оно в этом классе?
+    public static void drawObjects(float x, float y, Items[] items, Atlas.Region iconRegion) {
+        if (items != null && ArrayUtils.findFreeCell(items) != 0) {
+            batch.draw(iconRegion, x, y + 16);
+
+            for (int i = 0; i < ArrayUtils.findDistinctObjects(items); i++) {
+                Items item = items[i];
+                if (item != null) {
+                    float scale = Items.computeZoom(item.texture);
+                    int countInCell = findEqualsObjects(items, item);
+
+                    drawText((x + (i * 54)) + playerSize + 31, y + 3, countInCell > 9 ? "9+" : String.valueOf(countInCell), SimpleColor.DIRTY_BRIGHT_BLACK);
+
+                    int finalI = i;
+                    batch.pushState(() -> {
+                        batch.scale(scale);
+                        batch.draw(item.texture, ((x + (finalI * 54)) + playerSize + 5), (y + 15));
+                    });
+                }
+            }
+        }
+    }
+
+    public record BlockPreview(int x, int y, short blockId, boolean breakable) {}
 
     // todo Сломано сознательно, чуть позже доделаю
     @Deprecated(forRemoval = true)
@@ -74,14 +97,6 @@ public class TextureDrawing {
 
     public static void drawText(float x, float y, String text) {
         drawText(x, y, text, SimpleColor.TEXT_COLOR);
-    }
-
-    public static void drawPrompt(BaseButton<?> button) {
-        if (getFromConfig("ShowPrompts").equals("true")) {
-            if (EventHandler.isMousePressed(button) && System.currentTimeMillis() - input.getLastMouseMoveTimestamp() >= 1000 && button.prompt != null) {
-                drawRectangleText(input.mousePos().x, input.mousePos().y, 0, button.prompt, false, Styles.DEFAULT_PANEL_COLOR);
-            }
-        }
     }
 
     public static void drawPointArray(Point2i[] points) {
@@ -152,28 +167,7 @@ public class TextureDrawing {
         return new Dimension(width, linesCount * 28 + 16);
     }
 
-    public static void updateVideo() {
-        if (!video.isEmpty()) {
-
-            ByteBuffer buff = null;
-            for (Map.Entry<String, Video> entry : video.entrySet()) {
-                String name = entry.getKey();
-                Video video = entry.getValue();
-
-                if (video != null && video.isPlaying) {
-                    if (video.frame == video.totalFrames) {
-                        video.frame = 1;
-                    }
-                    if (byteBuffer.get(name) != null && !byteBuffer.get(name).equals(buff)) {
-                        // TODO сломано специально
-                        // drawTexture(video.x, video.y, video.width, video.height, 1, true, name.hashCode(), byteBuffer.get(name), SimpleColor.WHITE);
-                        buff = byteBuffer.get(name);
-                    }
-                }
-            }
-        }
-    }
-
+    // Изменения, связанные с координатами игрока
     private static void updatePlayerPos() {
         DynamicWorldObjects player = DynamicObjects.getFirst();
 
@@ -199,6 +193,7 @@ public class TextureDrawing {
                 smoothCameraY.removeFirst();
             }
         }
+        updateTemperatureEffect();
 
         camera.position.set(playerX + 32, playerY + 200);
         camera.update();
@@ -206,16 +201,17 @@ public class TextureDrawing {
         batch.matrix(camera.projection);
     }
 
-    public static void updateStaticObj() {
-        Factories.update();
-
-        batch.pushState(() -> {
-            batch.z(Layer.BACKGROUND);
-            updateSun();
-        });
-
-        // always before drawing the blocks!!!
+    public static void updateWorld() {
         updatePlayerPos();
+        updateSun();
+        updateInventoryInteraction();
+        Weapons.updateAmmo();
+        updateFactoriesOutput();
+        updateBlocksInteraction();
+        Inventory.updateStaticBlocksPreview();
+    }
+
+    public static void drawStatic() {
 
         for (int x = (int) (playerX / blockSize) - 20; x < playerX / blockSize + 21; x++) {
             for (int y = (int) (playerY / blockSize) - 8; y < playerY / blockSize + blockSize; y++) {
@@ -226,48 +222,37 @@ public class TextureDrawing {
             }
         }
 
-        Iterator<blockQueue> iterator = blocksQueue.iterator();
-        while (iterator.hasNext()) {
-            blockQueue q = iterator.next();
+        Factories.draw();
 
-            drawQueuedBlock(q.cellX, q.cellY, q.obj, q.breakable);
-            iterator.remove();
+        for (BlockPreview q : blocksQueue) {
+            drawQueuedBlock(q.x, q.y, q.blockId, q.breakable);
         }
-
-        // todo превью не хочет рисоваться откуда должно, поэтому висит тут, может потом что то красивое придумаю
-        Inventory.updateStaticBlocksPreview();
-        updateBlocksInteraction();
+        blocksQueue.clear();
     }
 
-    private static void drawQueuedBlock(int x, int y, short obj, boolean breakable) {
-        if (obj == -1 || StaticWorldObjects.getTexture(obj) == null) {
+    private static void drawQueuedBlock(int x, int y, short blockId, boolean breakable) {
+        if (blockId == -1 || StaticWorldObjects.getTexture(blockId) == null) {
             return;
         }
 
-        byte hp = getHp(obj);
-        int xBlock = findX(x, y);
-        int yBlock = findY(x, y);
+        byte hp = getHp(blockId);
+        float wx = x * blockSize;
+        float wy = y * blockSize;
 
-        if (isOnCamera(xBlock, yBlock, getTexture(obj))) {
+        if (isOnCamera(wx, wy, getTexture(blockId))) {
             SimpleColor color = ShadowMap.getColor(x, y);
             int a = (color.getRed() + color.getGreen() + color.getBlue()) / 3;
             SimpleColor blockColor = breakable ? SimpleColor.fromRGBA(Math.max(0, a - 150), Math.max(0, a - 150), a, 255) : SimpleColor.fromRGBA(a, Math.max(0, a - 150), Math.max(0, a - 150), 255);
 
-            StaticWAnimations.AnimData currentFrame = StaticWAnimations.getCurrentFrame(obj, new Point2i(x, y));
-            if (currentFrame != null) {
-                drawTexture(xBlock, yBlock, currentFrame.width(), currentFrame.height(), 1, false, currentFrame.currentFrame() + StaticWorldObjects.getId(obj), currentFrame.currentFrameImage(), blockColor);
-                return;
-            }
+            batch.draw(getTexture(blockId), blockColor, wx, wy);
 
-            batch.draw(getTexture(obj), blockColor, xBlock, yBlock);
-
-            float maxHp = getMaxHp(obj);
+            float maxHp = getMaxHp(blockId);
             if (hp > maxHp / 1.5f) {
                 // ???
             } else if (hp < maxHp / 3) {
-                batch.draw(atlas.byPath("World/Blocks/damaged1.png"), xBlock, yBlock);
+                batch.draw(atlas.byPath("World/Blocks/damaged1.png"), wx, wy);
             } else {
-                batch.draw(atlas.byPath("World/Blocks/damaged0.png"), xBlock, yBlock);
+                batch.draw(atlas.byPath("World/Blocks/damaged0.png"), wx, wy);
             }
         }
     }
@@ -323,8 +308,8 @@ public class TextureDrawing {
         }
     }
 
-    public static void addToBlocksQueue(int cellX, int cellY, short obj, boolean breakable) {
-        blocksQueue.add(new TextureDrawing.blockQueue(cellX, cellY, obj, breakable));
+    public static void addToBlocksQueue(int blockX, int blockY, short obj, boolean breakable) {
+        blocksQueue.add(new BlockPreview(blockX, blockY, obj, breakable));
     }
 
     private static void updateBlocksInteraction() {
@@ -362,7 +347,7 @@ public class TextureDrawing {
         return viewport.contains(x, y, texture.width(), texture.height());
     }
 
-    public static void updateDynamicObj() {
+    public static void drawDynamic() {
         for (DynamicWorldObjects dynamicObject : DynamicObjects) {
             if (dynamicObject != null) {
                 dynamicObject.incrementCurrentFrame();
@@ -379,12 +364,7 @@ public class TextureDrawing {
             }
         }
 
-        updateTemperatureEffect();
-    }
-
-    public static void updateGUI() {
-        scene.update();
-        scene.draw();
-        updatePlayerGUI();
+        Bullets.drawBullets();
+        Player.drawTemperatureEffect();
     }
 }

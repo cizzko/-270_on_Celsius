@@ -2,6 +2,7 @@ package core.World.StaticWorldObjects.Structures;
 
 import core.EventHandling.Logging.Config;
 import core.Global;
+import core.World.Textures.TextureDrawing;
 import core.ui.Sounds.Sound;
 import core.Utils.ArrayUtils;
 import core.World.Creatures.Player.Inventory.Inventory;
@@ -12,14 +13,12 @@ import core.Utils.SimpleColor;
 import core.World.StaticWorldObjects.StaticBlocksEvents;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.WorldUtils;
-import core.g2d.Atlas;
 import core.g2d.Fill;
 import core.math.Point2i;
 
 import java.util.*;
 
 import static core.Global.*;
-import static core.Utils.ArrayUtils.findEqualsObjects;
 import static core.World.Creatures.Player.Player.playerSize;
 import static core.World.Textures.TextureDrawing.blockSize;
 import static core.World.Textures.TextureDrawing.drawText;
@@ -190,7 +189,7 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
         }
     }
 
-    public static void update() {
+    public static void draw() {
         if (System.currentTimeMillis() - input.getLastMouseMoveTimestamp() > 1000) {
             Factories factory = findFactoryUnderMouse();
 
@@ -205,37 +204,14 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
                     int width1 = ArrayUtils.findDistinctObjects(factory.inputStoredObjects) * 54 + playerSize;
 
                     Fill.rect(xMouse, yMouse, width1, 64, color);
-                    drawObjects(xMouse, yMouse, factory.inputStoredObjects, atlas.byPath("UI/GUI/buildMenu/factoryIn.png"));
+                    TextureDrawing.drawObjects(xMouse, yMouse, factory.inputStoredObjects, atlas.byPath("UI/GUI/buildMenu/factoryIn.png"));
                 }
                 if (output && ArrayUtils.findFreeCell(factory.outputStoredObjects) != 0) {
                     xMouse += (ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0 ? 78 : 0);
                     int width = ArrayUtils.findDistinctObjects(factory.outputStoredObjects) * 54 + playerSize;
 
                     Fill.rect(xMouse, yMouse, width, 64, color);
-                    drawObjects(xMouse, yMouse, factory.outputStoredObjects, atlas.byPath("UI/GUI/buildMenu/factoryOut.png"));
-                }
-            }
-        }
-    }
-
-    // todo вопрос на засыпку - почему оно в этом классе?
-    public static void drawObjects(float x, float y, Items[] items, Atlas.Region iconRegion) {
-        if (items != null && ArrayUtils.findFreeCell(items) != 0) {
-            batch.draw(iconRegion, x, y + 16);
-
-            for (int i = 0; i < ArrayUtils.findDistinctObjects(items); i++) {
-                Items item = items[i];
-                if (item != null) {
-                    float scale = Items.computeZoom(item.texture);
-                    int countInCell = findEqualsObjects(items, item);
-
-                    drawText((x + (i * 54)) + playerSize + 31, y + 3, countInCell > 9 ? "9+" : String.valueOf(countInCell), SimpleColor.DIRTY_BRIGHT_BLACK);
-
-                    int finalI = i;
-                    batch.pushState(() -> {
-                        batch.scale(scale);
-                        batch.draw(item.texture, ((x + (finalI * 54)) + playerSize + 5), (y + 15));
-                    });
+                    TextureDrawing.drawObjects(xMouse, yMouse, factory.outputStoredObjects, atlas.byPath("UI/GUI/buildMenu/factoryOut.png"));
                 }
             }
         }

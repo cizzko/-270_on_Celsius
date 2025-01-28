@@ -1,9 +1,11 @@
 package core;
 
 import core.EventHandling.Logging.Logger;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 public class Application {
     private final Thread mainThread;
@@ -18,6 +20,10 @@ public class Application {
 
     public boolean isMainThread() {
         return Thread.currentThread() == mainThread;
+    }
+
+    public void setFramerate(int framerate) {
+        this.framerate = framerate;
     }
 
     public void ensureMainThread() {
@@ -52,15 +58,18 @@ public class Application {
         }
     }
 
-    private long prevFrameTime = -1; // Для deltaTime
-    private long frameCounterTime = -1;
+    private int framerate = -1;
+    private long prevFrameTime;
+    private long prevSwapTime;
+    private long frameCounterTime;
     private int fps, fpsMeasurement;
+
+    {
+        prevFrameTime = prevSwapTime = frameCounterTime = System.nanoTime();
+    }
 
     protected void updateTime() {
         long now = System.nanoTime();
-        if (prevFrameTime == -1) {
-            prevFrameTime = now;
-        }
 
         float deltaTime = (now - prevFrameTime) * 1e-9f;
         prevFrameTime = now;
@@ -75,6 +84,22 @@ public class Application {
         }
 
         fpsMeasurement++;
+    }
+
+    protected void nextFrame() {
+        if (framerate > 0) {
+            long elapsedTime = System.nanoTime() - prevSwapTime;
+            double frameTime = 1e9 / framerate;
+            if (elapsedTime < frameTime) {
+                long toSleep = (long) (frameTime - elapsedTime);
+                try {
+                    Thread.sleep((toSleep / 1_000_000), (int)(toSleep % 1_000_000));
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+        prevSwapTime = System.nanoTime();
     }
 
     public final int getFps() {

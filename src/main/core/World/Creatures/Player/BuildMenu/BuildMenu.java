@@ -192,14 +192,14 @@ public class BuildMenu {
 
             if (factory != null) {
                 if (factory.inputObjects != null) {
-                    Factories.drawObjects(x, y + 82, factory.inputObjects, atlas.byPath("UI/GUI/buildMenu/factoryIn.png"));
+                    drawObjects(x, y + 82, factory.inputObjects, atlas.byPath("UI/GUI/buildMenu/factoryIn.png"));
                 }
                 if (factory.outputObjects != null) {
-                    Factories.drawObjects(x, y + 41, factory.outputObjects, atlas.byPath("UI/GUI/buildMenu/factoryOut.png"));
+                    drawObjects(x, y + 41, factory.outputObjects, atlas.byPath("UI/GUI/buildMenu/factoryOut.png"));
                 }
             }
             if (item.requiredForBuild != null) {
-                Factories.drawObjects(x, y, item.requiredForBuild, atlas.byPath("UI/GUI/buildMenu/build.png"));
+                drawObjects(x, y, item.requiredForBuild, atlas.byPath("UI/GUI/buildMenu/build.png"));
             }
         }
     }

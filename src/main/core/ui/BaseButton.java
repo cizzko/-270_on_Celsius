@@ -1,8 +1,13 @@
 package core.ui;
 
+import core.EventHandling.EventHandler;
 import core.Utils.SimpleColor;
+import core.World.Textures.TextureDrawing;
 
 import java.util.function.Consumer;
+
+import static core.EventHandling.Logging.Config.getFromConfig;
+import static core.Global.input;
 
 public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B> {
     public boolean isClickable = true, isClicked, oneShot; // TODO перевести на битовые флаги.
@@ -57,5 +62,13 @@ public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B>
     public B toggleClickable() {
         this.isClickable = !isClickable;
         return as();
+    }
+
+    protected void drawPrompt(BaseButton<?> button) {
+        if (getFromConfig("ShowPrompts").equals("true")) {
+            if (EventHandler.isMousePressed(button) && System.currentTimeMillis() - input.getLastMouseMoveTimestamp() >= 1000 && button.prompt != null) {
+                TextureDrawing.drawRectangleText(input.mousePos().x, input.mousePos().y, 0, button.prompt, false, Styles.DEFAULT_PANEL_COLOR);
+            }
+        }
     }
 }

@@ -91,4 +91,9 @@ public final class Vector2f {
 
         return h;
     }
+
+    @Override
+    public String toString() {
+        return "{" + x + ", " + y + '}';
+    }
 }

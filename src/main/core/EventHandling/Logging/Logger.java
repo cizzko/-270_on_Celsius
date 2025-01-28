@@ -175,7 +175,7 @@ public class Logger extends PrintStream {
         message.append("\nGame version: " + Window.version);
         message.append("\nStart time: ").append(LocalDateTime.now());
         message.append("\n\nPreload resources: ").append(getFromConfig("PreloadResources"));
-        message.append("\nVertical sync: ").append(Config.getFromConfig("VerticalSync")).append(" (").append(verticalSync).append(")");
+        message.append("\nVertical sync: ").append(Config.getFromConfig("VerticalSync"));
         message.append("\nCurrent language: ").append(getFromConfig("Language"));
         message.append("\nAvailable languages: ").append(Json.getAllLanguages().replace(" ", ", ")).append("\n");
 

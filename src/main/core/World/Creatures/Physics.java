@@ -6,6 +6,7 @@ import core.EventHandling.Logging.Logger;
 import core.Utils.Sized;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
+import core.World.Creatures.Player.Player;
 import core.World.HitboxMap;
 import core.World.Saves;
 import core.World.StaticWorldObjects.StaticWorldObjects;
@@ -43,8 +44,6 @@ public class Physics {
     public static void initPhysics() {
         EventHandler.setDebugValue(() -> "[Physics] fps: " + fps);
 
-        Inventory.create();
-
         new Thread(() -> {
             Logger.log("Thread: Physics started");
             long lastUpdate = System.nanoTime();
@@ -55,7 +54,6 @@ public class Physics {
                     fpsMeasurement = 0;
 
                     updatePhys();
-                    updateWorldInteractions();
 
                     lastUpdate = System.nanoTime();
                 } else {
@@ -159,14 +157,9 @@ public class Physics {
     }
 
     private static void updatePhys() {
-        Iterator<DynamicWorldObjects> dynamicIterator = DynamicObjects.iterator();
-        updatePlayerMove();
-        updatePlayerJump();
-        updateWorldSave();
+        Player.inputUpdate();
 
-        while (dynamicIterator.hasNext()) {
-            DynamicWorldObjects dynamicObject = dynamicIterator.next();
-
+        for (DynamicWorldObjects dynamicObject : DynamicObjects) {
             if (dynamicObject != null) {
                 updateHorizontalSpeed(dynamicObject, dynamicObject.getTexture());
 
@@ -196,18 +189,5 @@ public class Physics {
         }
 
         return Math.min(90, totalResistance);
-    }
-
-    private static void updateWorldSave() {
-        if (System.currentTimeMillis() - Saves.lastSaved >= worldSaveDelay) {
-            Logger.log("Creating world backup..");
-            // TODO реализовать
-        }
-    }
-
-    private static void updateWorldInteractions() {
-        updateInventoryInteraction();
-        Weapons.updateAmmo();
-        updateFactoriesOutput();
     }
 }

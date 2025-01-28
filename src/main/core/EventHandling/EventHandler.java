@@ -3,9 +3,10 @@ package core.EventHandling;
 import core.EventHandling.Logging.Config;
 import core.Global;
 import core.UI;
+import core.Utils.Commandline;
+import core.World.Creatures.Player.Inventory.Inventory;
 import core.graphic.Layer;
 import core.ui.Dialog;
-import core.Utils.SimpleColor;
 import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Player;
 import core.math.Point2i;
@@ -13,16 +14,14 @@ import core.ui.Element;
 import core.ui.Styles;
 import core.ui.TextArea;
 import org.lwjgl.glfw.GLFWCharCallback;
-import org.lwjgl.glfw.GLFWFramebufferSizeCallback;
-import org.lwjgl.opengl.GL46;
 
 import java.util.function.Supplier;
 
 import static core.EventHandling.Logging.Logger.log;
 import static core.Global.*;
-import static core.Utils.Commandline.updateLine;
 import static core.Utils.NativeResources.addResource;
 import static core.Window.*;
+import static core.World.Creatures.Player.Player.updateToolInteraction;
 import static core.World.Textures.TextureDrawing.drawText;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -132,10 +131,12 @@ public class EventHandler {
         setDebugValue(() -> "[Render] fps: " + Global.app.getFps());
     }
 
-    public static void update() {
+    public static void inputUpdate() {
         Player.updatePlayerGUILogic();
         updateHotkeys();
-        updateLine();
+        Commandline.update();
+        updateToolInteraction();
+        Inventory.inputUpdate();
     }
 
     public static boolean isKeylogging() {

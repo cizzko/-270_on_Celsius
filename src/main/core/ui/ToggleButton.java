@@ -5,7 +5,6 @@ import core.g2d.Drawable;
 import core.g2d.Fill;
 
 import static core.Global.*;
-import static core.World.Textures.TextureDrawing.drawPrompt;
 import static core.World.Textures.TextureDrawing.drawText;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 

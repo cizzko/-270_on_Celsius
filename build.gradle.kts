@@ -77,7 +77,6 @@ java {
 dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
 
-    implementation("com.gradleup.shadow:shadow-gradle-plugin:8.3.3")
     implementation("org.jcodec:jcodec:0.2.5")
     implementation("org.jcodec:jcodec-javase:0.2.5")
 
