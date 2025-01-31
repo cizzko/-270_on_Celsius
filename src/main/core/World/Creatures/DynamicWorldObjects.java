@@ -112,7 +112,7 @@ public class DynamicWorldObjects implements Serializable {
         } else {
             boolean hasFixture = hasFixture();
             if (hasFixture && input.pressed(GLFW_KEY_SPACE)) {
-                tmp.y += 5;
+                tmp.y += 7;
                 jumpedTicks = Time.ONE_SECOND/1.5f;
             }
         }

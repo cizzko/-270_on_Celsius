@@ -1,8 +1,8 @@
 package core;
 
 import core.EventHandling.EventHandler;
-import core.Utils.Color;
-import core.Utils.Commandline;
+import core.util.Color;
+import core.util.Commandline;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Physics;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
@@ -26,7 +26,7 @@ import static core.World.StaticWorldObjects.Structures.Factories.updateFactories
 import static core.World.Textures.TextureDrawing.*;
 import static core.World.WorldGenerator.DynamicObjects;
 
-public class PlayGameScene extends GameScene {
+public final class PlayGameScene extends GameScene {
     public final Sun sun = new Sun();
     public final PostEffect postEffect = new PostEffect();
 

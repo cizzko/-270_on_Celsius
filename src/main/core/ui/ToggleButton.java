@@ -1,6 +1,6 @@
 package core.ui;
 
-import core.Utils.Color;
+import core.util.Color;
 import core.g2d.Drawable;
 import core.g2d.Fill;
 

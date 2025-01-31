@@ -6,14 +6,12 @@ import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.StaticWorldObjects.Structures.Factories;
-import core.Utils.Color;
+import core.util.Color;
 import core.World.Textures.TextureDrawing;
 import core.assets.AssetsManager;
 import core.g2d.Fill;
 import core.math.Point2i;
 import core.ui.Styles;
-
-import java.util.Properties;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Inventory.Inventory.*;

@@ -1,6 +1,6 @@
 package core.ui;
 
-import core.Utils.Sized;
+import core.util.Sized;
 import core.math.Point2i;
 
 public interface Element {

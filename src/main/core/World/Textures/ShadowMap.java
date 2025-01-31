@@ -1,7 +1,7 @@
 package core.World.Textures;
 
 import core.GameState;
-import core.Utils.Color;
+import core.util.Color;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.ui.Styles;

@@ -20,7 +20,8 @@ import static core.World.Textures.TextureDrawing.blockSize;
 import static core.World.WorldGenerator.*;
 
 public class Physics {
-    private static final float GRAVITY = 0.003f;
+    private static final float ANSWER = 42; // хихи, хаха
+    private static final float GRAVITY = 1.25f * ANSWER * 1e-4f;
 
     public static void updatePhysics(PlayGameScene scene) {
         if (scene.isPaused()) {
@@ -157,7 +158,7 @@ public class Physics {
     // Ле, куда летишь?
     static final float maxSpeed = blockSize * 1.5f;
     // Минимальное смещение, при котором происходит движение. Не вижу смысла сжигать процессор ради меньших значений
-    static final float moveThreshold = 0.0001f;
+    static final float moveThreshold = GAP;
 
     private static void simulate(float dt) {
 
@@ -240,8 +241,6 @@ public class Physics {
 
     private static float calculateFriction(DynamicWorldObjects ent) {
         ent.getHitboxTo(entityHitbox);
-        entityHitbox.width -= GAP;
-        entityHitbox.height -= GAP;
 
         int minX = (int) Math.floor(entityHitbox.x / blockSize);
         int minY = (int) Math.floor(entityHitbox.y / blockSize);

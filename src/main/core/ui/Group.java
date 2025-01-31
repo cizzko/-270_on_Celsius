@@ -1,6 +1,6 @@
 package core.ui;
 
-import core.Utils.Sized;
+import core.util.Sized;
 import core.g2d.Drawable;
 
 import java.util.List;

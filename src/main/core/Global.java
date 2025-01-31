@@ -6,7 +6,7 @@ import core.g2d.Atlas;
 import core.g2d.*;
 import core.input.InputHandler;
 
-import static core.Utils.DebugTools.rethrow;
+import static core.util.DebugTools.rethrow;
 
 public final class Global {
     private Global() {}

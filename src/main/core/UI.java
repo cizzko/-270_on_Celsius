@@ -5,7 +5,7 @@ import core.ui.menu.Pause;
 import core.ui.menu.MainMenu;
 import core.ui.menu.Settings;
 
-public class UI {
+public final class UI {
     private static MainMenu mainMenu;
     private static CreatePlanet createPlanet;
     private static Pause pause;

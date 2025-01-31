@@ -2,7 +2,7 @@ package core;
 
 import static core.Global.uiScene;
 import static core.Global.scheduler;
-import static core.Utils.DebugTools.rethrow;
+import static core.util.DebugTools.rethrow;
 
 // У этой магии есть такие свойства:
 //  Данный объект сам по себе является ресурсом и проходит цикл загрузки с вызовом методов AssetLifecycle

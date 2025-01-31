@@ -1,12 +1,10 @@
 package core.World.Textures;
 
-import core.Utils.ArrayUtils;
+import core.util.ArrayUtils;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
-import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.g2d.Atlas;
-import core.Utils.Color;
-import core.Utils.Sized;
+import core.util.Color;
 import core.Window;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticWorldObjects;
@@ -19,11 +17,10 @@ import core.math.Point2i;
 import core.math.Rectangle;
 import core.ui.Styles;
 
-import java.nio.ByteBuffer;
 import java.util.*;
 
 import static core.Global.*;
-import static core.Utils.ArrayUtils.findEqualsObjects;
+import static core.util.ArrayUtils.findEqualsObjects;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.WorldGenerator.*;

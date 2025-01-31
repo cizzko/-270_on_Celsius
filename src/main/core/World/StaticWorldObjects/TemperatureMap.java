@@ -1,8 +1,7 @@
 package core.World.StaticWorldObjects;
 
-import core.Global;
 import core.PlayGameScene;
-import core.Utils.Sized;
+import core.util.Sized;
 import core.World.Textures.TextureDrawing;
 import core.World.Weather.Sun;
 import core.math.Point2i;

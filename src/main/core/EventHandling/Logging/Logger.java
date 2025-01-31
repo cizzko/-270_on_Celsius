@@ -1,7 +1,7 @@
 package core.EventHandling.Logging;
 
 import com.sun.management.OperatingSystemMXBean;
-import core.Window;
+import core.Constants;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
@@ -186,7 +186,7 @@ public class Logger extends PrintStream {
             message.append("Warning: '").append(os).append("' with version '").append(osVersion).append("' not tested!\n");
         }
         message.append("\nGLFW version: ").append(glfwGetVersionString());
-        message.append("\nGame version: " + Window.version);
+        message.append("\nGame version: " + Constants.version);
         message.append("\nStart time: ").append(LocalDateTime.now());
         message.append("\n\nPreload resources: ").append(getFromConfig("PreloadResources"));
         message.append("\nVertical sync: ").append(Config.getFromConfig("VerticalSync"));

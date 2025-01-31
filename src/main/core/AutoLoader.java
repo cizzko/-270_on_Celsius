@@ -1,8 +1,7 @@
 package core;
 
-import core.Utils.DebugTools;
+import core.util.DebugTools;
 import core.assets.AssetsManager;
-import org.w3c.dom.TypeInfo;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;

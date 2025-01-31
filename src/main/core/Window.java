@@ -23,7 +23,6 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;
 
 public final class Window extends Application {
-    public static final String versionStamp = "0.0.6", version = "alpha " + versionStamp + " (non stable)";
     public static int defaultWidth = 1920, defaultHeight = 1080;
     public static boolean windowFocused = true;
     public static long glfwWindow;

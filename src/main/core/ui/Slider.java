@@ -1,7 +1,6 @@
 package core.ui;
 
-import core.Utils.Color;
-import core.Window;
+import core.util.Color;
 import core.g2d.Atlas;
 import core.g2d.Fill;
 import core.g2d.Font;

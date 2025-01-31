@@ -1,4 +1,4 @@
-package core.Utils;
+package core.util;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;

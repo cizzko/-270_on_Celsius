@@ -1,4 +1,4 @@
-package core.Utils;
+package core.util;
 
 public interface Disposable extends AutoCloseable {
 

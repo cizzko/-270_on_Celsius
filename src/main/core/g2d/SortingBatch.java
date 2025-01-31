@@ -1,7 +1,7 @@
 package core.g2d;
 
 import core.EventHandling.Logging.Logger;
-import core.Utils.Color;
+import core.util.Color;
 import core.pool.Pool;
 import core.pool.Poolable;
 

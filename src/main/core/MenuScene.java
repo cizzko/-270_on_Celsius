@@ -12,14 +12,14 @@ import static core.Global.camera;
 import static core.Global.input;
 import static core.Global.uiScene;
 
-public class MenuScene extends GameScene {
+public final class MenuScene extends GameScene {
 
     @Load(value = "arial.ttf", owned = false)
-    protected Font font;
+    private Font font;
     @Load(value = "sprites", owned = false)
-    protected Atlas sprites;
+    private Atlas sprites;
     @Load(value = "World/Other/background.png", load = AssetsManager.LoadType.SYNC)
-    protected Texture backgroundTex;
+    private Texture backgroundTex;
 
     @Override
     public void onInit() {

@@ -1,16 +1,13 @@
 package core.World.Creatures.Player;
 
 import core.EventHandling.Logging.Config;
-import core.GameState;
 import core.Global;
-import core.Utils.Color;
+import core.util.Color;
 import core.World.Creatures.DynamicWorldObjects;
-import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Inventory.Items.Tools;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator;

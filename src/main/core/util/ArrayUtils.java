@@ -1,6 +1,5 @@
-package core.Utils;
+package core.util;
 
-import java.io.File;
 import java.util.*;
 
 public class ArrayUtils {

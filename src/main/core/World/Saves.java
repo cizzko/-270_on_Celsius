@@ -1,5 +1,6 @@
 package core.World;
 
+import core.Constants;
 import core.Window;
 
 import java.io.*;
@@ -45,7 +46,7 @@ public class Saves {
     }
 
     private static HashMap<String, Object> addMeta(HashMap<String, Object> map) {
-        map.put("VersionCreation", Window.versionStamp);
+        map.put("VersionCreation", Constants.versionStamp);
         map.put("DateCreation", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd-HH:mm")));
 
         return map;

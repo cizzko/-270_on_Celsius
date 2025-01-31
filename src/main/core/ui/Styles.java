@@ -1,7 +1,7 @@
 package core.ui;
 
 import core.Global;
-import core.Utils.Color;
+import core.util.Color;
 import core.g2d.Font;
 
 import static core.Global.assets;

@@ -1,8 +1,7 @@
 package core.ui;
 
 import core.EventHandling.EventHandler;
-import core.Utils.Color;
-import core.Window;
+import core.util.Color;
 import core.World.Textures.TextureDrawing;
 import core.g2d.Font;
 

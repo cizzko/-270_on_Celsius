@@ -1,6 +1,6 @@
 package core.assets;
 
-import core.Utils.Color;
+import core.util.Color;
 import core.g2d.BitMap;
 import org.lwjgl.system.MemoryUtil;
 

@@ -1,6 +1,6 @@
 package core;
 
-import core.Utils.Color;
+import core.util.Color;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.g2d.Texture;
@@ -8,11 +8,11 @@ import core.g2d.Texture;
 import static core.Global.batch;
 import static core.World.WorldGenerator.DynamicObjects;
 
-public class PostEffect extends GameObject {
+public final class PostEffect extends GameObject {
     private final Color temperatureColor = new Color();
 
     @Load("UI/GUI/modifiedTemperature.png")
-    protected Texture temperatureTex;
+    private Texture temperatureTex;
 
     @Override
     public void draw() {

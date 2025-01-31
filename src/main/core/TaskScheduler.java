@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.*;
 
-public class TaskScheduler {
+public final class TaskScheduler {
     // TODO тут нужна MPSC очередь, желательно фиксированного размера
     private final ArrayList<TaskImpl<?>> tasks = new ArrayList<>(); // synchronized
     private volatile boolean running = true;

@@ -1,6 +1,6 @@
 package core.g2d;
 
-import core.Utils.Disposable;
+import core.util.Disposable;
 import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;

@@ -2,7 +2,7 @@ package core.World.Weather;
 
 import core.GameObject;
 import core.Load;
-import core.Utils.Color;
+import core.util.Color;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
 import core.g2d.Texture;

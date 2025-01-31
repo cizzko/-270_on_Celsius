@@ -1,7 +1,11 @@
 package core.assets;
 
 import core.Global;
-import core.g2d.*;
+import core.g2d.AtlasHandler;
+import core.g2d.FontHandler;
+import core.g2d.ShaderHandler;
+import core.g2d.TextureHandler;
+import org.lwjgl.system.Platform;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -22,14 +26,30 @@ public final class AssetsManager {
     final Map<Class<?>, AssetHandler<?, ?, ?>> handlers = new IdentityHashMap<>();
     final Map<Object, Asset<?>> refsByAssets = new HashMap<>();
     final Map<Class<?>, Map<String, ? super Asset<?>>> assets = new IdentityHashMap<>();
-    final Path workingDir, assetsDir;
+    final Path workingDir, assetsDir, dataDir;
 
     final ConcurrentHashMap<Class<?>, Map<String, AsyncAssetResolver<?, ?, ?>>> loading = new ConcurrentHashMap<>();
     final ForkJoinPool executor = ForkJoinPool.commonPool();
     final AssetReleaser releaser = this::releaseInternal;
 
-    public AssetsManager(boolean exploded) {
-        this.workingDir = Path.of(System.getProperty("user.dir"));
+    public AssetsManager(boolean exploded, String appName) throws IOException {
+        this.workingDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
+        this.dataDir = switch (Platform.get()) {
+            case WINDOWS -> Path.of(System.getenv("AppData"), appName).toAbsolutePath();
+            case MACOSX -> workingDir; // TODO не знаю
+            case LINUX -> {
+                String userHome = System.getProperty("user.home");
+                String xdgDataHome = System.getenv("XDG_DATA_HOME");
+                if (xdgDataHome != null) {
+                    yield Path.of(xdgDataHome, appName).toAbsolutePath();
+                }
+                yield Path.of(userHome,  "/.local/share/", appName).toAbsolutePath();
+            }
+        };
+        if (Files.notExists(dataDir)) {
+            Files.createDirectories(dataDir);
+        }
+
         if (exploded) {
             this.assetsDir = workingDir.resolve("src").resolve("assets");
         } else {
@@ -50,6 +70,10 @@ public final class AssetsManager {
 
     public Path workingDir() {
         return workingDir;
+    }
+
+    public Path dataDir() {
+        return dataDir;
     }
 
     public Path assetsDir() {
@@ -106,7 +130,7 @@ public final class AssetsManager {
         for (var e : assets.entrySet()) {
             String resTypeName = e.getKey().getCanonicalName();
             var resMap = e.getValue();
-            System.out.println("> resourceType='" + resTypeName + "' (count=" + resMap.size() +")");
+            System.out.println("> resourceType='" + resTypeName + "' (count=" + resMap.size() + ")");
             for (var res : resMap.values()) {
                 var assetRef = (Asset<?>) res;
                 System.out.println("| name='" + assetRef.name + "', refCount=" + assetRef.refCount + ", value=" + assetRef.value);

@@ -1,4 +1,4 @@
-package core.Utils;
+package core.util;
 
 public final class Color {
     public static final Color WHITE = new Color(0xFFFFFFFF);

@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 import static core.Global.*;
 
-public class UiScene implements InputListener {
+public final class UiScene implements InputListener {
     private final Camera2 view = new Camera2();
     private final ArrayList<Element> elements = new ArrayList<>();
 

@@ -1,4 +1,4 @@
-package core.Utils;
+package core.util;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;

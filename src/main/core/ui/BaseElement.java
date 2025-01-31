@@ -1,8 +1,7 @@
 package core.ui;
 
-import core.Utils.DebugTools;
-import core.Utils.Sized;
-import core.math.Point2i;
+import core.util.DebugTools;
+import core.util.Sized;
 import core.math.Rectangle;
 
 public abstract class BaseElement<E extends BaseElement<E>> implements Element {

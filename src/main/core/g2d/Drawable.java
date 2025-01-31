@@ -1,6 +1,6 @@
 package core.g2d;
 
-import core.Utils.Sized;
+import core.util.Sized;
 
 public sealed interface Drawable
         extends Sized

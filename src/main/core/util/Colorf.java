@@ -1,4 +1,4 @@
-package core.Utils;
+package core.util;
 
 public final class Colorf {
     private float r, g, b, a;

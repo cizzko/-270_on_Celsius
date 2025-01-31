@@ -1,8 +1,8 @@
 package core.g2d;
 
 import core.Global;
-import core.Utils.Disposable;
-import core.Utils.Color;
+import core.util.Disposable;
+import core.util.Color;
 import core.assets.AssetsManager;
 import core.math.Mat3;
 import core.pool.Pool;
