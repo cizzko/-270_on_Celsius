@@ -54,7 +54,11 @@ public final class Fill {
     }
 
     public static void rect(float x, float y, float width, float height, Color color) {
-        batch.draw(atlas.byPath("World/white"), color.rgba8888(), x, y, width, height);
+        rect(x, y, width, height, color.rgba8888());
+    }
+
+    public static void rect(float x, float y, float width, float height, int rgba8888) {
+        batch.draw(atlas.byPath("World/white"), rgba8888, x, y, width, height);
     }
 
     public static void circle(float x, float y, float radius, Color color) {

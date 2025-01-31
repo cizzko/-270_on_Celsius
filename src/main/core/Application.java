@@ -64,7 +64,7 @@ public class Application {
 
     }
 
-    protected void init() {
+    protected void init() throws Throwable {
 
     }
 

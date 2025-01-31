@@ -1,7 +1,7 @@
 package core.input;
 
+import core.EventHandling.Logging.Config;
 import core.Global;
-import core.ui.menu.MouseCalibration;
 import core.World.Textures.TextureDrawing;
 import core.math.Point2i;
 import core.math.Vector2f;
@@ -16,6 +16,9 @@ import static core.Window.glfwWindow;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class InputHandler {
+    private static final float xMultiplier = Float.parseFloat(Config.getFromConfig("MouseMultiplierX"));
+    private static final float yMultiplier = Float.parseFloat(Config.getFromConfig("MouseMultiplierY"));
+
     static final int PRESSED_ARRAY_SIZE = 349;
     static final int CLICKED_ARRAY_SIZE = 8; // GLFW_MOUSE_BUTTON_1 ~ GLFW_MOUSE_BUTTON_8
 
@@ -46,8 +49,8 @@ public class InputHandler {
         glfwSetCursorPosCallback(glfwWindow, Global.app.keep(new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double xpos, double ypos) {
-                int mouseX = (int) (xpos * MouseCalibration.xMultiplier);
-                int mouseY = (int) (ypos / MouseCalibration.yMultiplier);
+                int mouseX = (int) (xpos * xMultiplier);
+                int mouseY = (int) (ypos / yMultiplier);
                 int invertedY = height - mouseY;
 
                 lastMouseMoveTimestamp = System.currentTimeMillis();

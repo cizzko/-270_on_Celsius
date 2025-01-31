@@ -1,5 +1,9 @@
 package core.math;
 
+import core.Time;
+
+import java.util.Collection;
+
 public final class Vector2f {
     public float x, y;
 
@@ -26,6 +30,12 @@ public final class Vector2f {
 
     public float crs(Vector2f other) {
         return x * other.y - y * other.x;
+    }
+
+    public Vector2f add(float x, float y) {
+        this.x += x;
+        this.y += y;
+        return this;
     }
 
     public Vector2f add(Vector2f other) {
@@ -69,6 +79,14 @@ public final class Vector2f {
         this.x = rx;
         this.y = ry;
 
+        return this;
+    }
+
+    public Vector2f lerpDeltaTime(float tx, float ty, float progress) {
+        progress = Math.clamp(progress * Time.delta, 0, 1);
+        final float invAlpha = 1.0f - progress;
+        this.x = (x * invAlpha) + (tx * progress);
+        this.y = (y * invAlpha) + (ty * progress);
         return this;
     }
 

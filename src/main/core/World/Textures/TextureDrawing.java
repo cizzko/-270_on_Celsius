@@ -3,6 +3,7 @@ package core.World.Textures;
 import core.Utils.ArrayUtils;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
+import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.g2d.Atlas;
 import core.Utils.Color;
 import core.Utils.Sized;
@@ -28,12 +29,12 @@ import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.WorldGenerator.*;
 
 public class TextureDrawing {
-    private static final ArrayDeque<BlockPreview> blocksQueue = new ArrayDeque<>();
     public static final int blockSize = 48;
 
-    public static Rectangle viewport = new Rectangle();
+    private static final ArrayDeque<BlockPreview> blocksQueue = new ArrayDeque<>();
 
-    // todo вопрос на засыпку - почему оно в этом классе?
+    private static final Rectangle viewport = new Rectangle();
+
     public static void drawObjects(float x, float y, Items[] items, Atlas.Region iconRegion) {
         if (items != null && ArrayUtils.findFreeCell(items) != 0) {
             batch.draw(iconRegion, x, y + 16);
@@ -57,11 +58,6 @@ public class TextureDrawing {
     }
 
     public record BlockPreview(int x, int y, short blockId, boolean breakable) {}
-
-    // todo Сломано сознательно, чуть позже доделаю
-    @Deprecated(forRemoval = true)
-    public static void drawTexture(float x, float y, int w, int h, float zoom, boolean isStatic, int id, ByteBuffer buffer, Color color) {
-    }
 
     public static void drawText(float x, float y, String text, Color color) {
         float startX = x;
@@ -172,6 +168,9 @@ public class TextureDrawing {
                 }
                 short obj = world.get(x, y);
                 if (obj == -1 || obj == 0) {
+                    continue;
+                }
+                if (getTexture(obj) == null) {
                     continue;
                 }
                 // TODO всё же тут нужно проверять объекты на поле зрения
@@ -286,7 +285,7 @@ public class TextureDrawing {
         }
     }
 
-    public static boolean isOnCamera(float x, float y, Sized texture) {
+    public static boolean isOnCamera(float x, float y, Atlas.Region texture) {
         camera.getBoundsTo(viewport);
 
         return viewport.contains(x, y, texture.width(), texture.height());

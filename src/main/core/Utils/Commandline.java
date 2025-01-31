@@ -4,6 +4,7 @@ import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
 import core.Window;
+import core.g2d.Fill;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -11,6 +12,7 @@ import java.util.Arrays;
 
 import static core.EventHandling.EventHandler.keyLoggingText;
 import static core.Global.*;
+import static core.World.Textures.TextureDrawing.drawRectangleText;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Commandline {
@@ -162,6 +164,13 @@ public class Commandline {
                     keyLoggingText.append(text);
                 }
             }
+        }
+    }
+
+    public static void draw() {
+        if (created) {
+            Fill.rect(20, 800, 650, 260, Color.rgba8888(0, 0, 0, 220));
+            drawRectangleText(-10, 810, 630, EventHandler.keyLoggingText.toString(), true, Color.CLEAR, Window.defaultFont);
         }
     }
 }

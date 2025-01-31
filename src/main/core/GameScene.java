@@ -1,8 +1,7 @@
 package core;
 
-import static core.Global.scene;
+import static core.Global.uiScene;
 import static core.Global.scheduler;
-import static core.Utils.DebugTools.*;
 import static core.Utils.DebugTools.rethrow;
 
 // У этой магии есть такие свойства:
@@ -61,7 +60,7 @@ public abstract class GameScene implements AssetLifecycle {
                     readyLoop();
                 } else {
                     scheduler.executeAll();
-                    scene.update();
+                    uiScene.update();
                     drawLoading();
                 }
             }
@@ -72,7 +71,7 @@ public abstract class GameScene implements AssetLifecycle {
     private void readyLoop() {
         scheduler.executeAll();
         objectLoader.updatePreload();
-        scene.update();
+        uiScene.update();
         inputUpdate();
         update();
         draw();

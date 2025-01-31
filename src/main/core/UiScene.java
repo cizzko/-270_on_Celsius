@@ -10,11 +10,11 @@ import java.util.ArrayList;
 
 import static core.Global.*;
 
-public class Scene implements InputListener {
+public class UiScene implements InputListener {
     private final Camera2 view = new Camera2();
     private final ArrayList<Element> elements = new ArrayList<>();
 
-    public Scene(int width, int height) {
+    public UiScene(int width, int height) {
         view.setToOrthographic(width, height);
     }
 

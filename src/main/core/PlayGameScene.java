@@ -1,7 +1,6 @@
 package core;
 
 import core.EventHandling.EventHandler;
-import core.EventHandling.Logging.Config;
 import core.Utils.Color;
 import core.Utils.Commandline;
 import core.World.Creatures.DynamicWorldObjects;
@@ -9,6 +8,7 @@ import core.World.Creatures.Physics;
 import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
+import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
 import core.World.Weather.Sun;
 import core.g2d.Fill;
@@ -16,8 +16,6 @@ import core.graphic.Layer;
 import core.math.Rectangle;
 import core.math.Vector2f;
 import core.ui.Styles;
-
-import java.util.ArrayDeque;
 
 import static core.EventHandling.EventHandler.debugLevel;
 import static core.EventHandling.EventHandler.updateHotkeys;
@@ -49,9 +47,12 @@ public class PlayGameScene extends GameScene {
     @Override
     public void onInit() {
 
-        // Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Factories/lowTemperatureOven"));
-        // Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Blocks/smallStone"));
+        Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Factories/lowTemperatureOven"));
+        Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Factories/stoneCrusher"));
+        Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Blocks/smallStone"));
 
+        var player = DynamicObjects.getFirst();
+        camera.position.set(player.getX(), player.getY());
         EventHandler.setDebugValue(() -> "Camera pos: " + camera.position);
     }
 
@@ -68,6 +69,7 @@ public class PlayGameScene extends GameScene {
     protected void update() {
         Physics.updatePhysics(this);
         updatePlayerPos();
+        postEffect.update();
         sun.update();
         updateInventoryInteraction();
         Weapons.updateAmmo();
@@ -89,7 +91,8 @@ public class PlayGameScene extends GameScene {
 
         drawDebug();
 
-        scene.draw();
+        uiScene.draw();
+        Commandline.draw();
         BuildMenu.draw();
         Inventory.draw();
         drawCurrentHP();
@@ -101,38 +104,14 @@ public class PlayGameScene extends GameScene {
 
     }
 
-    private final ArrayDeque<Vector2f> smoothCameraX = new ArrayDeque<>(), smoothCameraY = new ArrayDeque<>();
-
-    private static final int multiplySmoothCameraX = Integer.parseInt(Config.getFromConfig("SmoothingCameraHorizontal"));
-    private static final int multiplySmoothCameraY = Integer.parseInt(Config.getFromConfig("SmoothingCameraVertical"));
-
     // Изменения, связанные с координатами игрока
     private void updatePlayerPos() {
         DynamicWorldObjects player = DynamicObjects.getFirst();
 
         float playerX = player.getX();
         float playerY = player.getY();
-        if (multiplySmoothCameraX > 0) {
-            smoothCameraX.addLast(new Vector2f(playerX, player.getMotionVectorX()));
 
-            // todo Math.max(Window.pfps - 75, 0) / 7 не воспринимать всерьез - это костыль просто для того, чтоб плавная камера работала на любом фпс, потом переделаю
-            if (smoothCameraX.size() > multiplySmoothCameraX + Math.max(app.getFpsMeasurement() - 75, 0) / 7) {
-                var first = smoothCameraX.removeFirst();
-                playerX = first.x - (first.y * multiplySmoothCameraX);
-            }
-        }
-
-        if (multiplySmoothCameraY > 0) {
-            smoothCameraY.addLast(new Vector2f(playerY, player.getMotionVectorY()));
-
-            // по тех. причинам тут пока без интерполяции
-            if (smoothCameraY.size() > multiplySmoothCameraY + Math.max(app.getFpsMeasurement() - 75, 0) / 7) {
-                playerY = smoothCameraY.removeFirst().x;
-            }
-        }
-        postEffect.update();
-
-        camera.position.set(playerX + 32, playerY + 200);
+        camera.position.lerpDeltaTime(playerX + 32, playerY + 200, 0.05f);
         camera.update();
 
         batch.matrix(camera.projection);

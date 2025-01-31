@@ -1,6 +1,5 @@
 package core.assets;
 
-import core.Global;
 import core.Utils.Color;
 import core.g2d.BitMap;
 import org.lwjgl.system.MemoryUtil;
@@ -11,22 +10,13 @@ import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.file.Files;
 
 import static core.EventHandling.Logging.Logger.*;
 
 public class TextureLoader {
-    public static BufferedImage readBufferedImage(String file) {
-        try (var in = Files.newInputStream(Global.assets.assetsDir().resolve(file))) {
-            return ImageIO.read(in);
-        } catch (IOException e) {
-            printException("Error at buffered image encoder, path: " + file, e);
-            throw new UncheckedIOException(e);
-        }
-    }
+
     public static BitMap decodeImage(BufferedImage image) {
         int[] pixels = new int[image.getWidth() * image.getHeight()];
         image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());

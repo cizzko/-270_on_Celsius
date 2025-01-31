@@ -12,6 +12,7 @@ final class AsyncAssetResolver<T, P, S>
         extends RecursiveTask<T>
         implements BaseAssetResolver {
 
+    final AsyncAssetResolver<?, ?, ?> parent;
     final AssetHandler<T, P, S> loader;
     final String name;
     final P params;
@@ -21,11 +22,9 @@ final class AsyncAssetResolver<T, P, S>
     final ArrayList<AssetsManager.Asset<?>> depends = new ArrayList<>();
     final ArrayList<ForkJoinTask<?>> tasks = new ArrayList<>();
 
-    enum TaskState {
-        RUNNING
-    }
-
-    public AsyncAssetResolver(AssetHandler<T, P, S> loader, String name, P params, S state) {
+    public AsyncAssetResolver(AsyncAssetResolver<?, ?, ?> parent,
+                              AssetHandler<T, P, S> loader, String name, P params, S state) {
+        this.parent = parent;
         this.desc = new AssetsManager.Asset<>(loader.type(), name);
         this.loader = loader;
         this.name = name;
@@ -62,6 +61,15 @@ final class AsyncAssetResolver<T, P, S>
     public <T2, P2> Future<T2> load(Class<T2> type, String name, AssetsManager.LoadType loadType,
                                     Consumer<? super P2> paramsModifier) {
         return Global.assets.loadInternal(this, type, name, loadType, paramsModifier);
+    }
+
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        if (super.cancel(mayInterruptIfRunning)) {
+            parent.cancel(false); // AsyncAssetResolver не должен прерываться
+            return true;
+        }
+        return false;
     }
 
     @SuppressWarnings("unchecked")

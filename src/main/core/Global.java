@@ -15,7 +15,7 @@ public final class Global {
     public static Atlas atlas;
     public static SortingBatch batch;
     public static AssetsManager assets;
-    public static Scene scene;
+    public static UiScene uiScene;
     public static final Camera2 camera = new Camera2();
 
     public static World world;

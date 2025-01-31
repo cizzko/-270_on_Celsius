@@ -14,16 +14,15 @@ public class Dialog extends BaseGroup<Dialog> {
     }
 
     public void show() {
-        scene.add(this);
-        // scene.debug();
+        uiScene.add(this);
     }
 
     public void hide() {
-        scene.remove(this);
+        uiScene.remove(this);
     }
 
     public void toggle() {
-        if (scene.contains(this)) {
+        if (uiScene.contains(this)) {
             hide();
         } else {
             show();
@@ -31,6 +30,6 @@ public class Dialog extends BaseGroup<Dialog> {
     }
 
     public boolean isShown() { // Если элемент показан это ещё не значит, что он отрисуется или будет взаимодействовать
-        return scene.contains(this);
+        return uiScene.contains(this);
     }
 }

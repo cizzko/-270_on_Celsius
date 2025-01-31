@@ -9,13 +9,15 @@ import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWWindowCloseCallback;
 import org.lwjgl.glfw.GLFWWindowFocusCallback;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.Configuration;
 import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.nio.file.Files;
+
 import static core.Global.*;
-import static core.assets.TextureLoader.readBufferedImage;
 import static core.assets.TextureLoader.decodeImage;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;
@@ -28,7 +30,7 @@ public final class Window extends Application {
     public static Font defaultFont;
 
     @Override
-    protected void init() {
+    protected void init() throws Throwable {
         // Хмм, надо бы где-то тут создавать сцену
         assets.load(Font.class, "arial.ttf");
         assets.load(Atlas.class, "sprites");
@@ -72,7 +74,11 @@ public final class Window extends Application {
 
         glfwMakeContextCurrent(glfwWindow);
 
-        var cursorImage = decodeImage(readBufferedImage("World/Other/cursorDefault.png"));
+        BufferedImage result;
+        try (var in = Files.newInputStream(assets.assetsDir().resolve("World/Other/cursorDefault.png"))) {
+            result = ImageIO.read(in);
+        }
+        var cursorImage = decodeImage(result);
         try (var stack = MemoryStack.stackPush()) {
             GLFWImage glfwImg = GLFWImage.malloc(stack);
             glfwImg.set(cursorImage.width(), cursorImage.height(), cursorImage.data());
@@ -96,10 +102,10 @@ public final class Window extends Application {
         // glEnable(GL_DEBUG_OUTPUT);
         // keep(GLUtil.setupDebugMessageCallback());
 
-        scene = new Scene(defaultWidth, defaultHeight);
+        uiScene = new UiScene(defaultWidth, defaultHeight);
         input = new InputHandler(defaultWidth, defaultHeight);
         input.init();
-        input.addListener(scene);
+        input.addListener(uiScene);
 
         glfwSetWindowFocusCallback(glfwWindow, Global.app.keep(new GLFWWindowFocusCallback() {
             @Override

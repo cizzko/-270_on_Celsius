@@ -10,7 +10,7 @@ import core.ui.Styles;
 import static core.Global.batch;
 import static core.Global.camera;
 import static core.Global.input;
-import static core.Global.scene;
+import static core.Global.uiScene;
 
 public class MenuScene extends GameScene {
 
@@ -50,7 +50,7 @@ public class MenuScene extends GameScene {
     @Override
     protected void draw() {
         drawLoading();
-        scene.draw();
+        uiScene.draw();
     }
 
     @Override

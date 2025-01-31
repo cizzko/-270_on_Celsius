@@ -91,6 +91,10 @@ public class DynamicWorldObjects implements Serializable {
             speed *= 1.5f;
         }
 
+        if (noClip) {
+            speed *= Math.max(0, input.getScrollOffset());
+        }
+
         int xf = input.axis(GLFW_KEY_A, GLFW_KEY_D);
 
         if (!noClip) {

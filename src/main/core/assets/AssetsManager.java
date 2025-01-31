@@ -273,7 +273,7 @@ public final class AssetsManager {
                                                               Class<T> type, String name,
                                                               AssetHandler<T, P, Object> loader, P params, Object state,
                                                               Map<String, AsyncAssetResolver<T, ?, ?>> loadingMap) {
-        var res = new AsyncAssetResolver<>(loader, name, params, state);
+        var res = new AsyncAssetResolver<>(parent, loader, name, params, state);
         if (loadingMap == null) {
             var newMap = new ConcurrentHashMap<String, AsyncAssetResolver<?, ?, ?>>();
             newMap.put(name, res);

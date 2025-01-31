@@ -119,7 +119,7 @@ public class WorldGenerator {
         step(() -> generateResources(world));
 
         //todo пещеры независимо от радиуса создаются толщиной в один блок
-        //generateCaves();
+        step(() -> generateCaves());
         step(() -> generateEnvironments(world));
         step(() -> ShadowMap.generate());
 
@@ -185,14 +185,7 @@ public class WorldGenerator {
             int maxRadius = 8;
             int startRadius = Math.max(minRadius, (int) (Math.random() * maxRadius));
             int x = (int) (Math.random() * world.sizeX);
-            int y = 0;
-
-            for (int i = 0; i < world.sizeY; i++) {
-                if (world.get(x, i) != -1) {
-                    y = i;
-                    break;
-                }
-            }
+            int y = findTopmostSolidBlock(x, 5);
 
             generateCave(x, y, startRadius, minRadius, maxRadius);
         }
@@ -203,7 +196,7 @@ public class WorldGenerator {
             return;
         }
 
-        float startRadius = radius;
+        float startRadius = 7;
         float angle = (float) ((Math.random() * 180) + 90);
 
         do {
@@ -214,7 +207,7 @@ public class WorldGenerator {
             float iters = (int) (Math.random() * 30);
             angle = (float) Math.clamp(angle + ((Math.random() * 100) - 50), 87, 267);
 
-            float deltaY = (float) (Math.cos(Math.toRadians(angle + 180)));
+            float deltaY = (float) (Math.cos(Math.toRadians(angle)));
             float deltaX = (float) (Math.sin(Math.toRadians(angle)));
 
             if (x + deltaX * (iters + maxRadius) > world.sizeX || x + deltaX * (iters + maxRadius) < 0) {
