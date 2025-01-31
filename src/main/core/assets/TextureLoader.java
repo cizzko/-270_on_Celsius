@@ -1,9 +1,9 @@
 package core.assets;
 
 import core.Global;
-import core.g2d.Font;
 import core.Utils.Color;
-import org.lwjgl.BufferUtils;
+import core.g2d.BitMap;
+import org.lwjgl.system.MemoryUtil;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
@@ -11,31 +11,26 @@ import javax.imageio.stream.ImageInputStream;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.file.Files;
 
 import static core.EventHandling.Logging.Logger.*;
-import static core.Window.*;
 
 public class TextureLoader {
-    public record ImageData(int width, int height, ByteBuffer data) {}
-    public record GifImageData(int width, int height, ByteBuffer[] data) {}
-
-    // returns BufferedImage target image
-    public static BufferedImage BufferedImageEncoder(String path) {
-        try {
-            return ImageIO.read(ImageIO.createImageInputStream(Global.assets.resourceStream(path)));
+    public static BufferedImage readBufferedImage(String file) {
+        try (var in = Files.newInputStream(Global.assets.assetsDir().resolve(file))) {
+            return ImageIO.read(in);
         } catch (IOException e) {
-            printException("Error at buffered image encoder, path: " + path, e);
-            logExit(1);
+            printException("Error at buffered image encoder, path: " + file, e);
+            throw new UncheckedIOException(e);
         }
-        return null;
     }
-
-    public static ImageData readImage(BufferedImage image) {
+    public static BitMap decodeImage(BufferedImage image) {
         int[] pixels = new int[image.getWidth() * image.getHeight()];
         image.getRGB(0, 0, image.getWidth(), image.getHeight(), pixels, 0, image.getWidth());
-        ByteBuffer buffer = BufferUtils.createByteBuffer(image.getWidth() * image.getHeight() * 4)
+        ByteBuffer buffer = MemoryUtil.memAlloc(image.getWidth() * image.getHeight() * 4)
                 .order(ByteOrder.BIG_ENDIAN); // BufferedImage не умеет в адекватное API. Почему не нативный порядок?
 
         for (int y = 0; y < image.getHeight(); y++) {
@@ -45,16 +40,10 @@ public class TextureLoader {
             }
         }
 
-        return new ImageData(image.getWidth(), image.getHeight(), buffer.flip());
+        return new BitMap(image.getWidth(), image.getHeight(), buffer.flip());
     }
 
-    public static ByteBuffer ByteBufferEncoder(BufferedImage image) {
-        return readImage(image).data;
-    }
-
-    public static void preLoadResources() throws IOException {
-        defaultFont = Font.load(Global.assets.assetsDir("UI/arial.ttf"));
-    }
+    public record GifImageData(int width, int height, ByteBuffer[] data) {}
 
     // decode and returns gif object of .gif file
     public static GifImageData framesDecoder(String path) {
@@ -67,7 +56,8 @@ public class TextureLoader {
 
                 ByteBuffer[] frames = new ByteBuffer[reader.getNumImages(true)];
                 for (int index = 0; index < frames.length; index++) {
-                    frames[index] = ByteBufferEncoder(reader.read(index));
+                    BufferedImage image = reader.read(index);
+                    frames[index] = decodeImage(image).data();
                 }
                 return new GifImageData(reader.read(0).getWidth(), reader.read(0).getHeight(), frames);
             }

@@ -62,7 +62,7 @@ public final class AtlasGenerator {
 
     public static void main(String[] args) throws IOException {
         Path basePath = Path.of("src/assets/");
-        Path outputDir = Path.of("src/assets-gen");
+        Path outputDir = Path.of("src/assets/");
         Set<Path> ignore = Set.of(
                 basePath.resolve("World/Other/background.png"),
                 basePath.resolve("World/Sky/skyBackground0.png"),

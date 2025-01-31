@@ -1,19 +1,13 @@
 package core.World.Textures;
 
-import core.EventHandling.Logging.Config;
 import core.Utils.ArrayUtils;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
-import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
-import core.World.Creatures.Player.Player;
 import core.g2d.Atlas;
 import core.Utils.Color;
 import core.Utils.Sized;
 import core.Window;
 import core.World.Creatures.DynamicWorldObjects;
-import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
-import core.World.StaticWorldObjects.StaticWAnimations;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.StaticWorldObjects.Structures.Factories;
 import core.World.StaticWorldObjects.TemperatureMap;
@@ -22,10 +16,8 @@ import core.g2d.Fill;
 import core.g2d.Font;
 import core.math.Point2i;
 import core.math.Rectangle;
-import core.math.Vector2f;
 import core.ui.Styles;
 
-import java.awt.*;
 import java.nio.ByteBuffer;
 import java.util.*;
 
@@ -33,16 +25,11 @@ import static core.Global.*;
 import static core.Utils.ArrayUtils.findEqualsObjects;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
-import static core.World.StaticWorldObjects.Structures.Factories.updateFactoriesOutput;
-import static core.World.Weather.Sun.updateSun;
 import static core.World.WorldGenerator.*;
 
 public class TextureDrawing {
     private static final ArrayDeque<BlockPreview> blocksQueue = new ArrayDeque<>();
-    private static final ArrayDeque<Vector2f> smoothCameraX = new ArrayDeque<>(), smoothCameraY = new ArrayDeque<>();
-    private static final int multiplySmoothCameraX = Integer.parseInt(Config.getFromConfig("SmoothingCameraHorizontal")), multiplySmoothCameraY = Integer.parseInt(Config.getFromConfig("SmoothingCameraVertical"));
     public static final int blockSize = 48;
-    public static float playerX = 0, playerY = 0;
 
     public static Rectangle viewport = new Rectangle();
 
@@ -113,9 +100,9 @@ public class TextureDrawing {
         Fill.resetLineWidth();
     }
 
-    public static void drawRectangleText(int x, int y, int maxWidth, String text, boolean staticTransfer, Color panColor) {
+    public static void drawRectangleText(int x, int y, int maxWidth, String text, boolean staticTransfer, Color panColor, Font font) {
         maxWidth = (maxWidth > 0 ? maxWidth : 1920 - x);
-        y = staticTransfer ? y + getTextSize(text).width / maxWidth * blockSize : y;
+        y = staticTransfer ? y + getTextSize(text).x / maxWidth * blockSize : y;
 
         StringBuilder modifiedText = new StringBuilder();
         int currentWidth = 0;
@@ -124,9 +111,9 @@ public class TextureDrawing {
             char c = text.charAt(i);
 
             if (c == ' ') {
-                currentWidth += Window.defaultFont.getGlyph('A').width();
+                currentWidth += font.getGlyph('A').width();
             } else {
-                currentWidth += Window.defaultFont.getGlyph(c).width();
+                currentWidth += font.getGlyph(c).width();
             }
             if (currentWidth > maxWidth) {
                 modifiedText.append("\\n");
@@ -136,15 +123,17 @@ public class TextureDrawing {
         }
         text = modifiedText.toString();
 
-        Dimension textSize = getTextSize(text);
-        int width = textSize.width;
-        int height = textSize.height;
+        var textSize = getTextSize(text);
+        int width = textSize.x;
+        int height = textSize.y;
 
         Fill.rect(x + 30, y - height / 2f, width, height, panColor);
         drawText(x + 36, y + height - 32 - height / 2f, text);
     }
 
-    public static Dimension getTextSize(String text) {
+    private static final Point2i textSize = new Point2i();
+
+    public static Point2i getTextSize(String text) {
         String longestLine = "";
         int width = 12;
         int linesCount = 0;
@@ -166,61 +155,27 @@ public class TextureDrawing {
             }
             width += Window.defaultFont.getGlyph(c).width();
         }
-        return new Dimension(width, linesCount * 28 + 16);
-    }
-
-    // Изменения, связанные с координатами игрока
-    private static void updatePlayerPos() {
-        DynamicWorldObjects player = DynamicObjects.getFirst();
-
-        playerX = player.getX();
-        playerY = player.getY();
-
-        if (multiplySmoothCameraX > 0) {
-            smoothCameraX.add(new Vector2f(playerX, player.getMotionVectorX()));
-
-            // todo Math.max(Window.pfps - 75, 0) / 7 не воспринимать всерьез - это костыль просто для того, чтоб плавная камера работала на любом фпс, потом переделаю
-            if (smoothCameraX.size() > multiplySmoothCameraX + Math.max(app.getFpsMeasurement() - 75, 0) / 7) {
-                playerX = smoothCameraX.getFirst().x - (smoothCameraX.getFirst().y * multiplySmoothCameraX);
-                smoothCameraX.removeFirst();
-            }
-        }
-
-        if (multiplySmoothCameraY > 0) {
-            smoothCameraY.add(new Vector2f(playerY, player.getMotionVectorY()));
-
-            // по тех. причинам тут пока без интерполяции
-            if (smoothCameraY.size() > multiplySmoothCameraY + Math.max(app.getFpsMeasurement() - 75, 0) / 7) {
-                playerY = smoothCameraY.getFirst().x;
-                smoothCameraY.removeFirst();
-            }
-        }
-        updateTemperatureEffect();
-
-        camera.position.set(playerX + 32, playerY + 200);
-        camera.update();
-
-        batch.matrix(camera.projection);
-    }
-
-    public static void updateWorld() {
-        updatePlayerPos();
-        updateSun();
-        updateInventoryInteraction();
-        Weapons.updateAmmo();
-        updateFactoriesOutput();
-        updateBlocksInteraction();
-        Inventory.updateStaticBlocksPreview();
+        return textSize.set(width, linesCount * 28 + 16);
     }
 
     public static void drawStatic() {
+        camera.getBoundsTo(viewport);
+        int minX = (int) Math.floor(viewport.x / blockSize);
+        int maxX = (int) Math.floor((viewport.x + viewport.width) / blockSize);
+        int minY = (int) Math.floor(viewport.y / blockSize);
+        int maxY = (int) Math.floor((viewport.y + viewport.height) / blockSize);
 
-        for (int x = (int) (playerX / blockSize) - 20; x < playerX / blockSize + 21; x++) {
-            for (int y = (int) (playerY / blockSize) - 8; y < playerY / blockSize + blockSize; y++) {
-                if (x < 0 || y < 0 || x > world.sizeX || y > world.sizeY) {
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                if (!world.inBounds(x, y)) {
                     continue;
                 }
-                drawBlock(x, y);
+                short obj = world.get(x, y);
+                if (obj == -1 || obj == 0) {
+                    continue;
+                }
+                // TODO всё же тут нужно проверять объекты на поле зрения
+                drawBlock(x, y, obj);
             }
         }
 
@@ -265,47 +220,36 @@ public class TextureDrawing {
         }
     }
 
-    private static void drawBlock(int x, int y) {
-        short obj = world.get(x, y);
-
-        if (obj == -1 || StaticWorldObjects.getId(obj) == 0 || getTexture(obj) == null) {
-            return;
-        }
+    private static void drawBlock(int x, int y, short obj) {
         byte hp = getHp(obj);
-        if (hp <= 0) {
-            world.destroy(x, y);
-            return;
-        }
 
         int xBlock = findX(x, y);
         int yBlock = findY(x, y);
 
-        if (isOnCamera(xBlock, yBlock, getTexture(obj))) {
-            Color color = ShadowMap.getColorTo(x, y, tmp);
-            int upperLimit = 100;
-            int lowestLimit = -20;
-            int maxColor = 65;
-            float temp = TemperatureMap.getTemp(x, y);
+        Color color = ShadowMap.getColorTo(x, y, tmp);
+        int upperLimit = 100;
+        int lowestLimit = -20;
+        int maxColor = 65;
+        float temp = TemperatureMap.getTemp(x, y);
 
-            int a;
-            if (temp > upperLimit) {
-                a = (int) Math.min(maxColor, Math.abs((temp - upperLimit) / 3));
-                color.set(color.r(), color.g() - (a / 2), color.b() - a, color.a());
-            } else if (temp < lowestLimit) {
-                a = (int) Math.min(maxColor, Math.abs((temp + lowestLimit) / 3));
-                color.set(color.r() - a, color.g() - (a / 2), color.b(), color.a());
-            }
+        int a;
+        if (temp > upperLimit) {
+            a = (int) Math.min(maxColor, Math.abs((temp - upperLimit) / 3));
+            color.set(color.r(), color.g() - (a / 2), color.b() - a, color.a());
+        } else if (temp < lowestLimit) {
+            a = (int) Math.min(maxColor, Math.abs((temp + lowestLimit) / 3));
+            color.set(color.r() - a, color.g() - (a / 2), color.b(), color.a());
+        }
 
-            batch.draw(getTexture(obj), color, xBlock, yBlock);
+        batch.draw(getTexture(obj), color, xBlock, yBlock);
 
-            float maxHp = getMaxHp(obj);
-            if (hp > maxHp / 1.5f) {
-                // ???
-            } else if (hp < maxHp / 3) {
-                batch.draw(atlas.byPath("World/Blocks/damaged1.png"), xBlock, yBlock);
-            } else {
-                batch.draw(atlas.byPath("World/Blocks/damaged0.png"), xBlock, yBlock);
-            }
+        float maxHp = getMaxHp(obj);
+        if (hp > maxHp / 1.5f) {
+            // ???
+        } else if (hp < maxHp / 3) {
+            batch.draw(atlas.byPath("World/Blocks/damaged1"), xBlock, yBlock);
+        } else {
+            batch.draw(atlas.byPath("World/Blocks/damaged0"), xBlock, yBlock);
         }
     }
 
@@ -313,7 +257,7 @@ public class TextureDrawing {
         blocksQueue.add(new BlockPreview(blockX, blockY, obj, breakable));
     }
 
-    private static void updateBlocksInteraction() {
+    public static void updateBlocksInteraction() {
         char interactionChar = 'E';
         Point2i mousePos = WorldUtils.getBlockUnderMousePoint();
         Point2i root = findRoot(mousePos.x, mousePos.y);
@@ -343,7 +287,7 @@ public class TextureDrawing {
     }
 
     public static boolean isOnCamera(float x, float y, Sized texture) {
-        camera.getBounds(viewport);
+        camera.getBoundsTo(viewport);
 
         return viewport.contains(x, y, texture.width(), texture.height());
     }
@@ -366,6 +310,5 @@ public class TextureDrawing {
         }
 
         Bullets.drawBullets();
-        Player.drawTemperatureEffect();
     }
 }

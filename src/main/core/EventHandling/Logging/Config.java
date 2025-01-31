@@ -4,6 +4,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 import static core.EventHandling.Logging.Logger.printException;
@@ -18,79 +19,86 @@ public class Config {
     public static final String DETECT_LANGUAGE_KEY = "DetectLanguage";
 
     private static boolean configCheckMark = false;
-    private static final HashMap<String, Properties> props = new HashMap<>(3);
-    private static final HashMap<String, Object> values = new HashMap<>();
+
+    private static final HashMap<String, String> config = new HashMap<>();
+    private static final HashMap<String, String> fastCommands = new HashMap<>();
 
     // checks if the startup configuration contains any parameters
     public static void checkConfig() {
         if (!configCheckMark) {
-            copyFromResource("configDefault.properties", "config.properties");
-            copyFromResource("fastCommands.properties", "fastCommands.properties");
+            copyFromResource(config, "configDefault.properties", "config.properties");
+            copyFromResource(fastCommands, "fastCommands.properties", "fastCommands.properties");
             configCheckMark = true;
         }
     }
 
     // TODO выглядит как неплохая функция для AssetsManager
-    static void copyFromResource(String resourceFileName, String externalFileName) {
+    static void copyFromResource(HashMap<String, String> map, String resourceFileName, String externalFileName) {
 
-        Path configPath = Path.of(assets.pathTo(externalFileName));
-        if (Files.notExists(configPath)) {
-            try (var in = assets.resourceStream(assets.assetsDir(resourceFileName)); var out = Files.newOutputStream(configPath)) {
-                in.transferTo(out);
+        var externalFile = assets.workingDir().resolve(externalFileName);
+        if (Files.notExists(externalFile)) {
+            var resourceFile = assets.assetsDir().resolve(resourceFileName);
+            try {
+                Files.copy(resourceFile, externalFile);
             } catch (IOException e) {
-                e.printStackTrace(); // Падает с рекурсией
+                e.printStackTrace(); // TODO
             }
         }
-    }
 
-    // when need caching values && properties
-    public static Object getFromProp(String path, String key) {
-        Object obj = values.get(key);
-        if (obj != null) {
-            return obj;
+        var props = new Properties();
+        try (var in = Files.newInputStream(externalFile)) {
+            props.load(in);
+        } catch (IOException e) {
+            e.printStackTrace(); // TODO
         }
-
-        Object value = getProperties(path).getProperty(key);
-        values.put(key, value);
-
-        return value;
+        @SuppressWarnings("unchecked")
+        var magic = (Map<String, String>) (Map<?, ?>) props;
+        map.putAll(magic);
     }
 
-    // when need caching only properties
-    public static Properties getProperties(String path) {
-        Properties props = Config.props.get(path);
+    private static final HashMap<Path, Map<String, String>> propsCache = new HashMap<>();
+
+    public static Map<String, String> getProperties(Path path) {
+        var props = Config.propsCache.get(path);
         if (props == null) {
-            props = new Properties();
-            Config.props.put(path, props);
-            try (var in = assets.resourceStream(path)) {
-                if (in != null) {
-                    props.load(in);
-                }
+            var tmp = new Properties();
+            try (var in = Files.newInputStream(path)) {
+                tmp.load(in);
             } catch (IOException e) {
                 Logger.printException("Error when get properties, file: " + path, e);
             }
+            @SuppressWarnings("unchecked")
+            var magic = (Map<String, String>) (Map<?, ?>) tmp;
+            props = new HashMap<>(magic);
+            Config.propsCache.put(path, props);
         }
         return props;
     }
 
+    public static Map<String, String> getProperties(String path) {
+        return getProperties(assets.assetsDir().resolve(path));
+    }
+
     public static String getFromConfig(String key) {
         checkConfig();
-        return (String) getFromProp(assets.pathTo("config.properties"), key);
+        return config.get(key);
     }
 
     // fast commands
     public static String getFromFC(String key) {
-        return (String) getFromProp(assets.pathTo("fastCommands.properties"), key);
+        return fastCommands.get(key);
     }
 
     public static void updateConfig(String key, String value) {
-        values.put(key, value);
-        String configFile = assets.pathTo("config.properties");
-        Properties configProp = props.get(configFile);
-        try (var out = Files.newOutputStream(Path.of(configFile))) {
-            configProp.store(out, null);
+        config.put(key, value);
+
+        var externalFile = assets.workingDir().resolve("config.properties");
+        var props = new Properties();
+        props.putAll(config);
+        try (var out = Files.newOutputStream(externalFile)) {
+            props.store(out, null);
         } catch (Exception e) {
-            printException("Error when updating config at path: '" + configFile + "', key: '" + key + "' value: '" + value + "'", e);
+            printException("Error when updating config at path: '" + externalFile + "', key: '" + key + "' value: '" + value + "'", e);
         }
     }
 }

@@ -1,6 +1,7 @@
 package core.ui.menu;
 
-import core.EventHandling.Logging.Logger;
+import core.GameState;
+import core.Global;
 import core.UI;
 import core.ui.Dialog;
 import core.ui.Styles;
@@ -10,9 +11,7 @@ import java.net.URI;
 
 import static core.EventHandling.Logging.Json.getName;
 import static core.EventHandling.Logging.Logger.printException;
-import static core.Global.atlas;
-import static core.Global.input;
-import static core.Window.start;
+import static core.Global.*;
 
 public class MainMenu extends Dialog {
     public MainMenu() {
@@ -43,15 +42,15 @@ public class MainMenu extends Dialog {
     }
 
     private void exitBtn() {
-        Logger.logExit(0);
+        Global.app.quit();
     }
 
     private void settingsBtn() {
         UI.settings().show();
-        if (!start) {
-            hide();
-        } else {
+        if (gameState == GameState.PLAYING) {
             UI.pause().hide();
+        } else {
+            hide();
         }
     }
 

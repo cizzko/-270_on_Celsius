@@ -1,2 +1,18 @@
-/gradlew        text eol=lf
-*.bat           text eol=crlf
+* text=auto
+
+/gradlew text eol=lf
+*.bat    text eol=crlf
+
+# потому что не хочу разбираться с добавлением пустых строк
+*.json       text eol=lf
+*.java       text eof=lf
+*.gradle.kts text eof=lf
+*.properties text eof=lf
+*.md         text eof=lf
+*.frag       text eof=lf
+*.vert       text eof=lf
+
+*.jar    binary
+*.class  binary
+*.png    binary
+*.ttf    binary

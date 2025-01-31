@@ -30,14 +30,14 @@ public class DynamicObjectsConst {
         DynamicObjectsConst cnst = consts.get(id);
 
         if (cnst == null) {
-            Properties prop = Config.getProperties(assets.assetsDir("/World/CreaturesCharacteristics/" + name + ".properties"));
-            boolean isFlying = Boolean.parseBoolean((String) prop.getOrDefault("IsFlying", "false"));
-            boolean oneoffAnimation = Boolean.parseBoolean((String) prop.getOrDefault("OneoffAnimation", "false"));
-            int framesCount = Integer.parseInt((String) prop.getOrDefault("FramesCount", "0"));
-            int animSpeed = Integer.parseInt((String) prop.getOrDefault("AnimationSpeed", "0"));
-            float weight = Float.parseFloat((String) prop.getOrDefault("Weight", "0.001f"));
-            float maxHp = Float.parseFloat((String) prop.getOrDefault("MaxHp", "100"));
-            Atlas.Region texture = Global.atlas.byPath((String) prop.getOrDefault("Path", "/World/textureNotFound.png"));
+            var prop = Config.getProperties("World/CreaturesCharacteristics/" + name + ".properties");
+            boolean isFlying = Boolean.parseBoolean(prop.getOrDefault("IsFlying", "false"));
+            boolean oneoffAnimation = Boolean.parseBoolean(prop.getOrDefault("OneoffAnimation", "false"));
+            int framesCount = Integer.parseInt(prop.getOrDefault("FramesCount", "0"));
+            int animSpeed = Integer.parseInt(prop.getOrDefault("AnimationSpeed", "0"));
+            float weight = Float.parseFloat(prop.getOrDefault("Weight", "0.001f"));
+            float maxHp = Float.parseFloat(prop.getOrDefault("MaxHp", "100"));
+            Atlas.Region texture = Global.atlas.byPath(prop.getOrDefault("Path", "World/textureNotFound.png"));
 
             consts.put(id, cnst = new DynamicObjectsConst(isFlying, oneoffAnimation, framesCount, animSpeed, weight, maxHp, texture));
         }

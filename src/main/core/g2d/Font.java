@@ -1,133 +1,18 @@
 package core.g2d;
 
-import core.EventHandling.Logging.Logger;
-import core.Global;
-import core.graphic.RectanglePacker;
-import core.math.MathUtil;
-import org.lwjgl.opengl.GL46;
-
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
 
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-
 public final class Font {
-    private static final int fontSize = 18;
+    static final int fontSize = 18;
 
     // см. AtlasGenerator
-    private static final int PIXEL_GAP = 1;
+    static final int PIXEL_GAP = 1;
 
-    private Texture texture;
-    private Map<Character, Glyph> glyphTable;
-    private Glyph unknownGlyph;
+    Texture texture;
+    Map<Character, Glyph> glyphTable;
+    Glyph unknownGlyph;
 
-    public static Font load(String path) throws IOException {
-        java.awt.Font font = null;
-        try (var in = Global.assets.resourceStream(path)) {
-            font = java.awt.Font.createFont(java.awt.Font.PLAIN, in);
-            // default 12
-            font = font.deriveFont(java.awt.Font.PLAIN, (float) (fontSize * Toolkit.getDefaultToolkit().getScreenResolution() / 72.0));
-        } catch (IOException | FontFormatException e) {
-            Logger.printException("Error when generate font", e);
-            Logger.logExit(1);
-        }
-
-        Font fnt = new Font();
-        HashMap<Character, Glyph> glyphTableTmp = new HashMap<>();
-
-        BufferedImage tmp = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D tmpg = tmp.createGraphics();
-        {
-            tmpg.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            tmpg.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-            tmpg.setFont(font);
-            tmpg.dispose();
-        }
-        FontMetrics metrics = tmpg.getFontMetrics();
-
-        record GlyphAndImage(Glyph glyph, BufferedImage image) {}
-
-        // TODO:
-        // Мне не понравилось работать с java.awt.Font
-        // Совершенно нет идей как делать отрисовку глифов других параметров (italic, bold, другой размер и т.д.)
-        // Я видел бинды на FreeType на манер LWJGL, может их и использовать?
-        // P.S. Тут в коде очень опасная ситуация может быть. Дело в размере текстуры.
-        // При превышении этого значения пойдут артефакты. Это можно решить разбив шрифт на "страницы",
-        // но надо это ещё надо подумать...
-
-        int maxTexSize = GL46.glGetInteger(GL46.GL_MAX_TEXTURE_SIZE);
-        RectanglePacker packer = new RectanglePacker(64, 64);
-
-        ArrayList<GlyphAndImage> glyphs = new ArrayList<>();
-
-        int guessedHeight = metrics.getHeight();
-        for (char c = Character.MIN_VALUE; c < Character.MAX_VALUE; c++) {
-            if (!font.canDisplay(c)) {
-                continue;
-            }
-            int charWidth = metrics.charWidth(c);
-            if (charWidth == 0) {
-                continue;
-            }
-
-            BufferedImage image = new BufferedImage(charWidth, guessedHeight, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D g2 = image.createGraphics();
-            g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-            g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
-            g2.setFont(font);
-            g2.setColor(java.awt.Color.WHITE);
-            g2.drawString(Character.toString(c), 0, metrics.getAscent());
-            g2.dispose();
-
-            int width = image.getWidth();
-            int height = image.getHeight();
-            Glyph ch = new Glyph(fnt, c, width, height);
-
-            glyphs.add(new GlyphAndImage(ch, image));
-            glyphTableTmp.put(c, ch);
-        }
-
-        for (GlyphAndImage image : glyphs) {
-            Glyph gl = image.glyph;
-
-            RectanglePacker.Position pos;
-            while ((pos = packer.pack(gl.width, gl.height, PIXEL_GAP)).isInvalid()) {
-                boolean increaseW = packer.w <= packer.h;
-                if (packer.w >= maxTexSize && increaseW) {
-                    throw new IllegalArgumentException();
-                }
-                if (increaseW) {
-                    packer.resize(MathUtil.ceilNextPowerOfTwo(packer.w + 1), packer.h);
-                } else {
-                    packer.resize(packer.w, MathUtil.ceilNextPowerOfTwo(packer.h + 1));
-                }
-            }
-            gl.x = pos.x;
-            gl.y = pos.y;
-        }
-
-        BufferedImage atlasImage = new BufferedImage(packer.w, packer.h, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D gr = atlasImage.createGraphics();
-        for (GlyphAndImage p : glyphs) {
-            Glyph gl = p.glyph;
-            gr.drawImage(p.image, gl.x, gl.y, null);
-        }
-        gr.dispose();
-
-        fnt.texture = Texture.load(atlasImage, GL_TEXTURE_2D, 0, 0, 1, 1);
-        // Копирование необходимо, чтобы ужать хеш-таблицу до оптимального размера
-        fnt.glyphTable = Map.copyOf(glyphTableTmp);
-        fnt.unknownGlyph = fnt.glyphTable.get('?');
-
-        for (GlyphAndImage glyph : glyphs) {
-            glyph.glyph.computeTextureCoordinates();
-        }
-        return fnt;
-    }
+    Font() {}
 
     public Glyph getGlyph(char ch) {
         return glyphTable.getOrDefault(ch, unknownGlyph);
@@ -142,7 +27,7 @@ public final class Font {
         private final char ch;
         private final int width, height;
 
-        private int x, y;
+        int x, y;
         private float u, v, u2, v2;
 
         public Glyph(Font font, char ch,
@@ -153,7 +38,7 @@ public final class Font {
             this.height = height;
         }
 
-        private void computeTextureCoordinates() {
+        void computeTextureCoordinates() {
             this.u = x / (float) font.texture.width();
             this.v = y / (float) font.texture.height();
             this.u2 = (x + width) / (float) font.texture.width();

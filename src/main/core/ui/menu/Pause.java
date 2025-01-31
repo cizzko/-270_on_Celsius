@@ -1,13 +1,13 @@
 package core.ui.menu;
 
-import core.EventHandling.Logging.Logger;
+import core.GameState;
+import core.Global;
 import core.UI;
 import core.ui.Dialog;
 import core.ui.Styles;
 
 import static core.EventHandling.Logging.Json.getName;
 import static core.Global.input;
-import static core.Window.start;
 
 public class Pause extends Dialog {
     public Pause() {
@@ -36,15 +36,15 @@ public class Pause extends Dialog {
     }
 
     private void exitBtn() {
-        Logger.logExit(0);
+        Global.app.quit();
     }
 
     private void settingsBtn() {
         UI.settings().show();
-        if (!start) {
-            UI.mainMenu().hide();
-        } else {
+        if (Global.gameState == GameState.PLAYING) {
             hide();
+        } else {
+            UI.mainMenu().hide();
         }
     }
 

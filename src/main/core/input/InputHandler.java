@@ -1,7 +1,6 @@
-package core;
+package core.input;
 
-import core.EventHandling.EventHandler;
-import core.input.InputListener;
+import core.Global;
 import core.ui.menu.MouseCalibration;
 import core.World.Textures.TextureDrawing;
 import core.math.Point2i;
@@ -13,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import static core.EventHandling.Logging.Logger.printException;
-import static core.Utils.NativeResources.addResource;
 import static core.Window.glfwWindow;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -45,7 +43,7 @@ public class InputHandler {
     }
 
     public void init() {
-        glfwSetCursorPosCallback(glfwWindow, addResource(new GLFWCursorPosCallback() {
+        glfwSetCursorPosCallback(glfwWindow, Global.app.keep(new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double xpos, double ypos) {
                 int mouseX = (int) (xpos * MouseCalibration.xMultiplier);
@@ -56,7 +54,7 @@ public class InputHandler {
                 mousePos.set(mouseX, invertedY);
             }
         }));
-        glfwSetKeyCallback(glfwWindow, addResource(new GLFWKeyCallback() {
+        glfwSetKeyCallback(glfwWindow, Global.app.keep(new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
                 // При запуске с xwayland я получаю несколько ивентов с таким вот интересным параметром
@@ -77,7 +75,7 @@ public class InputHandler {
                 }
             }
         }));
-        glfwSetMouseButtonCallback(glfwWindow, addResource(new GLFWMouseButtonCallback() {
+        glfwSetMouseButtonCallback(glfwWindow, Global.app.keep(new GLFWMouseButtonCallback() {
             @Override
             public void invoke(long window, int button, int action, int mods) {
                 switch (action) {
@@ -92,13 +90,13 @@ public class InputHandler {
                 }
             }
         }));
-        glfwSetScrollCallback(glfwWindow, addResource(new GLFWScrollCallback() {
+        glfwSetScrollCallback(glfwWindow, Global.app.keep(new GLFWScrollCallback() {
             @Override
             public void invoke(long window, double xoffset, double yoffset) {
                 scrollOffset = Math.clamp((float)yoffset + scrollOffset, 0, 50);
             }
         }));
-        glfwSetWindowSizeCallback(glfwWindow, addResource(new GLFWWindowSizeCallback() {
+        glfwSetWindowSizeCallback(glfwWindow, Global.app.keep(new GLFWWindowSizeCallback() {
             @Override
             public void invoke(long window, int w, int h) {
                 width = w;

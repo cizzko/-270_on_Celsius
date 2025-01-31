@@ -45,7 +45,7 @@ public class CreatePlanet extends Dialog {
                 .set(1460, 260, 420, 65)
                 .setName(getName("GenerateWorld"))
                 .setOneShot(true);
-        sizePanel.addSlider(Constants.World.MIN_WORLD_SIZE, Constants.World.MAX_WORLD_SIZE, (size, max) -> {
+        sizePanel.addSlider(Styles.DEFAULT_SLIDER, Constants.World.MIN_WORLD_SIZE, Constants.World.MAX_WORLD_SIZE, (size, max) -> {
             String pic;
             if (size >= max / 1.5f) {
                 pic = "planetBig.png";
@@ -57,9 +57,7 @@ public class CreatePlanet extends Dialog {
             planet.setImage(atlas.byPath("World/WorldGenerator/" + pic));
             parameters.size = size;
         })
-                .set(1460, 340, 420, 20)
-                .setSliderColor(Styles.DEFAULT_PANEL_COLOR)
-                .setDotColor(Styles.DEFAULT_ORANGE);
+                .set(1460, 340, 420, 20);
         basicParameters = add(new Dialog() {{
             setVisible(true);
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> parameters.creatures = !parameters.creatures)

@@ -1,26 +1,15 @@
 package core.World;
 
-import core.EventHandling.Logging.Logger;
-import core.Utils.ArrayUtils;
 import core.Window;
-import core.World.Creatures.DynamicWorldObjects;
-import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.Items;
-import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.StaticWorldObjects.StaticWorldObjects;
-import core.World.StaticWorldObjects.TemperatureMap;
-import core.World.Textures.ShadowMap;
-import core.World.Weather.Sun;
+
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
+
 import static core.EventHandling.Logging.Logger.printException;
 import static core.Global.assets;
-import static core.Global.world;
 
 public class Saves {
     private static boolean saving = false;
@@ -43,7 +32,7 @@ public class Saves {
                 dos.close();
                 byte[] compressedBytes = compressed.toByteArray();
 
-                FileOutputStream fos = new FileOutputStream(assets.assetsDir("\\World\\Saves\\WorldSaves\\" + name + ".ser"));
+                FileOutputStream fos = new FileOutputStream(assets.assetsDir().resolve("World/Saves/WorldSaves/" + name + ".ser").toString());
                 fos.write(compressedBytes);
                 fos.close();
             } catch (Exception e) {

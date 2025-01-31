@@ -51,6 +51,6 @@ public class ToggleButton extends BaseButton<ToggleButton> {
         batch.draw(tex, x, y);
         drawText(width + x + style.textOffset, y, name);
 
-        drawPrompt(this);
+        drawPrompt(this, style.font);
     }
 }

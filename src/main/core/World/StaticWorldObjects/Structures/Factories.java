@@ -2,6 +2,7 @@ package core.World.StaticWorldObjects.Structures;
 
 import core.EventHandling.Logging.Config;
 import core.Global;
+import core.Window;
 import core.World.Textures.TextureDrawing;
 import core.ui.Sounds.Sound;
 import core.Utils.ArrayUtils;
@@ -128,24 +129,24 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
 
     public static void setFactoryConst(String name) {
         String originalName = name;
-        name = assets.assetsDir("World/ItemsCharacteristics/" + name + ".properties");
+        name = "World/ItemsCharacteristics/" + name + ".properties";
 
-        if (factoriesConst.get(name) == null) {
+        if (factoriesConst.get(originalName) == null) {
             byte id = StaticWorldObjects.generateId(name);
-            Properties props = Config.getProperties(name);
-            int productionSpeed = Integer.parseInt((String) props.get("ProductionSpeed"));
-            int needEnergy = Integer.parseInt((String) props.get("NeedEnergy"));
-            int maxHp = Integer.parseInt((String) props.get("MaxHp"));
-            short maxStoredObjects = Short.parseShort((String) props.get("MaxStoredObjects"));
-            String path = (String) props.get("Path");
-            String sound = (String) props.get("Sound");
-            String factoryName = (String) props.get("Name");
-            Items[] outputObjects = transformItems((String) props.get("OutputObjects"));
-            Items[] inputObjects = transformItems((String) props.get("InputObjects"));
-            Items[] fuel = transformItems((String) props.get("Fuel"));
+            var props = Config.getProperties(name);
+            int productionSpeed = Integer.parseInt(props.get("ProductionSpeed"));
+            int needEnergy = Integer.parseInt(props.get("NeedEnergy"));
+            int maxHp = Integer.parseInt(props.get("MaxHp"));
+            short maxStoredObjects = Short.parseShort(props.get("MaxStoredObjects"));
+            String path = props.get("Path"); // UNUSED
+            String sound = props.get("Sound");
+            String factoryName = props.get("Name");
+            Items[] outputObjects = transformItems(props.get("OutputObjects"));
+            Items[] inputObjects = transformItems(props.get("InputObjects"));
+            Items[] fuel = transformItems(props.get("Fuel"));
 
             factoriesConst.put(originalName, new Factories(productionSpeed, needEnergy, maxHp,
-                    maxStoredObjects, (short) ((((byte) maxHp & 0xFF) << 8) | (id & 0xFF)), assets.pathTo(path),
+                    maxStoredObjects, (short) ((((byte) maxHp & 0xFF) << 8) | (id & 0xFF)), name,
                     sound, factoryName, outputObjects, inputObjects, fuel));
         }
     }
@@ -183,9 +184,9 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
         this.breakingType = (breakingType == breaking.CRITICAL ? breaking.CRITICAL : null);
 
         switch (breakingType) {
-            case WEAK_SLOW, AVERAGE_STOP -> maxProductionProgress = Integer.parseInt((String) Config.getProperties(path).get("ProductionSpeed"));
-            case AVERAGE_MISWORKING -> outputObjects = transformItems((String) Config.getProperties(path).get("OutputObjects"));
-            case WEAK_OVERCONSUMPTION -> needEnergy = Integer.parseInt((String) Config.getProperties(path).get("NeedEnergy"));
+            case WEAK_SLOW, AVERAGE_STOP -> maxProductionProgress = Integer.parseInt(Config.getProperties(path).get("ProductionSpeed"));
+            case AVERAGE_MISWORKING -> outputObjects = transformItems(Config.getProperties(path).get("OutputObjects"));
+            case WEAK_OVERCONSUMPTION -> needEnergy = Integer.parseInt(Config.getProperties(path).get("NeedEnergy"));
         }
     }
 
@@ -240,14 +241,16 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
         }
 
         if (factory != null && factory.fuel == null && factory.breakingType != Factories.breaking.CRITICAL && factory.currentEnergy >= factory.needEnergy) {
-            int iconY = (int) ((factory.y * blockSize) + blockSize);
-            int iconX = (int) ((factory.x * blockSize) + blockSize);
+            float wy = factory.y * blockSize;
+            float wx = factory.x * blockSize;
 
-            // todo починить отрисовку из других потоков
-//            batch.draw(atlas.byPath("UI/GUI/interactionIcon.png"), iconX, iconY);
-//            batch.draw(Window.defaultFont.getGlyph('E'),
-//                    (factory.x * blockSize + 16) + blockSize,
-//                    (factory.y * blockSize + 12) + blockSize);
+            int iconY = (int) (wy + blockSize);
+            int iconX = (int) (wx + blockSize);
+
+           batch.draw(atlas.byPath("UI/GUI/interactionIcon.png"), iconX, iconY);
+           batch.draw(Window.defaultFont.getGlyph('E'),
+                   (wx + 16) + blockSize,
+                   (wy + 12) + blockSize);
 
             if (input.pressed(GLFW_KEY_E)){
                 factory.currentProductionProgress++;

@@ -1,27 +1,20 @@
 package core.g2d;
 
-import core.assets.TextureLoader;
+import org.lwjgl.system.MemoryUtil;
 
 import java.awt.image.BufferedImage;
-import java.io.IOException;
 
-import static core.assets.TextureLoader.BufferedImageEncoder;
-import static core.assets.TextureLoader.readImage;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.glTexParameteri;
+import static core.assets.TextureLoader.decodeImage;
+import static org.lwjgl.opengl.GL46.*;
 
 public final class Texture implements Drawable {
-    final int glHandle;
+    int glHandle;
 
-    private final int glTarget; // todo just in case
     private final int width, height;
     private final float u, v, u2, v2;
 
-    private Texture(int glHandle, int glTarget,
-                    int width, int height,
-                    float u, float v, float u2, float v2) {
+    Texture(int glHandle, int width, int height, float u, float v, float u2, float v2) {
         this.glHandle = glHandle;
-        this.glTarget = glTarget;
         this.width = width;
         this.height = height;
         this.u = u;
@@ -30,12 +23,12 @@ public final class Texture implements Drawable {
         this.v2 = v2;
     }
 
-    public static Texture load(BufferedImage bufferedImage, int glTarget, float u, float v, float u2, float v2) throws IOException {
-        TextureLoader.ImageData image = readImage(bufferedImage);
+    static Texture load(BufferedImage bufferedImage, int glTarget, float u, float v, float u2, float v2) {
+        var image = decodeImage(bufferedImage);
         return load(image, glTarget, u, v, u2, v2);
     }
 
-    public static Texture load(TextureLoader.ImageData img, int glTarget, float u, float v, float u2, float v2) throws IOException {
+    static Texture load(BitMap img, int glTarget, float u, float v, float u2, float v2) {
         int glHandle = glGenTextures();
 
         glBindTexture(glTarget, glHandle);
@@ -48,20 +41,9 @@ public final class Texture implements Drawable {
         int h = img.height();
         glTexImage2D(glTarget, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data());
 
+        MemoryUtil.memFree(img.data());
         glBindTexture(glTarget, 0);
-        return new Texture(glHandle, glTarget, w, h, u, v, u2, v2);
-    }
-
-    public static Texture load(String path) throws IOException {
-        return load(path, GL_TEXTURE_2D, 0, 0, 1, 1);
-    }
-
-    public static Texture load(String path, int glTarget, float u, float v, float u2, float v2) throws IOException {
-        return load(BufferedImageEncoder(path), glTarget, u, v, u2, v2);
-    }
-
-    public int glTarget() {
-        return glTarget;
+        return new Texture(glHandle, w, h, u, v, u2, v2);
     }
 
     @Override

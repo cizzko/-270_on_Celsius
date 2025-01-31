@@ -4,7 +4,7 @@ import core.math.Mat3;
 import core.math.Rectangle;
 import core.math.Vector2f;
 
-public class Camera2 {
+public final class Camera2 {
     public final Vector2f position = new Vector2f();
     public final Mat3 projection = new Mat3(), invProjection = new Mat3();
 
@@ -45,6 +45,7 @@ public class Camera2 {
         worldCoordinates.y = height * (worldCoordinates.y + 1) / 2;
         return worldCoordinates;
     }
+
     // Перевод вектора с координатами экрана в координаты мира
     public Vector2f unproject(Vector2f screenCoordinates) {
         screenCoordinates.x = (2 * screenCoordinates.x) / width - 1;
@@ -53,7 +54,7 @@ public class Camera2 {
         return screenCoordinates;
     }
 
-    public void getBounds(Rectangle out) {
+    public void getBoundsTo(Rectangle out) {
         out.setSize(width, height).setCenter(position.x, position.y);
     }
 }

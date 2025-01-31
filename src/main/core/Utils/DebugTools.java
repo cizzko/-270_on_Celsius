@@ -23,6 +23,11 @@ public class DebugTools {
     public static boolean selectionBlocksCopy = false, selectionBlocksDelete = false, mousePressed = false;
     private static Point2i lastMousePosBlocks = new Point2i(0, 0), lastMousePos = new Point2i(0, 0);
 
+    @SuppressWarnings("unchecked")
+    public static <T extends Throwable> void rethrow(Throwable t) throws T {
+        throw (T) t;
+    }
+
     public static void startUpdate() {
         Logger.log("Debug module has started");
 

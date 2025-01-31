@@ -1,20 +1,12 @@
 package core.g2d;
 
-import core.Global;
-import core.Utils.Disposable;
 import core.math.Mat3;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
-
 import static org.lwjgl.opengl.GL46.*;
 
-public final class Shader implements Disposable {
-    private int glHandle;
+public final class Shader {
+    final int glHandle;
 
     private final Object2IntArrayMap<String> uniformLocations;
 
@@ -29,13 +21,6 @@ public final class Shader implements Disposable {
             String name = glGetActiveUniformName(glHandle, i);
             this.uniformLocations.put(name, i);
         }
-    }
-
-    public static Shader load(String basePath) throws IOException {
-        String vertSource = Global.assets.readString(basePath + ".vert");
-        String fragSource = Global.assets.readString(basePath + ".frag");
-
-        return load(vertSource, fragSource);
     }
 
     public static Shader load(String vertexSource, String fragmentSource) {
@@ -91,7 +76,7 @@ public final class Shader implements Disposable {
 
     public void setUniform(String name, Texture tex, int unit) {
         glActiveTexture(GL_TEXTURE0 + unit);
-        glBindTexture(tex.glTarget(), tex.glHandle);
+        glBindTexture(GL_TEXTURE_2D, tex.glHandle);
 
         setUniform(name, unit);
     }
@@ -123,18 +108,5 @@ public final class Shader implements Disposable {
 
     private int uniformLocation(String name) {
         return uniformLocations.getInt(name);
-    }
-
-    @Override
-    public boolean isDisposed() {
-        return glHandle == 0;
-    }
-
-    @Override
-    public void close() {
-        if (glHandle != 0) {
-            glDeleteProgram(glHandle);
-            glHandle = 0;
-        }
     }
 }

@@ -11,7 +11,7 @@ import static core.Global.assets;
 
 public class Json {
     private static final HashMap<String, String> words = new HashMap<>(), keys = new HashMap<>();
-    private static final String translateFile = assets.assetsDir("Translate.jsonc");
+    private static final String translateFile = "Translate.jsonc";
 
     public static String lang, allLanguages;
 

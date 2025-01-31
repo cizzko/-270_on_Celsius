@@ -1,5 +1,7 @@
 package core.World;
 
+import core.GameState;
+import core.Global;
 import core.World.Creatures.Player.Player;
 import core.World.StaticWorldObjects.StaticBlocksEvents;
 import core.World.StaticWorldObjects.StaticObjectsConst;
@@ -9,7 +11,6 @@ import core.math.Point2i;
 
 import java.util.ArrayList;
 
-import static core.Window.start;
 import static core.World.StaticWorldObjects.StaticObjectsConst.getConst;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 
@@ -50,7 +51,7 @@ public class World {
             setImpl(x, y, object, followingRules);
         }
 
-        if (start) {
+        if (Global.gameState == GameState.PLAYING) {
             for (StaticBlocksEvents listener : listeners) {
                 listener.placeStatic(x, y, object);
             }
@@ -86,7 +87,7 @@ public class World {
                 ShadowMap.update();
             }
 
-            if (start) {
+            if (Global.gameState == GameState.PLAYING) {
                 for (StaticBlocksEvents listener : listeners) {
                     listener.destroyStatic(x, y, id);
                 }

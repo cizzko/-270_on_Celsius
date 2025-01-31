@@ -1,15 +1,13 @@
 package core;
 
-import core.EventHandling.Logging.Logger;
-
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.concurrent.*;
-import java.util.function.Supplier;
 
 public class TaskScheduler {
+    // TODO тут нужна MPSC очередь, желательно фиксированного размера
     private final ArrayList<TaskImpl<?>> tasks = new ArrayList<>(); // synchronized
+    private volatile boolean running = true;
 
     public void post(Runnable task, float delay) {
         post(() -> {
@@ -18,25 +16,28 @@ public class TaskScheduler {
         }, delay);
     }
 
-    public <T> Supplier<? extends T> post(Callable<? extends T> task, float delay) {
-        Objects.requireNonNull(task);
-
-        var future = new TaskImpl<>(delay, task);
-        synchronized (tasks) {
-            tasks.add(future);
-        }
-        return future;
-    }
-
-    public <T> Supplier<? extends T> post(Callable<? extends T> task) {
+    public <T> CompletableFuture<T> post(Callable<? extends T> task) {
         return post(task, 0);
     }
 
-    public void post(Runnable task) {
-        post(() -> {
+    public CompletableFuture<Void> post(Runnable task) {
+        return post(() -> {
             task.run();
             return null;
         }, 0);
+    }
+
+    public <T> CompletableFuture<T> post(Callable<? extends T> task, float delay) {
+        Objects.requireNonNull(task);
+        if (!running) {
+            return CompletableFuture.failedFuture(new RejectedExecutionException("TaskScheduler has been shutdown: " + task));
+        }
+
+        var future = new TaskImpl<T>(delay, task);
+        synchronized (tasks) {
+            tasks.add(future);
+        }
+        return future.result;
     }
 
     public void executeAll() {
@@ -49,13 +50,9 @@ public class TaskScheduler {
             task.delay -= Time.delta;
 
             if (task.delay <= 0) {
-                try {
-                    task.run();
-                } catch (Exception t) {
-                    Logger.printException("Failed to execute task: " + task.task, t);
-                } finally {
-                    handled.add(task);
-                }
+                handled.add(task);
+
+                task.run();
             }
         }
         if (!handled.isEmpty()) {
@@ -65,14 +62,44 @@ public class TaskScheduler {
         }
     }
 
-    static class TaskImpl<T> implements Supplier<T> {
-        private float delay;
+    public CompletableFuture<Void> execute(Runnable runnable) {
+        if (Global.app.isMainThread()) {
+            try {
+                runnable.run();
+                return CompletableFuture.completedFuture(null);
+            } catch (Exception e) {
+                return CompletableFuture.failedFuture(e);
+            }
+        }
+        return post(runnable);
+    }
 
+    public <T> CompletableFuture<T> execute(Callable<? extends T> callable) {
+        if (Global.app.isMainThread()) {
+            try {
+                return CompletableFuture.completedFuture(callable.call());
+            } catch (Exception e) {
+                return CompletableFuture.failedFuture(e);
+            }
+        }
+        return post(callable);
+    }
+
+    public void shutdown() {
+        running = false;
+
+        synchronized (tasks) {
+            for (TaskImpl<?> task : tasks) {
+                task.result.cancel(true);
+            }
+        }
+    }
+
+    static class TaskImpl<T> {
         private final Callable<? extends T> task;
+        private final CompletableFuture<T> result = new CompletableFuture<>();
 
-        private record Result<T>(T value, Exception exception) {}
-
-        private volatile Result<T> result;
+        private float delay;
 
         public TaskImpl(float delay, Callable<? extends T> task) {
             this.delay = delay;
@@ -80,26 +107,11 @@ public class TaskScheduler {
         }
 
         private void run() {
-            Result<T> res;
             try {
-                res = new Result<>(task.call(), null);
+                result.complete(task.call());
             } catch (Exception t) {
-                res = new Result<>(null, t);
+                result.completeExceptionally(t);
             }
-            result = res;
-        }
-
-        @Override
-        public T get() {
-            var res = result;
-            if (res == null) {
-                throw new IllegalStateException("Task not executed yet");
-            }
-            if (res.exception != null) {
-                throw new IllegalStateException(res.exception);
-            }
-
-            return res.value;
         }
     }
 }

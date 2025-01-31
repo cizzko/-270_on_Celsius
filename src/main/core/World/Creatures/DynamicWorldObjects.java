@@ -244,7 +244,7 @@ public class DynamicWorldObjects implements Serializable {
 
     // Лучшее решение, которое вообще можно принять.
     // Из-за проблем с неточными числами можно просто 2-3 пикселя отступать и этого даже не будет заметно
-    public static final float GAP = 2f / blockSize;
+    public static final float GAP = 1f / blockSize;
 
     public void getHitboxTo(Rectangle entityHitbox) {
         var tex = getTexture();

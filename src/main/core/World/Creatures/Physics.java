@@ -1,5 +1,6 @@
 package core.World.Creatures;
 
+import core.PlayGameScene;
 import core.Time;
 import core.World.HitboxMap;
 import core.World.StaticWorldObjects.StaticObjectsConst;
@@ -21,18 +22,11 @@ import static core.World.WorldGenerator.*;
 public class Physics {
     private static final float GRAVITY = 0.003f;
 
-    private static boolean started;
-
-    public static void updatePhysics() {
-        if (!started) {
+    public static void updatePhysics(PlayGameScene scene) {
+        if (scene.isPaused()) {
             return;
         }
-
         update();
-    }
-
-    public static void enable(boolean state) {
-        started = state;
     }
 
     static final Rectangle hitbox = new Rectangle();
@@ -90,7 +84,7 @@ public class Physics {
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
                 short block = world.get(x, y);
-                if (block != -1 && getResistance(block) == 100 && getType(block) == StaticObjectsConst.Types.SOLID) {
+                if (block == -1 || getResistance(block) == 100 && getType(block) == StaticObjectsConst.Types.SOLID) {
                     blockHitbox.set(x * blockSize, y * blockSize, blockSize, blockSize);
 
                     if (blockHitbox.overlaps(entityHitbox)) {

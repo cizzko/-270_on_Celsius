@@ -1,7 +1,7 @@
 package core.World.Creatures.Player;
 
-import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
+import core.GameState;
 import core.Global;
 import core.Utils.Color;
 import core.World.Creatures.DynamicWorldObjects;
@@ -19,7 +19,6 @@ import core.math.Point2i;
 import core.math.Rectangle;
 
 import static core.Global.*;
-import static core.Window.start;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.WorldGenerator.*;
@@ -131,6 +130,10 @@ public class Player {
 
     // searches for the root of a structure within a radius of 4 blocks
     public static Point2i findRoot(int cellX, int cellY) {
+        if (!world.inBounds(cellX, cellY)) {
+            return null;
+        }
+
         if (!StaticObjectsConst.getConst(getId(world.get(cellX, cellY))).hasMotherBlock) {
             if (StaticObjectsConst.getConst(getId(world.get(cellX, cellY))).optionalTiles == null) {
                 return null;
@@ -172,16 +175,7 @@ public class Player {
         }
     }
 
-    public static void drawPlayerGui() {
-        if (start) {
-            BuildMenu.draw();
-            Inventory.draw();
-            drawCurrentHP();
-            drawBuildGrid();
-        }
-    }
-
-    private static void drawBuildGrid() {
+    public static void drawBuildGrid() {
         if (!Config.getFromConfig("BuildGrid").equalsIgnoreCase("true")) {
             return;
         }
@@ -198,39 +192,6 @@ public class Player {
         }
     }
 
-    public static void updatePlayerGUILogic() {
-        if (start) {
-            BuildMenu.updateLogic();
-        }
-    }
-
-    private static final Color temperatureColor = new Color();
-
-    public static void drawTemperatureEffect() {
-        batch.draw(assets.getTextureByPath(assets.assetsDir("UI/GUI/modifiedTemperature.png")), temperatureColor);
-    }
-
-    public static void updateTemperatureEffect() {
-        DynamicWorldObjects player = DynamicObjects.getFirst();
-        int temp = (int) TemperatureMap.getAverageTempAroundDynamic(player.getX(), player.getY(), player.getTexture());
-        int upperLimit = 100;
-        int lowestLimit = -20;
-        int maxColor = 90;
-
-        int a;
-        if (temp > upperLimit) {
-            a = Math.min(maxColor, Math.abs((temp - upperLimit) / 3));
-        } else if (temp < lowestLimit) {
-            a = Math.min(maxColor, Math.abs((temp + lowestLimit) / 3));
-        } else {
-            a = 0;
-        }
-
-        int r = temp > 0 ? a : 0;
-        int b = temp > 0 ? 0 : a;
-        temperatureColor.set(r, (int) (b / 2f), b, a);
-    }
-
     public static void playerMaxHP() {
         DynamicObjects.getFirst().setCurrentHp(DynamicObjects.getFirst().getMaxHp());
     }
@@ -239,7 +200,7 @@ public class Player {
         DynamicObjects.getFirst().setCurrentHp(0);
     }
 
-    private static void drawCurrentHP() {
+    public static void drawCurrentHP() {
         int currentHp = (int) DynamicObjects.getFirst().getCurrentHP();
         int maxHp = (int) DynamicObjects.getFirst().getMaxHp();
 

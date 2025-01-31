@@ -2,13 +2,10 @@ package core.EventHandling;
 
 import core.EventHandling.Logging.Config;
 import core.Global;
+import core.PlayGameScene;
 import core.UI;
-import core.Utils.Commandline;
-import core.World.Creatures.Player.Inventory.Inventory;
 import core.graphic.Layer;
 import core.ui.Dialog;
-import core.World.Creatures.Physics;
-import core.World.Creatures.Player.Player;
 import core.math.Point2i;
 import core.ui.Element;
 import core.ui.Styles;
@@ -17,12 +14,8 @@ import org.lwjgl.glfw.GLFWCharCallback;
 
 import java.util.function.Supplier;
 
-import static core.EventHandling.Logging.Logger.log;
 import static core.Global.*;
-import static core.Utils.NativeResources.addResource;
 import static core.Window.*;
-import static core.World.Creatures.Player.Player.updateToolInteraction;
-import static core.World.Textures.TextureDrawing.drawText;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class EventHandler {
@@ -58,21 +51,6 @@ public class EventHandler {
         keyLoggingText.append(text);
     }
 
-    private static void initCallbacks() {
-        log("Thread: Event handling started");
-
-        debugDialog.show();
-
-        glfwSetCharCallback(glfwWindow, addResource(new GLFWCharCallback() {
-            @Override
-            public void invoke(long window, int codepoint) {
-                if (keyLogging) {
-                    keyLoggingText.appendCodePoint(codepoint);
-                }
-            }
-        }));
-    }
-
     public static void startKeyLogging() {
         keyLogging = true;
     }
@@ -94,17 +72,15 @@ public class EventHandler {
                 input.justClicked(GLFW_MOUSE_BUTTON_LEFT);
     }
 
-    private static void updateHotkeys() {
-        if (start) {
-            if (input.justPressed(GLFW_KEY_ESCAPE)) {
-                UI.pause().toggle();
-            }
+    public static void updateHotkeys(PlayGameScene scene) {
+        if (input.justPressed(GLFW_KEY_ESCAPE)) {
+            scene.togglePaused();
+            UI.pause().toggle();
+        }
 
-            if (!windowFocused && Config.getFromConfig("Autopause").equals("true")) {
-                UI.pause().show();
-            }
-            // Сделать лучше(!?)
-            Physics.enable(!UI.pause().isShown());
+        if (!windowFocused && Config.getFromConfig("Autopause").equals("true")) {
+            scene.setPaused(true);
+            UI.pause().show();
         }
 
         if ((input.justPressed(GLFW_KEY_BACKSPACE) || input.repeated(GLFW_KEY_BACKSPACE)) && isKeylogging()) {
@@ -127,17 +103,18 @@ public class EventHandler {
     }
 
     public static void init() {
-        initCallbacks();
+        debugDialog.show();
+
+        glfwSetCharCallback(glfwWindow, Global.app.keep(new GLFWCharCallback() {
+            @Override
+            public void invoke(long window, int codepoint) {
+                if (keyLogging) {
+                    keyLoggingText.appendCodePoint(codepoint);
+                }
+            }
+        }));
 
         setDebugValue(() -> "[Render] fps: " + Global.app.getFps());
-    }
-
-    public static void inputUpdate() {
-        Player.updatePlayerGUILogic();
-        updateHotkeys();
-        Commandline.update();
-        updateToolInteraction();
-        Inventory.inputUpdate();
     }
 
     public static boolean isKeylogging() {

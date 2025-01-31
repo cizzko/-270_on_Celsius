@@ -1,6 +1,7 @@
 package core.g2d;
 
 import core.Utils.Disposable;
+import org.lwjgl.system.MemoryStack;
 
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -77,8 +78,10 @@ public final class Mesh implements Disposable {
             return;
         }
 
-        glDeleteBuffers(vbo);
-        glDeleteBuffers(ebo);
+        try (var stack = MemoryStack.stackPush()) {
+            var ids = stack.ints(vbo, ebo);
+            glDeleteBuffers(ids);
+        }
         glDeleteVertexArrays(vao);
 
         disposed = true;

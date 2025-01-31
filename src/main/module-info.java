@@ -1,11 +1,15 @@
 module core.main {
+    requires org.lwjgl;
     requires org.lwjgl.glfw;
     requires org.lwjgl.opengl;
+    requires org.lwjgl.jemalloc;
+
+    requires com.google.gson;
+    requires it.unimi.dsi.fastutil;
+
     requires java.desktop;
     requires java.compiler;
-    requires com.google.gson;
     requires jdk.management;
-    requires it.unimi.dsi.fastutil;
 
     // Авто-модули
     // requires jcodec;
@@ -14,4 +18,5 @@ module core.main {
     requires transitive org.lwjgl.natives;
     requires transitive org.lwjgl.glfw.natives;
     requires transitive org.lwjgl.opengl.natives;
+    requires transitive org.lwjgl.jemalloc.natives;
 }

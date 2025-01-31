@@ -1,16 +1,18 @@
 package core;
 
 import core.EventHandling.Logging.Logger;
-import org.lwjgl.glfw.GLFW;
+import org.lwjgl.system.NativeResource;
 
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 public class Application {
     private final Thread mainThread;
 
+    protected final ArrayList<NativeResource> natives = new ArrayList<>();
     protected final ArrayList<ApplicationListener> listeners = new ArrayList<>();
+
+    private boolean running = true;
 
     public Application() {
         this.mainThread = Thread.currentThread();
@@ -18,8 +20,56 @@ public class Application {
         Global.app = this;
     }
 
+    public <N extends NativeResource> N keep(N aNative) {
+        Objects.requireNonNull(aNative);
+        natives.add(aNative);
+        return aNative;
+    }
+
     public boolean isMainThread() {
         return Thread.currentThread() == mainThread;
+    }
+
+    public void run() {
+        try {
+            init();
+            while (running) {
+                update();
+            }
+        } catch (Throwable t) {
+            System.out.println("The fatal exception is caused");
+            t.printStackTrace();
+        } finally {
+            freeNatives();
+            Global.scheduler.shutdown();
+            cleanup();
+        }
+    }
+
+    private void freeNatives() {
+        for (NativeResource aNative : natives) {
+            try {
+                aNative.free();
+            } catch (Throwable t) {
+                t.printStackTrace(); // TODO
+            }
+        }
+    }
+
+    protected void update() {
+
+    }
+
+    protected void cleanup() {
+
+    }
+
+    protected void init() {
+
+    }
+
+    public void quit() {
+        running = false;
     }
 
     public void setFramerate(int framerate) {

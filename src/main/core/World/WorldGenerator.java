@@ -1,13 +1,8 @@
 package core.World;
 
+import core.*;
 import core.EventHandling.EventHandler;
-import core.Global;
-import core.Time;
-import core.UI;
 import core.ui.menu.CreatePlanet;
-import core.Window;
-import core.World.Creatures.CreaturesGenerate;
-import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.StaticWorldObjects.Structures.ElectricCables;
@@ -19,7 +14,6 @@ import core.World.Textures.ShadowMap;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.Textures.TextureDrawing;
-import core.World.Weather.Sun;
 import core.math.MathUtil;
 import core.math.Point2i;
 import java.util.*;
@@ -115,6 +109,9 @@ public class WorldGenerator {
 
         log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world with size: x - " + world.sizeX + ", y - " + world.sizeY);
 
+        var playGameScene = new PlayGameScene();
+        gameScene.addPreload(playGameScene);
+
         StaticObjectsConst.setDestroyed();
         step(() -> generateRelief(world));
 
@@ -126,19 +123,24 @@ public class WorldGenerator {
         step(() -> generateEnvironments(world));
         step(() -> ShadowMap.generate());
 
-        step(() -> TemperatureMap.create());
+        step(() -> TemperatureMap.create(playGameScene));
         step(() -> Player.createPlayer(randomSpawn));
 
         step(() -> {
             log("World generator: generating done!\n");
             appendLog("\\nGenerating done! Starting world..");
 
-            scheduler.post(() -> start(creatures), Time.ONE_SECOND);
+            scheduler.post(() -> startGame(playGameScene), Time.ONE_SECOND);
         });
     }
 
     private static void step(Runnable step) {
-        scheduler.post(step);
+        scheduler.post(step)
+                .whenComplete((v, e) -> {
+                    if (e != null) {
+                        e.printStackTrace();
+                    }
+                });
     }
 
     private static void appendLog(String text) {
@@ -376,12 +378,12 @@ public class WorldGenerator {
 
         for (int x = 0; x < world.sizeX; x++) {
             for (int y = 0; y < world.sizeY; y++) {
-                if (getType(world.get(x, y + 1)) != StaticObjectsConst.Types.GAS) { //Generating ground under grass blocks
+                if (getType(world.get(x, y + 1)) != StaticObjectsConst.Types.GAS) { // Generating ground under grass blocks
                     short object = createStatic("Blocks/dirt");
                     world.set(x, y, object, false);
                 }
 
-                if (ShadowMap.getDegree(x, y) >= 3) { //Generating stone
+                if (ShadowMap.getDegree(x, y) >= 3) { // Generating stone
                     short object = createStatic("Blocks/stone");
                     world.set(x, y, object, false);
                 }
@@ -391,7 +393,7 @@ public class WorldGenerator {
                     world.set(x, y, object, false);
                 }
 
-                if (ShadowMap.getDegree(x, y) == 2) { //Generation of transitions between earth and stone
+                if (ShadowMap.getDegree(x, y) == 2) { // Generation of transitions between earth and stone
                     if (!getFileName(world.get(x, y + 1)).equals("Blocks/dirtStone")) {
                         short object = createStatic("Blocks/dirtStone");
                         world.set(x, y, object, false);
@@ -422,18 +424,12 @@ public class WorldGenerator {
         return -1;
     }
 
-    public static void start(boolean generateCreatures) {
-        UI.createPlanet().hide();
-
+    private static void startGame(PlayGameScene playGameScene) {
         world.registerListener(new Factories());
         Inventory.registerListener(new ElectricCables());
         Inventory.registerListener(new Factories());
-        Sun.createSun();
         Inventory.create();
-        Physics.enable(true);
-        if (generateCreatures) {
-            CreaturesGenerate.initGenerating();
-        }
+
         EventHandler.setDebugValue(() -> {
             if (DynamicObjects.isEmpty()) {
                 return null;
@@ -441,6 +437,12 @@ public class WorldGenerator {
             var player = DynamicObjects.getFirst();
             return "[Player] x: " + player.getX() + ", y: " + player.getY();
         });
-        Window.start = true;
+
+        gameScene.onPreloadCompletion(() -> {
+            UI.createPlanet().hide();
+
+            setGameScene(playGameScene);
+            gameState = GameState.PLAYING;
+        });
     }
 }

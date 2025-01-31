@@ -10,6 +10,7 @@ import core.assets.AssetsManager;
 import core.g2d.Atlas;
 
 import java.io.Serializable;
+import java.util.Map;
 import java.util.Properties;
 
 import static core.Global.assets;
@@ -48,11 +49,11 @@ public class Items implements Serializable {
         this.type = type;
     }
 
-    private static DefaultValues getDefault(Properties properties) {
-        Atlas.Region texture = Global.atlas.byPath((String) properties.getOrDefault("Path", "/World/textureNotFound.png"));
-        String description = (String) properties.getOrDefault("Description", "");
-        String name = (String) properties.getOrDefault("Name", "");
-        String requiredForBuild = (String) properties.getOrDefault("RequiredForBuild", null);
+    private static DefaultValues getDefault(Map<String, String> properties) {
+        Atlas.Region texture = Global.atlas.byPath(properties.getOrDefault("Path", "World/textureNotFound.png"));
+        String description = properties.getOrDefault("Description", "");
+        String name = properties.getOrDefault("Name", "");
+        String requiredForBuild = properties.getOrDefault("RequiredForBuild", null);
 
         if (requiredForBuild != null) {
             String[] required = requiredForBuild.split(",");
@@ -70,42 +71,38 @@ public class Items implements Serializable {
     }
 
     public static Items createWeapon(String fileName) {
-        Properties weapon = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/" + fileName + ".properties"));
-        fileName = AssetsManager.normalizePath(fileName);
+        var weapon = Config.getProperties("World/ItemsCharacteristics/" + fileName + ".properties");
         DefaultValues defaultValues = getDefault(weapon);
 
         int id = fileName.hashCode();
-        float fireRate = Float.parseFloat((String) weapon.getOrDefault("FireRate", "100"));
-        float damage = Float.parseFloat((String) weapon.getOrDefault("Damage", "100"));
-        float ammoSpeed = Float.parseFloat((String) weapon.getOrDefault("AmmoSpeed", "100"));
-        float reloadTime = Float.parseFloat((String) weapon.getOrDefault("ReloadTime", "100"));
-        float bulletSpread = Float.parseFloat((String) weapon.getOrDefault("BulletSpread", "0"));
-        int magazineSize = Integer.parseInt((String) weapon.getOrDefault("MagazineSize", "10"));
-        String path1 = (String) weapon.getOrDefault("Sound", null);
-        String sound = assets.assetsDir(path1);
-        String path = (String) weapon.getOrDefault("BulletPath", "World/Items/someBullet.png");
-        String bulletPath = assets.assetsDir(path);
-        Weapons.Types type = Weapons.Types.valueOf((String) weapon.getOrDefault("Type", "BULLET"));
+        float fireRate = Float.parseFloat(weapon.getOrDefault("FireRate", "100"));
+        float damage = Float.parseFloat(weapon.getOrDefault("Damage", "100"));
+        float ammoSpeed = Float.parseFloat(weapon.getOrDefault("AmmoSpeed", "100"));
+        float reloadTime = Float.parseFloat(weapon.getOrDefault("ReloadTime", "100"));
+        float bulletSpread = Float.parseFloat(weapon.getOrDefault("BulletSpread", "0"));
+        int magazineSize = Integer.parseInt(weapon.getOrDefault("MagazineSize", "10"));
+        String sound = AssetsManager.normalizePath(weapon.getOrDefault("Sound", null));
+        String bulletPath = AssetsManager.normalizePath(weapon.getOrDefault("BulletPath", "World/Items/someBullet.png"));
+        Weapons.Types type = Weapons.Types.valueOf(weapon.getOrDefault("Type", "BULLET"));
 
         return new Items(new Weapons(fireRate, damage, ammoSpeed, reloadTime, bulletSpread, magazineSize, sound, bulletPath, type), (short) 0, null, null, id, defaultValues.texture(), defaultValues.description, defaultValues.name, fileName, defaultValues.requiredForBuild, Types.WEAPON);
     }
 
     public static Items createTool(String fileName) {
-        Properties tool = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/" + fileName + ".properties"));
-        fileName = AssetsManager.normalizePath(fileName);
+        var tool = Config.getProperties("World/ItemsCharacteristics/" + fileName + ".properties");
         DefaultValues defaultValues = getDefault(tool);
 
         int id = fileName.hashCode();
-        float maxHp = Float.parseFloat((String) tool.getOrDefault("MaxHp", "100"));
-        float damage = Float.parseFloat((String) tool.getOrDefault("Damage", "30"));
-        float secBetweenHits = Float.parseFloat((String) tool.getOrDefault("SecBetweenHits", "100"));
-        float maxInteractionRange = Float.parseFloat((String) tool.getOrDefault("MaxInteractionRange", "8"));
+        float maxHp = Float.parseFloat(tool.getOrDefault("MaxHp", "100"));
+        float damage = Float.parseFloat(tool.getOrDefault("Damage", "30"));
+        float secBetweenHits = Float.parseFloat(tool.getOrDefault("SecBetweenHits", "100"));
+        float maxInteractionRange = Float.parseFloat(tool.getOrDefault("MaxInteractionRange", "8"));
 
         return new Items(null, (short) 0, new Tools(maxHp, damage, secBetweenHits, maxInteractionRange), null, id, defaultValues.texture(), defaultValues.description, defaultValues.name, fileName, defaultValues.requiredForBuild, Types.TOOL);
     }
 
     public static Items createPlaceable(short placeable) {
-        Properties detail = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/" + StaticWorldObjects.getFileName(StaticWorldObjects.getId(placeable)) + ".properties"));
+        var detail = Config.getProperties("World/ItemsCharacteristics/" + StaticWorldObjects.getFileName(StaticWorldObjects.getId(placeable)) + ".properties");
         DefaultValues defaultValues = getDefault(detail);
         StaticObjectsConst placeableProp = StaticObjectsConst.getConst(StaticWorldObjects.getId(placeable));
         int id = StaticWorldObjects.getId(placeable);
@@ -114,7 +111,7 @@ public class Items implements Serializable {
     }
 
     public static Items createDetail(String fileName) {
-        Properties detail = Config.getProperties(assets.assetsDir("/World/ItemsCharacteristics/" + fileName + ".properties"));
+        var detail = Config.getProperties("World/ItemsCharacteristics/" + fileName + ".properties");
         fileName = AssetsManager.normalizePath(fileName);
         DefaultValues defaultValues = getDefault(detail);
         int id = fileName.hashCode();
@@ -123,13 +120,14 @@ public class Items implements Serializable {
     }
 
     public static Items createItem(String fileName) {
-        if (fileName.toLowerCase().startsWith("blocks")) {
+        String type = fileName.toLowerCase();
+        if (type.startsWith("blocks")) {
             return createPlaceable(StaticWorldObjects.createStatic(fileName));
-        } else if (fileName.toLowerCase().startsWith("weapons")) {
+        } else if (type.startsWith("weapons")) {
             return createWeapon(fileName);
-        } else if (fileName.toLowerCase().startsWith("details")) {
+        } else if (type.startsWith("details")) {
             return createDetail(fileName);
-        } else if (fileName.toLowerCase().startsWith("tools")) {
+        } else if (type.startsWith("tools")) {
             return createTool(fileName);
         }
         return null;
@@ -141,6 +139,6 @@ public class Items implements Serializable {
 
     public static float computeZoom(Sized size) {
         // 32 - target structure size
-        return 32f / (Math.max(size.width(), size.height()));
+        return 32f / Math.max(size.width(), size.height());
     }
 }

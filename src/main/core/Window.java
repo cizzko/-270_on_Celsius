@@ -1,55 +1,48 @@
 package core;
 
-import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Logger;
-import core.Utils.Color;
-import core.Utils.NativeResources;
-import core.World.Textures.TextureDrawing;
-import core.World.Weather.Sun;
-import core.World.Creatures.Physics;
-import core.assets.TextureLoader;
 import core.g2d.*;
-import core.graphic.Layer;
-import core.math.Rectangle;
-import core.math.Vector2f;
-import core.ui.Styles;
+import core.input.InputHandler;
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.glfw.GLFWImage;
+import org.lwjgl.glfw.GLFWWindowCloseCallback;
 import org.lwjgl.glfw.GLFWWindowFocusCallback;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GLUtil;
+import org.lwjgl.system.Configuration;
+import org.lwjgl.system.MemoryStack;
 import org.lwjgl.system.MemoryUtil;
 
-import java.io.IOException;
-
-import static core.EventHandling.EventHandler.debugLevel;
-import static core.EventHandling.Logging.Logger.log;
 import static core.Global.*;
-import static core.Utils.NativeResources.addResource;
-import static core.World.Creatures.Player.Player.drawPlayerGui;
-import static core.World.Textures.TextureDrawing.blockSize;
-import static core.World.WorldGenerator.DynamicObjects;
-import static core.assets.TextureLoader.BufferedImageEncoder;
-import static core.assets.TextureLoader.readImage;
+import static core.assets.TextureLoader.readBufferedImage;
+import static core.assets.TextureLoader.decodeImage;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;
 
-public class Window extends Application {
+public final class Window extends Application {
     public static final String versionStamp = "0.0.6", version = "alpha " + versionStamp + " (non stable)";
     public static int defaultWidth = 1920, defaultHeight = 1080;
-    public static boolean start = false, windowFocused = true;
+    public static boolean windowFocused = true;
     public static long glfwWindow;
     public static Font defaultFont;
 
-    public void run() {
-        init();
-        draw();
-    }
+    @Override
+    protected void init() {
+        // Хмм, надо бы где-то тут создавать сцену
+        assets.load(Font.class, "arial.ttf");
+        assets.load(Atlas.class, "sprites");
 
-    public void init() {
+        Config.checkConfig();
+        if (Integer.parseInt(Config.getFromConfig("Debug")) >= 2) {
+            Configuration.DEBUG.set(true);
+            Configuration.DEBUG_MEMORY_ALLOCATOR.set(true);
+            Configuration.DEBUG_STACK.set(true);
+        }
+
         Logger.logStart();
 
-        glfwSetErrorCallback(addResource(new GLFWErrorCallback() {
+        glfwSetErrorCallback(Global.app.keep(new GLFWErrorCallback() {
             @Override
             public void invoke(int error, long description) {
                 Logger.logExit(error, "Error at glfw: '" + error + "', with description: '" + GLFWErrorCallback.getDescription(description) + "'", false);
@@ -66,17 +59,26 @@ public class Window extends Application {
             }
             case null, default -> {}
         }
-        glfwInit();
+        if (!glfwInit()) {
+            throw new RuntimeException("Failed to initialize GLFW");
+        }
         glfwDefaultWindowHints();
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
         glfwWindow = glfwCreateWindow(defaultWidth, defaultHeight, "-270 on Celsius", glfwGetPrimaryMonitor(), MemoryUtil.NULL);
+        if (glfwWindow == MemoryUtil.NULL) {
+            throw new RuntimeException("Failed to create window");
+        }
 
         glfwMakeContextCurrent(glfwWindow);
 
-        TextureLoader.ImageData cursorImage = readImage(BufferedImageEncoder(assets.assetsDir("World/Other/cursorDefault.png")));
-        GLFWImage glfwImg = GLFWImage.create().set(cursorImage.width(), cursorImage.height(), cursorImage.data());
-        addResource(glfwImg);
-        glfwSetCursor(glfwWindow, glfwCreateCursor(glfwImg, 0, 0));
+        var cursorImage = decodeImage(readBufferedImage("World/Other/cursorDefault.png"));
+        try (var stack = MemoryStack.stackPush()) {
+            GLFWImage glfwImg = GLFWImage.malloc(stack);
+            glfwImg.set(cursorImage.width(), cursorImage.height(), cursorImage.data());
+            glfwSetCursor(glfwWindow, glfwCreateCursor(glfwImg, 0, 0));
+        }
+        MemoryUtil.memFree(cursorImage.data());
 
         if (Config.getFromConfig("VerticalSync").equals("true")) {
             Logger.log("Running with Vertical Sync");
@@ -87,168 +89,70 @@ public class Window extends Application {
             Logger.log("Running with " + targetFPS + " fps");
             setFramerate(targetFPS);
         }
-        glfwShowWindow(glfwWindow);
+
         GL.createCapabilities();
 
         // Великий инструмент.
         // glEnable(GL_DEBUG_OUTPUT);
-        // GLUtil.setupDebugMessageCallback();
+        // keep(GLUtil.setupDebugMessageCallback());
 
         scene = new Scene(defaultWidth, defaultHeight);
         input = new InputHandler(defaultWidth, defaultHeight);
         input.init();
         input.addListener(scene);
 
-        try {
-            TextureLoader.preLoadResources();
-        } catch (IOException e) {
-            Logger.printException("Error when pre-loading resources", e);
-        }
-
-        glfwSetWindowFocusCallback(glfwWindow, addResource(new GLFWWindowFocusCallback() {
+        glfwSetWindowFocusCallback(glfwWindow, Global.app.keep(new GLFWWindowFocusCallback() {
             @Override
             public void invoke(long window, boolean focused) {
                 windowFocused = focused;
             }
         }));
+        glfwSetWindowCloseCallback(glfwWindow, Global.app.keep(new GLFWWindowCloseCallback() {
+            @Override
+            public void invoke(long window) {
+                quit();
+            }
+        }));
 
-        try {
-            atlas = Atlas.load(assets.assetsDir("sprites"));
-        } catch (IOException e) {
-            Logger.printException("Error when loading texture atlas", e);
-        }
-
-        EventHandler.init();
-
-        camera = new Camera2();
-        camera.setToOrthographic(defaultWidth, defaultHeight);
         batch = new SortingBatch(4 * 1024 * 1024, 1024 * 8, 1024 * 8);
-        batch.matrix(camera.projection);
-
-        UI.mainMenu().show();
 
         addListener(new AutoSaveListener());
 
-        log("Init status: true\n");
-    }
-
-    public void draw() {
-        log("Thread: Main thread started drawing");
-
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
+        glfwShowWindow(glfwWindow);
 
-        while (!glfwWindowShouldClose(glfwWindow)) {
-            // Игровой цикл таков:
-            // 1) фиксация deltaTime
-            // 2) Считывание ввода
-            // 3) Выполнение запланированных задач
-            // 4) Обновление интерфейса
-            // 5) Обновление мира
-            //    1) Обновление статических объектов
-            //    2) Обновление динамических объектов
-            // TODO Почему порядок именно такой? Если думать о мире, как об объекте
-            //   с которым динамические сущности взаимодействуют, то разве не должен быть обратным порядок?
-            // 6) Отрисовка мира в порядке отображения
-            updateTime();
-
-            input.update();
-            for (ApplicationListener listener : listeners) {
-                try {
-                    listener.update();
-                } catch (Exception e) {
-                    Logger.printException("Failed to update ApplicationListener: " + listener, e);
-                }
-            }
-
-            EventHandler.inputUpdate();
-
-            scheduler.executeAll();
-            scene.update();
-
-            if (start) {
-                Physics.updatePhysics();
-                TextureDrawing.updateWorld();
-
-                batch.z(Layer.BACKGROUND);
-                Sun.draw();
-                batch.z(Layer.STATIC_OBJECTS);
-                TextureDrawing.drawStatic();
-                batch.z(Layer.DYNAMIC_OBJECTS);
-                TextureDrawing.drawDynamic();
-
-                debugInfo();
-            } else {
-                batch.draw(assets.getTextureByPath(assets.assetsDir("World/Other/background.png")));
-            }
-
-            scene.draw();
-            drawPlayerGui();
-            batch.flush();
-
-            glfwSwapBuffers(glfwWindow);
-            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-            nextFrame();
-        }
-
-        glfwTerminate();
-        NativeResources.terminateResources();
-        batch.close();
+        setGameScene(new MenuScene());
     }
 
-    static final Rectangle rect = new Rectangle();
-    static final Vector2f vec = new Vector2f();
-    static final Color green = Color.fromRgba8888(0, 255, 0, 255);
-    static final Color red = Color.fromRgba8888(255, 0, 0, 255);
-    static final Color blue = Color.fromRgba8888(0, 0, 255, 255);
-    static final Color white = Color.fromRgba8888(255, 255, 255, 255);
-    static final Color black = Color.fromRgba8888(0, 0, 0, 255);
+    @Override
+    protected void update() {
+        // Игровой цикл таков:
+        // 1) фиксация deltaTime
+        // 2) Считывание ввода
+        // 3) Выполнение запланированных задач
+        // 4) Обновление интерфейса
+        // 5) Обновление мира
+        //    1) Обновление статических объектов
+        //    2) Обновление динамических объектов
+        // TODO Почему порядок именно такой? Если думать о мире, как об объекте
+        //   с которым динамические сущности взаимодействуют, то разве не должен быть обратным порядок?
+        // 6) Отрисовка мира в порядке отображения
+        updateTime();
 
-    private void debugInfo() {
-        if (debugLevel < 2) {
-            return;
-        }
+        input.update();
+        gameScene.loop();
+        batch.flush();
 
-        var player = DynamicObjects.getFirst();
-        var size = player.getTexture();
+        glfwSwapBuffers(glfwWindow);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        player.getHitboxTo(rect);
-        var center = rect.getCenterTo(vec);
+        nextFrame();
+    }
 
-        int cx = (int) Math.floor(center.x / blockSize);
-        int cy = (int) Math.floor(center.y / blockSize);
-
-        float width = size.width();
-        float height = size.height();
-        int w = (int) Math.ceil(width / blockSize);
-        int h = (int) Math.ceil(height / blockSize);
-
-        int minX = (int) Math.floor(player.getX() / blockSize);
-        int minY = (int) Math.floor(player.getY() / blockSize);
-
-        int maxX = (int) Math.floor((player.getX() + width) / blockSize);
-        int maxY = (int) Math.floor((player.getY() + height) / blockSize);
-
-        TextureDrawing.drawText(player.getX(), player.getY() + size.height() - 32,
-                "Fixture: " + player.hasFixture() + ", Velocity: " + player.velocity, black);
-
-        // Интегрированный прямоугольник, который используется как хитбокс
-        for (int x = minX; x <= maxX; x++) {
-            for (int y = minY; y <= maxY; y++) {
-                Fill.rectangleBorder(x * blockSize, y * blockSize, blockSize, blockSize, white);
-            }
-        }
-
-        TextureDrawing.drawText(player.getX(), player.getY() + size.height(),
-                "Size: " + w + "x" + h + " (" + size.width() + "x" + size.height() + ")", Styles.DIRTY_BRIGHT_BLACK);
-
-        // Ближайший к центру игрока блок
-        if (false) Fill.rectangleBorder(cx * blockSize, cy * blockSize, blockSize, blockSize, green);
-        // Прямоугольник, который показывает занятое текстурой пространство
-        Fill.rectangleBorder(player.getX(), player.getY(), size.width(), size.height(),  red);
-
-        // Две пересекающиеся перпендикулярные прямые, точкой пересечения которых является центр текстуры
-        Fill.line(player.getX() + size.width()/2f, player.getY(), player.getX() + size.width()/2f, player.getY() + size.height(), blue);
-        Fill.line(player.getX(), player.getY() + size.height() / 2f, player.getX() + size.width(), player.getY() + size.height() / 2f, blue);
+    @Override
+    protected void cleanup() {
+        glfwTerminate();
+        batch.close();
+        assets.unloadAll();
     }
 }

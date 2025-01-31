@@ -2,7 +2,9 @@ package core.ui;
 
 import core.EventHandling.EventHandler;
 import core.Utils.Color;
+import core.Window;
 import core.World.Textures.TextureDrawing;
+import core.g2d.Font;
 
 import java.util.function.Consumer;
 
@@ -64,10 +66,11 @@ public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B>
         return as();
     }
 
-    protected void drawPrompt(BaseButton<?> button) {
+    protected void drawPrompt(BaseButton<?> button, Font font) {
         if (getFromConfig("ShowPrompts").equals("true")) {
             if (EventHandler.isMousePressed(button) && System.currentTimeMillis() - input.getLastMouseMoveTimestamp() >= 1000 && button.prompt != null) {
-                TextureDrawing.drawRectangleText(input.mousePos().x, input.mousePos().y, 0, button.prompt, false, Styles.DEFAULT_PANEL_COLOR);
+                TextureDrawing.drawRectangleText(input.mousePos().x, input.mousePos().y, 0, button.prompt,
+                        false, Styles.DEFAULT_PANEL_COLOR, font);
             }
         }
     }

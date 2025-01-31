@@ -11,19 +11,21 @@ import static core.World.Textures.TextureDrawing.getTextSize;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 
 public class Slider extends BaseElement<Slider> {
+    public final Style.Slider style;
+
     private float sliderPos, prevSliderPos;
     private boolean isClicked;
 
     public int min, max;
-    public Color sliderColor, dotColor;
     public MoveListener updater;
 
     public interface MoveListener {
         void update(int pos, int max);
     }
 
-    protected Slider(Group parent) {
+    protected Slider(Group parent, Style.Slider style) {
         super(parent);
+        this.style = style;
     }
 
     public int getSliderValue() {
@@ -42,15 +44,7 @@ public class Slider extends BaseElement<Slider> {
         return this;
     }
 
-    public Slider setSliderColor(Color color) {
-        this.sliderColor = color;
-        return this;
-    }
-
-    public Slider setDotColor(Color color) {
-        this.dotColor = color;
-        return this;
-    }
+    private static final Color tmp = new Color();
 
     @Override
     public void draw() {
@@ -58,12 +52,11 @@ public class Slider extends BaseElement<Slider> {
             return;
         }
 
-        Fill.rect(x, y, sliderPos - x, height, sliderColor);
+        Fill.rect(x, y, sliderPos - x, height, style.sliderColor);
 
-        int oa = sliderColor.a();
-        sliderColor.a(oa - 100);
-        Fill.rect(x, y, width, height, sliderColor);
-        sliderColor.a(oa); // А что? Жава не может без выделения памяти в куче
+        tmp.set(style.sliderColor);
+        tmp.a(tmp.a() - 100);
+        Fill.rect(x, y, width, height, tmp);
 
         int rectHeight = 30;
         int rectBrightness = 170;
@@ -84,7 +77,7 @@ public class Slider extends BaseElement<Slider> {
         batch.draw(triangle, sliderPos - (triangle.width() / 2f), y + rectY - 7);
 
         String sliderValue = Integer.toString(getSliderValue());
-        int numbersWidth = getTextSize(sliderValue).width;
+        int numbersWidth = getTextSize(sliderValue).x;
 
         Fill.rect(sliderPos - (triangle.width() / 2f) - (numbersWidth / (rectWidth * 2)),
                 y + rectY, 30 + numbersWidth / rectWidth, rectHeight,
@@ -94,15 +87,15 @@ public class Slider extends BaseElement<Slider> {
         for (int i = 0; i < sliderValue.length(); i++) {
             char ch = sliderValue.charAt(i);
             if (ch == ' ') {
-                x += Window.defaultFont.getGlyph('A').width();
+                x += style.font.getGlyph('A').width();
                 continue;
             }
-            Font.Glyph glyph = Window.defaultFont.getGlyph(ch);
+            Font.Glyph glyph = style.font.getGlyph(ch);
             batch.draw(glyph, Styles.DIRTY_WHITE, x, y + rectY);
             x += glyph.width();
         }
 
-        Fill.circle(sliderPos - 0.875f*height, y - 5, height * 1.75f, dotColor);
+        Fill.circle(sliderPos - 0.875f*height, y - 5, height * 1.75f, style.dotColor);
     }
 
     @Override

@@ -20,23 +20,18 @@ import static core.World.Creatures.Player.Inventory.Inventory.*;
 import static core.World.Textures.TextureDrawing.*;
 
 public class BuildMenu {
-    private static boolean created, isOpen = true, infoCreated;
-    private static Items[][] items = new Items[5][30];
+    private static boolean isOpen = true, infoCreated;
+    private static final Items[][] items = new Items[5][30];
     private static Point2i currentObject;
     private static float scroll = 0;
 
     public static void create() {
-        addDefaultItems();
-        created = true;
-    }
+        var defaultItems = Config.getProperties(("World/ItemsCharacteristics/DefaultBuildMenuItems.properties"));
 
-    private static void addDefaultItems() {
-        Properties defaultItems = Config.getProperties(assets.assetsDir("World/ItemsCharacteristics/DefaultBuildMenuItems.properties"));
-
-        String[] details = ((String) defaultItems.getOrDefault("Details", "")).split(",");
-        String[] tools = ((String) defaultItems.getOrDefault("Tools", "")).split(",");
-        String[] weapons = ((String) defaultItems.getOrDefault("Weapons", "")).split(",");
-        String[] placeables = ((String) defaultItems.getOrDefault("Placeables", "")).split(",");
+        String[] details = defaultItems.getOrDefault("Details", "").split(",");
+        String[] tools = defaultItems.getOrDefault("Tools", "").split(",");
+        String[] weapons = defaultItems.getOrDefault("Weapons", "").split(",");
+        String[] placeables = defaultItems.getOrDefault("Placeables", "").split(",");
 
         if (details[0].length() > 1) {
             for (String detail : details) {
@@ -60,13 +55,11 @@ public class BuildMenu {
         }
     }
 
-    public static void updateLogic() {
-        if (created) {
-            updateBuildButton();
-            updateCollapseButton();
-            updateInfoButton();
-            updateScroll();
-        }
+    public static void inputUpdate() {
+        updateBuildButton();
+        updateCollapseButton();
+        updateInfoButton();
+        updateScroll();
     }
 
     private static void updateBuildButton() {
@@ -135,7 +128,7 @@ public class BuildMenu {
     }
 
     public static void draw() {
-        if (created && isOpen) {
+        if (isOpen) {
             batch.draw(atlas.byPath("UI/GUI/buildMenu/menuOpen"), 1650, 0);
 
             for (int x = 0; x < items.length; x++) {
@@ -164,12 +157,12 @@ public class BuildMenu {
                 }
             }
             // scrollbar
-            Color color = Color.fromRgba8888(0, 0, 0, 200);
+            Color color = Color.fromRgba8888(0, 0, 0, 200); // TODO убрать аллокацию
             Fill.rect(1915, (int) Math.abs(scroll / 2f) - 5, 4, 20, color);
 
             drawRequirements(1663, 156);
 
-        } else if (!isOpen) {
+        } else {
             batch.draw(atlas.byPath("UI/GUI/buildMenu/menuClosed"), 1650, 0);
         }
 

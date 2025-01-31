@@ -9,6 +9,7 @@ import core.World.Textures.TextureDrawing;
 import core.g2d.Atlas;
 
 import java.io.*;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Properties;
 import java.util.zip.DeflaterOutputStream;
@@ -32,13 +33,14 @@ public class Structures implements Serializable {
         Structures struct = structures.get(name);
 
         if (struct == null) {
-            struct = read(assets.assetsDir("\\World\\Saves\\Structures\\" + name + ".ser"));
+            struct = read("World/Saves/Structures/" + name + ".ser");
             if (struct != null) {
                 structures.put(name, struct);
             }
         }
         return struct;
     }
+
     public static void clearStructuresMap() {
         structures.clear();
     }
@@ -55,20 +57,26 @@ public class Structures implements Serializable {
     }
 
     private static Structures read(String path) {
-        if (new File(path).exists()) {
-            try (var fis = assets.resourceStream(path);
-                 InflaterInputStream iis = new InflaterInputStream(fis);
-                 ObjectInputStream ois = new ObjectInputStream(iis)) {
-
-                return (Structures) ois.readObject();
-            } catch (Exception e) {
-                printException("Error when load structure, path: " + path, e);
-            }
+        var structFile = assets.assetsDir().resolve(path);
+        if (Files.notExists(structFile)) {
+            return null;
         }
-        return null;
+
+        try (var fis = Files.newInputStream(structFile);
+             var ois = new ObjectInputStream(new InflaterInputStream(fis))) {
+            return (Structures) ois.readObject();
+        } catch (Exception e) {
+            printException("Error when load structure, path: " + path, e);
+            return null;
+        }
     }
 
     private static void write(Structures data, String structureName) {
+        // TODO переделать
+        //  assets.assetsDir() это read-only директория. Это либо директория в архиве либо обычная директория
+        //  нужно подумать о директории с данными игры, например, в %AppData% или в assets.workingDir(),
+        //  что тоже является приемлемым вариантом
+
         Logger.log("Start saving structure: " + structureName);
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -83,7 +91,7 @@ public class Structures implements Serializable {
             dos.close();
             byte[] compressedBytes = compressed.toByteArray();
 
-            FileOutputStream fos = new FileOutputStream(assets.assetsDir("World/Saves/Structures/structure" + structureName + ".ser"));
+            FileOutputStream fos = new FileOutputStream("World/Saves/Structures/structure" + structureName + ".ser");
             fos.write(compressedBytes);
             fos.close();
         } catch (Exception e) {
@@ -113,19 +121,20 @@ public class Structures implements Serializable {
     }
 
     public static void bindStructure(String name, byte id) {
-        String path = assets.assetsDir("World/ItemsCharacteristics/" + name + ".properties");
-
-        byte maxHp;
-        short[][] blocks;
-
-        // if its simple structure (without .ser file)
-        if (new File(path).exists()) {
-            Properties prop = Config.getProperties(path);
-            Atlas.Region texture = Global.atlas.byPath((String) prop.get("Path"));
-            blocks = new short[texture.width() / TextureDrawing.blockSize][texture.height() / TextureDrawing.blockSize];
+        var file = assets.assetsDir().resolve("World/ItemsCharacteristics/" + name + ".properties");
+        if (Files.notExists(file)) {
+            Structures str = getStructure(name);
+            if (str != null) {
+                var blocks = bindStructures(str.blocks);
+                StaticObjectsConst.setConst(name, id, blocks);
+            }
+        } else {
+            var prop = Config.getProperties(file);
+            Atlas.Region texture = Global.atlas.byPath(prop.get("Path"));
+            short[][] blocks = new short[texture.width() / TextureDrawing.blockSize][texture.height() / TextureDrawing.blockSize];
 
             if (blocks.length > 1 || blocks[0].length > 1) {
-                maxHp = Byte.parseByte((String) prop.getOrDefault("MaxHp", "100"));
+                byte maxHp = Byte.parseByte(prop.getOrDefault("MaxHp", "100"));
 
                 StaticObjectsConst rootConst = StaticObjectsConst.getConst(id);
                 StaticObjectsConst tailConst = rootConst.clone();
@@ -137,18 +146,12 @@ public class Structures implements Serializable {
                 for (int x = 0; x < blocks.length; x++) {
                     for (int y = 0; y < blocks[0].length; y++) {
                         byte tailId = StaticWorldObjects.generateId(name + "" + x + "" + y);
-                        blocks[x][y] = (short) (((maxHp & 0xFF) << 8) | (tailId & 0xFF));
+                        blocks[x][y] = (short) ((maxHp & 0xFF) << 8 | tailId & 0xFF);
                         StaticObjectsConst.setConst(tailConst, tailId);
                     }
                 }
                 rootConst.optionalTiles = blocks;
                 StaticObjectsConst.setConst(rootConst, id);
-            }
-        } else {
-            Structures str = getStructure(name);
-            if (str != null) {
-                blocks = bindStructures(str.blocks);
-                StaticObjectsConst.setConst(name, id, blocks);
             }
         }
     }

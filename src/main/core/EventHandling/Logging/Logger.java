@@ -2,8 +2,10 @@ package core.EventHandling.Logging;
 
 import com.sun.management.OperatingSystemMXBean;
 import core.Window;
-import core.World.Weather.Sun;
-import java.awt.Toolkit;
+import org.lwjgl.glfw.GLFW;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.MemoryUtil;
+
 import java.io.*;
 import java.lang.management.GarbageCollectorMXBean;
 import java.lang.management.ManagementFactory;
@@ -73,7 +75,7 @@ public class Logger extends PrintStream {
 
             if (!cleanup) {
                 try {
-                    try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("log.txt"), StandardCharsets.UTF_8))) {
+                    try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.workingDir().resolve("log.txt").toString(), StandardCharsets.UTF_8))) {
                         printWriter.print("");
                         cleanup = true;
                     }
@@ -83,7 +85,7 @@ public class Logger extends PrintStream {
             }
 
             try {
-                try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.pathTo("log.txt"), StandardCharsets.UTF_8, true))) {
+                try (PrintWriter printWriter = new PrintWriter(new FileWriter(assets.workingDir().resolve("log.txt").toString(), StandardCharsets.UTF_8, true))) {
                     printWriter.println(message);
                 }
             } catch (IOException e) {
@@ -125,14 +127,11 @@ public class Logger extends PrintStream {
         }
         exitMessage.append("\nProgram exit at: ").append(LocalDateTime.now());
         exitMessage.append("\nExit code: ").append(status).append(exitStatus).append(", reason: ").append(reason);
-        exitMessage.append("\nGame time: ").append(Sun.currentTime);
+        // TODO
+        // exitMessage.append("\nGame time: ").append(Global.sun.currentTime);
         exitMessage.append("\n-------- Log ended --------");
 
         return exitMessage;
-    }
-
-    public static void logExit(int status) {
-        logExit(status, null, true);
     }
 
     public static void logStart() {
@@ -151,7 +150,22 @@ public class Logger extends PrintStream {
         StringBuilder computerInfo = new StringBuilder();
 
         computerInfo.append("\nComputer info: ");
-        computerInfo.append("\nScreen resolution: ").append(Toolkit.getDefaultToolkit().getScreenSize().width).append(" x ").append(Toolkit.getDefaultToolkit().getScreenSize().height);
+        // TODO упадёт когда доделаю оконный режим
+        long monPtr = glfwGetPrimaryMonitor();
+        if (monPtr != MemoryUtil.NULL) {
+            int w, h;
+            try (var stack = MemoryStack.stackPush()) {
+                var wPtr = stack.mallocInt(1);
+                var hPtr = stack.mallocInt(1);
+                GLFW.glfwGetMonitorPhysicalSize(monPtr, wPtr, hPtr);
+                w = wPtr.get();
+                h = hPtr.get();
+            }
+            computerInfo.append("\nScreen resolution: ").append(w).append(" x ").append(h);
+        } else {
+            // у меня на wayland такое возможно
+            // не хочу это сейчас исправлять, поскольку есть планы как вывести тут важную информацию
+        }
         computerInfo.append("\nCPU: ").append(System.getenv("PROCESSOR_IDENTIFIER"));
         computerInfo.append("\nCPU threads count: " ).append(Runtime.getRuntime().availableProcessors());
         computerInfo.append("\nRAM: ").append(ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class).getTotalMemorySize() / (1024 * 1024)).append("\n");

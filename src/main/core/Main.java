@@ -6,7 +6,7 @@ import core.assets.AssetsManager;
 import static core.Global.assets;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Throwable {
         boolean exploded = true;
         for (String arg : args) {
             if (arg.equalsIgnoreCase("--packaged")) {

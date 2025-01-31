@@ -2,15 +2,17 @@ package core.ui.menu;
 
 import core.EventHandling.Logging.Config;
 import core.EventHandling.Logging.Json;
+import core.GameState;
+import core.Global;
 import core.Time;
 import core.UI;
+import core.math.Vector2f;
 import core.ui.*;
 
 import static core.EventHandling.Logging.Config.*;
 import static core.EventHandling.Logging.Json.getName;
 import static core.Global.atlas;
 import static core.Global.scheduler;
-import static core.Window.start;
 
 public class Settings extends Dialog {
     private String newLang = Json.lang;
@@ -125,7 +127,7 @@ public class Settings extends Dialog {
 
     private void exitBtn() {
         hide();
-        if (!start) {
+        if (Global.gameState != GameState.PLAYING) {
             UI.mainMenu().show();
         }
     }
@@ -190,20 +192,22 @@ public class Settings extends Dialog {
             }
         }
 
+        final Vector2f speed = new Vector2f(5f, 5f);
+
         private void runOtter() {
             float x = otterImage.x();
             float y = otterImage.y();
 
             if (!out && x > 1770 && y < -90) {
-                x -= 1;
-                y += 1;
+                x -= speed.x * Time.delta;
+                y += speed.y * Time.delta;
             } else if (x <= 1770 && y >= -90) {
-                scheduler.post(() -> out = true, Time.delta * Time.ONE_SECOND);
+                scheduler.post(() -> out = true, Time.ONE_SECOND);
                 out = true;
             }
             if (out) {
-                x += 1;
-                y -= 1;
+                x += speed.x * Time.delta;
+                y -= speed.y * Time.delta;
             }
 
             otterImage.setPosition(x, y);
@@ -213,6 +217,5 @@ public class Settings extends Dialog {
                 out = false;
             }
         }
-
     }
 }

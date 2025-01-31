@@ -85,10 +85,12 @@ dependencies {
     implementation("org.lwjgl", "lwjgl")
     implementation("org.lwjgl", "lwjgl-glfw")
     implementation("org.lwjgl", "lwjgl-opengl")
+    implementation("org.lwjgl", "lwjgl-jemalloc")
 
     implementation("org.lwjgl", "lwjgl", classifier = lwjglNatives)
     implementation("org.lwjgl", "lwjgl-glfw", classifier = lwjglNatives)
     implementation("org.lwjgl", "lwjgl-opengl", classifier = lwjglNatives)
+    implementation("org.lwjgl", "lwjgl-jemalloc", classifier = lwjglNatives)
 }
 
 application {
@@ -97,6 +99,9 @@ application {
 }
 
 jlink {
+    mergedModule {
+        requires("java.desktop")
+    }
     enableCds()
     options.addAll(listOf(
         "--no-header-files",
@@ -110,4 +115,8 @@ jlink {
         name = "celsius"
         args = listOf("--packaged")
     }
+}
+
+tasks.named("jpackageImage") {
+    dependsOn(tasks.createDelegatingModules)
 }

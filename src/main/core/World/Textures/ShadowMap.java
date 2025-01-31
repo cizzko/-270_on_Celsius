@@ -1,5 +1,6 @@
 package core.World.Textures;
 
+import core.GameState;
 import core.Utils.Color;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticObjectsConst;
@@ -8,8 +9,8 @@ import core.ui.Styles;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import static core.Global.gameState;
 import static core.Global.world;
-import static core.Window.start;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.WorldGenerator.*;
 
@@ -83,7 +84,7 @@ public class ShadowMap {
     }
 
     public static void update() {
-        if (start) {
+        if (gameState == GameState.PLAYING) {
             int xPos = (int) DynamicObjects.getFirst().getX();
             int yPos = (int) DynamicObjects.getFirst().getY();
 

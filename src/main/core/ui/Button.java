@@ -58,6 +58,6 @@ public class Button extends BaseButton<Button> {
         if (name != null) {
             drawText(x + 20, y + height / 2.8f, name);
         }
-        drawPrompt(this);
+        drawPrompt(this, style.font);
     }
 }

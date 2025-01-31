@@ -1,13 +1,13 @@
 package core.World.StaticWorldObjects;
 
+import core.Global;
+import core.PlayGameScene;
 import core.Utils.Sized;
 import core.World.Textures.TextureDrawing;
 import core.World.Weather.Sun;
-import core.World.WorldGenerator;
 import core.math.Point2i;
 
 import java.util.HashMap;
-import static core.World.Weather.Sun.currentTime;
 
 public class TemperatureMap {
     private static HashMap<Point2i, Float> individualTemperature = new HashMap<>();
@@ -16,8 +16,8 @@ public class TemperatureMap {
     public static float dayTemperatureDecrement = 0.04f, currentWorldTemperature;
 
     // todo как то криво работает
-    public static void create() {
-        currentWorldTemperature = currentTime / 100;
+    public static void create(PlayGameScene playGameScene) {
+        currentWorldTemperature = playGameScene.sun.currentTime / 100;
         temperature = new float[core.Global.world.sizeY];
 
         for (int i = 0; i < temperature.length; i++) {
@@ -62,8 +62,8 @@ public class TemperatureMap {
         }
     }
 
-    public static void update() {
-        if (currentTime >= Sun.startDay || (currentTime >= 0 && currentTime <= Sun.endSunset)) {
+    public static void update(Sun sun) {
+        if (sun.currentTime >= Sun.startDay || (sun.currentTime >= 0 && sun.currentTime <= Sun.endSunset)) {
             currentWorldTemperature += dayTemperatureDecrement / 2.6f;
         } else {
             currentWorldTemperature -= dayTemperatureDecrement;

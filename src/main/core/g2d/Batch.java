@@ -3,17 +3,15 @@ package core.g2d;
 import core.Global;
 import core.Utils.Disposable;
 import core.Utils.Color;
+import core.assets.AssetsManager;
 import core.math.Mat3;
 import core.pool.Pool;
 import core.pool.Poolable;
-import org.lwjgl.BufferUtils;
 import org.lwjgl.system.MemoryUtil;
 
-import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayDeque;
-import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
@@ -36,6 +34,7 @@ public class Batch<S extends Batch.State> implements Disposable {
     protected Texture currentTexture;
 
     protected FloatBuffer vertices;
+    protected IntBuffer indexes;
     protected Mesh mesh;
     protected Shader shader;
     protected int vertexCount;
@@ -129,14 +128,10 @@ public class Batch<S extends Batch.State> implements Disposable {
     public Batch(int bufferSize, Supplier<? extends S> constr, BiConsumer<S, S> extender) {
         this.statePool = new Pool<>(constr, MAX_NESTING);
         this.extender = extender;
-        try {
-            shader = Shader.load(Global.assets.assetsDir("Shaders/default"));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        this.shader = Global.assets.load(Shader.class, "default", AssetsManager.LoadType.SYNC).resultNow();
 
         int vertexCount = bufferSize * VERTEX_PER_SPRITE;
-        vertices = BufferUtils.createFloatBuffer(vertexCount);
+        vertices = MemoryUtil.memAllocFloat(vertexCount);
         mesh = new Mesh(GL_STATIC_DRAW);
 
         mesh.bindVao();
@@ -145,7 +140,7 @@ public class Batch<S extends Batch.State> implements Disposable {
         VERTEX_FORMAT.enableAttributes();
 
         int indexesCount = bufferSize * VERTEX_PER_TRIANGLE;
-        IntBuffer indexes = BufferUtils.createIntBuffer(indexesCount);
+        indexes = MemoryUtil.memAllocInt(indexesCount);
 
         int j = 0;
         for (int i = 0; i < bufferSize; i++) {
@@ -294,9 +289,10 @@ public class Batch<S extends Batch.State> implements Disposable {
     @Override
     public final void close() {
         if (disposed) return;
-        mesh.close();
-        shader.close();
-        MemoryUtil.memFree(vertices);
         disposed = true;
+        mesh.close();
+        MemoryUtil.memFree(vertices);
+        MemoryUtil.memFree(indexes);
+        Global.assets.unload(shader);
     }
 }

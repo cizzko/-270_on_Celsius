@@ -2,7 +2,9 @@ package core.ui;
 
 import core.Global;
 import core.Utils.Color;
-import core.Window;
+import core.g2d.Font;
+
+import static core.Global.assets;
 
 public class Styles {
     // Задумка со стилями такая:
@@ -24,6 +26,7 @@ public class Styles {
     public static final Style.ToggleButton DEFAULT_TOGGLE_BUTTON = new Style.ToggleButton() {
         @Override
         public void load() {
+            font = assets.load(Font.class, "arial.ttf").resultNow();
             checkUp = Global.atlas.byPath("UI/GUI/checkMarkTrue");
             checkDown = Global.atlas.byPath("UI/GUI/checkMarkFalse");
             width = height = 44;
@@ -36,6 +39,7 @@ public class Styles {
     public static final Style.TextButton SIMPLE_TEXT_BUTTON = new Style.TextButton() {
         @Override
         public void load() {
+            font = assets.load(Font.class, "arial.ttf").resultNow();
             borderWidth = 0;
             disabledColor = Color.fromRgba8888(0, 0, 0, 123);
             backgroundColor = DEFAULT_ORANGE;
@@ -45,6 +49,7 @@ public class Styles {
     public static final Style.TextButton TEXT_BUTTON = new Style.TextButton() {
         @Override
         public void load() {
+            font = assets.load(Font.class, "arial.ttf").resultNow();
             borderWidth = 6;
             disabledColor = Color.fromRgba8888(0, 0, 0, 123);
             backgroundColor = DEFAULT_ORANGE;
@@ -71,7 +76,7 @@ public class Styles {
         @Override
         public void load() {
             color = TEXT_COLOR;
-            font = Window.defaultFont;
+            font = assets.load(Font.class, "arial.ttf").resultNow();
         }
     };
 
@@ -79,13 +84,18 @@ public class Styles {
         @Override
         public void load() {
             color = DIRTY_BRIGHT_BLACK;
-            font = Window.defaultFont;
+            font = assets.load(Font.class, "arial.ttf").resultNow();
         }
     };
 
-    static {
-        loadAll();
-    }
+    public static final Style.Slider DEFAULT_SLIDER = new Style.Slider() {
+        @Override
+        public void load() {
+            font = assets.load(Font.class, "arial.ttf").resultNow();
+            sliderColor = Styles.DEFAULT_PANEL_COLOR;
+            dotColor = Styles.DEFAULT_ORANGE;
+        }
+    };
 
     public static void loadAll() {
         // TODO пока не вижу в этом проблемы. Пусть побудет в статическом контексте
@@ -96,5 +106,6 @@ public class Styles {
         SIMPLE_PANEL.load();
         DEFAULT_TEXT.load();
         DEBUG_TEXT.load();
+        DEFAULT_SLIDER.load();
     }
 }

@@ -1,58 +1,14 @@
 package core.g2d;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import core.Global;
-
-import javax.swing.plaf.synth.Region;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.HashMap;
 import java.util.Map;
 
 public final class Atlas {
     public static final String ATLAS_EXT = ".atlas";
     public static final String META_EXT = ATLAS_EXT + ".meta";
 
-    private Texture texture;
-    private Region errorRegion;
-    private Map<String, Region> regions;
-
-    public static Atlas load(String atlasBaseName) throws IOException {
-        Texture texture = Texture.load(atlasBaseName + ATLAS_EXT);
-        Atlas atlas = new Atlas();
-        atlas.texture = texture;
-
-        JsonObject meta;
-        try (var reader = Global.assets.resourceReader(atlasBaseName + META_EXT)) {
-            meta = JsonParser.parseReader(reader)
-                    .getAsJsonObject();
-        }
-
-        HashMap<String, Region> tmpRegions = new HashMap<>();
-        meta.getAsJsonObject("regions").asMap().forEach((regionName, regMeta) -> {
-            JsonObject regionObject = regMeta.getAsJsonObject();
-            int x = regionObject.get("x").getAsInt();
-            int y = regionObject.get("y").getAsInt();
-            int width = regionObject.get("width").getAsInt();
-            int height = regionObject.get("height").getAsInt();
-            tmpRegions.put(regionName, new Region(atlas, regionName, x, y, width, height));
-        });
-        String errorRegionName = meta.get("error").getAsString();
-
-        Map<String, Region> regions = Map.copyOf(tmpRegions);
-        Region errorRegion = regions.get(errorRegionName);
-        if (errorRegion == null) {
-            throw new IllegalArgumentException("No error region");
-        }
-
-        atlas.regions = regions;
-        atlas.errorRegion = errorRegion;
-        return atlas;
-    }
+    Texture texture;
+    Region errorRegion;
+    Map<String, Region> regions;
 
     public Texture getTexture() {
         return texture;
@@ -91,8 +47,9 @@ public final class Atlas {
         private final String name;
         private final int x, y;
         private final int width, height;
-        private final float u, v;
-        private final float u2, v2;
+
+        private float u, v;
+        private float u2, v2;
 
         public Region(Atlas atlas, String name, int x, int y, int width, int height) {
             this.atlas = atlas;
@@ -101,6 +58,9 @@ public final class Atlas {
             this.y = y;
             this.width = width;
             this.height = height;
+        }
+
+        void computeTextureCoordinates() {
             this.u = x / (float) atlas.texture.width();
             this.v = y / (float) atlas.texture.height();
             this.u2 = (x + width) / (float) atlas.texture.width();

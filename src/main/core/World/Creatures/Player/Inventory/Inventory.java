@@ -21,7 +21,7 @@ import static core.World.WorldUtils.getDistanceToMouse;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Inventory {
-    public static boolean inventoryOpen = false, create = false;
+    public static boolean inventoryOpen = false;
     public static Items[][] inventoryObjects = new Items[8][6];
     public static Point2i currentObject, underMouseItem;
     public static Items.Types currentObjectType;
@@ -41,14 +41,10 @@ public class Inventory {
     }
 
     public static void create() {
-        create = true;
         BuildMenu.create();
     }
 
     public static void inputUpdate() {
-        if (!create) {
-            return;
-        }
         updateUnderMouse();
         updateDropItem();
 
