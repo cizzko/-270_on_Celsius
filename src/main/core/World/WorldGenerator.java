@@ -2,6 +2,7 @@ package core.World;
 
 import core.*;
 import core.EventHandling.EventHandler;
+import core.EventHandling.Logging.Logger;
 import core.ui.menu.CreatePlanet;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.StaticWorldObjects.StaticWorldObjects;
@@ -16,6 +17,7 @@ import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.Textures.TextureDrawing;
 import core.math.MathUtil;
 import core.math.Point2i;
+
 import java.util.*;
 
 import static core.EventHandling.Logging.Logger.log;
@@ -95,40 +97,49 @@ public class WorldGenerator {
     }
 
     public static void generateWorld(CreatePlanet.GenerationParameters params) {
-        // createText(42, 170, "WorldGeneratorState", "First step: ", SimpleColor.DIRTY_BRIGHT_WHITE, "WorldGeneratorState");
+        Logger.log("WorldGeneratorState: first step");
 
         int SizeX = params.size;
         int SizeY = params.size;
         World world = new World(SizeX, SizeY);
         Global.world = world;
 
-        //todo чтоб не вылетала ошибка, если игрок не переходил в другой раздел настроек генерации, и кнопка не была создана
         boolean simple = params.simple;
         boolean randomSpawn = params.randomSpawn;
         boolean creatures = params.creatures;
 
-        log("\nWorld generator: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world with size: x - " + world.sizeX + ", y - " + world.sizeY);
+        log("\nWorldGeneratorState: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world with size: x - " + world.sizeX + ", y - " + world.sizeY);
 
         var playGameScene = new PlayGameScene();
         gameScene.addPreload(playGameScene);
 
         StaticObjectsConst.setDestroyed();
         step(() -> generateRelief(world));
+        Logger.log("WorldGeneratorState: generating relief");
 
         step(() -> ShadowMap.generate());
+        Logger.log("WorldGeneratorState: generating shadow map");
+
         step(() -> generateResources(world));
+        Logger.log("WorldGeneratorState: generating resources");
 
-        //todo пещеры независимо от радиуса создаются толщиной в один блок
         step(() -> generateCaves());
+        Logger.log("WorldGeneratorState: generating caves");
+
         step(() -> generateEnvironments(world));
+        Logger.log("WorldGeneratorState: generating environments");
+
         step(() -> ShadowMap.generate());
+        Logger.log("WorldGeneratorState: regenerating shadow map");
 
         step(() -> TemperatureMap.create(playGameScene));
+        Logger.log("WorldGeneratorState: generating temperature map");
+
         step(() -> Player.createPlayer(randomSpawn));
+        Logger.log("WorldGeneratorState: generating player");
 
         step(() -> {
-            log("World generator: generating done!\n");
-            appendLog("\\nGenerating done! Starting world..");
+            log("WorldGeneratorState: generating done!\n");
 
             scheduler.post(() -> startGame(playGameScene), Time.ONE_SECOND);
         });
@@ -182,7 +193,7 @@ public class WorldGenerator {
     private static void generateCaves() {
         for (int b = 0; b < world.sizeX / 600; b++) {
             int minRadius = 2;
-            int maxRadius = 8;
+            int maxRadius = 4;
             int startRadius = Math.max(minRadius, (int) (Math.random() * maxRadius));
             int x = (int) (Math.random() * world.sizeX);
             int y = findTopmostSolidBlock(x, 5);
@@ -196,7 +207,7 @@ public class WorldGenerator {
             return;
         }
 
-        float startRadius = 7;
+        float startRadius = radius;
         float angle = (float) ((Math.random() * 180) + 90);
 
         do {
@@ -215,9 +226,11 @@ public class WorldGenerator {
             }
 
             for (int j = 0; j < iters; j++) {
-                if (Math.random() * 50 < 1) {
-                    generateCave(x, y, radius, 1, (int) radius);
-                }
+                //todo позже
+                //отростки от основной пещеры, надо настроить
+//                if (Math.random() * 500 < 1) {
+//                    generateCave(x, y, radius, 2, (int) radius);
+//                }
 
                 y += deltaY;
                 x += deltaX;
@@ -233,7 +246,7 @@ public class WorldGenerator {
                     for (int i = (int) (x - radius); i <= x + radius; i++) {
                         for (int k = (int) (y - radius); k <= y + radius; k++) {
                             if (i > 0 && i < world.sizeX && k > 0 && k < world.sizeY) {
-                                world.destroy((int) x, (int) y);
+                                world.destroy(i, k);
                             }
                         }
                     }
@@ -248,8 +261,6 @@ public class WorldGenerator {
     }
 
     private static void generateEnvironments(World world) {
-        appendLog("\\nFourth step: ");
-
         generateTrees(world);
         generateDecorStones(world);
         generateHerb(world);
@@ -257,17 +268,11 @@ public class WorldGenerator {
     }
 
     private static void generateTrees(World world) {
-        log("World generator: generating trees");
-        appendLog("generating trees");
-
         //todo проверить
         //generateForest(80, 2, 20, 4, 8, "tree0", "tree1");
     }
 
     private static void generateDecorStones(World world) {
-        log("World generator: generating decor stones");
-        appendLog(", generating decor stones");
-
         float chance = 40;
         for (int x = 0; x < world.sizeX; x++) {
             if (Math.random() * chance < 1) {
@@ -365,8 +370,6 @@ public class WorldGenerator {
     }
 
     private static void generateResources(World world) {
-        log("World generator: generating resources");
-
         PerlinNoiseGenerator.main(world.sizeX, world.sizeY, 1, 15, 1, 0.8f, 4);
 
         for (int x = 0; x < world.sizeX; x++) {

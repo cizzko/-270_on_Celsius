@@ -17,7 +17,6 @@ import static core.Global.*;
 import static core.World.Creatures.Player.Player.noClip;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.Textures.TextureDrawing.blockSize;
-import static core.World.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 // dynamic objects, can have any coordinates within the world and be moved at any time

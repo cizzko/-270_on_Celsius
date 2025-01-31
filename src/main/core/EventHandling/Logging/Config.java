@@ -14,7 +14,6 @@ public class Config {
     public static final String INTERPOLATE_SUNSET_KEY = "InterpolateSunset";
     public static final String PRELOAD_RESOURCES_KEY  = "PreloadResources";
     public static final String VERTICAL_SYNC_KEY      = "VerticalSync";
-    public static final String SEND_ANONYMOUS_STATISTIC_KEY = "SendAnonymousStatistics";
     public static final String SHOW_PROMPTS_KEY    = "ShowPrompts";
     public static final String DETECT_LANGUAGE_KEY = "DetectLanguage";
 
