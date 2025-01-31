@@ -111,7 +111,17 @@ public final class PlayGameScene extends GameScene {
         float playerX = player.getX();
         float playerY = player.getY();
 
-        camera.position.lerpDeltaTime(playerX + 32, playerY + 200, 0.05f);
+        Vector2f camPos = camera.position;
+        float camX = camPos.x;
+        float camY = camPos.y;
+        //кламп минимального движения
+        float vel = Math.max(1, player.velocity.len() / 4f);
+        camPos.lerpDeltaTime(playerX + 32, playerY + 200, 0.05f * vel);
+
+        //сила и скорость сглаживания, больше - выше
+        if (Math.abs(camPos.x - camX) <= 0.7f/blockSize) camPos.x = camX;
+        if (Math.abs(camPos.y - camY) <= 0.7f/blockSize) camPos.y = camY;
+
         camera.update();
 
         batch.matrix(camera.projection);
