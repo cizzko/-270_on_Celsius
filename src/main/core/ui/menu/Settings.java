@@ -73,12 +73,6 @@ public class Settings extends Dialog {
         }});
         otherSettings = mainPanel.add(new Dialog() {{
             setVisible(false);
-            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
-            })
-                    .setPosition(310, 980)
-                    .setName(getName(SEND_ANONYMOUS_STATISTIC_KEY))
-                    .setPrompt(getName("SendAnonymousStatisticsPrompt"))
-                    .setClicked(Boolean.parseBoolean(getFromConfig(SEND_ANONYMOUS_STATISTIC_KEY)));
         }});
         basicSettings = mainPanel.add(new Dialog() {{
             setVisible(false);
