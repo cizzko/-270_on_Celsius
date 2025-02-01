@@ -110,9 +110,9 @@ public class DynamicWorldObjects implements Serializable {
             jumpedTicks = Math.max(jumpedTicks - Time.delta, 0);
         } else {
             boolean hasFixture = hasFixture();
-            if (hasFixture && input.pressed(GLFW_KEY_SPACE)) {
+            if (hasFixture && Math.abs(velocity.y) <= GAP && input.pressed(GLFW_KEY_SPACE)) {
                 tmp.y += 7;
-                jumpedTicks = Time.ONE_SECOND/1.5f;
+                jumpedTicks = 5;
             }
         }
 

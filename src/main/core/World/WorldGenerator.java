@@ -108,39 +108,49 @@ public class WorldGenerator {
         boolean randomSpawn = params.randomSpawn;
         boolean creatures = params.creatures;
 
-        log("\nWorldGeneratorState: version: 1.0, written at dev 0.0.0.5" + "\nWorld generator: starting generating world with size: x - " + world.sizeX + ", y - " + world.sizeY);
+        log("\nWorldGeneratorState: version: 1.0, written at dev 0.0.0.5" +
+            "\nWorld generator: starting generating world with size: " + world.sizeX + "x" + world.sizeY);
 
         var playGameScene = new PlayGameScene();
         gameScene.addPreload(playGameScene);
 
         StaticObjectsConst.setDestroyed();
-        step(() -> generateRelief(world));
-        Logger.log("WorldGeneratorState: generating relief");
+        step(() -> {
+            log("WorldGeneratorState: generating relief");
+            generateRelief(world);
+        });
 
-        step(() -> ShadowMap.generate());
-        Logger.log("WorldGeneratorState: generating shadow map");
+        step(() -> {
+            log("WorldGeneratorState: generating shadow map");
+            ShadowMap.generate();
+        });
 
-        step(() -> generateResources(world));
-        Logger.log("WorldGeneratorState: generating resources");
+        step(() -> {
+            log("WorldGeneratorState: generating resources");
+            generateResources(world);
+        });
 
         step(() -> generateCaves());
-        Logger.log("WorldGeneratorState: generating caves");
 
         step(() -> generateEnvironments(world));
-        Logger.log("WorldGeneratorState: generating environments");
 
-        step(() -> ShadowMap.generate());
-        Logger.log("WorldGeneratorState: regenerating shadow map");
+        step(() -> {
+            log("WorldGeneratorState: regenerating shadow map");
+            ShadowMap.generate();
+        });
 
-        step(() -> TemperatureMap.create(playGameScene));
-        Logger.log("WorldGeneratorState: generating temperature map");
+        step(() -> {
+            log("WorldGeneratorState: generating temperature map");
+            TemperatureMap.create(playGameScene);
+        });
 
-        step(() -> Player.createPlayer(randomSpawn));
-        Logger.log("WorldGeneratorState: generating player");
+        step(() -> {
+            log("WorldGeneratorState: generating player");
+            Player.createPlayer(randomSpawn);
+        });
 
         step(() -> {
             log("WorldGeneratorState: generating done!\n");
-
             scheduler.post(() -> startGame(playGameScene), Time.ONE_SECOND);
         });
     }
@@ -191,6 +201,7 @@ public class WorldGenerator {
     }
 
     private static void generateCaves() {
+        log("WorldGeneratorState: generating caves");
         for (int b = 0; b < world.sizeX / 600; b++) {
             int minRadius = 2;
             int maxRadius = 4;
@@ -261,6 +272,7 @@ public class WorldGenerator {
     }
 
     private static void generateEnvironments(World world) {
+        log("WorldGeneratorState: generating environments");
         generateTrees(world);
         generateDecorStones(world);
         generateHerb(world);

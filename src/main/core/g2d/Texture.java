@@ -1,7 +1,5 @@
 package core.g2d;
 
-import org.lwjgl.system.MemoryUtil;
-
 import java.awt.image.BufferedImage;
 
 import static core.assets.TextureLoader.decodeImage;
@@ -39,9 +37,9 @@ public final class Texture implements Drawable {
 
         int w = img.width();
         int h = img.height();
-        glTexImage2D(glTarget, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data());
-
-        MemoryUtil.memFree(img.data());
+        try (img) {
+            glTexImage2D(glTarget, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data());
+        }
         glBindTexture(glTarget, 0);
         return new Texture(glHandle, w, h, u, v, u2, v2);
     }

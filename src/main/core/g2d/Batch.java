@@ -132,7 +132,7 @@ public class Batch<S extends Batch.State> implements Disposable {
 
         int vertexCount = bufferSize * VERTEX_PER_SPRITE;
         vertices = MemoryUtil.memAllocFloat(vertexCount);
-        mesh = new Mesh(GL_STATIC_DRAW);
+        mesh = new Mesh(GL_DYNAMIC_DRAW);
 
         mesh.bindVao();
         mesh.bindVbo();

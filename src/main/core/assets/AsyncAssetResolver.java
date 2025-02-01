@@ -107,7 +107,7 @@ final class AsyncAssetResolver<T, P, S>
 
         for (int i = 1; i <= last; ++i) {
             ForkJoinTask<?> t = tasks.get(i);
-            if (anyExc != null) {
+            if (anyExc != null || isCancelled()) {
                 // первый таск в очереди упал с исключением, отменяем все остальные
                 t.cancel(true);
             } else {
@@ -125,6 +125,11 @@ final class AsyncAssetResolver<T, P, S>
         if (anyExc != null) {
             cleanupTasks();
             rethrow(anyExc);
+            return null;
+        }
+
+        if (isCancelled()) {
+            cleanupTasks();
             return null;
         }
 

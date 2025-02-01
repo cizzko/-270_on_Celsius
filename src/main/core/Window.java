@@ -77,13 +77,13 @@ public final class Window extends Application {
         try (var in = Files.newInputStream(assets.assetsDir().resolve("World/Other/cursorDefault.png"))) {
             result = ImageIO.read(in);
         }
-        var cursorImage = decodeImage(result);
-        try (var stack = MemoryStack.stackPush()) {
+        try (var cursorImage = decodeImage(result);
+             var stack = MemoryStack.stackPush()) {
+
             GLFWImage glfwImg = GLFWImage.malloc(stack);
             glfwImg.set(cursorImage.width(), cursorImage.height(), cursorImage.data());
             glfwSetCursor(glfwWindow, glfwCreateCursor(glfwImg, 0, 0));
         }
-        MemoryUtil.memFree(cursorImage.data());
 
         if (Config.getFromConfig("VerticalSync").equals("true")) {
             Logger.log("Running with Vertical Sync");

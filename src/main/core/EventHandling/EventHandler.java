@@ -74,14 +74,14 @@ public class EventHandler {
 
     public static void updateHotkeys(PlayGameScene scene) {
         if (input.justPressed(GLFW_KEY_ESCAPE)) {
-            scene.togglePaused();
             UI.pause().toggle();
         }
 
         if (!windowFocused && Config.getFromConfig("Autopause").equals("true")) {
-            scene.setPaused(true);
             UI.pause().show();
         }
+
+        scene.setPaused(UI.pause().isShown());
 
         if ((input.justPressed(GLFW_KEY_BACKSPACE) || input.repeated(GLFW_KEY_BACKSPACE)) && isKeylogging()) {
             int length = keyLoggingText.length();
