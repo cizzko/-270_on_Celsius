@@ -22,7 +22,6 @@ import java.util.*;
 import static core.Global.*;
 import static core.World.Creatures.Player.Player.playerSize;
 import static core.World.Textures.TextureDrawing.blockSize;
-import static core.World.Textures.TextureDrawing.drawText;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_E;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 

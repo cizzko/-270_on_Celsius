@@ -1,12 +1,16 @@
 package core.ui.Sounds;
 
 import core.EventHandling.Logging.Config;
-import core.EventHandling.Logging.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import javax.sound.sampled.*;
 import java.io.File;
 import java.util.HashSet;
 
 public class Sound {
+    private static final Logger log = LogManager.getLogger();
+
     private static final int effectVolume = Integer.parseInt(Config.getFromConfig("EffectsVolume"));
     private static final int musicVolume = Integer.parseInt(Config.getFromConfig("SoundsVolume"));
     private static int volume;
@@ -23,7 +27,7 @@ public class Sound {
         if (path != null && (!sounds.contains(path) || !limitAmount)) {
             if (!suppVolumeLevel && !error) {
                 error = true;
-                Logger.log("this device not supported volume level");
+                log.error("this device not supported volume level");
             }
 
             new Thread(() -> {
@@ -50,7 +54,7 @@ public class Sound {
                     } catch (Exception e) {
                         if (!error) {
                             error = true;
-                            Logger.printException("Error at gain control", e);
+                            log.error("Error at gain control", e);
                         }
                     }
 
@@ -69,7 +73,7 @@ public class Sound {
                     sourceDataLine.close();
 
                 } catch (Exception e) {
-                    Logger.printException("Error during sound playback, file: " + path, e);
+                    log.error("Error during sound playback, file: '{}'", path, e);
                 } finally {
                     sounds.remove(path);
                 }

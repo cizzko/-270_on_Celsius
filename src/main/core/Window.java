@@ -1,28 +1,32 @@
 package core;
 
+import com.sun.management.OperatingSystemMXBean;
 import core.EventHandling.Logging.Config;
-import core.EventHandling.Logging.Logger;
 import core.g2d.*;
 import core.input.InputHandler;
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWImage;
-import org.lwjgl.glfw.GLFWWindowCloseCallback;
-import org.lwjgl.glfw.GLFWWindowFocusCallback;
+import core.util.DebugTools;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import org.apache.logging.log4j.*;
+import org.apache.logging.log4j.io.IoBuilder;
+import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.system.Configuration;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.opengl.GLUtil;
+import org.lwjgl.system.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 
 import static core.Global.*;
 import static core.assets.TextureLoader.decodeImage;
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.glfwGetVersionString;
 import static org.lwjgl.opengl.GL46.*;
 
 public final class Window extends Application {
+    private static final Logger lwjglLogger = LogManager.getLogger("org.lwjgl.LWJGL");
+
     public static int defaultWidth = 1920, defaultHeight = 1080;
     public static boolean windowFocused = true;
     public static long glfwWindow;
@@ -37,18 +41,30 @@ public final class Window extends Application {
         Config.checkConfig();
         if (Integer.parseInt(Config.getFromConfig("Debug")) >= 2) {
             Configuration.DEBUG.set(true);
+            Configuration.DEBUG_STREAM.set(IoBuilder.forLogger(lwjglLogger)
+                    .setLevel(Level.DEBUG)
+                    .buildPrintStream());
             Configuration.DEBUG_MEMORY_ALLOCATOR.set(true);
             Configuration.DEBUG_STACK.set(true);
         }
 
-        Logger.logStart();
-
         glfwSetErrorCallback(Global.app.keep(new GLFWErrorCallback() {
+            private final Marker GLFW = MarkerManager.getMarker("GLFW");
+            private final Int2ObjectOpenHashMap<String> ERROR_CODES;
+            {
+                ERROR_CODES = new Int2ObjectOpenHashMap<>(APIUtil.apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, org.lwjgl.glfw.GLFW.class));
+                ERROR_CODES.trim();
+            }
+
             @Override
             public void invoke(int error, long description) {
-                Logger.logExit(error, "Error at glfw: '" + error + "', with description: '" + GLFWErrorCallback.getDescription(description) + "'", false);
-                if (error != GLFW_FORMAT_UNAVAILABLE) {
-                    System.exit(error);
+                String errorStr = ERROR_CODES.get(error);
+                String msg = getDescription(description);
+                lwjglLogger.error(GLFW, "error code: {}, description: {}", errorStr, msg);
+
+                StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+                for (int i = 4; i < stack.length; i++) {
+                    lwjglLogger.error(GLFW,"\tat {}", stack[i]);
                 }
             }
         }));
@@ -85,21 +101,25 @@ public final class Window extends Application {
             glfwSetCursor(glfwWindow, glfwCreateCursor(glfwImg, 0, 0));
         }
 
+        printComputerInfo();
+
         if (Config.getFromConfig("VerticalSync").equals("true")) {
-            Logger.log("Running with Vertical Sync");
+            log.info("Framerate: Vertical Sync");
             glfwSwapInterval(1);
         } else {
             glfwSwapInterval(0);
             int targetFPS = Integer.parseInt(Config.getFromConfig("TargetFPS"));
-            Logger.log("Running with " + targetFPS + " fps");
+            log.info("Framerate: {} fps", targetFPS);
             setFramerate(targetFPS);
         }
 
         GL.createCapabilities();
 
         // Великий инструмент.
-        // glEnable(GL_DEBUG_OUTPUT);
-        // keep(GLUtil.setupDebugMessageCallback());
+        // if (Integer.parseInt(Config.getFromConfig("Debug")) >= 2) {
+        //     glEnable(GL_DEBUG_OUTPUT);
+        //     keep(GLUtil.setupDebugMessageCallback());
+        // }
 
         uiScene = new UiScene(defaultWidth, defaultHeight);
         input = new InputHandler(defaultWidth, defaultHeight);
@@ -126,7 +146,43 @@ public final class Window extends Application {
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
         glfwShowWindow(glfwWindow);
 
+        lang = new LangTranslation();
+        lang.load(); // TODO придумать как загружать и перезагружать
+
         setGameScene(new MenuScene());
+    }
+
+    private void printComputerInfo() {
+        log.info("Game version: {}", Constants.version);
+        log.info("GLFW version: {}", glfwGetVersionString());
+
+        // TODO упадёт когда доделаю оконный режим
+        long monPtr = glfwGetPrimaryMonitor();
+        if (monPtr != MemoryUtil.NULL) {
+            int w, h;
+            try (var stack = MemoryStack.stackPush()) {
+                var wPtr = stack.mallocInt(1);
+                var hPtr = stack.mallocInt(1);
+                glfwGetMonitorPhysicalSize(monPtr, wPtr, hPtr);
+                w = wPtr.get();
+                h = hPtr.get();
+            }
+            log.info("Screen resolution: {}x{}", w, h);
+        } else {
+            // у меня на wayland такое возможно
+            // не хочу это сейчас исправлять, поскольку есть планы как вывести тут важную информацию
+        }
+
+        // Это интел-специфичная штука
+        if (Platform.get() == Platform.WINDOWS) {
+            log.info("CPU: {}", System.getenv("PROCESSOR_IDENTIFIER"));
+        }
+        var memMxbean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
+        memMxbean.getCpuLoad();
+
+        double gib = 1024d / 1024d / 1024d;
+        log.info("Heap max capacity: {} GiB", DebugTools.FLOATS.format(Runtime.getRuntime().maxMemory() / gib));
+        log.info("Total memory size: {} GiB", DebugTools.FLOATS.format(memMxbean.getTotalMemorySize() / gib));
     }
 
     @Override

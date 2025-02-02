@@ -65,7 +65,7 @@ repositories {
 
 tasks.compileJava {
     options.encoding = "UTF-8"
-    options.release.set(21)
+    options.release = 21
 }
 
 java {
@@ -77,6 +77,9 @@ java {
 dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("it.unimi.dsi:fastutil:8.5.15")
+    implementation("org.apache.logging.log4j:log4j-api:3.0.0-beta2")
+    implementation("org.apache.logging.log4j:log4j-core:3.0.0-beta2")
+    implementation("org.apache.logging.log4j:log4j-iostreams:3.0.0-beta2")
 
     implementation("org.jcodec:jcodec:0.2.5")
     implementation("org.jcodec:jcodec-javase:0.2.5")

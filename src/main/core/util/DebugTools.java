@@ -1,6 +1,5 @@
 package core.util;
 
-import core.EventHandling.Logging.Logger;
 import core.Global;
 import core.World.Textures.ShadowMap;
 import core.World.StaticWorldObjects.Structures.Structures;
@@ -29,7 +28,6 @@ public class DebugTools {
     }
 
     public static void startUpdate() {
-        Logger.log("Debug module has started");
 
         new Thread(() -> {
             while (!glfwWindowShouldClose(glfwWindow)) {
@@ -57,10 +55,6 @@ public class DebugTools {
         }).start();
     }
 
-    public static void printLastTrace() {
-        Logger.printStackTrace(Thread.currentThread().getStackTrace(), "none", "none", "stack trace from debug tools", "System.err");
-    }
-
     private static void copy() {
         int startX = lastMousePosBlocks.x;
         int startY = lastMousePosBlocks.y;
@@ -71,7 +65,7 @@ public class DebugTools {
 
         for (int x = startX; x < targetX; x++) {
             for (int y = startY; y < targetY; y++) {
-                if (x < core.Global.world.sizeX && y < core.Global.world.sizeY && x > 0 && y > 0 && world.get(x, y) > 0) {
+                if (x < Global.world.sizeX && y < Global.world.sizeY && x > 0 && y > 0 && world.get(x, y) > 0) {
                     if (getId(world.get(x, y)) != 0) {
                         ShadowMap.setShadow(x, y, Color.fromRgba8888(0, 0, 255, 255));
                         objects[x - startX][y - startY] = world.get(x, y);
@@ -85,7 +79,7 @@ public class DebugTools {
     private static void delete() {
         for (int x = lastMousePosBlocks.x; x < getBlockUnderMousePoint().x; x++) {
             for (int y = lastMousePosBlocks.y; y < getBlockUnderMousePoint().y; y++) {
-                if (x < core.Global.world.sizeX && y < core.Global.world.sizeY && x > 0 && y > 0 && world.get(x, y) > 0) {
+                if (x < Global.world.sizeX && y < Global.world.sizeY && x > 0 && y > 0 && world.get(x, y) > 0) {
                     if (getId(world.get(x, y)) != 0) {
                         world.destroy(x, y);
                     }

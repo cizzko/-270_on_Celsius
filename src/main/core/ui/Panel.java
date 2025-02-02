@@ -19,10 +19,7 @@ public class Panel extends BaseGroup<Panel> {
     }
 
     @Override
-    public void draw() {
-        if (!visible()) {
-            return;
-        }
+    public void drawThis() {
         var backgroundColor = color;
         if (backgroundColor == null) backgroundColor = style.backgroundColor;
 
@@ -31,12 +28,6 @@ public class Panel extends BaseGroup<Panel> {
         float borderWidth = style.borderWidth;
         if (borderWidth != 0) {
             Fill.rectangleBorder(x, y, width, height, borderWidth, backgroundColor);
-        }
-
-        if (children != null) {
-            for (Element child : children) {
-                child.draw();
-            }
         }
     }
 

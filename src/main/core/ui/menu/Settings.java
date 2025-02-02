@@ -1,7 +1,6 @@
 package core.ui.menu;
 
 import core.EventHandling.Logging.Config;
-import core.EventHandling.Logging.Json;
 import core.GameState;
 import core.Global;
 import core.Time;
@@ -10,40 +9,39 @@ import core.math.Vector2f;
 import core.ui.*;
 
 import static core.EventHandling.Logging.Config.*;
-import static core.EventHandling.Logging.Json.getName;
 import static core.Global.atlas;
 import static core.Global.scheduler;
 
 public class Settings extends Dialog {
-    private String newLang = Json.lang;
+    private String newLang = Global.lang.getCurrentLanguage();
     private final Button save;
-    private final Dialog basicSettings, otherSettings, graphicsSettings;
+    private final Dialog basicSettings, graphicsSettings;
 
     public Settings() {
         var mainPanel = addPanel(Styles.DEFAULT_PANEL, 20, 20, 1880, 1040);
         var categories = mainPanel.addPanel(Styles.DEFAULT_PANEL, 40, 40, 240, 1000);
         categories.addButton(Styles.SIMPLE_TEXT_BUTTON, this::exitBtn)
                 .set(40, 900, 240, 65)
-                .setName(getName("Return"));
+                .setName(Global.lang.get("Return"));
 
         categories.oneOf(
                 categories.addButton(Styles.SIMPLE_TEXT_BUTTON, this::basicBtn)
                         .set(40, 200, 240, 65)
-                        .setName(getName("SettingsBasic"))
+                        .setName(Global.lang.get("SettingsBasic"))
                         .setColor(Styles.DIRTY_BLACK),
                 categories.addButton(Styles.SIMPLE_TEXT_BUTTON, this::otherBtn)
                         .set(40, 100, 240, 65)
-                        .setName(getName("SettingsOther"))
+                        .setName(Global.lang.get("SettingsOther"))
                         .setColor(Styles.DIRTY_BLACK),
                 categories.addButton(Styles.SIMPLE_TEXT_BUTTON, this::graphicsBtn)
                         .set(40, 300, 240, 65)
-                        .setName(getName("SettingsGraphics"))
+                        .setName(Global.lang.get("SettingsGraphics"))
                         .setColor(Styles.DIRTY_BLACK)
         );
 
         save = categories.addButton(Styles.TEXT_BUTTON, this::saveBtn)
                 .set(40, 800, 240, 65)
-                .setName(getName("SettingsSave"));
+                .setName(Global.lang.get("SettingsSave"));
         graphicsSettings = mainPanel.add(new Dialog() {{
             setVisible(true);
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
@@ -51,41 +49,38 @@ public class Settings extends Dialog {
                 updateConfig(INTERPOLATE_SUNSET_KEY, Boolean.toString(newState));
             })
                     .setPosition(310, 980)
-                    .setName(getName(INTERPOLATE_SUNSET_KEY))
-                    .setPrompt(getName("InterpolateSunsetPrompt"))
+                    .setName(Global.lang.get(INTERPOLATE_SUNSET_KEY))
+                    .setPrompt(Global.lang.get("InterpolateSunsetPrompt"))
                     .setClicked(Boolean.parseBoolean(getFromConfig(INTERPOLATE_SUNSET_KEY)));
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
                 boolean newState = !Boolean.parseBoolean(getFromConfig(PRELOAD_RESOURCES_KEY));
                 updateConfig(PRELOAD_RESOURCES_KEY, Boolean.toString(newState));
             })
                     .setPosition(310, 910)
-                    .setName(getName(PRELOAD_RESOURCES_KEY))
-                    .setPrompt(getName("PreloadResourcesPrompt"))
+                    .setName(Global.lang.get(PRELOAD_RESOURCES_KEY))
+                    .setPrompt(Global.lang.get("PreloadResourcesPrompt"))
                     .setClicked(Boolean.parseBoolean(getFromConfig(PRELOAD_RESOURCES_KEY)));
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
                 boolean newState = !Boolean.parseBoolean(getFromConfig(VERTICAL_SYNC_KEY));
                 updateConfig(VERTICAL_SYNC_KEY, Boolean.toString(newState));
             })
                     .setPosition(310, 840)
-                    .setName(getName(VERTICAL_SYNC_KEY))
-                    .setPrompt(getName("VerticalSyncPrompt"))
+                    .setName(Global.lang.get(VERTICAL_SYNC_KEY))
+                    .setPrompt(Global.lang.get("VerticalSyncPrompt"))
                     .setClicked(Boolean.parseBoolean(getFromConfig(VERTICAL_SYNC_KEY)));
-        }});
-        otherSettings = mainPanel.add(new Dialog() {{
-            setVisible(false);
         }});
         basicSettings = mainPanel.add(new Dialog() {{
             setVisible(false);
             var dropDownMenu = add(new Dialog() {{
                 setVisible(false);
                 var dropDown = this;
-                String[] langs = Json.getAllLanguagesArray();
+                var langs = Global.lang.getLanguages();
                 int ox = 780;
                 int oy = 950;
                 int w = 240;
                 int h = 65;
-                for (int i = 0; i < langs.length; i++) {
-                    String lang = langs[i];
+                for (int i = 0; i < langs.size(); i++) {
+                    String lang = langs.get(i);
                     addButton(Styles.TEXT_BUTTON, () -> {
                         newLang = lang;
                         dropDown.toggleVisibility();
@@ -97,18 +92,18 @@ public class Settings extends Dialog {
             }});
             addButton(Styles.TEXT_BUTTON, dropDownMenu::toggleVisibility)
                     .set(780, 950, 240, 65)
-                    .setName(Json.getName("Language"));
+                    .setName(Global.lang.get("Language"));
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
             })
                     .setPosition(310, 980)
-                    .setName(getName(SHOW_PROMPTS_KEY))
-                    .setPrompt(getName("ShowPromptsPrompt"))
+                    .setName(Global.lang.get(SHOW_PROMPTS_KEY))
+                    .setPrompt(Global.lang.get("ShowPromptsPrompt"))
                     .setClicked(Boolean.parseBoolean(getFromConfig(SHOW_PROMPTS_KEY)));
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
             })
                     .setPosition(310, 910)
-                    .setName(getName(DETECT_LANGUAGE_KEY))
-                    .setPrompt(getName("DetectLanguagePrompt"))
+                    .setName(Global.lang.get(DETECT_LANGUAGE_KEY))
+                    .setPrompt(Global.lang.get("DetectLanguagePrompt"))
                     .setClicked(Boolean.parseBoolean(getFromConfig(DETECT_LANGUAGE_KEY)));
             addImage(745, 965, atlas.byPath("UI/GUI/languageIcon.png"));
         }});
@@ -133,12 +128,10 @@ public class Settings extends Dialog {
 
     private void graphicsBtn() {
         basicSettings.setVisible(false);
-        otherSettings.setVisible(false);
         graphicsSettings.setVisible(true);
     }
 
     private void basicBtn() {
-        otherSettings.setVisible(false);
         graphicsSettings.setVisible(false);
         basicSettings.setVisible(true);
     }
@@ -146,7 +139,6 @@ public class Settings extends Dialog {
     private void otherBtn() {
         basicSettings.setVisible(false);
         graphicsSettings.setVisible(false);
-        otherSettings.setVisible(true);
     }
 
     static class OtterBox extends Dialog {

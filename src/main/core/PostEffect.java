@@ -15,13 +15,6 @@ public final class PostEffect extends GameObject {
     private Texture temperatureTex;
 
     @Override
-    public void draw() {
-        if (temperatureColor.a() > 0) {
-            batch.draw(temperatureTex, temperatureColor);
-        }
-    }
-
-    @Override
     public void update() {
         DynamicWorldObjects player = DynamicObjects.getFirst();
         int temp = (int) TemperatureMap.getAverageTempAroundDynamic(player.getX(), player.getY(), player.getTexture());
@@ -41,5 +34,10 @@ public final class PostEffect extends GameObject {
         int r = temp > 0 ? a : 0;
         int b = temp > 0 ? 0 : a;
         temperatureColor.set(r, (int) (b / 2f), b, a);
+    }
+
+    @Override
+    public void draw() {
+        batch.draw(temperatureTex, temperatureColor);
     }
 }

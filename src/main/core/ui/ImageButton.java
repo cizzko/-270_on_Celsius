@@ -43,9 +43,6 @@ public class ImageButton extends BaseElement<ImageButton> {
 
     @Override
     public void draw() {
-        if (!visible()) {
-            return;
-        }
         if (image != null) {
             Global.batch.draw(image, x, y);
         }

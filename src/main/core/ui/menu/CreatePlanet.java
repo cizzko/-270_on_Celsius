@@ -1,11 +1,11 @@
 package core.ui.menu;
 
 import core.Constants;
+import core.Global;
 import core.UI;
 import core.World.WorldGenerator;
 import core.ui.*;
 
-import static core.EventHandling.Logging.Json.getName;
 import static core.Global.atlas;
 
 public class CreatePlanet extends Dialog {
@@ -27,23 +27,23 @@ public class CreatePlanet extends Dialog {
             UI.mainMenu().show();
         })
         .set(40, 975, 240, 65)
-        .setName(getName("Return"));
+        .setName(Global.lang.get("Return"));
 
         upperPanel.oneOf(
             // Поскольку сделать что-то с ресивером нельзя, то приходится страдать и тут указывать `upperPanel.`
             upperPanel.addButton(Styles.SIMPLE_TEXT_BUTTON, this::basicBtn)
                     .set(640, 975, 240, 65)
-                    .setName(getName("Basic")),
+                    .setName(Global.lang.get("Basic")),
             upperPanel.addButton(Styles.SIMPLE_TEXT_BUTTON, this::generationBtn)
                     .set(900, 975, 240, 65)
-                    .setName(getName("Generation")),
+                    .setName(Global.lang.get("Generation")),
             upperPanel.addButton(Styles.SIMPLE_TEXT_BUTTON, () -> {})
                     .set(1160, 975, 240, 65)
-                    .setName(getName("Physics"))
+                    .setName(Global.lang.get("Physics"))
         );
         sizePanel.addButton(Styles.SIMPLE_TEXT_BUTTON, () -> WorldGenerator.generateWorld(parameters))
                 .set(1460, 260, 420, 65)
-                .setName(getName("GenerateWorld"))
+                .setName(Global.lang.get("GenerateWorld"))
                 .setOneShot(true);
         sizePanel.addSlider(Styles.DEFAULT_SLIDER, Constants.World.MIN_WORLD_SIZE, Constants.World.MAX_WORLD_SIZE, (size, max) -> {
             String pic;
@@ -62,16 +62,16 @@ public class CreatePlanet extends Dialog {
             setVisible(true);
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> parameters.creatures = !parameters.creatures)
                     .setPosition(70, 890)
-                    .setName(getName("GenerateCreatures"));
+                    .setName(Global.lang.get("GenerateCreatures"));
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> parameters.randomSpawn = !parameters.randomSpawn)
                     .setPosition(70, 820)
-                    .setName(getName("RandomSpawn"));
+                    .setName(Global.lang.get("RandomSpawn"));
         }});
         generationParameters = add(new Dialog() {{
             setVisible(false);
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> parameters.simple = !parameters.simple)
                     .setPosition(70, 890)
-                    .setName(getName("GenerateSimpleWorld"));
+                    .setName(Global.lang.get("GenerateSimpleWorld"));
         }});
     }
 

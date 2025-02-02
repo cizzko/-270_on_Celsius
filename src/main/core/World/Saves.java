@@ -1,7 +1,6 @@
 package core.World;
 
 import core.Constants;
-import core.Window;
 
 import java.io.*;
 import java.time.LocalDateTime;
@@ -9,7 +8,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.zip.DeflaterOutputStream;
 
-import static core.EventHandling.Logging.Logger.printException;
 import static core.Global.assets;
 
 public class Saves {
@@ -37,7 +35,7 @@ public class Saves {
                 fos.write(compressedBytes);
                 fos.close();
             } catch (Exception e) {
-                printException("Error when serialization (saving) world", e);
+                e.printStackTrace();
             } finally {
                 lastSaved = System.currentTimeMillis();
                 saving = false;

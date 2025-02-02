@@ -1,18 +1,22 @@
 package core;
 
-import core.EventHandling.Logging.Logger;
 import core.g2d.Camera2;
 import core.graphic.Layer;
 import core.input.InputListener;
 import core.ui.Element;
+import core.util.SnapshotArrayList;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.ArrayList;
 
 import static core.Global.*;
 
 public final class UiScene implements InputListener {
+    public static final Logger log = LogManager.getLogger();
+
     private final Camera2 view = new Camera2();
-    private final ArrayList<Element> elements = new ArrayList<>();
+    private final SnapshotArrayList<Element> elements = new SnapshotArrayList<>(new Element[16], true);
 
     public UiScene(int width, int height) {
         view.setToOrthographic(width, height);
@@ -35,14 +39,16 @@ public final class UiScene implements InputListener {
 
     // Не вызывать ниоткуда!
     public void update() {
-        // TODO что-то придумать с ConcurrentModificationException
-        for (Element element : new ArrayList<>(elements)) {
+        var elem = elements.begin();
+        for (int i = 0, n = elements.size(); i < n; i++) {
+            Element element = elem[i];
             try {
                 element.update();
             } catch (Exception e) {
-                Logger.printException("Failed to update '" + element + "'", e);
+                log.error("Failed to update '{}'", element, e);
             }
         }
+        elements.end();
     }
 
     public void draw() {
@@ -50,10 +56,14 @@ public final class UiScene implements InputListener {
         batch.matrix(view.projection);
 
         for (Element element : elements) {
+            if (!element.visible()) {
+                continue;
+            }
+
             try {
                 element.draw();
             } catch (Exception e) {
-                Logger.printException("Failed to draw '" + element + "'", e);
+                log.error("Failed to draw '{}'", element, e);
             }
         }
     }
@@ -64,7 +74,7 @@ public final class UiScene implements InputListener {
 
     public void debug() {
         for (Element element : elements) {
-            System.out.println(element);
+            log.debug(element);
         }
     }
 

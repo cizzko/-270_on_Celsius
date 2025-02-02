@@ -2,8 +2,6 @@ package core.math;
 
 import core.Time;
 
-import java.util.Collection;
-
 public final class Vector2f {
     public float x, y;
 

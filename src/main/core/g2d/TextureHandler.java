@@ -4,17 +4,13 @@ import core.assets.AssetHandler;
 import core.assets.AssetReleaser;
 import core.assets.AssetResolver;
 import core.assets.TextureLoader;
-import org.lwjgl.opengl.GL46;
-import org.lwjgl.system.MemoryUtil;
 
 import javax.imageio.ImageIO;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.util.concurrent.Future;
 
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL11.glBindTexture;
+import static org.lwjgl.opengl.GL46.*;
 
 public final class TextureHandler extends AssetHandler<Texture, Void, TextureHandler.State> {
     public TextureHandler() {
@@ -23,7 +19,7 @@ public final class TextureHandler extends AssetHandler<Texture, Void, TextureHan
 
     @Override
     public void release(AssetReleaser rel, Texture asset) {
-        GL46.glDeleteTextures(asset.glHandle);
+        glDeleteTextures(asset.glHandle);
         asset.glHandle = 0;
     }
 
@@ -45,8 +41,8 @@ public final class TextureHandler extends AssetHandler<Texture, Void, TextureHan
         glBindTexture(glTarget, glHandle);
         glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(glTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
-        glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
+        glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         int w, h;
         try (var img = state.imageData.resultNow()) {

@@ -2,9 +2,10 @@ package core.util;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
-import core.EventHandling.Logging.Logger;
 import core.Window;
 import core.g2d.Fill;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -16,6 +17,8 @@ import static core.World.Textures.TextureDrawing.drawRectangleText;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Commandline {
+    private static final Logger log = LogManager.getLogger();
+
     private static final String prefix = Config.getFromFC("Prefix");
     public static boolean created = false;
 
@@ -42,8 +45,11 @@ public class Commandline {
             case "modify" -> modifyField(target.substring(7));
             case "start" -> startMethod(target.substring(6));
             case "eval" -> {
-                final String[] targetMethod = target.split(" ");
-                new Thread(() -> EventHandler.setKeyLoggingText(ImportClassMethod.startMethod(targetMethod[1], targetMethod[targetMethod.length - 1], null, null))).start();
+                String[] snippet = target.split(" ", 2);
+                if (snippet.length == 1) {
+                    return;
+                }
+                ImportClassMethod.execute(snippet[1]);
             }
         }
     }
@@ -102,11 +108,13 @@ public class Commandline {
             }
 
             if (method == null) {
-                Logger.printException("Method not found", new NoSuchMethodException("Target = " + target));
+                log.error("Method with name {}.{}(...) not found", target, methodName);
+                EventHandler.setKeyLoggingText("Unknown method");
+            } else {
+                Object result = method.invoke(null, convertedArgs);
+                EventHandler.setKeyLoggingText(result != null ? "Returned: " + result : "Successfully");
             }
 
-            Object result = method.invoke(null, convertedArgs);
-            EventHandler.setKeyLoggingText(result != null ? "Returned: " + result : "Successfully");
         } catch (Exception e) {
             EventHandler.setKeyLoggingText(e.getMessage());
         }

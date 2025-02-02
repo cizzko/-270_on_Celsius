@@ -296,7 +296,7 @@ public class TextureDrawing {
                 if (isOnCamera(dynamicObject.getX(), dynamicObject.getY(), dynamicObject.getTexture())) {
                     if (dynamicObject.getFramesCount() == 0) {
                         var shadow = ShadowMap.getColorDynamic(dynamicObject);
-                        batch.draw(dynamicObject.getTexture(), shadow, dynamicObject.getX(), dynamicObject.getY());
+                        batch.draw(dynamicObject.getTexture()/*, shadow*/, dynamicObject.getX(), dynamicObject.getY());
                     } else {
                         // todo дописать
                         // drawTexture(dynamicObject.getPath() + dynamicObject.getCurrentFrame() + ".png", dynamicObject.getX(), dynamicObject.getY(), ShadowMap.getColorDynamic(), false, false);

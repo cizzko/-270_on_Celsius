@@ -1,49 +1,44 @@
 package core.ui;
 
-import java.util.ArrayList;
+import core.UiScene;
+import core.util.SnapshotArrayList;
+
 import java.util.List;
 import java.util.StringJoiner;
 
 public abstract class BaseGroup<G extends BaseElement<G> & Group> extends BaseElement<G> implements Group {
-    // TODO специальный лист с защитой от ConcurrentModificationException
-    protected ArrayList<Element> children;
+    protected final SnapshotArrayList<Element> children = new SnapshotArrayList<>(new Element[4], true);
 
     protected BaseGroup(Group parent) {
         super(parent);
     }
 
-    private ArrayList<Element> initChildren() {
-        if (children == null) {
-            children = new ArrayList<>();
-        }
+    @Override
+    public List<Element> children() {
         return children;
     }
 
     @Override
-    public List<Element> children() {
-        return children != null ? children : List.of();
-    }
-
-    @Override
     public <E extends Element> E add(E element) {
-        initChildren().add(element);
+        children.add(element);
         return element;
     }
 
     @Override
     public void remove(Element element) {
-        if (children != null) {
-            children.remove(element);
-        }
+        children.remove(element);
     }
+
+    protected void drawThis() {}
 
     @Override
     public void draw() {
         if (!visible()) {
             return;
         }
-        if (children != null) {
-            for (Element child : children) {
+        drawThis();
+        for (Element child : children) {
+            if (child.visible()) {
                 child.draw();
             }
         }
@@ -55,21 +50,26 @@ public abstract class BaseGroup<G extends BaseElement<G> & Group> extends BaseEl
             return;
         }
         super.update();
-        if (children != null) {
-            for (Element child : new ArrayList<>(children)) {
-                child.update();
+        var elem = children.begin();
+        for (int i = 0, n = children.size(); i < n; i++) {
+            Element child = elem[i];
+            if (child.visible()) {
+                try {
+                    child.update();
+                } catch (Exception e) {
+                    UiScene.log.error("Exception while updating element {} in {}", child, this, e);
+                }
             }
         }
+        children.end();
     }
 
     @Override
     public Element hit(float hx, float hy) {
-        if (children != null) {
-            for (Element child : children) {
-                var hit = child.hit(hx, hy);
-                if (hit != null) {
-                    return hit;
-                }
+        for (Element child : children) {
+            var hit = child.hit(hx, hy);
+            if (hit != null) {
+                return hit;
             }
         }
         return super.hit(hx, hy);

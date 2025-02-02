@@ -2,11 +2,12 @@ package core.ui;
 
 import core.util.Color;
 import core.g2d.Font;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import java.util.ArrayList;
 
 public final class GlyphCache {
-    private final ArrayList<GlyphData> glyphs = new ArrayList<>();
+    private final ObjectArrayList<GlyphData> glyphs = new ObjectArrayList<>();
 
     private float width, height;
     private int count;
@@ -53,7 +54,7 @@ public final class GlyphCache {
         return count;
     }
 
-    public ArrayList<GlyphData> getGlyphs() {
+    public ObjectArrayList<GlyphData> getGlyphs() {
         return glyphs;
     }
 

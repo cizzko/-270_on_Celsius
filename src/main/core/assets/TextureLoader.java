@@ -13,8 +13,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-import static core.EventHandling.Logging.Logger.*;
-
 public class TextureLoader {
 
     public static BitMap decodeImage(BufferedImage image) {
@@ -52,7 +50,7 @@ public class TextureLoader {
                 return new GifImageData(reader.read(0).getWidth(), reader.read(0).getHeight(), frames);
             }
         } catch (IOException e) {
-            printException("Error when decode texture: ", e);
+            e.printStackTrace(); // TODO
         }
         return null;
     }

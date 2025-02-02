@@ -1,12 +1,18 @@
 package core;
 
-import core.EventHandling.Logging.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.system.NativeResource;
 
 import java.util.ArrayList;
 import java.util.Objects;
 
+import static core.util.ImportClassMethod.exec;
+import static core.util.ImportClassMethod.jshell;
+
 public class Application {
+    public static final Logger log = LogManager.getLogger("Game");
+
     private final Thread mainThread;
 
     protected final ArrayList<NativeResource> natives = new ArrayList<>();
@@ -32,15 +38,18 @@ public class Application {
 
     public void run() {
         try {
+            Thread.currentThread().setName("UpdateThread");
             init();
             while (running) {
                 update();
             }
         } catch (Throwable t) {
-            System.out.println("The fatal exception is caused");
-            t.printStackTrace();
+            log.error("The fatal exception is caused", t);
         } finally {
             freeNatives();
+            jshell.stop();
+            jshell.close();
+            exec.shutdown();
             Global.scheduler.shutdown();
             cleanup();
         }
@@ -51,7 +60,7 @@ public class Application {
             try {
                 aNative.free();
             } catch (Throwable t) {
-                t.printStackTrace(); // TODO
+                log.error("Failed to release the native resource {}", aNative, t);
             }
         }
     }
@@ -86,26 +95,6 @@ public class Application {
         Objects.requireNonNull(listener);
         ensureMainThread();
         listeners.add(listener);
-    }
-
-    public void suspend() {
-        for (ApplicationListener listener : listeners) {
-            try {
-                listener.suspend();
-            } catch (Throwable t) {
-                Logger.printException("Failed to suspend ApplicationListener: " + listener, t);
-            }
-        }
-    }
-
-    public void resume() {
-        for (ApplicationListener listener : listeners) {
-            try {
-                listener.resume();
-            } catch (Throwable t) {
-                Logger.printException("Failed to resume ApplicationListener: " + listener, t);
-            }
-        }
     }
 
     private int framerate = -1;

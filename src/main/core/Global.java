@@ -2,7 +2,6 @@ package core;
 
 import core.World.World;
 import core.assets.AssetsManager;
-import core.g2d.Atlas;
 import core.g2d.*;
 import core.input.InputHandler;
 
@@ -16,6 +15,7 @@ public final class Global {
     public static SortingBatch batch;
     public static AssetsManager assets;
     public static UiScene uiScene;
+    public static LangTranslation lang;
     public static final Camera2 camera = new Camera2();
 
     public static World world;

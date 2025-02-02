@@ -38,9 +38,6 @@ public class ToggleButton extends BaseButton<ToggleButton> {
 
     @Override
     public void draw() {
-        if (!visible()) {
-            return;
-        }
         float offset = style.borderOffset;
         Color c = color;
         if (c == null) c = style.backgroundColor;

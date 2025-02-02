@@ -1,6 +1,5 @@
 package core.g2d;
 
-import core.EventHandling.Logging.Logger;
 import core.util.Color;
 import core.pool.Pool;
 import core.pool.Poolable;
@@ -103,7 +102,7 @@ public class SortingBatch extends Batch<SortingBatch.SortingState> {
                 try {
                     proc.runnable.run();
                 } catch (Exception e) {
-                    Logger.printException("Failed to execute procedure: " + proc.runnable, e);
+                    log.error("Failed to execute procedure: {}", proc.runnable, e);
                 }
             }
             case RequestTexture tex -> {

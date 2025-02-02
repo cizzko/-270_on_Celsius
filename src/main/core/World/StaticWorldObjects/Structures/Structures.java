@@ -1,7 +1,7 @@
 package core.World.StaticWorldObjects.Structures;
 
+import core.Application;
 import core.EventHandling.Logging.Config;
-import core.EventHandling.Logging.Logger;
 import core.Global;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
@@ -11,11 +11,9 @@ import core.g2d.Atlas;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.HashMap;
-import java.util.Properties;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
-import static core.EventHandling.Logging.Logger.printException;
 import static core.Global.assets;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 
@@ -65,8 +63,12 @@ public class Structures implements Serializable {
         try (var fis = Files.newInputStream(structFile);
              var ois = new ObjectInputStream(new InflaterInputStream(fis))) {
             return (Structures) ois.readObject();
-        } catch (Exception e) {
-            printException("Error when load structure, path: " + path, e);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace(); // ???
+            return null;
+        } catch (IOException e) {
+            // TODO использовать другой логер
+            Application.log.error("Error when load structure, path: {}", path, e);
             return null;
         }
     }
@@ -77,7 +79,7 @@ public class Structures implements Serializable {
         //  нужно подумать о директории с данными игры, например, в %AppData% или в assets.workingDir(),
         //  что тоже является приемлемым вариантом
 
-        Logger.log("Start saving structure: " + structureName);
+        Application.log.info("Start saving structure: {}", structureName);
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream oos = new ObjectOutputStream(baos);
@@ -95,9 +97,9 @@ public class Structures implements Serializable {
             fos.write(compressedBytes);
             fos.close();
         } catch (Exception e) {
-            printException("Error when serialization (saving) structure: " + structureName, e);
+            Application.log.error("Error when serialization (saving) structure: {}", structureName, e);
         }
-        Logger.log("End saving structure: " + structureName);
+        Application.log.info("End saving structure: {}", structureName);
     }
 
     public static void createStructure(String name, short[][] blocks) {
@@ -116,7 +118,7 @@ public class Structures implements Serializable {
             }
             write(new Structures(lowestSolidBlock, names), name);
         } else {
-            Logger.printException("Error when creating structure '" + name + "' because blocks[][] length is zero", new Exception());
+            Application.log.error("Error when creating structure '{}' because blocks[][] length is zero", name);
         }
     }
 

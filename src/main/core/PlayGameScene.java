@@ -20,7 +20,6 @@ import core.ui.Styles;
 import static core.EventHandling.EventHandler.debugLevel;
 import static core.EventHandling.EventHandler.updateHotkeys;
 import static core.Global.*;
-import static core.Global.camera;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.StaticWorldObjects.Structures.Factories.updateFactoriesOutput;
 import static core.World.Textures.TextureDrawing.*;
@@ -83,11 +82,12 @@ public final class PlayGameScene extends GameScene {
 
         batch.z(Layer.BACKGROUND);
         sun.draw();
+        postEffect.draw();
         batch.z(Layer.STATIC_OBJECTS);
+        batch.matrix(camera.projection); // Центрируем камеру на позицию игрока
         TextureDrawing.drawStatic();
         batch.z(Layer.DYNAMIC_OBJECTS);
         TextureDrawing.drawDynamic();
-        postEffect.draw();
 
         drawDebug();
 
@@ -123,8 +123,6 @@ public final class PlayGameScene extends GameScene {
         if (Math.abs(camPos.y - camY) <= 0.7f/blockSize) camPos.y = camY;
 
         camera.update();
-
-        batch.matrix(camera.projection);
     }
 
     final Rectangle rect = new Rectangle();
@@ -161,7 +159,7 @@ public final class PlayGameScene extends GameScene {
         int maxY = (int) Math.floor((player.getY() + height) / blockSize);
 
         TextureDrawing.drawText(player.getX(), player.getY() + size.height() - 32,
-                "Fixture: " + player.hasFixture() + ", Velocity: " + player.velocity, black);
+                "HasFloor: " + player.hasFloor() + ", Velocity: " + player.velocity, black);
 
         // Интегрированный прямоугольник, который используется как хитбокс
         for (int x = minX; x <= maxX; x++) {

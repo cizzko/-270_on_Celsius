@@ -2,7 +2,6 @@ package core.ui;
 
 import core.Global;
 
-import java.util.ArrayList;
 import java.util.Objects;
 
 public class TextArea extends BaseElement<TextArea> {

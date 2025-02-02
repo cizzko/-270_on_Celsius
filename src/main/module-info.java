@@ -4,11 +4,16 @@ module core.main {
     requires org.lwjgl.opengl;
     requires org.lwjgl.jemalloc;
 
+    requires jdk.jshell;
+
+    requires org.apache.logging.log4j;
+    requires org.apache.logging.log4j.iostreams;
+    requires org.apache.logging.log4j.core;
+
     requires com.google.gson;
     requires it.unimi.dsi.fastutil;
 
     requires java.desktop;
-    requires java.compiler;
     requires jdk.management;
 
     // Авто-модули

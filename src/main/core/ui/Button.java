@@ -35,10 +35,6 @@ public class Button extends BaseButton<Button> {
 
     @Override
     public void draw() {
-        if (!visible()) {
-            return;
-        }
-
         var backgroundColor = color;
         if (backgroundColor == null) backgroundColor = style.backgroundColor;
 

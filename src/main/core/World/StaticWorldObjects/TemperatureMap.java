@@ -1,12 +1,14 @@
 package core.World.StaticWorldObjects;
 
+import core.Global;
 import core.PlayGameScene;
 import core.util.Sized;
-import core.World.Textures.TextureDrawing;
 import core.World.Weather.Sun;
 import core.math.Point2i;
 
 import java.util.HashMap;
+
+import static core.World.Textures.TextureDrawing.blockSize;
 
 public class TemperatureMap {
     private static HashMap<Point2i, Float> individualTemperature = new HashMap<>();
@@ -17,10 +19,10 @@ public class TemperatureMap {
     // todo как то криво работает
     public static void create(PlayGameScene playGameScene) {
         currentWorldTemperature = playGameScene.sun.currentTime / 100;
-        temperature = new float[core.Global.world.sizeY];
+        temperature = new float[Global.world.sizeY];
 
         for (int i = 0; i < temperature.length; i++) {
-            temperature[i] = Math.min(coreTemp, (coreTemp / (i + 1)) * (core.Global.world.sizeY / 1000f));
+            temperature[i] = Math.min(coreTemp, (coreTemp / (i + 1)) * (Global.world.sizeY / 1000f));
         }
     }
 
@@ -73,20 +75,19 @@ public class TemperatureMap {
         int count = 0;
         float totalTemp = 0;
 
-        int blockX = (int) (xPos / TextureDrawing.blockSize);
-        int blockY = (int) (yPos / TextureDrawing.blockSize);
 
-        int w = (int) Math.ceil((float)size.width() / TextureDrawing.blockSize);
-        int h = (int) Math.ceil((float)size.height() / TextureDrawing.blockSize);
-        for (int dx = 0; dx < w; dx++) {
-            for (int dy = 0; dy < h; dy++) {
-                int x = blockX + dx;
-                int y = blockY + dy;
-                if (x < 0 || x >= core.Global.world.sizeX || y < 0 || y >= core.Global.world.sizeY) {
-                    continue;
+        int minX = (int) Math.floor(xPos / blockSize);
+        int minY = (int) Math.floor(yPos / blockSize);
+
+        int maxX = (int) Math.floor((xPos + size.width()) / blockSize);
+        int maxY = (int) Math.floor((yPos + size.height()) / blockSize);
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                if (Global.world.inBounds(x, y)) {
+                    totalTemp += getTemp(x, y);
+                    count++;
                 }
-                totalTemp += getTemp(x, y);
-                count++;
             }
         }
         return totalTemp / count;

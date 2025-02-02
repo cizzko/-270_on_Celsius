@@ -1,50 +1,67 @@
 package core.util;
 
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
-import java.lang.reflect.Method;
+import core.EventHandling.EventHandler;
+import jdk.jshell.JShell;
+import jdk.jshell.SnippetEvent;
+import jdk.jshell.execution.LocalExecutionControlProvider;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
-import static core.EventHandling.Logging.Logger.printException;
+import java.util.Locale;
+import java.util.Map;
+import java.util.StringJoiner;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 public class ImportClassMethod {
+    private static final Logger log = LogManager.getLogger();
 
-    public static String startMethod(String classPath, String methodName, Object[] args, Class<?> implementsClass) {
-        try {
-            JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-            int result = compiler.run(null, null, null, classPath);
+    public static final JShell jshell = JShell.builder()
+            .executionEngine(new LocalExecutionControlProvider(), Map.of())
+            .build();
 
-            if (result != 0) {
-                printException("Error at compiling .java file", new RuntimeException());
-            }
+    public static final ExecutorService exec = Executors.newVirtualThreadPerTaskExecutor();
 
-            Class<?> loadedClass = Class.forName(classPath.replace("\\", ".").replaceAll(".*src\\.", "").replace(".java", ""));
+    public static void execute(String snippet) {
 
-            if (implementsClass != null && !implementsClass.isAssignableFrom(loadedClass)) {
-                printException("Class at path: '" + classPath + "' not implements class: '" + implementsClass + "'", new RuntimeException());
-            }
+        exec.execute(() -> {
+            Thread.currentThread().setName("JShell Thread");
+            EventHandler.resetKeyLogginText();
+            var out = new StringJoiner("\\n").setEmptyValue("");
 
-            Object instance = loadedClass.newInstance();
-            Method method;
+            for (SnippetEvent snippetEvent : jshell.eval(snippet)) {
+                switch (snippetEvent.status()) {
+                    case VALID, OVERWRITTEN -> {
+                        log.info("{} ==> {}", snippetEvent.snippet().id(), snippetEvent.value());
+                        out.add(snippetEvent.snippet().id() + " ==> " + snippetEvent.value());
+                    }
+                    case RECOVERABLE_DEFINED, DROPPED, RECOVERABLE_NOT_DEFINED, NONEXISTENT -> {}
+                    case REJECTED -> {
+                        jshell.diagnostics(snippetEvent.snippet())
+                                .forEach(diag -> {
+                                    if (diag.isError()) {
+                                        log.error("Error:");
+                                        out.add("Error:");
+                                        for (String line : diag.getMessage(Locale.US).split("\n")) {
+                                            log.error(line);
+                                            out.add(line);
+                                        }
+                                        long start = diag.getStartPosition();
+                                        long end = diag.getEndPosition();
+                                        long pos = diag.getPosition();
+                                        String source = snippetEvent.snippet().source();
+                                        log.error(source);
+                                        out.add(source);
+                                        log.error("{}{}", " ".repeat(Math.toIntExact(start)), "^".repeat(Math.toIntExact(end - pos)));
+                                        out.add(" ".repeat(Math.toIntExact(start)) + "^".repeat(Math.toIntExact(end - pos)));
+                                    }
+                                });
 
-            if (args != null) {
-                Class<?>[] argTypes = new Class[args.length];
-                for (int i = 0; i < args.length; i++) {
-                    argTypes[i] = args[i].getClass();
+                    }
                 }
-                method = loadedClass.getMethod(methodName, argTypes);
-                Object startResult = method.invoke(instance, args);
-
-                return startResult == null ? "Successfully" : "Returned: " + startResult;
-            } else {
-                method = loadedClass.getMethod(methodName);
-                Object startResult = method.invoke(instance);
-
-                return startResult == null ? "Successfully" : "Returned: " + startResult;
             }
 
-        } catch (Exception e) {
-            printException("Some error at start method, class path: '" + classPath + "', method: '" + methodName, e);
-        }
-        return null;
+            EventHandler.setKeyLoggingText(out.toString());
+        });
     }
 }

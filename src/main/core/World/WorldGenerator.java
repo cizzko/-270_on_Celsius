@@ -2,7 +2,6 @@ package core.World;
 
 import core.*;
 import core.EventHandling.EventHandler;
-import core.EventHandling.Logging.Logger;
 import core.ui.menu.CreatePlanet;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.StaticWorldObjects.StaticWorldObjects;
@@ -17,16 +16,18 @@ import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.Textures.TextureDrawing;
 import core.math.MathUtil;
 import core.math.Point2i;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.*;
 
-import static core.EventHandling.Logging.Logger.log;
 import static core.Global.*;
-import static core.Global.world;
 import static core.World.StaticWorldObjects.StaticObjectsConst.getConst;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 
 public class WorldGenerator {
+    private static final Logger log = LogManager.getLogger();
+
     public static float intersDamageMultiplier = 40f, minVectorIntersDamage = 1.8f;
 
     public static ArrayDeque<DynamicWorldObjects> DynamicObjects = new ArrayDeque<>();
@@ -97,7 +98,7 @@ public class WorldGenerator {
     }
 
     public static void generateWorld(CreatePlanet.GenerationParameters params) {
-        Logger.log("WorldGeneratorState: first step");
+        log.debug("first step");
 
         int SizeX = params.size;
         int SizeY = params.size;
@@ -108,25 +109,26 @@ public class WorldGenerator {
         boolean randomSpawn = params.randomSpawn;
         boolean creatures = params.creatures;
 
-        log("\nWorldGeneratorState: version: 1.0, written at dev 0.0.0.5" +
-            "\nWorld generator: starting generating world with size: " + world.sizeX + "x" + world.sizeY);
+        log.debug("version: 1.0, written at dev 0.0.0.5");
+        log.debug("World generator: starting generating world with size: {}x{}", world.sizeX, world.sizeY);
+        log.debug("starting generating world with size: {}x{}", world.sizeX, world.sizeY);
 
         var playGameScene = new PlayGameScene();
         gameScene.addPreload(playGameScene);
 
         StaticObjectsConst.setDestroyed();
         step(() -> {
-            log("WorldGeneratorState: generating relief");
+            log.debug("generating relief");
             generateRelief(world);
         });
 
         step(() -> {
-            log("WorldGeneratorState: generating shadow map");
+            log.debug("generating shadow map");
             ShadowMap.generate();
         });
 
         step(() -> {
-            log("WorldGeneratorState: generating resources");
+            log("generating resources");
             generateResources(world);
         });
 
@@ -135,22 +137,22 @@ public class WorldGenerator {
         step(() -> generateEnvironments(world));
 
         step(() -> {
-            log("WorldGeneratorState: regenerating shadow map");
+            log.debug("regenerating shadow map");
             ShadowMap.generate();
         });
 
         step(() -> {
-            log("WorldGeneratorState: generating temperature map");
+            log.debug("generating temperature map");
             TemperatureMap.create(playGameScene);
         });
 
         step(() -> {
-            log("WorldGeneratorState: generating player");
+            log.debug("generating player");
             Player.createPlayer(randomSpawn);
         });
 
         step(() -> {
-            log("WorldGeneratorState: generating done!\n");
+            log.debug("generating done!");
             scheduler.post(() -> startGame(playGameScene), Time.ONE_SECOND);
         });
     }
@@ -164,7 +166,7 @@ public class WorldGenerator {
                 });
     }
 
-    private static void appendLog(String text) {
+    private static void log(String text) {
         // scheduler.post(() -> texts.get("WorldGeneratorState").text += text, 0.5f * Time.ONE_SECOND);
     }
 
@@ -201,7 +203,7 @@ public class WorldGenerator {
     }
 
     private static void generateCaves() {
-        log("WorldGeneratorState: generating caves");
+        log.debug("generating caves");
         for (int b = 0; b < world.sizeX / 600; b++) {
             int minRadius = 2;
             int maxRadius = 4;
@@ -272,7 +274,7 @@ public class WorldGenerator {
     }
 
     private static void generateEnvironments(World world) {
-        log("WorldGeneratorState: generating environments");
+        log.debug("generating environments");
         generateTrees(world);
         generateDecorStones(world);
         generateHerb(world);

@@ -1,5 +1,8 @@
 package core.EventHandling.Logging;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -7,10 +10,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
-import static core.EventHandling.Logging.Logger.printException;
 import static core.Global.assets;
 
 public class Config {
+    private static final Logger log = LogManager.getLogger();
+
     public static final String INTERPOLATE_SUNSET_KEY = "InterpolateSunset";
     public static final String PRELOAD_RESOURCES_KEY  = "PreloadResources";
     public static final String VERTICAL_SYNC_KEY      = "VerticalSync";
@@ -40,7 +44,7 @@ public class Config {
             try {
                 Files.copy(resourceFile, externalFile);
             } catch (IOException e) {
-                e.printStackTrace(); // TODO
+                log.error("Failed to copy from '{}' to '{}'", resourceFileName, externalFileName, e);
             }
         }
 
@@ -48,7 +52,7 @@ public class Config {
         try (var in = Files.newInputStream(externalFile)) {
             props.load(in);
         } catch (IOException e) {
-            e.printStackTrace(); // TODO
+            log.error("Failed to load '{}' properties", externalFile, e);
         }
         @SuppressWarnings("unchecked")
         var magic = (Map<String, String>) (Map<?, ?>) props;
@@ -64,7 +68,7 @@ public class Config {
             try (var in = Files.newInputStream(path)) {
                 tmp.load(in);
             } catch (IOException e) {
-                Logger.printException("Error when get properties, file: " + path, e);
+                log.error("Error when loading properties '{}'", path, e);
             }
             @SuppressWarnings("unchecked")
             var magic = (Map<String, String>) (Map<?, ?>) tmp;
@@ -97,7 +101,7 @@ public class Config {
         try (var out = Files.newOutputStream(externalFile)) {
             props.store(out, null);
         } catch (Exception e) {
-            printException("Error when updating config at path: '" + externalFile + "', key: '" + key + "' value: '" + value + "'", e);
+            log.error("Exception while saving '{}'", externalFile, e);
         }
     }
 }

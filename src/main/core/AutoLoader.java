@@ -2,6 +2,8 @@ package core;
 
 import core.util.DebugTools;
 import core.assets.AssetsManager;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -16,6 +18,8 @@ import java.util.IdentityHashMap;
 import java.util.concurrent.Future;
 
 public final class AutoLoader {
+    private static final Logger log = LogManager.getLogger("AutoLoader");
+
     private static final MethodHandles.Lookup theLookup = MethodHandles.lookup();
 
     private final String name;
@@ -223,18 +227,23 @@ public final class AutoLoader {
                     case SUCCESS -> {
                         var res = asset.resultNow();
 
-                        System.out.println("[AutoLoader/" + name + "] " +
-                                (assetState.type == AssetState.Type.OWNED ? "Loaded" : "Preloaded") +
-                                " " + inst.getClass().getSimpleName() + "." + binding.fieldName);
+                        if (log.isDebugEnabled()) {
+                            log.debug("[{}] {} {}.{}", name,
+                                    assetState.type == AssetState.Type.OWNED ? "Loaded" : "Preloaded",
+                                    inst.getClass().getSimpleName(), binding.fieldName);
+                        }
+
 
                         futures[i] = null;
                         binding.set(inst, res);
                     }
                     case FAILED -> {
-                        var actualNames = assetState.actualNames;
-                        System.out.println("[AutoLoader/" + name + "] Failed to load " +
-                                inst.getClass().getSimpleName() + "." + binding.fieldName + " that requires a " +
-                                binding.type + "('" + actualNames[i]  + "')");
+                        if (log.isDebugEnabled()) {
+                            var actualNames = assetState.actualNames;
+                            log.debug("[{}] Failed to load {}.{} that requires a {}('{}')",
+                                    name, inst.getClass().getSimpleName(), binding.fieldName,
+                                    binding.type, actualNames[i]);
+                        }
                         DebugTools.rethrow(asset.exceptionNow());
                         return false;
                     }
@@ -260,13 +269,15 @@ public final class AutoLoader {
                 try {
                     l.onLoaded();
                 } catch (Exception e) {
-                    e.printStackTrace(); // TODO
+                    log.error("[{}] Exception while loading {}", name, l);
                 }
             }
 
-            System.out.println("[AutoLoader/" + name + "] " +
-                    (assetState.type == AssetState.Type.OWNED ? "Loaded" : "Preloaded") +
-                    " " + inst.getClass().getSimpleName() + (fieldName != null ? "." + fieldName : ""));
+            if (log.isDebugEnabled()) {
+                log.debug("[{}] {} {}{}",
+                        name, assetState.type == AssetState.Type.OWNED ? "Loaded" : "Preloaded",
+                        inst.getClass().getSimpleName(), fieldName != null ? "." + fieldName : "");
+            }
             return true;
         }
         return false;
@@ -311,11 +322,11 @@ public final class AutoLoader {
             try {
                 l.onUnloaded();
             } catch (Exception e) {
-                e.printStackTrace(); // TODO
+                log.error("[{}] Exception while unloading {}", name, l);
             }
 
-            System.out.println("[AutoLoader/" + name + "] Unloaded" +
-                    " " + assetState.inst.getClass().getSimpleName());
+            if (log.isDebugEnabled())
+                log.debug("[{}] Unloaded {}", name, l.getClass().getSimpleName());
         }
     }
 
@@ -344,10 +355,10 @@ public final class AutoLoader {
                 return assetState;
         }
 
-        System.out.println("[AutoLoader/" + name + "] " +
-                " ".repeat(recursionLevel) +
-                (preload ? "Preloading" : "Loading") +
-                " " + obj.getClass().getSimpleName());
+        if (log.isDebugEnabled())
+            log.debug("[{}] {}{} {}",
+                    name, " ".repeat(recursionLevel),
+                    preload ? "Preloading" : "Loading", obj.getClass().getSimpleName());
 
         var deque = dequeFor(preload);
         var typeInfo = getTypeInfo(obj.getClass());

@@ -1,6 +1,6 @@
 package core.World.StaticWorldObjects;
 
-import core.EventHandling.Logging.Logger;
+import core.Application;
 import core.assets.AssetsManager;
 import core.g2d.Atlas;
 
@@ -36,7 +36,7 @@ public abstract class StaticWorldObjects implements Serializable {
             lastId++;
 
             if (lastId == -128) {
-                Logger.log("Number of id's static objects exceeded, errors will occur");
+                Application.log.warn("Number of id's static objects exceeded, errors will occur");
             }
             ids.put(name, lastId);
             return lastId;

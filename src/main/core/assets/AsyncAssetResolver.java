@@ -1,6 +1,8 @@
 package core.assets;
 
 import core.Global;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.system.NativeResource;
 
 import java.util.ArrayList;
@@ -167,8 +169,8 @@ final class AsyncAssetResolver<T, P, S>
                     try {
                         n.free();
                     } catch (Exception e) {
-                        e.printStackTrace();
                         // TODO а нас интересует это?
+                        AssetsManager.log.error("[{}] Failed to release native resource {}", this, n, e);
                     }
                 }
             }

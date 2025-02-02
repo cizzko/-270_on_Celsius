@@ -5,9 +5,6 @@ import core.Global;
 import core.g2d.Atlas;
 
 import java.util.HashMap;
-import java.util.Properties;
-
-import static core.Global.assets;
 
 public class DynamicObjectsConst {
     private static final HashMap<Byte, DynamicObjectsConst> consts = new HashMap<>();

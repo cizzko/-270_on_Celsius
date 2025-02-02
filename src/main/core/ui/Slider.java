@@ -47,10 +47,6 @@ public class Slider extends BaseElement<Slider> {
 
     @Override
     public void draw() {
-        if (!visible()) {
-            return;
-        }
-
         Fill.rect(x, y, sliderPos - x, height, style.sliderColor);
 
         tmp.set(style.sliderColor);

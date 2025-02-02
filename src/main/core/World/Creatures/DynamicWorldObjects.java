@@ -1,7 +1,7 @@
 package core.World.Creatures;
 
+import core.Application;
 import core.EventHandling.EventHandler;
-import core.EventHandling.Logging.Logger;
 import core.Time;
 import core.World.HitboxMap;
 import core.World.StaticWorldObjects.StaticObjectsConst;
@@ -45,7 +45,7 @@ public class DynamicWorldObjects implements Serializable {
         int topmostBlock = WorldGenerator.findTopmostSolidBlock((int) (x / blockSize), 5) + 1;
 
         if (HitboxMap.checkIntersInside(x, topmostBlock * blockSize, obj.texture.width(), obj.texture.height()) != null) {
-            Logger.log("Unable spawning player at: x - " + x + ", y - " + topmostBlock * blockSize);
+            Application.log.warn("Unable spawning player at: ({}, {})", x, topmostBlock * blockSize);
             return createDynamic(name, x + blockSize);
         }
 
@@ -70,7 +70,7 @@ public class DynamicWorldObjects implements Serializable {
             lastId++;
 
             if (lastId == 126) {
-                Logger.log("Number of id's dynamic objects exceeded, errors will occur");
+                Application.log.warn("Number of id's dynamic objects exceeded, errors will occur");
             }
             ids.put(name, lastId);
             return lastId;
@@ -109,8 +109,8 @@ public class DynamicWorldObjects implements Serializable {
         if (jumpedTicks > 0) {
             jumpedTicks = Math.max(jumpedTicks - Time.delta, 0);
         } else {
-            boolean hasFixture = hasFixture();
-            if (hasFixture && Math.abs(velocity.y) <= GAP && input.pressed(GLFW_KEY_SPACE)) {
+            boolean hasFloor = hasFloor();
+            if (hasFloor && Math.abs(velocity.y) <= GAP && input.pressed(GLFW_KEY_SPACE)) {
                 tmp.y += 7;
                 jumpedTicks = 5;
             }
@@ -119,7 +119,7 @@ public class DynamicWorldObjects implements Serializable {
         velocity.add(tmp);
     }
 
-    public boolean hasFixture() {
+    public boolean hasFloor() {
         int minX = (int) Math.floor(x / blockSize);
         int maxX = (int) Math.floor((x + getTexture().width()) / blockSize);
         int minY = (int) Math.floor((y - GAP) / blockSize);

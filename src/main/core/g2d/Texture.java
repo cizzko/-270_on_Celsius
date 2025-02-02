@@ -32,8 +32,8 @@ public final class Texture implements Drawable {
         glBindTexture(glTarget, glHandle);
         glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(glTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP);
-        glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP);
+        glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         int w = img.width();
         int h = img.height();

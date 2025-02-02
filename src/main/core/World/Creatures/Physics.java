@@ -168,13 +168,13 @@ public class Physics {
             }
 
             float x = ent.getX(), y = ent.getY();
-            boolean fixture = ent.hasFixture();
+            boolean hasFloor = ent.hasFloor();
             move(ent, dt);
             Vector2f vel = ent.velocity;
             if (Math.abs(x - ent.getX()) <= moveThreshold) vel.x = 0;
             if (Math.abs(y - ent.getY()) <= moveThreshold) vel.y = 0;
 
-            if (!fixture) {
+            if (!hasFloor) {
                 vel.y -= ent.getWeight() * GRAVITY * dt;
             }
 

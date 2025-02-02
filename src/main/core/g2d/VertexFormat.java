@@ -1,7 +1,5 @@
 package core.g2d;
 
-import java.util.List;
-
 public final class VertexFormat {
     private final VertexAttribute[] vertexAttributes;
     private final int[] offsets;

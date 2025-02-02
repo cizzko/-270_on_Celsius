@@ -5,6 +5,8 @@ import core.g2d.AtlasHandler;
 import core.g2d.FontHandler;
 import core.g2d.ShaderHandler;
 import core.g2d.TextureHandler;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.system.Platform;
 
 import java.io.IOException;
@@ -20,6 +22,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 public final class AssetsManager {
+    static final Logger log = LogManager.getLogger("AssetsManager");
 
     // TODO а точно нужна карта? Может хочется сделать полиморфные загрузчики
     //  Вообще, тут возможно состояние гонки, т.к. к этим объектам идёт доступ из других потоков в load()
@@ -126,17 +129,19 @@ public final class AssetsManager {
     }
 
     public void debug() {
-        System.out.println();
+        log.debug("");
         for (var e : assets.entrySet()) {
             String resTypeName = e.getKey().getCanonicalName();
             var resMap = e.getValue();
-            System.out.println("> resourceType='" + resTypeName + "' (count=" + resMap.size() + ")");
+            log.debug("> resourceType='{}' (count={})",
+                    resTypeName, resMap.size());
             for (var res : resMap.values()) {
                 var assetRef = (Asset<?>) res;
-                System.out.println("| name='" + assetRef.name + "', refCount=" + assetRef.refCount + ", value=" + assetRef.value);
+                log.debug("| name='{}', refCount={}, value={}",
+                        assetRef.name, assetRef.refCount, assetRef.value);
             }
         }
-        System.out.println();
+        log.debug("");
     }
 
     public void unloadAll() {
@@ -200,7 +205,7 @@ public final class AssetsManager {
                 refsByAssets.remove(dep.value);
                 assets.get(dep.type).remove(dep.name);
                 releaseInternal(dep.value);
-                System.out.println("[Assets] Released: " + dep);
+                log.debug("Released: {}", dep);
             }
             if (visited.add(dep)) {
                 if (dep.dependencies != null) {

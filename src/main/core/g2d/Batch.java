@@ -7,6 +7,8 @@ import core.assets.AssetsManager;
 import core.math.Mat3;
 import core.pool.Pool;
 import core.pool.Poolable;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
@@ -19,6 +21,8 @@ import static core.g2d.VertexAttribute.*;
 import static org.lwjgl.opengl.GL46.*;
 
 public class Batch<S extends Batch.State> implements Disposable {
+    protected static final Logger log = LogManager.getLogger();
+
     private static final int VERTEX_PER_SPRITE   = 4;
     private static final int VERTEX_PER_TRIANGLE = 6;
     private static final int MAX_NESTING = 16;

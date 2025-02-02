@@ -122,12 +122,9 @@ public class ShadowMap {
     }
 
     public static Color getColorDynamic(DynamicWorldObjects object) {
-        Color color = shadowsDynamic.computeIfAbsent(object, k -> {
-            var c = new Color(Color.WHITE);
-            c.add(addedColorDynamic);
-            c.sub(deletedColorDynamic);
-            return c;
-        });
+        Color color = new Color(shadowsDynamic.computeIfAbsent(object, k -> new Color(Color.WHITE)));
+        color.add(addedColorDynamic);
+        color.sub(deletedColorDynamic);
         return color;
     }
 

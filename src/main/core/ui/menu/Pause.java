@@ -6,7 +6,6 @@ import core.UI;
 import core.ui.Dialog;
 import core.ui.Styles;
 
-import static core.EventHandling.Logging.Json.getName;
 import static core.Global.input;
 
 public class Pause extends Dialog {
@@ -14,19 +13,19 @@ public class Pause extends Dialog {
         addPanel(Styles.SIMPLE_PANEL, 0, 0, input.getWidth(), input.getHeight());
         addButton(Styles.TEXT_BUTTON, this::continueBtn)
                 .set(840, 650, 240, 65)
-                .setName(getName("Continue"))
+                .setName(Global.lang.get("Continue"))
                 .setColor(Styles.DEFAULT_ORANGE);
         addButton(Styles.TEXT_BUTTON, this::saveButton)
                 .set(840, 550, 240, 65)
-                .setName(getName("SaveWorld"))
+                .setName(Global.lang.get("SaveWorld"))
                 .setColor(Styles.DEFAULT_ORANGE);
         addButton(Styles.TEXT_BUTTON, this::exitBtn)
                 .set(840, 300, 240, 65)
-                .setName(getName("Exit"))
+                .setName(Global.lang.get("Exit"))
                 .setColor(Styles.DIRTY_WHITE);
         addButton(Styles.TEXT_BUTTON, this::settingsBtn)
                 .set(840, 400, 240, 65)
-                .setName(getName("Settings"))
+                .setName(Global.lang.get("Settings"))
                 .setColor(Styles.DIRTY_WHITE);
     }
 

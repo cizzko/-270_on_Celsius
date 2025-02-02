@@ -1,7 +1,6 @@
 package core.World.Creatures;
 
-import core.EventHandling.EventHandler;
-import core.EventHandling.Logging.Logger;
+import core.Application;
 import core.World.Textures.TextureDrawing;
 
 import static core.Global.world;
@@ -16,7 +15,7 @@ public class CreaturesGenerate {
 
     public static void initGenerating() {
         new Thread(() -> {
-            Logger.log("Thread: Creatures logic started");
+            Application.log.warn("Thread: Creatures logic started");
 
             long lastUpdate = System.nanoTime();
 

@@ -6,7 +6,6 @@ import java.util.HashMap;
 
 import static core.Global.world;
 import static core.World.HitboxMap.*;
-import static core.World.WorldGenerator.*;
 
 public class ButterflyLogic {
     private static final HashMap<DynamicWorldObjects, Long> lastSwapPos = new HashMap<>();

@@ -1,5 +1,6 @@
 package core.ui.menu;
 
+import core.Application;
 import core.GameState;
 import core.Global;
 import core.UI;
@@ -9,8 +10,6 @@ import core.ui.Styles;
 import java.awt.*;
 import java.net.URI;
 
-import static core.EventHandling.Logging.Json.getName;
-import static core.EventHandling.Logging.Logger.printException;
 import static core.Global.*;
 
 public class MainMenu extends Dialog {
@@ -21,15 +20,15 @@ public class MainMenu extends Dialog {
                 .setImage(atlas.byPath("UI/discordIcon.png"));
         addButton(Styles.TEXT_BUTTON, this::exitBtn)
                 .set(822, 990, 240, 65)
-                .setName(getName("Exit"))
+                .setName(lang.get("Exit"))
                 .setColor(Styles.DIRTY_WHITE);
         addButton(Styles.TEXT_BUTTON, this::settingsBtn)
                 .set(548, 990, 240, 65)
-                .setName(getName("Settings"))
+                .setName(lang.get("Settings"))
                 .setColor(Styles.DIRTY_WHITE);
         addButton(Styles.TEXT_BUTTON, this::playButton)
                 .set(46, 990, 240, 65)
-                .setName(getName("Play"));
+                .setName(lang.get("Play"));
     }
 
     private void discordBtn() {
@@ -37,7 +36,7 @@ public class MainMenu extends Dialog {
             Desktop desktop = Desktop.getDesktop();
             desktop.browse(new URI("https://discord.gg/gUS9X6exAQ"));
         } catch (Exception e) {
-            printException("Error when open discord server", e);
+            Application.log.error("Error when open discord server", e);
         }
     }
 

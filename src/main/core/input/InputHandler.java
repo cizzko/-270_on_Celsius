@@ -1,21 +1,23 @@
 package core.input;
 
-import core.EventHandling.Logging.Config;
 import core.Global;
 import core.World.Textures.TextureDrawing;
 import core.math.Point2i;
 import core.math.Vector2f;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL46;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import static core.EventHandling.Logging.Logger.printException;
 import static core.Window.glfwWindow;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class InputHandler {
+    private static final Logger log = LogManager.getLogger();
+
     static final int PRESSED_ARRAY_SIZE = 349;
     static final int CLICKED_ARRAY_SIZE = 8; // GLFW_MOUSE_BUTTON_1 ~ GLFW_MOUSE_BUTTON_8
 
@@ -204,28 +206,28 @@ public class InputHandler {
 
     private static void setBit(long[] bits, int i) {
         int idx = i >> 6;
-        if (idx < 0 || idx >= bits.length) {
-            printException("Unexpected button: " + i, new IllegalArgumentException());
-            return;
+        if (idx >= 0 && idx < bits.length) {
+            bits[idx] |= 1L << i;
+        } else {
+            log.error("Unexpected button: {}", i);
         }
-        bits[idx] |= 1L << i;
     }
 
     private static void unsetBit(long[] bits, int i) {
         int idx = i >> 6;
-        if (idx < 0 || idx >= bits.length) {
-            printException("Unexpected button: " + i, new IllegalArgumentException());
-            return;
+        if (idx >= 0 && idx < bits.length) {
+            bits[idx] &= ~(1L << i);
+        } else {
+            log.error("Unexpected button: {}", i);
         }
-        bits[idx] &= ~(1L << i);
     }
 
     private static boolean isSet(long[] bits, int i) {
         int idx = i >> 6;
-        if (idx < 0 || idx >= bits.length) {
-            printException("Unexpected button: " + i, new IllegalArgumentException());
-            return false;
+        if (idx >= 0 && idx < bits.length) {
+            return (bits[idx] & (1L << i)) != 0;
         }
-        return (bits[idx] & (1L << i)) != 0;
+        log.error("Unexpected button: {}", i);
+        return false;
     }
 }

@@ -25,4 +25,8 @@ public final class MathUtil {
     public static float len(float x, float y) {
         return (float) Math.sqrt(x*x + y*y);
     }
+
+    public static float lerp(float a, float b, float progress) {
+        return a + (b - a) * progress;
+    }
 }

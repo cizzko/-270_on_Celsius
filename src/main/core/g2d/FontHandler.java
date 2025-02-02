@@ -82,7 +82,7 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
                 g2.setFont(awtFont);
-                g2.setColor(java.awt.Color.WHITE);
+                g2.setColor(Color.WHITE);
                 g2.drawString(Character.toString(c), 0, metrics.getAscent());
                 g2.dispose();
 
