@@ -53,6 +53,7 @@ public final class PlayGameScene extends GameScene {
         var player = DynamicObjects.getFirst();
         camera.position.set(player.getX(), player.getY());
         EventHandler.setDebugValue(() -> "Camera pos: " + camera.position);
+        EventHandler.setDebugValue(() -> "Current time: " + sun.currentTime);
     }
 
     @Override

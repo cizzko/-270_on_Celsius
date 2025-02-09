@@ -22,7 +22,7 @@ public final class Color {
     }
 
     public static int rgba8888(int r, int g, int b, int a) {
-        return (r & 0xff) << 24 | (g & 0xff) << 16 | (b & 0xff) << 8 | (a & 0xff);
+        return Math.clamp(r, 0, 255) << 24 | Math.clamp(g, 0, 255) << 16 | Math.clamp(b, 0, 255) << 8 | Math.clamp(a, 0, 255);
     }
 
     public static int argbToRgba8888(int argb8888) {
