@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import static core.Global.world;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getResistance;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
-import static core.World.WorldGenerator.*;
+import static core.World.WorldGenerator.WorldGenerator.*;
 
 public class HitboxMap {
 

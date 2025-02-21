@@ -23,7 +23,7 @@ import static core.Global.*;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.StaticWorldObjects.Structures.Factories.updateFactoriesOutput;
 import static core.World.Textures.TextureDrawing.*;
-import static core.World.WorldGenerator.DynamicObjects;
+import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 
 public final class PlayGameScene extends GameScene {
     public final Sun sun = new Sun();

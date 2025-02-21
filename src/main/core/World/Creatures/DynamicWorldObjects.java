@@ -5,7 +5,7 @@ import core.EventHandling.EventHandler;
 import core.Time;
 import core.World.HitboxMap;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.WorldGenerator;
+import core.World.WorldGenerator.WorldGenerator;
 import core.g2d.Atlas;
 import core.math.Rectangle;
 import core.math.Vector2f;

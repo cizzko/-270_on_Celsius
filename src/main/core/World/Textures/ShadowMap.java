@@ -12,7 +12,7 @@ import java.util.HashMap;
 import static core.Global.gameState;
 import static core.Global.world;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
-import static core.World.WorldGenerator.*;
+import static core.World.WorldGenerator.WorldGenerator.*;
 
 public class ShadowMap {
     private static int[] shadows;

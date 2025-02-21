@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import static core.Global.*;
-import static core.World.WorldGenerator.*;
+import static core.World.WorldGenerator.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Bullets {

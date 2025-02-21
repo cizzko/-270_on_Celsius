@@ -5,7 +5,7 @@ import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
-import core.World.WorldGenerator;
+import core.World.WorldGenerator.WorldGenerator;
 import core.g2d.Atlas;
 import core.math.Point2i;
 import core.math.Rectangle;

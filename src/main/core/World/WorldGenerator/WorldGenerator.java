@@ -1,7 +1,9 @@
-package core.World;
+package core.World.WorldGenerator;
 
 import core.*;
 import core.EventHandling.EventHandler;
+import core.World.PerlinNoiseGenerator;
+import core.World.World;
 import core.ui.menu.CreatePlanet;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.StaticWorldObjects.StaticWorldObjects;
@@ -170,17 +172,26 @@ public class WorldGenerator {
         // scheduler.post(() -> texts.get("WorldGeneratorState").text += text, 0.5f * Time.ONE_SECOND);
     }
 
+    //потом доделаю, пока наброски
     private static void generateRelief(World world) {
+        //last biomes для плавного перетекания биомов
+        Biomes lastBiomes = Biomes.getDefault();
+        Biomes currentBiomes = Biomes.getRand();
+
         float lastX = 0;
         float lastY = world.sizeY / 2f;
         float angle = 90;
 
         //чем ближе к 90 тем меньше максимальный угол наклона линии генерации
-        int upperBorder = 20;
-        int bottomBorder = 160;
+        int upperBorder = currentBiomes.getUpperBorder();
+        int bottomBorder = currentBiomes.getBottomBorder();
+        int blockGradient = currentBiomes.getBlockGradientChance();
+        //в блоках
+        int lastSwapBiomes = 0;
+        int minSwapBiomes = 200;
 
         do {
-            angle = Math.clamp(angle + ((float) (Math.random() * 60) - 30), Math.clamp(upperBorder + (lastY - world.sizeY / 2f), 20, 90), Math.clamp(bottomBorder - (world.sizeY / 2f - lastY), 90, 160));
+            angle = Math.clamp(angle + ((float) (Math.random() * blockGradient) - blockGradient / 2f), Math.clamp(upperBorder + (lastY - world.sizeY / 2f), upperBorder, 90), Math.clamp(bottomBorder - (world.sizeY / 2f - lastY), 90, bottomBorder));
 
             int iters = (int) (Math.random() * (90 - Math.abs(90 - angle)));
 
@@ -191,6 +202,19 @@ public class WorldGenerator {
                 lastX += deltaX;
 
                 if (lastX < world.sizeX && lastY > 0) {
+                    world.setBiomes((int) lastX, currentBiomes);
+                    lastSwapBiomes++;
+
+                    if (lastSwapBiomes > minSwapBiomes && Math.random() * lastSwapBiomes - minSwapBiomes > 30) {
+                        lastBiomes = currentBiomes;
+                        currentBiomes = Biomes.getRand();
+                        lastSwapBiomes = 0;
+
+                        upperBorder = currentBiomes.getUpperBorder();
+                        bottomBorder = currentBiomes.getBottomBorder();
+                        blockGradient = currentBiomes.getBlockGradientChance();
+                    }
+
                     for (int y = 0; y < lastY; y++) {
                         short object = createStatic("Blocks/grass");
                         world.set((int) lastX, y, object, false);
@@ -248,11 +272,9 @@ public class WorldGenerator {
                 y += deltaY;
                 x += deltaX;
 
-                if (x < world.sizeX && y < world.sizeY && x > 0 && y > 0) {
-                    if (start == 0) {
-                        if (world.get((int) x, (int) y) != -1) {
-                            start = (int) y;
-                        }
+                if (world.inBounds((int) x, (int) y) && start == 0) {
+                    if (world.get((int) x, (int) y) != -1) {
+                        start = (int) y;
                     }
                     world.destroy((int) x, (int) y);
 

@@ -1,6 +1,7 @@
 package core.World;
 
 import core.Constants;
+import core.World.WorldGenerator.WorldGenerator;
 
 import java.io.*;
 import java.time.LocalDateTime;

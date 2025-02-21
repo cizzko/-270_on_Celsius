@@ -6,7 +6,7 @@ import core.World.StaticWorldObjects.TemperatureMap;
 import core.g2d.Texture;
 
 import static core.Global.batch;
-import static core.World.WorldGenerator.DynamicObjects;
+import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 
 public final class PostEffect extends GameObject {
     private final Color temperatureColor = new Color();

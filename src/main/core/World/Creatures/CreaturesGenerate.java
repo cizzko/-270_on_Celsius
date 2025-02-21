@@ -5,7 +5,7 @@ import core.World.Textures.TextureDrawing;
 
 import static core.Global.world;
 import static core.Window.*;
-import static core.World.WorldGenerator.*;
+import static core.World.WorldGenerator.WorldGenerator.*;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
 public class CreaturesGenerate {

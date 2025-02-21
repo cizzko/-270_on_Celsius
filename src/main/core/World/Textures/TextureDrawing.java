@@ -23,7 +23,7 @@ import static core.Global.*;
 import static core.util.ArrayUtils.findEqualsObjects;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
-import static core.World.WorldGenerator.*;
+import static core.World.WorldGenerator.WorldGenerator.*;
 
 public class TextureDrawing {
     public static final int blockSize = 48;

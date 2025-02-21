@@ -3,7 +3,7 @@ package core.ui.menu;
 import core.Constants;
 import core.Global;
 import core.UI;
-import core.World.WorldGenerator;
+import core.World.WorldGenerator.WorldGenerator;
 import core.ui.*;
 
 import static core.Global.atlas;

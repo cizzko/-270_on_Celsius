@@ -6,6 +6,7 @@ import core.World.Creatures.Player.Player;
 import core.World.StaticWorldObjects.StaticBlocksEvents;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.ShadowMap;
+import core.World.WorldGenerator.Biomes;
 import core.math.MathUtil;
 import core.math.Point2i;
 
@@ -17,6 +18,7 @@ import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 public class World {
     public final int sizeX, sizeY;
     public final short[] tiles;
+    public final Biomes[] biomes;
 
     private final ArrayList<StaticBlocksEvents> listeners = new ArrayList<>();
 
@@ -26,10 +28,15 @@ public class World {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         this.tiles = new short[sizeX * sizeY];
+        this.biomes = new Biomes[sizeX];
     }
 
     public void registerListener(StaticBlocksEvents listener) {
         listeners.add(listener);
+    }
+
+    public void setBiomes(int x, Biomes biomes) {
+        this.biomes[x] = biomes;
     }
 
     public void set(int x, int y, short object, boolean followingRules) {
@@ -62,13 +69,17 @@ public class World {
         return x >= 0 && x < sizeX && y >= 0 && y < sizeY;
     }
 
+    public Biomes getBiomes(int x) {
+        if (x < 0 || x >= sizeX) {
+            return Biomes.plain;
+        }
+
+        return biomes[x];
+    }
+
     public short get(int x, int y) {
         // Global.app.ensureMainThread();
-
-        if (x < 0 || x >= sizeX || y < 0 || y >= sizeY) {
-            return -1;
-        }
-        return tiles[x + sizeX * y];
+        return inBounds(x, y) ? tiles[x + sizeX * y] : -1;
     }
 
     public void destroy(int x, int y) {

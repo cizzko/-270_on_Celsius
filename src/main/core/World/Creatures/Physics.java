@@ -17,7 +17,7 @@ import static core.World.Creatures.Player.Player.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getResistance;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.Textures.TextureDrawing.blockSize;
-import static core.World.WorldGenerator.*;
+import static core.World.WorldGenerator.WorldGenerator.*;
 
 public class Physics {
     private static final float ANSWER = 42; // хихи, хаха

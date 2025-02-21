@@ -3,17 +3,14 @@ package core.World.Weather;
 import core.EventHandling.EventHandler;
 import core.GameObject;
 import core.Load;
-import core.math.MathUtil;
-import core.math.Vector2f;
 import core.util.Color;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
 import core.g2d.Texture;
-import core.util.Colorf;
 
 import static core.EventHandling.Logging.Config.getFromConfig;
 import static core.Global.*;
-import static core.World.WorldGenerator.DynamicObjects;
+import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 import static core.math.MathUtil.*;
 
 public class Sun extends GameObject {

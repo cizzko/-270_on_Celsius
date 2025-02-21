@@ -10,7 +10,7 @@ import core.World.Creatures.Player.Inventory.Items.Tools;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.TextureDrawing;
-import core.World.WorldGenerator;
+import core.World.WorldGenerator.WorldGenerator;
 import core.g2d.Fill;
 import core.math.Point2i;
 import core.math.Rectangle;
@@ -18,7 +18,7 @@ import core.math.Rectangle;
 import static core.Global.*;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
-import static core.World.WorldGenerator.*;
+import static core.World.WorldGenerator.WorldGenerator.*;
 import static core.World.WorldUtils.getDistanceToMouse;
 import static org.lwjgl.glfw.GLFW.*;
 

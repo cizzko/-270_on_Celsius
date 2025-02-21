@@ -4,7 +4,7 @@ import core.Global;
 import core.World.Textures.TextureDrawing;
 import core.math.Point2i;
 
-import static core.World.WorldGenerator.DynamicObjects;
+import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 
 public class WorldUtils {
     public static Point2i getBlockUnderMousePoint() {
