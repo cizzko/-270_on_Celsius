@@ -305,6 +305,7 @@ public class TextureDrawing {
             }
         }
 
+        //todo а может сделать пули как сущности? чтоб ничего не считать отдельно
         Bullets.drawBullets();
     }
 }

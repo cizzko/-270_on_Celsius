@@ -1,6 +1,7 @@
 package core;
 
 import core.EventHandling.EventHandler;
+import core.World.WorldGenerator.Backdrop;
 import core.util.Color;
 import core.util.Commandline;
 import core.World.Creatures.DynamicWorldObjects;
@@ -71,6 +72,7 @@ public final class PlayGameScene extends GameScene {
         updatePlayerPos();
         postEffect.update();
         sun.update();
+        Backdrop.update();
         updateInventoryInteraction();
         Weapons.updateAmmo();
         updateFactoriesOutput();

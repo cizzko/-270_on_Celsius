@@ -4,26 +4,22 @@ import core.World.StaticWorldObjects.StaticWorldObjects;
 
 public enum Biomes {
     //чем ближе к 90 тем меньше максимальный угол наклона линии генерации
-    mountains(60, 20, 160, StaticWorldObjects.createStatic("Blocks/grass"), StaticWorldObjects.createStatic("Blocks/dirt")),
-    plain(40, 40, 140, StaticWorldObjects.createStatic("Blocks/grass"), StaticWorldObjects.createStatic("Blocks/dirt")),
-    forest(40, 40, 140, StaticWorldObjects.createStatic("Blocks/grass"), StaticWorldObjects.createStatic("Blocks/dirt")),
-    desert(30, 60, 120, StaticWorldObjects.createStatic("Blocks/grass"), StaticWorldObjects.createStatic("Blocks/dirt"));
-    //..и надо еще что то с лесами придумать, там же деревья, может сделать как с деревьями (см строку 17 - 18) массив "важности" возможных генерируемых объектов на местности?
-    //чем ближе к нулю, тем чаще генерируется объект, условно
-    //может это будет и не массив, а просто набор объект - шанс
+    mountains(60, 20, 160, getDefBlocks(), "World\\Backdrops\\back"),
+    plain(40, 40, 140, getDefBlocks(), "World\\Backdrops\\back"),
+    forest(40, 40, 140, getDefBlocks(), "World\\Backdrops\\back"),
+    desert(30, 60, 120, getDefBlocks(), "World\\Backdrops\\back");
 
     private static final Biomes defaultBiome = forest;
     private final int blockGradientChance, upperBorder, bottomBorder;
-    private final short mainBlock, secondBlock;
+    private final String backdrop;
+    private final short[] blocks;
 
-    //main n second надо в массив, но надо придумать как с этим потом работать
-    //или просто сделать массив по "важности" блоков, самые важные [0] наверху, и по убыванию
-    Biomes(int blockGradientChance, int upperBorder, int bottomBorder, short mainBlock, short secondBlock) {
+    Biomes(int blockGradientChance, int upperBorder, int bottomBorder, short[] blocks, String backdrop) {
         this.blockGradientChance = blockGradientChance;
         this.upperBorder = upperBorder;
         this.bottomBorder = bottomBorder;
-        this.mainBlock = mainBlock;
-        this.secondBlock = secondBlock;
+        this.blocks = blocks;
+        this.backdrop = backdrop;
     }
 
     public int getBlockGradientChance() {
@@ -38,11 +34,28 @@ public enum Biomes {
         return bottomBorder;
     }
 
+    public short[] getBlocks() {
+        return blocks;
+    }
+
+    public String getBackdrop() {
+        return backdrop;
+    }
+
     public static Biomes getDefault() {
         return defaultBiome;
     }
 
     public static Biomes getRand() {
         return Biomes.values()[(int) (Math.random() * Biomes.values().length)];
+    }
+
+    //временно, чтоб закрыть дырки
+    private static short[] getDefBlocks() {
+        return new short[]{
+                StaticWorldObjects.createStatic("Blocks/grass"),
+                StaticWorldObjects.createStatic("Blocks/dirt"),
+                StaticWorldObjects.createStatic("Blocks/dirtStone"),
+                StaticWorldObjects.createStatic("Blocks/stone")};
     }
 }

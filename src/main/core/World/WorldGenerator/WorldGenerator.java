@@ -131,7 +131,7 @@ public class WorldGenerator {
 
         step(() -> {
             log("generating resources");
-            generateResources(world);
+            //generateResources();
         });
 
         step(() -> generateCaves());
@@ -190,6 +190,8 @@ public class WorldGenerator {
         int lastSwapBiomes = 0;
         int minSwapBiomes = 200;
 
+        short[] availableBlocks = currentBiomes.getBlocks();
+
         do {
             angle = Math.clamp(angle + ((float) (Math.random() * blockGradient) - blockGradient / 2f), Math.clamp(upperBorder + (lastY - world.sizeY / 2f), upperBorder, 90), Math.clamp(bottomBorder - (world.sizeY / 2f - lastY), 90, bottomBorder));
 
@@ -216,8 +218,7 @@ public class WorldGenerator {
                     }
 
                     for (int y = 0; y < lastY; y++) {
-                        short object = createStatic("Blocks/grass");
-                        world.set((int) lastX, y, object, false);
+                        world.set((int) lastX, y, availableBlocks[(int) Math.min(availableBlocks.length - 1, lastY - y)], false);
                     }
                 } else {
                     break;
@@ -405,30 +406,21 @@ public class WorldGenerator {
         return -1;
     }
 
-    private static void generateResources(World world) {
-        PerlinNoiseGenerator.main(world.sizeX, world.sizeY, 1, 15, 1, 0.8f, 4);
+    private static void generateResources() {
+        //вынес для удобства
+        //todo почему то дублирует путь, типа C:\other\-270_On_Celsius\-270_On_Celsius\src\
+        //причем с условной грязью все нормально, причину не знаю, надо разобраться
+        short obj = createStatic("Blocks/aluminium");
 
-        for (int x = 0; x < world.sizeX; x++) {
-            for (int y = 0; y < world.sizeY; y++) {
-                if (getType(world.get(x, y + 1)) != StaticObjectsConst.Types.GAS) { // Generating ground under grass blocks
-                    short object = createStatic("Blocks/dirt");
-                    world.set(x, y, object, false);
-                }
+        for (int i = 0; i < Math.random() * ((world.sizeX + world.sizeY) / 100f); i++) {
 
-                if (ShadowMap.getDegree(x, y) >= 3) { // Generating stone
-                    short object = createStatic("Blocks/stone");
-                    world.set(x, y, object, false);
-                }
+            boolean[][] noise = PerlinNoiseGenerator.createBoolNoise((int) (Math.random() * 30), (int) (Math.random() * 30), 1.3f);
+            Point2i randPos = randAtGround();
 
-                if (PerlinNoiseGenerator.noise[x][y] && ShadowMap.getDegree(x, y) >= 3) { //Generating ore
-                    short object = createStatic("Blocks/aluminum");
-                    world.set(x, y, object, false);
-                }
-
-                if (ShadowMap.getDegree(x, y) == 2) { // Generation of transitions between earth and stone
-                    if (!getFileName(world.get(x, y + 1)).equals("Blocks/dirtStone")) {
-                        short object = createStatic("Blocks/dirtStone");
-                        world.set(x, y, object, false);
+            for (int x = 0; x < noise.length; x++) {
+                for (int y = 0; y < noise[0].length; y++) {
+                    if (noise[x][y] && StaticWorldObjects.getType(world.get(x + randPos.x, y + randPos.y)) == StaticObjectsConst.Types.SOLID) {
+                        world.set(x + randPos.x, y + randPos.y, obj, false);
                     }
                 }
             }
@@ -476,5 +468,16 @@ public class WorldGenerator {
             setGameScene(playGameScene);
             gameState = GameState.PLAYING;
         });
+    }
+
+    private static Point2i randAtGround() {
+        int randX = (int) (Math.random() * world.sizeX);
+
+        for (int i = world.sizeY; i > 0; i--) {
+            if (StaticWorldObjects.getType(world.get(randX, i)) == StaticObjectsConst.Types.SOLID) {
+                return new Point2i(randX, (int) (Math.random() * world.sizeY - i) + i);
+            }
+        }
+        return null;
     }
 }
