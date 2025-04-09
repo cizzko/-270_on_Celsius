@@ -210,6 +210,7 @@ public class WorldGenerator {
                     if (lastSwapBiomes > minSwapBiomes && Math.random() * lastSwapBiomes - minSwapBiomes > 30) {
                         lastBiomes = currentBiomes;
                         currentBiomes = Biomes.getRand();
+                        availableBlocks = currentBiomes.getBlocks();
                         lastSwapBiomes = 0;
 
                         upperBorder = currentBiomes.getUpperBorder();
@@ -316,7 +317,7 @@ public class WorldGenerator {
                 int y = findFreeVerticalCell(x);
 
                 if (y - 1 > 0 && getType(world.get(x, y - 1)) == StaticObjectsConst.Types.SOLID) {
-                    if (getResistance(world.get(x, y - 1)) == 100) {
+                    if (getResistance(world.get(x, y - 1)) >= 100) {
                         short object = StaticWorldObjects.createStatic("Blocks/smallStone");
                         world.set(x, y, object, false);
                     }

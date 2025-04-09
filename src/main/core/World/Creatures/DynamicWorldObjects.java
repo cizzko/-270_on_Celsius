@@ -128,7 +128,7 @@ public class DynamicWorldObjects implements Serializable {
             if (block == -1) {
                 return true;
             }
-            if (getResistance(block) == 100 && getType(block) == StaticObjectsConst.Types.SOLID) {
+            if (getResistance(block) >= 100 && getType(block) == StaticObjectsConst.Types.SOLID) {
                 return true;
             }
         }

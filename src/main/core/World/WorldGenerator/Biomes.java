@@ -4,10 +4,10 @@ import core.World.StaticWorldObjects.StaticWorldObjects;
 
 public enum Biomes {
     //чем ближе к 90 тем меньше максимальный угол наклона линии генерации
-    mountains(60, 20, 160, getDefBlocks(), "World\\Backdrops\\back"),
-    plain(40, 40, 140, getDefBlocks(), "World\\Backdrops\\back"),
-    forest(40, 40, 140, getDefBlocks(), "World\\Backdrops\\back"),
-    desert(30, 60, 120, getDefBlocks(), "World\\Backdrops\\back");
+    mountains(60, 20, 160, getMountains(), "World\\Backdrops\\back"),
+    plain(40, 40, 140, getPlain(), "World\\Backdrops\\back"),
+    forest(40, 40, 140, getForest(), "World\\Backdrops\\back"),
+    desert(30, 60, 120, getDesert(), "World\\Backdrops\\back");
 
     private static final Biomes defaultBiome = forest;
     private final int blockGradientChance, upperBorder, bottomBorder;
@@ -50,12 +50,33 @@ public enum Biomes {
         return Biomes.values()[(int) (Math.random() * Biomes.values().length)];
     }
 
-    //временно, чтоб закрыть дырки
-    private static short[] getDefBlocks() {
+    private static short[] getMountains() {
+        return new short[]{
+                StaticWorldObjects.createStatic("Blocks/stone")};
+    }
+
+    private static short[] getPlain(){
+        return new short[]{
+                StaticWorldObjects.createStatic("Blocks/grass"),
+                StaticWorldObjects.createStatic("Blocks/dirt"),
+                StaticWorldObjects.createStatic("Blocks/dirt"),
+                StaticWorldObjects.createStatic("Blocks/dirtStone"),
+                StaticWorldObjects.createStatic("Blocks/stone")};
+    }
+
+    private static short[] getForest() {
         return new short[]{
                 StaticWorldObjects.createStatic("Blocks/grass"),
                 StaticWorldObjects.createStatic("Blocks/dirt"),
                 StaticWorldObjects.createStatic("Blocks/dirtStone"),
+                StaticWorldObjects.createStatic("Blocks/stone")};
+    }
+
+    private static short[] getDesert() {
+        return new short[]{
+                StaticWorldObjects.createStatic("Blocks/sand"),
+                StaticWorldObjects.createStatic("Blocks/sand"),
+                StaticWorldObjects.createStatic("Blocks/sand"),
                 StaticWorldObjects.createStatic("Blocks/stone")};
     }
 }

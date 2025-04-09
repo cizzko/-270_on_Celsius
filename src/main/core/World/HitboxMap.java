@@ -21,7 +21,7 @@ public class HitboxMap {
         int tarYSize = (int) Math.ceil(sizeY / TextureDrawing.blockSize);
 
         for (int i = 0; i < tarYSize; i++) {
-            if (world.get(tarX + tarXSize, tarY + i + 1) == -1 || (getResistance(world.get(tarX + tarXSize, tarY + i + 1)) == 100 && x + sizeX >= (getType(world.get(tarX + tarXSize, tarY + i + 1)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + i + 1) : world.sizeX * TextureDrawing.blockSize))) {
+            if (world.get(tarX + tarXSize, tarY + i + 1) == -1 || (getResistance(world.get(tarX + tarXSize, tarY + i + 1)) >= 100 && x + sizeX >= (getType(world.get(tarX + tarXSize, tarY + i + 1)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + i + 1) : world.sizeX * TextureDrawing.blockSize))) {
                 return true;
             }
         }
@@ -36,7 +36,7 @@ public class HitboxMap {
         ArrayList<Point2i> inters = new ArrayList<>(tarYSize);
 
         for (int i = 0; i < tarYSize; i++) {
-            if (world.get(tarX + tarXSize, tarY + i + 1) == -1 || (getResistance(world.get(tarX + tarXSize, tarY + i + 1)) == 100 && x + sizeX >= (getType(world.get(tarX + tarXSize, tarY + i + 1)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + i + 1) : world.sizeX * TextureDrawing.blockSize))) {
+            if (world.get(tarX + tarXSize, tarY + i + 1) == -1 || (getResistance(world.get(tarX + tarXSize, tarY + i + 1)) >= 100 && x + sizeX >= (getType(world.get(tarX + tarXSize, tarY + i + 1)) == StaticObjectsConst.Types.SOLID ? findX(tarX + tarXSize, tarY + i + 1) : world.sizeX * TextureDrawing.blockSize))) {
                 inters.add(new Point2i(tarX + tarXSize, tarY + i + 1));
             }
         }
@@ -49,7 +49,7 @@ public class HitboxMap {
         int tarYSize = (int) Math.ceil(sizeY / TextureDrawing.blockSize);
 
         for (int i = 0; i < tarYSize; i++) {
-            if (tarX < 0 || tarY < 0 || world.get(tarX, tarY + i + 1) == -1 || (getResistance(world.get(tarX, tarY + i + 1)) == 100 && getType(world.get(tarX, tarY + i + 1)) == StaticObjectsConst.Types.SOLID)) {
+            if (tarX < 0 || tarY < 0 || world.get(tarX, tarY + i + 1) == -1 || (getResistance(world.get(tarX, tarY + i + 1)) >= 100 && getType(world.get(tarX, tarY + i + 1)) == StaticObjectsConst.Types.SOLID)) {
                 return true;
             }
         }
@@ -63,7 +63,7 @@ public class HitboxMap {
         ArrayList<Point2i> inters = new ArrayList<>(tarYSize);
 
         for (int i = 0; i < tarYSize; i++) {
-            if (tarX < 0 || tarY < 0 || world.get(tarX, tarY + i + 1) == -1 || getResistance(world.get(tarX, tarY + i + 1)) == 100 && getType(world.get(tarX, tarY + i + 1)) == StaticObjectsConst.Types.SOLID) {
+            if (tarX < 0 || tarY < 0 || world.get(tarX, tarY + i + 1) == -1 || getResistance(world.get(tarX, tarY + i + 1)) >= 100 && getType(world.get(tarX, tarY + i + 1)) == StaticObjectsConst.Types.SOLID) {
                 inters.add(new Point2i(tarX, tarY + i + 1));
             }
         }

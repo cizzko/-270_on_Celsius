@@ -85,7 +85,7 @@ public class Physics {
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
                 short block = world.get(x, y);
-                if (block == -1 || getResistance(block) == 100 && getType(block) == StaticObjectsConst.Types.SOLID) {
+                if (block == -1 || getResistance(block) >= 100 && getType(block) == StaticObjectsConst.Types.SOLID) {
                     blockHitbox.set(x * blockSize, y * blockSize, blockSize, blockSize);
 
                     if (blockHitbox.overlaps(entityHitbox)) {

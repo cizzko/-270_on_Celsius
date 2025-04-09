@@ -39,7 +39,6 @@ public class Sun extends GameObject {
 
     {
         currentTime = 1600f;
-        EventHandler.setDebugValue(() -> "Game time: " + currentTime);
     }
 
     @Override
