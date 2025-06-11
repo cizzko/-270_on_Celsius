@@ -16,7 +16,7 @@ public class HitboxMap {
 
     public static boolean checkIntersStaticR(float x, float y, float sizeX, float sizeY) {
         int tarX = (int) (x / TextureDrawing.blockSize);
-        int tarY = y % 48 > 47.4 ? (int) (y / TextureDrawing.blockSize) : (int) (y / TextureDrawing.blockSize) - 1;
+        int tarY = y % TextureDrawing.blockSize > TextureDrawing.blockSize - 0.6 ? (int) (y / TextureDrawing.blockSize) : (int) (y / TextureDrawing.blockSize) - 1;
         int tarXSize = (int) Math.floor(sizeX / TextureDrawing.blockSize);
         int tarYSize = (int) Math.ceil(sizeY / TextureDrawing.blockSize);
 
@@ -30,7 +30,7 @@ public class HitboxMap {
 
     private static Point2i[] checkIntersStaticRP(float x, float y, float sizeX, float sizeY) {
         int tarX = (int) (x / TextureDrawing.blockSize);
-        int tarY = y % 48 > 47.4 ? (int) (y / TextureDrawing.blockSize) : (int) (y / TextureDrawing.blockSize) - 1;
+        int tarY = y % TextureDrawing.blockSize > TextureDrawing.blockSize - 0.6 ? (int) (y / TextureDrawing.blockSize) : (int) (y / TextureDrawing.blockSize) - 1;
         int tarXSize = (int) Math.ceil(sizeX / TextureDrawing.blockSize);
         int tarYSize = (int) Math.ceil(sizeY / TextureDrawing.blockSize);
         ArrayList<Point2i> inters = new ArrayList<>(tarYSize);
@@ -45,7 +45,7 @@ public class HitboxMap {
 
     public static boolean checkIntersStaticL(float x, float y, float sizeY) {
         int tarX = (int) (x / TextureDrawing.blockSize);
-        int tarY = y % 48 > 47.4 ? (int) (y / TextureDrawing.blockSize) : (int) (y / TextureDrawing.blockSize) - 1;
+        int tarY = y % TextureDrawing.blockSize > TextureDrawing.blockSize - 0.6 ? (int) (y / TextureDrawing.blockSize) : (int) (y / TextureDrawing.blockSize) - 1;
         int tarYSize = (int) Math.ceil(sizeY / TextureDrawing.blockSize);
 
         for (int i = 0; i < tarYSize; i++) {
@@ -58,7 +58,7 @@ public class HitboxMap {
 
     private static Point2i[] checkIntersStaticLP(float x, float y, float sizeY) {
         int tarX = (int) (x / TextureDrawing.blockSize);
-        int tarY = y % 48 > 47.4 ? (int) (y / TextureDrawing.blockSize) : (int) (y / TextureDrawing.blockSize) - 1;
+        int tarY = y % TextureDrawing.blockSize > TextureDrawing.blockSize - 0.6 ? (int) (y / TextureDrawing.blockSize) : (int) (y / TextureDrawing.blockSize) - 1;
         int tarYSize = (int) Math.ceil(sizeY / TextureDrawing.blockSize);
         ArrayList<Point2i> inters = new ArrayList<>(tarYSize);
 

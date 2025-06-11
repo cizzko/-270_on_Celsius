@@ -44,7 +44,7 @@ public class Player {
     // todo это наверное все же инвентарь, нежели игрок?
     private static void updatePlaceableInteraction() {
         if (underMouseItem == null && currentObjectType == Items.Types.PLACEABLE && input.clicked(GLFW_MOUSE_BUTTON_LEFT)) {
-            if (input.mousePos().x > (Inventory.inventoryOpen ? 1488 : 1866)) {
+            if (input.mousePos().x > (Inventory.inventoryOpen ? 1487 : 1866)) {
                 if (input.mousePos().y > 756) {
                     return;
                 }
@@ -181,7 +181,7 @@ public class Player {
         if (current != null) {
             short placeable = inventoryObjects[current.x][current.y].placeable;
             var mousePos = input.mousePos();
-            if (placeable != 0 && underMouseItem == null && !Rectangle.contains(1488, 756, 500, 500, mousePos)) {
+            if (placeable != 0 && underMouseItem == null && !Rectangle.contains(1487, 756, 500, 500, mousePos)) {
                 batch.draw(atlas.byPath("World/buildGrid.png"),
                         Color.rgba8888(230, 230, 230, 150),
                         mousePos.x - 243f, mousePos.y - 244f);

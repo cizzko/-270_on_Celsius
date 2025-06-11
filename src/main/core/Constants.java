@@ -9,8 +9,8 @@ public final class Constants {
 
     public static final class World {
         /* Минимальный размер мира в блоках */
-        public static final int MIN_WORLD_SIZE = 200;
+        public static final int MIN_WORLD_SIZE = 500;
         /* Максимальный размер мира в блоках */
-        public static final int MAX_WORLD_SIZE = 2500;
+        public static final int MAX_WORLD_SIZE = 5000;
     }
 }

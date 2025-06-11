@@ -18,7 +18,9 @@ public class TemperatureMap {
 
     // todo как то криво работает
     public static void create(PlayGameScene playGameScene) {
-        currentWorldTemperature = playGameScene.sun.currentTime / 100;
+        //todo
+        //currentWorldTemperature = playGameScene.sun.currentTime / 100;
+        currentWorldTemperature = 10;
         temperature = new float[Global.world.sizeY];
 
         for (int i = 0; i < temperature.length; i++) {
@@ -64,11 +66,11 @@ public class TemperatureMap {
     }
 
     public static void update(Sun sun) {
-        if (sun.currentTime >= Sun.startDay || (sun.currentTime >= 0 && sun.currentTime <= Sun.endSunset)) {
-            currentWorldTemperature += dayTemperatureDecrement / 2.6f;
-        } else {
-            currentWorldTemperature -= dayTemperatureDecrement;
-        }
+//        if (sun.currentTime >= Sun.startDay || (sun.currentTime >= 0 && sun.currentTime <= Sun.endSunset)) {
+//            currentWorldTemperature += dayTemperatureDecrement / 2.6f;
+//        } else {
+//            currentWorldTemperature -= dayTemperatureDecrement;
+//        }
     }
 
     public static float getAverageTempAroundDynamic(float xPos, float yPos, Sized size) {

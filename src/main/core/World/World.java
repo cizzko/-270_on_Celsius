@@ -2,11 +2,13 @@ package core.World;
 
 import core.GameState;
 import core.Global;
+import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Player;
 import core.World.StaticWorldObjects.StaticBlocksEvents;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.ShadowMap;
 import core.World.WorldGenerator.Biomes;
+import core.World.WorldGenerator.WorldGenerator;
 import core.math.MathUtil;
 import core.math.Point2i;
 
@@ -18,11 +20,10 @@ import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 public class World {
     public final int sizeX, sizeY;
     public final short[] tiles;
+    //todo может диапазоны хранить?
     public final Biomes[] biomes;
 
     private final ArrayList<StaticBlocksEvents> listeners = new ArrayList<>();
-
-    public int dayCount;
 
     public World(int sizeX, int sizeY) {
         this.sizeX = sizeX;
@@ -43,6 +44,27 @@ public class World {
         // Global.app.ensureMainThread();
         assert object != -1;
 
+        setImpls(x, y, object, followingRules);
+
+        if (Global.gameState == GameState.PLAYING) {
+            for (StaticBlocksEvents listener : listeners) {
+                listener.placeStatic(x, y, object);
+            }
+        }
+
+        if (Global.gameState == GameState.PLAYING) {
+            if (x < WorldGenerator.copySize) {
+                setImpls(sizeX - WorldGenerator.copySize + x, y, object, followingRules);
+            } else if (x > sizeX - WorldGenerator.copySize) {
+                setImpls(x - (sizeX - WorldGenerator.copySize), y, object, followingRules);
+            }
+        }
+    }
+
+    public void setImpls(int x, int y, short object, boolean followingRules) {
+        // Global.app.ensureMainThread();
+        assert object != -1;
+
         if (getConst(getId(object)).optionalTiles != null) {
             short[][] tiles = getConst(getId(object)).optionalTiles;
 
@@ -53,16 +75,8 @@ public class World {
                     }
                 }
             }
-            setImpl(x, y, object, followingRules);
-        } else {
-            setImpl(x, y, object, followingRules);
         }
-
-        if (Global.gameState == GameState.PLAYING) {
-            for (StaticBlocksEvents listener : listeners) {
-                listener.placeStatic(x, y, object);
-            }
-        }
+        setImpl(x, y, object, followingRules);
     }
 
     public boolean inBounds(int x, int y) {
@@ -71,7 +85,7 @@ public class World {
 
     public Biomes getBiomes(int x) {
         if (x < 0 || x >= sizeX) {
-            return Biomes.plain;
+            return Biomes.getDefault();
         }
 
         return biomes[x];

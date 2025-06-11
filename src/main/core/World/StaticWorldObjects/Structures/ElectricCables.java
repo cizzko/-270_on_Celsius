@@ -23,6 +23,7 @@ public class ElectricCables implements InventoryEvents {
 
     @Override
     public void itemDropped(int blockX, int blockY, Items item) {
+        //todo проверять на название - слишком надежно, нет?
         if (StaticWorldObjects.getType(world.get(blockX, blockY)) == StaticObjectsConst.Types.SOLID && item.name.toLowerCase().equals("electric cable")) {
             if (lastPlacedCable != null) {
                 if (WorldUtils.getDistanceBetweenBlocks(lastPlacedCable, new Point2i(blockX, blockY)) <= 15) {

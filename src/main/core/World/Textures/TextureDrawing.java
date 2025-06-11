@@ -26,6 +26,7 @@ import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.WorldGenerator.WorldGenerator.*;
 
 public class TextureDrawing {
+    //todo разобраться с размерами
     public static final int blockSize = 48;
 
     private static final ArrayDeque<BlockPreview> blocksQueue = new ArrayDeque<>();

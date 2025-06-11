@@ -27,7 +27,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 // there is no need to put them manually, they are automatically added to the array if the placed static block is in the factories folder
 public class Factories implements StaticBlocksEvents, InventoryEvents {
-    public float needEnergy, currentHp, currentEnergy, maxHp, timeSinceBreakdown, x, y;
+    public float needEnergy, currentHp, currentEnergy, maxHp, timeSinceBreakdown;
     public int maxProductionProgress, currentProductionProgress;
     public short id, maxStoredObjects;
     public String path, sound, name;
@@ -36,6 +36,7 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
     private static long lastMouseClickTime;
     private static final HashMap<String, Factories> factoriesConst = new HashMap<>();
     private static final HashSet<Point2i> factories = new HashSet<>();
+    private static Point2i lastClickedFactory = null;
 
     @Override
     public void placeStatic(int cellX, int cellY, short id) {
@@ -103,7 +104,8 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
         CRITICAL // full stop working, need rebuild
     }
 
-    public Factories() {}
+    public Factories() {
+    }
 
     private Factories(int maxProductionProgress, float needEnergy, float maxHp, short maxStoredObjects, short id, String path, String sound, String name, Items[] outputObjects, Items[] inputObjects, Items[] fuel) {
         this.maxProductionProgress = maxProductionProgress;
@@ -183,36 +185,54 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
         this.breakingType = (breakingType == breaking.CRITICAL ? breaking.CRITICAL : null);
 
         switch (breakingType) {
-            case WEAK_SLOW, AVERAGE_STOP -> maxProductionProgress = Integer.parseInt(Config.getProperties(path).get("ProductionSpeed"));
+            case WEAK_SLOW, AVERAGE_STOP ->
+                    maxProductionProgress = Integer.parseInt(Config.getProperties(path).get("ProductionSpeed"));
             case AVERAGE_MISWORKING -> outputObjects = transformItems(Config.getProperties(path).get("OutputObjects"));
             case WEAK_OVERCONSUMPTION -> needEnergy = Integer.parseInt(Config.getProperties(path).get("NeedEnergy"));
         }
     }
 
     public static void draw() {
-        if (System.currentTimeMillis() - input.getLastMouseMoveTimestamp() > 1000) {
-            Factories factory = findFactoryUnderMouse();
+        if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+            Point2i blockUnderMouse = WorldUtils.getBlockUnderMousePoint();
 
-            if (factory != null) {
-                float xMouse = input.mousePos().x;
-                float yMouse = input.mousePos().y;
-                boolean input = factory.inputStoredObjects != null;
-                boolean output = factory.outputStoredObjects != null;
-                Color color = Color.fromRgba8888(0, 0, 0, 170);
+            if (world.get(blockUnderMouse.x, blockUnderMouse.y) != -1) {
+                Point2i root = Player.findRoot(blockUnderMouse.x, blockUnderMouse.y);
 
-                if (input && ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0) {
-                    int width1 = ArrayUtils.findDistinctObjects(factory.inputStoredObjects) * 54 + playerSize;
-
-                    Fill.rect(xMouse, yMouse, width1, 64, color);
-                    TextureDrawing.drawObjects(xMouse, yMouse, factory.inputStoredObjects, atlas.byPath("UI/GUI/buildMenu/factoryIn.png"));
+                if (root == null) {
+                    root = new Point2i(blockUnderMouse.x, blockUnderMouse.y);
                 }
-                if (output && ArrayUtils.findFreeCell(factory.outputStoredObjects) != 0) {
-                    xMouse += (ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0 ? 78 : 0);
-                    int width = ArrayUtils.findDistinctObjects(factory.outputStoredObjects) * 54 + playerSize;
-
-                    Fill.rect(xMouse, yMouse, width, 64, color);
-                    TextureDrawing.drawObjects(xMouse, yMouse, factory.outputStoredObjects, atlas.byPath("UI/GUI/buildMenu/factoryOut.png"));
+                if (factories.contains(root)) {
+                    lastClickedFactory = root;
+                } else {
+                    lastClickedFactory = null;
                 }
+            }
+        }
+        if (lastClickedFactory != null) {
+            Factories factory = factoriesConst.get(StaticWorldObjects.getFileName(world.get(lastClickedFactory.x, lastClickedFactory.y)));
+
+            float addedX = StaticWorldObjects.getTexture(world.get(lastClickedFactory.x, lastClickedFactory.y)).width();
+            float addedY = StaticWorldObjects.getTexture(world.get(lastClickedFactory.x, lastClickedFactory.y)).height();
+            float x = lastClickedFactory.x * 48 + addedX - (blockSize / 2f);
+            float y = lastClickedFactory.y * 48 + addedY - (blockSize / 2f);
+
+            boolean input = factory.inputStoredObjects != null;
+            boolean output = factory.outputStoredObjects != null;
+            Color color = Color.fromRgba8888(0, 0, 0, 170);
+
+            if (input && ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0) {
+                int width1 = ArrayUtils.findDistinctObjects(factory.inputStoredObjects) * 54 + playerSize;
+
+                Fill.rect(x, y, width1, 64, color);
+                TextureDrawing.drawObjects(x, y, factory.inputStoredObjects, atlas.byPath("UI/GUI/buildMenu/factoryIn.png"));
+            }
+            if (output && ArrayUtils.findFreeCell(factory.outputStoredObjects) != 0) {
+                x += (ArrayUtils.findFreeCell(factory.inputStoredObjects) != 0 ? 78 : 0);
+                int width = ArrayUtils.findDistinctObjects(factory.outputStoredObjects) * 54 + playerSize;
+
+                Fill.rect(x, y, width, 64, color);
+                TextureDrawing.drawObjects(x, y, factory.outputStoredObjects, atlas.byPath("UI/GUI/buildMenu/factoryOut.png"));
             }
         }
     }
@@ -240,18 +260,19 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
         }
 
         if (factory != null && factory.fuel == null && factory.breakingType != Factories.breaking.CRITICAL && factory.currentEnergy >= factory.needEnergy) {
-            float wy = factory.y * blockSize;
-            float wx = factory.x * blockSize;
+            //todo выправить место рисовки и отдебажить
+            float wy = 1 * blockSize;
+            float wx = 1 * blockSize;
 
             int iconY = (int) (wy + blockSize);
             int iconX = (int) (wx + blockSize);
 
-           batch.draw(atlas.byPath("UI/GUI/interactionIcon.png"), iconX, iconY);
-           batch.draw(Window.defaultFont.getGlyph('E'),
-                   (wx + 16) + blockSize,
-                   (wy + 12) + blockSize);
+            batch.draw(atlas.byPath("UI/GUI/interactionIcon.png"), iconX, iconY);
+            batch.draw(Window.defaultFont.getGlyph('E'),
+                    (wx + 16) + blockSize,
+                    (wy + 12) + blockSize);
 
-            if (input.pressed(GLFW_KEY_E)){
+            if (input.pressed(GLFW_KEY_E)) {
                 factory.currentProductionProgress++;
             }
 
@@ -276,7 +297,6 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
 
         for (Point2i factories : factories) {
             factory = factoriesConst.get(StaticWorldObjects.getFileName(world.get(factories.x, factories.y)));
-
             if (factory != null && factory.fuel != null && factory.breakingType != Factories.breaking.CRITICAL && factory.currentEnergy >= factory.needEnergy) {
                 factory.currentProductionProgress++;
 

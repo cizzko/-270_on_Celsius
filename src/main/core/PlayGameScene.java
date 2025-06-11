@@ -29,6 +29,8 @@ import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 public final class PlayGameScene extends GameScene {
     public final Sun sun = new Sun();
     public final PostEffect postEffect = new PostEffect();
+    //todo фелс ибо надо что то думать с круглым миром
+    public static boolean smoothedCamera = false;
 
     private boolean paused;
 
@@ -114,16 +116,11 @@ public final class PlayGameScene extends GameScene {
         float playerX = player.getX();
         float playerY = player.getY();
 
-        Vector2f camPos = camera.position;
-        float camX = camPos.x;
-        float camY = camPos.y;
-        //кламп минимального движения
-        float vel = Math.max(1, player.velocity.len() / 4f);
-        camPos.lerpDeltaTime(playerX + 32, playerY + 200, 0.05f * vel);
-
-        //сила и скорость сглаживания, больше - выше
-        if (Math.abs(camPos.x - camX) <= 0.7f/blockSize) camPos.x = camX;
-        if (Math.abs(camPos.y - camY) <= 0.7f/blockSize) camPos.y = camY;
+        if (smoothedCamera) {
+            camera.position.lerpDeltaTime(playerX + 32, playerY + 200, 0.05f * Math.max(1, player.velocity.len() / 4f));
+        } else {
+            camera.position.set(playerX + 32, playerY + 200);
+        }
 
         camera.update();
     }

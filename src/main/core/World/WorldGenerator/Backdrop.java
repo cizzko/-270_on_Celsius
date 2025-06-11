@@ -7,6 +7,7 @@ import static core.World.Textures.TextureDrawing.blockSize;
 import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 
 public class Backdrop {
+    //todo привязка
     private static final int scaleX = 2, scaleY = 2;
     //сначала сделать чтоб работало, потом делать красивее..
     private static int lastX, nextX;

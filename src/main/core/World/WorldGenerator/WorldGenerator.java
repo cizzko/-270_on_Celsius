@@ -31,6 +31,7 @@ public class WorldGenerator {
     private static final Logger log = LogManager.getLogger();
 
     public static float intersDamageMultiplier = 40f, minVectorIntersDamage = 1.8f;
+    public static final int copySize = 50;
 
     public static ArrayDeque<DynamicWorldObjects> DynamicObjects = new ArrayDeque<>();
 
@@ -111,32 +112,36 @@ public class WorldGenerator {
         boolean randomSpawn = params.randomSpawn;
         boolean creatures = params.creatures;
 
-        log.debug("version: 1.0, written at dev 0.0.0.5");
+        log.debug("version: 2.0");
         log.debug("World generator: starting generating world with size: {}x{}", world.sizeX, world.sizeY);
         log.debug("starting generating world with size: {}x{}", world.sizeX, world.sizeY);
 
         var playGameScene = new PlayGameScene();
-        gameScene.addPreload(playGameScene);
 
+        gameScene.addPreload(playGameScene);
         StaticObjectsConst.setDestroyed();
+
         step(() -> {
             log.debug("generating relief");
             generateRelief(world);
         });
 
-        step(() -> {
-            log.debug("generating shadow map");
-            ShadowMap.generate();
-        });
+//        кажется, теперь это лишнее
+//        step(() -> {
+//            log.debug("generating shadow map");
+//            ShadowMap.generate();
+//        });
 
         step(() -> {
             log("generating resources");
             //generateResources();
         });
 
-        step(() -> generateCaves());
-
         step(() -> generateEnvironments(world));
+
+        step(() -> copy());
+
+        step(() -> generateCaves());
 
         step(() -> {
             log.debug("regenerating shadow map");
@@ -172,7 +177,19 @@ public class WorldGenerator {
         // scheduler.post(() -> texts.get("WorldGeneratorState").text += text, 0.5f * Time.ONE_SECOND);
     }
 
-    //потом доделаю, пока наброски
+    private static void copy() {
+        int height = world.sizeY;
+        int width = world.sizeX;
+
+        for (int x = 0; x < copySize; x++) {
+            for (int y = 0; y < height; y++) {
+                short value = world.get(x, y);
+
+                world.set(width - copySize + x, y, value, false);
+            }
+        }
+    }
+
     private static void generateRelief(World world) {
         //last biomes для плавного перетекания биомов
         Biomes lastBiomes = Biomes.getDefault();
@@ -196,9 +213,9 @@ public class WorldGenerator {
             angle = Math.clamp(angle + ((float) (Math.random() * blockGradient) - blockGradient / 2f), Math.clamp(upperBorder + (lastY - world.sizeY / 2f), upperBorder, 90), Math.clamp(bottomBorder - (world.sizeY / 2f - lastY), 90, bottomBorder));
 
             int iters = (int) (Math.random() * (90 - Math.abs(90 - angle)));
-
             float deltaX = (float) (Math.sin(Math.toRadians(angle)));
             float deltaY = (float) (Math.cos(Math.toRadians(angle)));
+
             for (int j = 0; j < iters; j++) {
                 lastY += deltaY;
                 lastX += deltaX;
@@ -218,14 +235,52 @@ public class WorldGenerator {
                         blockGradient = currentBiomes.getBlockGradientChance();
                     }
 
-                    for (int y = 0; y < lastY; y++) {
-                        world.set((int) lastX, y, availableBlocks[(int) Math.min(availableBlocks.length - 1, lastY - y)], false);
+                    if (lastSwapBiomes < 20 && Math.random() * lastSwapBiomes < 5) {
+                        for (int y = 0; y < lastY; y++) {
+                            world.set((int) lastX, y, lastBiomes.getBlocks()[(int) Math.min(lastBiomes.getBlocks().length - 1, lastY - y)], false);
+                        }
+                    } else {
+                        for (int y = 0; y < lastY; y++) {
+                            world.set((int) lastX, y, availableBlocks[(int) Math.min(availableBlocks.length - 1, lastY - y)], false);
+                        }
                     }
                 } else {
                     break;
                 }
             }
-        } while (!(lastX + 1 > world.sizeX));
+            //90 расстояние между миром и скопированным куском, чтоб рельеф был более менее правильный
+        } while (!(lastX + copySize + 90 > world.sizeX));
+
+        doItAgain(lastY, currentBiomes);
+    }
+
+    //todo просто чтоб работало, потом сделаю красиво
+    private static void doItAgain(float lastY, Biomes currentBiome) {
+        float lastX = world.sizeX - copySize - 90;
+        double delta = 90;
+        double delt = findTopmostSolidBlock(0, 2) - lastY;
+
+        float angle = (float) Math.toDegrees(Math.atan2(delta, delt));
+
+        float deltaX = (float) (Math.sin(Math.toRadians(angle)));
+        float deltaY = (float) (Math.cos(Math.toRadians(angle)));
+
+        do {
+            for (int j = 0; j < 90; j++) {
+                lastY += deltaY;
+                lastX += deltaX;
+                //todo доделать бесшовный переход задников (backdrop 10 привязка)
+                world.setBiomes(Math.max((int) lastX - 1, 0), world.getBiomes(j));
+
+                if (lastX < world.sizeX && lastY > 0) {
+                    for (int y = 0; y < lastY; y++) {
+                        world.set((int) lastX, y, currentBiome.getBlocks()[(int) Math.min(currentBiome.getBlocks().length - 1, lastY - y)], true);
+                    }
+                } else {
+                    break;
+                }
+            }
+        } while (!(lastX + copySize > world.sizeX));
     }
 
     private static void generateCaves() {

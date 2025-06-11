@@ -2,16 +2,18 @@ package core.World.Creatures;
 
 import core.PlayGameScene;
 import core.Time;
+import core.World.Creatures.Player.Player;
 import core.World.HitboxMap;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.World.Textures.TextureDrawing;
 import core.math.Point2i;
 import core.math.Rectangle;
 import core.math.Vector2f;
 
 import java.util.Locale;
 
-import static core.Global.world;
+import static core.Global.*;
 import static core.World.Creatures.DynamicWorldObjects.GAP;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getResistance;
@@ -22,6 +24,7 @@ import static core.World.WorldGenerator.WorldGenerator.*;
 public class Physics {
     private static final float ANSWER = 42; // хихи, хаха
     private static final float GRAVITY = 1.25f * ANSWER * 1e-4f;
+    public static final short swap = 25;
 
     public static void updatePhysics(PlayGameScene scene) {
         if (scene.isPaused()) {
@@ -161,8 +164,21 @@ public class Physics {
     static final float moveThreshold = GAP;
 
     private static void simulate(float dt) {
-
         for (DynamicWorldObjects ent : DynamicObjects) {
+            //todo распространить на все динамик без исключений
+            if (ent.getX() > (world.sizeX - swap) * blockSize) {
+                DynamicWorldObjects player = DynamicObjects.getFirst();
+                ent.setX(swap * blockSize);
+
+                camera.position.set(player.getX() + 32, player.getY() + 200);
+            }
+
+            if (ent.getX() < swap * blockSize) {
+                DynamicWorldObjects player = DynamicObjects.getFirst();
+                ent.setX((world.sizeX - swap) * blockSize);
+
+                camera.position.set(player.getX() + 32, player.getY() + 200);
+            }
             if (ent.getTexture().name().toLowerCase(Locale.ROOT).contains("player") && noClip) {
                 continue;
             }
@@ -264,6 +280,6 @@ public class Physics {
         }
 
         float friction = resistance / 100f;
-        return 1f - Math.max(0.4f, friction);
+        return 1f - Math.max(0.3f, friction);
     }
 }
