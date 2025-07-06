@@ -165,20 +165,14 @@ public class Physics {
 
     private static void simulate(float dt) {
         for (DynamicWorldObjects ent : DynamicObjects) {
-            //todo распространить на все динамик без исключений
             if (ent.getX() > (world.sizeX - swap) * blockSize) {
-                DynamicWorldObjects player = DynamicObjects.getFirst();
                 ent.setX(swap * blockSize);
-
-                camera.position.set(player.getX() + 32, player.getY() + 200);
-            }
-
-            if (ent.getX() < swap * blockSize) {
-                DynamicWorldObjects player = DynamicObjects.getFirst();
+                camera.position.set(ent.getX() + 32, ent.getY() + 200);
+            } else if (ent.getX() < swap * blockSize) {
                 ent.setX((world.sizeX - swap) * blockSize);
-
-                camera.position.set(player.getX() + 32, player.getY() + 200);
+                camera.position.set(ent.getX() + 32, ent.getY() + 200);
             }
+
             if (ent.getTexture().name().toLowerCase(Locale.ROOT).contains("player") && noClip) {
                 continue;
             }
