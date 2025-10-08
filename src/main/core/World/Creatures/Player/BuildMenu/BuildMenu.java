@@ -1,11 +1,13 @@
 package core.World.Creatures.Player.BuildMenu;
 
+import core.Application;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.StaticWorldObjects.Structures.Factories;
+import core.input.InputHandler;
 import core.util.Color;
 import core.World.Textures.TextureDrawing;
 import core.assets.AssetsManager;
@@ -21,7 +23,7 @@ public class BuildMenu {
     private static boolean isOpen = true, infoCreated;
     private static final Items[][] items = new Items[5][30];
     private static Point2i currentObject;
-    private static float scroll = 0;
+    private static float scroll = -276;
 
     public static void create() {
         var defaultItems = Config.getProperties(("World/ItemsCharacteristics/DefaultBuildMenuItems.properties"));
@@ -99,7 +101,9 @@ public class BuildMenu {
     }
 
     private static void updateScroll() {
-        scroll = Math.clamp(-1 * input.getScrollOffset() * 6, -276, 0);
+        if (input.mousePos().x >= 1650 && input.mousePos().y <= 160) {
+            scroll = Math.clamp(scroll - input.getScrollChange() * 6, -276, 0);
+        }
     }
 
     private static Point2i[] hasRequiredItems() {
@@ -133,7 +137,7 @@ public class BuildMenu {
                 for (int y = 0; y < items[x].length; y++) {
                     if (items[x][y] != null) {
                         float xCoord = 1660 + x * 54;
-                        // float yCoord = 57 + scroll + (items[x][y].type.ordinal() * 20) + y * 54f;
+                        //float yCoord = 57 + scroll + (items[x][y].type.ordinal() * 20) + y * 54f;
                         float yCoord = 57 + scroll + (y * 54f);
 
                         if (yCoord < 115 && yCoord > -60) {

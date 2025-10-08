@@ -29,7 +29,7 @@ public class InputHandler {
     private final Vector2f mouseWorldPos = new Vector2f();
 
     private long lastMouseMoveTimestamp;
-    private float scrollOffset = 1;
+    private float scrollOffset = 1, scrollChange = 0;
     private int width, height;
 
     public InputHandler(int width, int height) {
@@ -92,6 +92,7 @@ public class InputHandler {
             @Override
             public void invoke(long window, double xoffset, double yoffset) {
                 scrollOffset = Math.clamp((float)yoffset + scrollOffset, 0, 50);
+                scrollChange = (float) yoffset;
             }
         }));
         glfwSetWindowSizeCallback(glfwWindow, Global.app.keep(new GLFWWindowSizeCallback() {
@@ -106,6 +107,7 @@ public class InputHandler {
     }
 
     public void update() {
+        scrollChange = 0;
         Arrays.fill(justPressed, 0);
         Arrays.fill(justClicked, 0);
 
@@ -137,6 +139,10 @@ public class InputHandler {
 
     public float getScrollOffset() {
         return scrollOffset;
+    }
+
+    public float getScrollChange() {
+        return scrollChange;
     }
 
     public long getLastMouseMoveTimestamp() {
