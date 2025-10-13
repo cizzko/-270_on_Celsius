@@ -34,6 +34,15 @@ val genatlas = tasks.register<JavaExec>("genatlas") {
     mainClass.set("core.tool.AtlasGenerator")
 }
 
+tasks.register<JavaExec>("gentypes") {
+    mustRunAfter(tasks.classes)
+    classpath = sourceSets["tools"].runtimeClasspath +
+            sourceSets["main"].runtimeClasspath +
+            sourceSets["main"].output
+
+    workingDir = rootDir
+    mainClass.set("core.tool.ConvertTypesToJson")
+}
 
 tasks.classes {
     finalizedBy(genatlas)
@@ -59,18 +68,28 @@ val lwjglNatives = Pair(
     }
 }
 
-repositories {
-    mavenCentral()
-}
+allprojects {
+    repositories {
+        mavenCentral()
+    }
 
-tasks.compileJava {
-    options.encoding = "UTF-8"
-    options.release = 21
-}
+    apply(plugin = "java")
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+    dependencies {
+        implementation("com.google.code.gson:gson:2.10.1")
+        implementation("com.fasterxml.jackson.core:jackson-databind:2.18.0")
+        compileOnly("com.github.spotbugs:spotbugs-annotations:4.8.6")
+    }
+
+    tasks.compileJava {
+        options.encoding = "UTF-8"
+        options.release.set(21)
+    }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
     }
 }
 
@@ -80,7 +99,6 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-api:3.0.0-beta2")
     implementation("org.apache.logging.log4j:log4j-core:3.0.0-beta2")
     implementation("org.apache.logging.log4j:log4j-iostreams:3.0.0-beta2")
-
     implementation("org.jcodec:jcodec:0.2.5")
     implementation("org.jcodec:jcodec-javase:0.2.5")
 

@@ -1,0 +1,7 @@
+{
+  "id": "player",
+  "class-type": "player",
+  "texture": "World/Creatures/playerLeft/player0",
+  "weight": 80,
+  "max-hp": 100
+}

@@ -1,0 +1,10 @@
+{
+  "id": "electric-pole",
+  "class-type": "block",
+  "resistance": 0,
+  "texture": "World/Blocks/electricPole",
+  "type": "solid",
+  "max-hp": 70,
+  "density": 1,
+  "light-transmission": 100
+}

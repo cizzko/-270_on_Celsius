@@ -2,6 +2,7 @@ package core;
 
 import com.sun.management.OperatingSystemMXBean;
 import core.EventHandling.Logging.Config;
+import core.World.ContentManager;
 import core.g2d.*;
 import core.input.InputHandler;
 import core.util.DebugTools;
@@ -10,7 +11,6 @@ import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.io.IoBuilder;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.*;
 
 import javax.imageio.ImageIO;
@@ -21,7 +21,6 @@ import java.nio.file.Files;
 import static core.Global.*;
 import static core.assets.TextureLoader.decodeImage;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFW.glfwGetVersionString;
 import static org.lwjgl.opengl.GL46.*;
 
 public final class Window extends Application {
@@ -140,6 +139,8 @@ public final class Window extends Application {
         }));
 
         batch = new SortingBatch(4 * 1024 * 1024, 1024 * 8, 1024 * 8);
+        content = new ContentManager();
+        content.loadAll(); // TODO
 
         addListener(new AutoSaveListener());
 
@@ -147,7 +148,7 @@ public final class Window extends Application {
         glfwShowWindow(glfwWindow);
 
         lang = new LangTranslation();
-        lang.load(); // TODO придумать как загружать и перезагружать
+        lang.load();
 
         setGameScene(new MenuScene());
     }

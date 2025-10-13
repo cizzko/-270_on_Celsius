@@ -1,8 +1,6 @@
 package core.assets;
 
 import core.Global;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.lwjgl.system.NativeResource;
 
 import java.util.ArrayList;

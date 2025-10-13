@@ -2,62 +2,53 @@ package core.World.Creatures.Player.BuildMenu;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
+import core.Global;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.Items;
-import core.World.StaticWorldObjects.StaticWorldObjects;
-import core.World.StaticWorldObjects.Structures.Factories;
-import core.util.Color;
-import core.World.Textures.TextureDrawing;
-import core.assets.AssetsManager;
+import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.World.Item;
 import core.g2d.Fill;
 import core.math.Point2i;
 import core.ui.Styles;
+import core.util.Color;
 
 import static core.Global.*;
-import static core.World.Creatures.Player.Inventory.Inventory.*;
-import static core.World.Textures.TextureDrawing.*;
 
 public class BuildMenu {
-    private static boolean isOpen = true, infoCreated;
-    private static final Items[][] items = new Items[5][30];
+    private static boolean created, isOpen = true, infoCreated;
+    private static ItemStack[][] items = new ItemStack[5][30];
     private static Point2i currentObject;
     private static float scroll = 0;
 
     public static void create() {
-        var defaultItems = Config.getProperties(("World/ItemsCharacteristics/DefaultBuildMenuItems.properties"));
+        addDefaultItems();
+        created = true;
+    }
 
-        String[] details = defaultItems.getOrDefault("Details", "").split(",");
-        String[] tools = defaultItems.getOrDefault("Tools", "").split(",");
-        String[] weapons = defaultItems.getOrDefault("Weapons", "").split(",");
-        String[] placeables = defaultItems.getOrDefault("Placeables", "").split(",");
+    private static void addDefaultItems() {
+        var defaultItems = Config.getJsonObject(assets.assetsDir("/World/ItemsCharacteristics/DefaultBuildMenuItems.json"));
 
-        if (details[0].length() > 1) {
-            for (String detail : details) {
-                addItem(Items.createItem(AssetsManager.normalizePath(detail)));
+        //todo выглядит странно
+        var details = defaultItems.path("details");
+        var tools = defaultItems.path("tools");
+        var weapons = defaultItems.path("weapons");
+        var placeables = defaultItems.path("placeables");
+
+        for (JsonNode jsonNode : new JsonNode[] {details, tools, weapons, placeables}) {
+            if (jsonNode.isMissingNode()) {
+                continue;
             }
-        }
-        if (tools[0].length() > 1) {
-            for (String tool : tools) {
-                addItem(Items.createItem(AssetsManager.normalizePath(tool)));
-            }
-        }
-        if (weapons[0].length() > 1) {
-            for (String weapon : weapons) {
-                addItem(Items.createItem(AssetsManager.normalizePath(weapon)));
-            }
-        }
-        if (placeables[0].length() > 1) {
-            for (String placeable : placeables) {
-                addItem(Items.createItem(StaticWorldObjects.createStatic(AssetsManager.normalizePath(placeable))));
-            }
+            String itemId = jsonNode.asText();
+            addItem(Global.content.itemById(itemId));
         }
     }
 
-    public static void inputUpdate() {
-        updateBuildButton();
-        updateCollapseButton();
-        updateInfoButton();
-        updateScroll();
+    public static void updateLogic() {
+        if (created) {
+            updateBuildButton();
+            updateCollapseButton();
+            updateInfoButton();
+            updateScroll();
+        }
     }
 
     private static void updateBuildButton() {
@@ -70,14 +61,15 @@ public class BuildMenu {
                         Inventory.decrementItem(obj.x, obj.y);
                     }
                 }
-                Items currentItem = items[currentObject.x][currentObject.y];
+                //todo надо наверное унифицировать, создав общий метод createElement()
+                var currentItem = items[currentObject.x][currentObject.y].getItem();
 
-                switch (items[currentObject.x][currentObject.y].type) {
-                    case TOOL -> Inventory.createElementTool(currentItem.filename);
-                    case DETAIL -> Inventory.createElementDetail(currentItem.filename);
-                    case WEAPON -> Inventory.createElementWeapon(currentItem.filename);
-                    case PLACEABLE -> Inventory.createElementPlaceable(currentItem.placeable);
-                }
+                // switch (currentItem.type) {
+                //     case TOOL -> Inventory.createElementTool(currentItem.filename);
+                //     case DETAIL -> Inventory.createElementDetail(currentItem.filename);
+                //     case WEAPON -> Inventory.createElementWeapon(currentItem.filename);
+                //     case PLACEABLE -> Inventory.createElementPlaceable(currentItem.placeable);
+                // }
             }
         }
     }
@@ -104,24 +96,25 @@ public class BuildMenu {
 
     private static Point2i[] hasRequiredItems() {
         Point2i menuCurrent = currentObject;
+        // TODO не учитывает КОЛИЧЕСТВО предметов
 
-        if (menuCurrent != null && items[menuCurrent.x][menuCurrent.y].requiredForBuild != null) {
-            Items[] required = items[menuCurrent.x][menuCurrent.y].requiredForBuild;
-            Point2i[] hasNeededObject = new Point2i[required.length];
-            int neededCounter = 0;
-
-            for (int i = 0; i < required.length; i++) {
-                for (int x = 0; x < inventoryObjects.length; x++) {
-                    for (int y = 0; y < inventoryObjects[x].length; y++) {
-                        if (inventoryObjects[x][y] != null && inventoryObjects[x][y].id == required[i].id) {
-                            hasNeededObject[i] = new Point2i(x, y);
-                            neededCounter++;
-                        }
-                    }
-                }
-            }
-            return neededCounter == hasNeededObject.length ? hasNeededObject : null;
-        }
+        // if (menuCurrent != null && items[menuCurrent.x][menuCurrent.y].getItem().requirements != null) {
+        //     var required = items[menuCurrent.x][menuCurrent.y].getItem().requirements;
+        //     Point2i[] hasNeededObject = new Point2i[required.length];
+        //     int neededCounter = 0;
+        //
+        //     for (int i = 0; i < required.length; i++) {
+        //         for (int x = 0; x < inventoryObjects.length; x++) {
+        //             for (int y = 0; y < inventoryObjects[x].length; y++) {
+        //                 if (inventoryObjects[x][y] != null && inventoryObjects[x][y].getItem().id == required[i].getItem().id) {
+        //                     hasNeededObject[i] = new Point2i(x, y);
+        //                     neededCounter++;
+        //                 }
+        //             }
+        //         }
+        //     }
+        //     return neededCounter == hasNeededObject.length ? hasNeededObject : null;
+        // }
         return null;
     }
 
@@ -131,13 +124,14 @@ public class BuildMenu {
 
             for (int x = 0; x < items.length; x++) {
                 for (int y = 0; y < items[x].length; y++) {
-                    if (items[x][y] != null) {
+                    ItemStack it = items[x][y];
+                    if (it != null) {
                         float xCoord = 1660 + x * 54;
                         // float yCoord = 57 + scroll + (items[x][y].type.ordinal() * 20) + y * 54f;
                         float yCoord = 57 + scroll + (y * 54f);
 
                         if (yCoord < 115 && yCoord > -60) {
-                            Inventory.drawInventoryItem(xCoord, yCoord, items[x][y].texture);
+                            // Inventory.drawInventoryItem(xCoord, yCoord, it);
 
                             if (EventHandler.getRectangleClick((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
                                 currentObject = new Point2i(x, y);
@@ -169,40 +163,42 @@ public class BuildMenu {
             Fill.rect(560, 0, 800, 1080, Styles.DIRTY_BLACK);
             batch.draw(atlas.byPath("UI/GUI/buildMenu/exitBtn"), 605, 989);
 
-            TextureDrawing.drawText(650, 730, items[currentObject.x][currentObject.y].description);
-            Inventory.drawInventoryItem(650, 915, items[currentObject.x][currentObject.y].texture);
+            ItemStack st = items[currentObject.x][currentObject.y];
+            // TODO Я ПОТЕРЯЛ МЕТОДЫ ПРИ МЕРЖЕ
+            // TextureDrawing.drawText(650, 730, st.getItem().getDescription());
+            // Inventory.drawInventoryItem(650, 915, st);
 
             drawRequirements(650, 760);
         }
     }
 
     private static void drawRequirements(float x, float y) {
-        if (currentObject != null && items[currentObject.x][currentObject.y] != null) {
-            Items item = items[currentObject.x][currentObject.y];
-            Factories factory = Factories.getFactoryConst(StaticWorldObjects.getFileName(item.placeable));
-
-            drawText((int) x, (int) (y + 130), item.name);
-
-            if (factory != null) {
-                if (factory.inputObjects != null) {
-                    drawObjects(x, y + 82, factory.inputObjects, atlas.byPath("UI/GUI/buildMenu/factoryIn.png"));
-                }
-                if (factory.outputObjects != null) {
-                    drawObjects(x, y + 41, factory.outputObjects, atlas.byPath("UI/GUI/buildMenu/factoryOut.png"));
-                }
-            }
-            if (item.requiredForBuild != null) {
-                drawObjects(x, y, item.requiredForBuild, atlas.byPath("UI/GUI/buildMenu/build.png"));
-            }
-        }
+        // if (currentObject != null && items[currentObject.x][currentObject.y] != null) {
+        //     var item = items[currentObject.x][currentObject.y];
+        //     Factories factory = Factories.getFactoryConst(StaticWorldObjects.getFileName(item.getItem().placeable));
+        //
+        //     drawText((int) x, (int) (y + 130), item.getItem().name);
+        //
+        //     if (factory != null) {
+        //         if (factory.inputObjects != null) {
+        //             Factories.drawItemStacks(x, y + 82, factory.inputObjects, atlas.byPath("UI/GUI/buildMenu/factoryIn.png"));
+        //         }
+        //         if (factory.outputObjects != null) {
+        //             Factories.drawItemStacks(x, y + 41, factory.outputObjects, atlas.byPath("UI/GUI/buildMenu/factoryOut.png"));
+        //         }
+        //     }
+        //     if (item.getItem().requirements != null) {
+        //         Factories.drawItemStacks(x, y, item.getItem().requirements, atlas.byPath("UI/GUI/buildMenu/build.png"));
+        //     }
+        // }
     }
 
     // todo categories
-    public static void addItem(Items item) {
+    public static void addItem(Item item) {
         for (int x = 0; x < items.length; x++) {
             for (int y = 0; y < items[0].length; y++) {
                 if (items[x][y] == null) {
-                    items[x][y] = item;
+                    items[x][y] = new ItemStack(item);
                     return;
                 }
             }

@@ -1,0 +1,9 @@
+{
+  "id": "air",
+  "class-type": "block",
+  "resistance": 0,
+  "type": "gas",
+  "max-hp": 0,
+  "density": 0,
+  "light-transmission": 255
+}

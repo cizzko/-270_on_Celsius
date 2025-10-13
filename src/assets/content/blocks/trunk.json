@@ -1,0 +1,10 @@
+{
+  "id": "trunk",
+  "class-type": "block",
+  "resistance": 0,
+  "texture": "World/Blocks/trunk",
+  "type": "solid",
+  "max-hp": 100,
+  "density": 1,
+  "light-transmission": 150
+}

@@ -2,11 +2,10 @@ package core.World.Creatures.Player;
 
 import core.EventHandling.Logging.Config;
 import core.Global;
+import core.World.Creatures.Player.Inventory.Items.Items;
 import core.util.Color;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.Items;
-import core.World.Creatures.Player.Inventory.Items.Tools;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.TextureDrawing;
@@ -17,7 +16,6 @@ import core.math.Rectangle;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
-import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.WorldGenerator.*;
 import static core.World.WorldUtils.getDistanceToMouse;
 import static org.lwjgl.glfw.GLFW.*;

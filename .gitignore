@@ -1,5 +1,7 @@
 .gradle
 build
+# Я теперь крутой и всем показываю это
+.PVS-Studio
 out
 *.log
 log.txt

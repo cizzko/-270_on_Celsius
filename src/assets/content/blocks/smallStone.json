@@ -1,0 +1,10 @@
+{
+  "id": "small-stone",
+  "class-type": "block",
+  "resistance": 0,
+  "texture": "World/Blocks/smallStone",
+  "type": "solid",
+  "max-hp": 1,
+  "density": 1,
+  "light-transmission": 255
+}

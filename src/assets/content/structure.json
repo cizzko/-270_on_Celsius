@@ -1,0 +1,6 @@
+{
+  "blocks": "./blocks",
+  "items": "./items",
+  "creatures": "./creatures",
+  "langs": "./langs"
+}

@@ -4,8 +4,8 @@ public final class Rectangle {
     public float x, y;
     public float width, height;
 
-    public boolean overlaps(Rectangle rect) {
-        return x <= rect.x + rect.width && x + width >= rect.x && y <= rect.y + rect.height && y + height >= rect.y;
+    public boolean overlaps(Rectangle r) {
+        return x <= r.x + r.width && x + width >= r.x && y <= r.y + r.height && y + height >= r.y;
     }
 
     public Vector2f getCenterTo(Vector2f vector) {
@@ -14,7 +14,7 @@ public final class Rectangle {
         return vector;
     }
 
-    public boolean contains(float rx, float ry, float rwidth, float rheight) {
+    public boolean contains(float rx, float ry, float rwidth, float rheight){
         return x <= rx + rwidth && x + width >= rx && y <= ry + rheight && y + height >= ry;
     }
 
@@ -38,6 +38,10 @@ public final class Rectangle {
         this.height = height;
     }
 
+    public Rectangle setSize(float size) {
+        return setSize(size, size);
+    }
+
     public Rectangle setSize(float width, float height) {
         this.width = width;
         this.height = height;
@@ -52,6 +56,11 @@ public final class Rectangle {
 
     public Rectangle setCenter(float x, float y) {
         setPosition(x - width / 2, y - height / 2);
+        return this;
+    }
+
+    public Rectangle setCentered(float x, float y, float width, float height) {
+        set(x - width/2f, y - height/2f, width, height);
         return this;
     }
 

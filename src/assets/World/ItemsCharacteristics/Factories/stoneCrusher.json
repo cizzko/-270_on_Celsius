@@ -1,0 +1,20 @@
+{
+  "id": "stone-crusher",
+  "class-type": "block",
+  "texture": "World/Blocks/stoneCrusher",
+  "input": {
+    "aluminum": 1
+  },
+  "max-hp": 100,
+  "requirements": {
+    "small-stone": 2
+  },
+  "production-speed": 3000,
+  "need-energy": 0,
+  "max-stored-objects": 10,
+  "output": {
+    "small-stone": 1,
+    "aluminum-piece": 1
+  },
+  "Name": "stoneCrusher"
+}

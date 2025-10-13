@@ -1,0 +1,9 @@
+{
+  "id": "stick",
+  "class-type": "tool",
+  "texture": "World/Items/stick",
+  "max-hp": 100,
+  "MaxInteractionRange": 3,
+  "Damage": 1,
+  "SecBetweenHits": 200
+}

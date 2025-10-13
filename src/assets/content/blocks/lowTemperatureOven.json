@@ -1,0 +1,21 @@
+{
+  "id": "low-temperature-oven",
+  "class-type": "factory",
+  "texture": "blocks/lowTemperatureOven",
+  "input": {
+    "small-stone": 1
+  },
+  "output": {
+    "trunk": 1
+  },
+  "max-hp": 100,
+  "requirements": {
+    "small-stone": 2
+  },
+  "fuel": {
+    "stick": 1
+  },
+  "production-speed": 3000,
+  "need-energy": 0,
+  "max-stored-objects": 10
+}

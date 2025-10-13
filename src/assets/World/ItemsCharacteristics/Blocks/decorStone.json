@@ -1,0 +1,9 @@
+{
+  "Resistance": 0,
+  "Path": "/World/Blocks/decorStone.png",
+  "Type": "solid",
+  "MaxHp": 1,
+  "Density": 1,
+  "LightTransmission": 255,
+  "Name": "decorStone"
+}

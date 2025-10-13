@@ -1,12 +1,9 @@
 package core.World.Creatures.Player.Inventory.Items.Weapons.Ammo;
 
 import core.ui.Sounds.Sound;
-import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.Items;
-import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
+import core.World.ItemWeapon;
 import core.World.HitboxMap;
-import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
 import core.g2d.Atlas;
 import core.math.Point2i;
@@ -35,9 +32,7 @@ public class Bullets {
     }
 
     public static void updateBullets() {
-        if (Inventory.currentObjectType == Items.Types.WEAPON) {
-            Weapons weapon = Inventory.getCurrent().weapon;
-
+        if (Inventory.currentObject instanceof ItemWeapon weapon) {
             if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && System.currentTimeMillis() - weapon.lastShootTime >= weapon.fireRate) {
                 weapon.lastShootTime = System.currentTimeMillis();
                 Bullets.createBullet(DynamicObjects.getFirst().getX(), DynamicObjects.getFirst().getY(), weapon.ammoSpeed, weapon.damage, Math.abs((float) Math.toDegrees(Math.atan2(input.mousePos().y - 540, input.mousePos().x - 960)) - 180));
@@ -62,25 +57,18 @@ public class Bullets {
                 Point2i staticObjectPoint = HitboxMap.checkIntersInside(x, y, 8, 8);
 
                 if (staticObjectPoint != null) {
-                    short staticObject = world.get(staticObjectPoint.x, staticObjectPoint.y);
-                    DynamicWorldObjects dynamicObject = HitboxMap.checkIntersectionsDynamic(x, y, 8, 8);
+                    var staticObject = blockAt(staticObjectPoint.x, staticObjectPoint.y);
+                    var dynamicObject = HitboxMap.checkIntersectionsDynamic(x, y, 8, 8);
 
-                    if (staticObject > 0) {
-                        float hp = StaticWorldObjects.getHp(staticObject);
-                        world.set(staticObjectPoint.x, staticObjectPoint.y, StaticWorldObjects.decrementHp(staticObject, (int) bullet.damage), false);
+                    if (staticObject != null) {
+                        float hp = staticObject.getHp();
+                        staticObject.damage(bullet.damage);
+
                         bulletsIter.next().damage -= hp;
 
-                        if (world.get(staticObjectPoint.x, staticObjectPoint.y) <= 0) {
-                            world.destroy(staticObjectPoint.x, staticObjectPoint.y);
-                        }
+                        destroyObject(staticObjectPoint.x, staticObjectPoint.y);
                     } else if (dynamicObject != null) {
-                        float hp = dynamicObject.getCurrentHP();
-                        dynamicObject.incrementCurrentHP(-bullet.damage);
-                        bullet.damage -= hp;
-
-                        if (dynamicObject.getCurrentHP() <= 0) {
-                            DynamicObjects.remove(dynamicObject);
-                        }
+                        dynamicObject.damage(bullet.damage);
                     }
                 }
                 if (bullet.damage <= 0 || bullet.x < 0 || bullet.y < 0 || bullet.x / TextureDrawing.blockSize > world.sizeX || bullet.y / TextureDrawing.blockSize > world.sizeY) {

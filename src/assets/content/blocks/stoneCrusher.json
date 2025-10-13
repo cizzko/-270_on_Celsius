@@ -1,0 +1,19 @@
+{
+  "id": "stone-crusher",
+  "class-type": "factory",
+  "texture": "blocks/stoneCrusher",
+  "input": {
+    "aluminum": 1
+  },
+  "output": {
+    "small-stone": 1,
+    "aluminum-piece": 1
+  },
+  "requirements": {
+    "small-stone": 2
+  },
+  "max-hp": 100,
+  "production-speed": 3000,
+  "need-energy": 0,
+  "max-item-capacity": 10
+}

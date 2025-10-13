@@ -1,5 +1,7 @@
 package core;
 
+import core.World.ContentLoader;
+import core.World.ContentManager;
 import core.World.World;
 import core.assets.AssetsManager;
 import core.g2d.*;
@@ -17,6 +19,7 @@ public final class Global {
     public static UiScene uiScene;
     public static LangTranslation lang;
     public static final Camera2 camera = new Camera2();
+    public static ContentManager content;
 
     public static World world;
     public static GameState gameState = GameState.MENU;

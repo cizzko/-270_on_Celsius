@@ -1,0 +1,10 @@
+{
+  "id": "dirt-stone",
+  "class-type": "block",
+  "resistance": 100,
+  "texture": "World/Blocks/dirtStone",
+  "type": "solid",
+  "max-hp": 100,
+  "density": 1,
+  "light-transmission": 120
+}

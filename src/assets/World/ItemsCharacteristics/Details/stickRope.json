@@ -1,0 +1,10 @@
+{
+  "id": "stick-rope",
+  "class-type": "detail",
+  "texture": "World/Items/stickRope",
+  "requirements": {
+    "stick": 1,
+    "herb": 1
+  },
+  "Name": "Wooden stick rope"
+}

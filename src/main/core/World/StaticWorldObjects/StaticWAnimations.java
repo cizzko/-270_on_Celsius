@@ -1,6 +1,7 @@
 package core.World.StaticWorldObjects;
 
 import core.assets.TextureLoader;
+import core.entity.BlockEntity;
 import core.g2d.Atlas;
 import core.math.Point2i;
 
@@ -9,7 +10,7 @@ import java.util.HashMap;
 
 public class StaticWAnimations {
     private static final HashMap<Point2i, StaticWAnimations> textures = new HashMap<>();
-    private static final HashMap<Byte, TextureLoader.GifImageData> frames = new HashMap<>();
+    private static final HashMap<BlockEntity, TextureLoader.GifImageData> frames = new HashMap<>();
 
     private long lastFrameTime;
     public short totalFrames, framesSpeed;
@@ -24,20 +25,20 @@ public class StaticWAnimations {
         this.framesSpeed = framesSpeed;
     }
 
-    public static AnimData getCurrentFrame(short id, Point2i pos) {
-        Atlas.Region path = StaticWorldObjects.getTexture(id);
+    public static AnimData getCurrentFrame(BlockEntity block, Point2i pos) {
+        Atlas.Region tex = block.getBlock().texture;
 
-        if (path != null && path.name().endsWith(".gif")) {
+        if (tex.name().endsWith(".gif")) {
             StaticWAnimations animation = textures.getOrDefault(pos, null);
-            TextureLoader.GifImageData data = frames.getOrDefault(StaticWorldObjects.getId(id), null);
+            TextureLoader.GifImageData data = frames.getOrDefault(block, null);
 
             if (animation == null) {
-                data = TextureLoader.framesDecoder(path.name());
+                data = TextureLoader.framesDecoder(tex.name());
                 ByteBuffer[] textureFrames = data.data();
 
                 animation = new StaticWAnimations((short) textureFrames.length, (short) 0);
 
-                frames.put(StaticWorldObjects.getId(id), new TextureLoader.GifImageData(data.width(), data.height(), textureFrames));
+                frames.put(block, new TextureLoader.GifImageData(data.width(), data.height(), textureFrames));
                 textures.put(pos, animation);
             }
             if (animation.framesSpeed > 0 && System.currentTimeMillis() - animation.lastFrameTime >= animation.framesSpeed) {

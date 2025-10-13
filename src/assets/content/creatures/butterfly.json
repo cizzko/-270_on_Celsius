@@ -1,0 +1,10 @@
+{
+  "id": "butterfly",
+  "class-type": "butterfly",
+  "texture": "World/Creatures/butterfly",
+  "max-hp": 20,
+  "weight": 0.006,
+  "IsFlying": true,
+  "AnimationSpeed": 100,
+  "FramesCount": 1
+}

@@ -1,0 +1,9 @@
+{
+  "Resistance": 5,
+  "Path": "/World/Blocks/foliage.png",
+  "Type": "solid",
+  "MaxHp": 100,
+  "Density": 1,
+  "LightTransmission": 100,
+  "Name": "treeFoliage"
+}

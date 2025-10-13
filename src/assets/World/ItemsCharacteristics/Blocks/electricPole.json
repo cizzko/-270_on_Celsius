@@ -1,0 +1,9 @@
+{
+  "Resistance": 0,
+  "Path": "/World/Blocks/electricPole.png",
+  "Type": "solid",
+  "MaxHp": 70,
+  "Density": 1,
+  "LightTransmission": 100,
+  "Name": "electricPole"
+}

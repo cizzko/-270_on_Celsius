@@ -1,5 +1,6 @@
 package core.EventHandling.Logging;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -14,6 +15,8 @@ import static core.Global.assets;
 
 public class Config {
     private static final Logger log = LogManager.getLogger();
+
+    public static final ObjectMapper json = new ObjectMapper();
 
     public static final String INTERPOLATE_SUNSET_KEY = "InterpolateSunset";
     public static final String PRELOAD_RESOURCES_KEY  = "PreloadResources";

@@ -1,0 +1,9 @@
+{
+  "Resistance": 0,
+  "Path": "/World/Blocks/trunk.png",
+  "Type": "solid",
+  "MaxHp": 100,
+  "Density": 1,
+  "LightTransmission": 150,
+  "Name": "treeTrunk"
+}
