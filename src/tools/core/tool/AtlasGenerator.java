@@ -131,8 +131,9 @@ public final class AtlasGenerator {
                                 duplicate.path + "'");
                     }
 
-                    if (buf == null)
+                    if (buf == null) {
                         buf = new byte[8 * 1024];
+                    }
 
                     digest.reset();
                     try (var fis = Files.newInputStream(path)) {

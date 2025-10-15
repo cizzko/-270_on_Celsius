@@ -55,6 +55,11 @@ public final class Rectangle {
         return this;
     }
 
+    public Rectangle setCentered(float x, float y, float width, float height) {
+        set(x - width/2f, y - height/2f, width, height);
+        return this;
+    }
+
     @Override
     public String toString() {
         return "Rectangle[" +

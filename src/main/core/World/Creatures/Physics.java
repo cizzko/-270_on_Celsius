@@ -181,8 +181,12 @@ public class Physics {
             boolean hasFloor = ent.hasFloor();
             move(ent, dt);
             Vector2f vel = ent.velocity;
-            if (Math.abs(x - ent.getX()) <= moveThreshold) vel.x = 0;
-            if (Math.abs(y - ent.getY()) <= moveThreshold) vel.y = 0;
+            if (Math.abs(x - ent.getX()) <= moveThreshold) {
+                vel.x = 0;
+            }
+            if (Math.abs(y - ent.getY()) <= moveThreshold) {
+                vel.y = 0;
+            }
 
             if (!hasFloor) {
                 vel.y -= ent.getWeight() * GRAVITY * dt;
@@ -208,8 +212,12 @@ public class Physics {
             //      что можно в дальнейшем перевести в hp. Урон блокам, на которые падает игрок, равносилен урону игрока.
             //      По 3 закону Ньютона жеж)
 
-            if (Math.abs(vel.x) >= maxSpeed) vel.x = Math.signum(vel.x) * maxSpeed;
-            if (Math.abs(vel.y) >= maxSpeed) vel.y = Math.signum(vel.y) * maxSpeed;
+            if (Math.abs(vel.x) >= maxSpeed) {
+                vel.x = Math.signum(vel.x) * maxSpeed;
+            }
+            if (Math.abs(vel.y) >= maxSpeed) {
+                vel.y = Math.signum(vel.y) * maxSpeed;
+            }
         }
     }
 

@@ -209,8 +209,9 @@ final class AsyncAssetResolver<T, P, S>
             Thread.interrupted();
             runner = Thread.currentThread();
             try {
-                if (!isDone())
+                if (!isDone()) {
                     result = callable.call();
+                }
                 return true;
             } catch (Exception e) {
                 AsyncAssetResolver.rethrow(e);

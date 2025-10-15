@@ -1,0 +1,11 @@
+{
+  "id": "stone",
+  "class-type": "block",
+  "Resistance": 100,
+  "texture": "World/Blocks/stone",
+  "Type": "solid",
+  "max-hp": 100,
+  "Density": 1,
+  "LightTransmission": 80,
+  "Name": "stone"
+}

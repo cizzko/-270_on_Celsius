@@ -85,8 +85,9 @@ public class Batch<S extends Batch.State> implements Disposable {
     private void pushState0() {
         S newState = statePool.obtain();
         stack.addLast(newState);
-        if (state != null)
+        if (state != null) {
             extender.accept(newState, state);
+        }
         state = newState;
     }
 
@@ -292,7 +293,9 @@ public class Batch<S extends Batch.State> implements Disposable {
 
     @Override
     public final void close() {
-        if (disposed) return;
+        if (disposed) {
+            return;
+        }
         disposed = true;
         mesh.close();
         MemoryUtil.memFree(vertices);

@@ -36,7 +36,9 @@ public class Button extends BaseButton<Button> {
     @Override
     public void draw() {
         var backgroundColor = color;
-        if (backgroundColor == null) backgroundColor = style.backgroundColor;
+        if (backgroundColor == null) {
+            backgroundColor = style.backgroundColor;
+        }
 
         float borderWidth = style.borderWidth;
         if (borderWidth == 0) {

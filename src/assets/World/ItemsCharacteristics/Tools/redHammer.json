@@ -1,0 +1,15 @@
+{
+  "id": "red-hammer",
+  "class-type": "tool",
+  "texture": "World/Items/hammer",
+  "Description": "The first permanent item in the game/nA starter universal hammer designed for simple tasks",
+  "max-hp": 100,
+  "requirements": {
+    "stick-rope": 1,
+    "small-stone": 1
+  },
+  "MaxInteractionRange": 5,
+  "Damage": 10,
+  "SecBetweenHits": 200,
+  "Name": "Red hammer"
+}

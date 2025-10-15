@@ -1,5 +1,6 @@
 .gradle
 build
+.PVS-Studio
 out
 *.log
 log.txt

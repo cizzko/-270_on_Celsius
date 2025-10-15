@@ -1,0 +1,10 @@
+{
+  "id": "air",
+  "class-type": "block",
+  "Resistance": 0,
+  "Type": "gas",
+  "max-hp": 0,
+  "Density": 0,
+  "LightTransmission": 255,
+  "Name": "air"
+}

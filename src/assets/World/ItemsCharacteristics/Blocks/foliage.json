@@ -1,0 +1,11 @@
+{
+  "id": "foliage",
+  "class-type": "block",
+  "Resistance": 5,
+  "texture": "World/Blocks/foliage",
+  "Type": "solid",
+  "max-hp": 100,
+  "Density": 1,
+  "LightTransmission": 100,
+  "Name": "treeFoliage"
+}

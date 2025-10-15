@@ -2,6 +2,7 @@ package core;
 
 import com.sun.management.OperatingSystemMXBean;
 import core.EventHandling.Logging.Config;
+import core.World.ContentManager;
 import core.g2d.*;
 import core.input.InputHandler;
 import core.util.DebugTools;
@@ -37,6 +38,8 @@ public final class Window extends Application {
         // Хмм, надо бы где-то тут создавать сцену
         assets.load(Font.class, "arial.ttf");
         assets.load(Atlas.class, "sprites");
+
+        content.loadAll();
 
         Config.checkConfig();
         if (Integer.parseInt(Config.getFromConfig("Debug")) >= 2) {

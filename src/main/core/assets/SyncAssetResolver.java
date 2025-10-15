@@ -40,8 +40,9 @@ final class SyncAssetResolver<T, P, S>
     @Override
     public <T2, P2> Future<T2> load(Class<T2> type, String name, AssetsManager.LoadType loadType,
                                     Consumer<? super P2> paramsModifier) {
-        if (loadType != AssetsManager.LoadType.SYNC)
+        if (loadType != AssetsManager.LoadType.SYNC) {
             throw new IllegalArgumentException("Synchronous mode");
+        }
 
         return Global.assets.loadSyncInternal(this, type, name, paramsModifier);
     }

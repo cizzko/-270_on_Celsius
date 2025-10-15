@@ -61,8 +61,9 @@ public class SnapshotArrayList<T> extends ObjectArrayList<T> {
 
     public void end() {
         snapshots --;
-        if (snapshots < 0)
+        if (snapshots < 0) {
             throw new IllegalStateException();
+        }
     }
 
     private void modified() {
@@ -163,7 +164,9 @@ public class SnapshotArrayList<T> extends ObjectArrayList<T> {
     @Override
     public boolean removeAll(Collection<?> c) {
         boolean modified = super.removeAll(c);
-        if (modified) modified();
+        if (modified) {
+            modified();
+        }
         return modified;
     }
 

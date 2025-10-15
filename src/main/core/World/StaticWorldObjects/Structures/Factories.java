@@ -38,6 +38,14 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
     private static final HashSet<Point2i> factories = new HashSet<>();
     private static Point2i lastClickedFactory = null;
 
+    public enum Breaking {
+        WEAK_SLOW, // slow working
+        WEAK_OVERCONSUMPTION, // high consumption
+        AVERAGE_STOP, // stop working
+        AVERAGE_MISWORKING, // misworking
+        CRITICAL // full stop working, need rebuild
+    }
+
     @Override
     public void placeStatic(int cellX, int cellY, short id) {
         // todo костыль года

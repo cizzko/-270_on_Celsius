@@ -40,7 +40,9 @@ public class ToggleButton extends BaseButton<ToggleButton> {
     public void draw() {
         float offset = style.borderOffset;
         Color c = color;
-        if (c == null) c = style.backgroundColor;
+        if (c == null) {
+            c = style.backgroundColor;
+        }
 
         Fill.rectangleBorder(x - offset, y - offset, width, height, offset, c);
 

@@ -11,6 +11,7 @@ module core.main {
     requires org.apache.logging.log4j.core;
 
     requires com.google.gson;
+    requires com.fasterxml.jackson.databind;
     requires it.unimi.dsi.fastutil;
 
     requires java.desktop;

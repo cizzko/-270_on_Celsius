@@ -1,5 +1,6 @@
 package core;
 
+import core.World.ContentManager;
 import core.World.World;
 import core.assets.AssetsManager;
 import core.g2d.*;
@@ -37,6 +38,7 @@ public final class Global {
         gameScene = newGameScene;
     }
 
+    public static final ContentManager content = new ContentManager();
     public static final TaskScheduler scheduler = new TaskScheduler();
     public static Application app;
 }

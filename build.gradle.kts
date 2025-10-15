@@ -34,6 +34,15 @@ val genatlas = tasks.register<JavaExec>("genatlas") {
     mainClass.set("core.tool.AtlasGenerator")
 }
 
+tasks.register<JavaExec>("gentypes") {
+    mustRunAfter(tasks.classes)
+    classpath = sourceSets["tools"].runtimeClasspath +
+            sourceSets["main"].runtimeClasspath +
+            sourceSets["main"].output
+
+    workingDir = rootDir
+    mainClass.set("core.tool.ConvertTypesToJson")
+}
 
 tasks.classes {
     finalizedBy(genatlas)
@@ -59,18 +68,29 @@ val lwjglNatives = Pair(
     }
 }
 
-repositories {
-    mavenCentral()
-}
 
-tasks.compileJava {
-    options.encoding = "UTF-8"
-    options.release = 21
-}
+allprojects {
+    repositories {
+        mavenCentral()
+    }
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+    apply(plugin = "java")
+
+    dependencies {
+        implementation("com.google.code.gson:gson:2.10.1")
+        implementation("com.fasterxml.jackson.core:jackson-databind:2.18.0")
+        compileOnly("com.github.spotbugs:spotbugs-annotations:4.8.6")
+    }
+
+    tasks.compileJava {
+        options.encoding = "UTF-8"
+        options.release.set(21)
+    }
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
     }
 }
 

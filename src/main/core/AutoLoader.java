@@ -325,8 +325,9 @@ public final class AutoLoader {
                 log.error("[{}] Exception while unloading {}", name, l);
             }
 
-            if (log.isDebugEnabled())
+            if (log.isDebugEnabled()) {
                 log.debug("[{}] Unloaded {}", name, l.getClass().getSimpleName());
+            }
         }
     }
 
@@ -352,13 +353,16 @@ public final class AutoLoader {
     private AssetState enqueueInstance(Object obj, boolean preload, int recursionLevel) {
         for (AssetState assetState : loaded) {
             if (assetState.inst == obj) // проверка на дубликаты. Это также обрабатывает передачу владением preloaded очереди
+            {
                 return assetState;
+            }
         }
 
-        if (log.isDebugEnabled())
+        if (log.isDebugEnabled()) {
             log.debug("[{}] {}{} {}",
                     name, " ".repeat(recursionLevel),
                     preload ? "Preloading" : "Loading", obj.getClass().getSimpleName());
+        }
 
         var deque = dequeFor(preload);
         var typeInfo = getTypeInfo(obj.getClass());

@@ -1,0 +1,11 @@
+{
+  "id": "herb",
+  "class-type": "block",
+  "Resistance": 0,
+  "texture": "World/Blocks/herb",
+  "Type": "solid",
+  "max-hp": 1,
+  "Density": 1,
+  "LightTransmission": 120,
+  "Name": "herb"
+}

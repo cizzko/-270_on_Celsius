@@ -115,8 +115,12 @@ public final class Atlas {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (!(o instanceof Region region)) return false;
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof Region region)) {
+                return false;
+            }
             return name.equals(region.name);
         }
 

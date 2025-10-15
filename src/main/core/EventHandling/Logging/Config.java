@@ -1,5 +1,6 @@
 package core.EventHandling.Logging;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,6 +21,8 @@ public class Config {
     public static final String VERTICAL_SYNC_KEY      = "VerticalSync";
     public static final String SHOW_PROMPTS_KEY    = "ShowPrompts";
     public static final String DETECT_LANGUAGE_KEY = "DetectLanguage";
+
+    public static final ObjectMapper json =  new ObjectMapper();
 
     private static boolean configCheckMark = false;
 

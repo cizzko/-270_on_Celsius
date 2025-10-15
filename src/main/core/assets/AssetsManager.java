@@ -244,8 +244,9 @@ public final class AssetsManager {
                                   Consumer<? super P> paramsModifier) {
         Objects.requireNonNull(type);
         Objects.requireNonNull(name);
-        if (name.isBlank())
+        if (name.isBlank()) {
             throw new IllegalArgumentException("name cannot be blank");
+        }
         Objects.requireNonNull(loadType);
 
         var loadingMap = getLoadingAssets(type);

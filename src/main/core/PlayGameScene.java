@@ -56,7 +56,7 @@ public final class PlayGameScene extends GameScene {
         var player = DynamicObjects.getFirst();
         camera.position.set(player.getX(), player.getY());
         EventHandler.setDebugValue(() -> "Camera pos: " + camera.position);
-        EventHandler.setDebugValue(() -> "Current time: " + sun.currentTime);
+        // EventHandler.setDebugValue(() -> "Current time: " + sun.currentTime);
     }
 
     @Override
@@ -172,7 +172,9 @@ public final class PlayGameScene extends GameScene {
                 "Size: " + w + "x" + h + " (" + size.width() + "x" + size.height() + ")", Styles.DIRTY_BRIGHT_BLACK);
 
         // Ближайший к центру игрока блок
-        if (false) Fill.rectangleBorder(cx * blockSize, cy * blockSize, blockSize, blockSize, green);
+        if (false) {
+            Fill.rectangleBorder(cx * blockSize, cy * blockSize, blockSize, blockSize, green);
+        }
         // Прямоугольник, который показывает занятое текстурой пространство
         Fill.rectangleBorder(player.getX(), player.getY(), size.width(), size.height(), red);
 

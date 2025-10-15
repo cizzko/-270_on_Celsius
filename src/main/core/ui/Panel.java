@@ -21,7 +21,9 @@ public class Panel extends BaseGroup<Panel> {
     @Override
     public void drawThis() {
         var backgroundColor = color;
-        if (backgroundColor == null) backgroundColor = style.backgroundColor;
+        if (backgroundColor == null) {
+            backgroundColor = style.backgroundColor;
+        }
 
         Fill.rect(x, y, width, height, backgroundColor);
 
