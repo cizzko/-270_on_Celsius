@@ -34,6 +34,7 @@ public class Sun extends GameObject {
     }
 
     //todo решить что делать с солнцем (!)
+    //todo обновление: все говно я не знаю как это делать без z координаты
     public void update() {
         if (worldX >= (world.sizeX - Physics.swap) * TextureDrawing.blockSize) {
             worldX = 0;

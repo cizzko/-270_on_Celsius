@@ -39,7 +39,8 @@ public final class Window extends Application {
         assets.load(Font.class, "arial.ttf");
         assets.load(Atlas.class, "sprites");
 
-        content.loadAll();
+        //todo
+        //content.loadAll();
 
         Config.checkConfig();
         if (Integer.parseInt(Config.getFromConfig("Debug")) >= 2) {

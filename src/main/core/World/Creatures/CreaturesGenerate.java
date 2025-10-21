@@ -1,6 +1,8 @@
 package core.World.Creatures;
 
 import core.Application;
+import core.World.Creatures.Birds.BirdLogic;
+import core.World.Creatures.Butterflies.ButterflyLogic;
 import core.World.Textures.TextureDrawing;
 
 import static core.Global.world;
@@ -35,23 +37,23 @@ public class CreaturesGenerate {
     }
 
     private static void updateLogic() {
-        for (DynamicWorldObjects object : DynamicObjects) {
-            if (object != null) {
-                if (object.getX() - 960 > world.sizeX * TextureDrawing.blockSize || object.getY() - 540 > world.sizeY * TextureDrawing.blockSize || object.getX() + 960 < 0 || object.getY() + 540 < 0) {
-                    DynamicObjects.remove(object);
-                    continue;
-                }
-                ButterflyLogic.update(object);
-                BirdLogic.update(object);
-            }
-        }
+//        for (DynamicWorldObjects object : DynamicObjects) {
+//            if (object != null) {
+//                if (object.getX() - 960 > world.sizeX * TextureDrawing.blockSize || object.getY() - 540 > world.sizeY * TextureDrawing.blockSize || object.getX() + 960 < 0 || object.getY() + 540 < 0) {
+//                    DynamicObjects.remove(object);
+//                    continue;
+//                }
+//                ButterflyLogic.update(object);
+//                BirdLogic.update(object);
+//            }
+//        }
     }
 
     public static void generate() {
         switch ((int) (Math.random() * 2)) {
-            // todo переписать поведение птиц
+            // todo переписать поведение
             // case 0 -> generateBird();
-            case 1 -> generateButterfly();
+            // case 1 -> generateButterfly();
         }
         currentCreaturesCount++;
     }

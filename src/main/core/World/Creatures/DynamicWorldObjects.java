@@ -45,7 +45,7 @@ public class DynamicWorldObjects implements Serializable {
         int topmostBlock = WorldGenerator.findTopmostSolidBlock((int) (x / blockSize), 5) + 1;
 
         if (HitboxMap.checkIntersInside(x, topmostBlock * blockSize, obj.texture.width(), obj.texture.height()) != null) {
-            Application.log.warn("Unable spawning player at: ({}, {})", x, topmostBlock * blockSize);
+            Application.log.warn("Unable spawning at: ({}, {})", x, topmostBlock * blockSize);
             return createDynamic(name, x + blockSize);
         }
 
