@@ -55,6 +55,7 @@ public enum Biomes {
                 StaticWorldObjects.createStatic("Blocks/stone")};
     }
 
+    //todo снег нарисовать
     private static short[] getPlain(){
         return new short[]{
                 StaticWorldObjects.createStatic("Blocks/grass"),

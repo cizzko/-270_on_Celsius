@@ -50,9 +50,7 @@ public class World {
             for (StaticBlocksEvents listener : listeners) {
                 listener.placeStatic(x, y, object);
             }
-        }
 
-        if (Global.gameState == GameState.PLAYING) {
             if (x < WorldGenerator.copySize) {
                 setImpls(sizeX - WorldGenerator.copySize + x, y, object, followingRules);
             } else if (x > sizeX - WorldGenerator.copySize) {
@@ -77,6 +75,12 @@ public class World {
             }
         }
         setImpl(x, y, object, followingRules);
+    }
+
+    private void setImpl(int x, int y, short object, boolean followingRules) {
+        if (!followingRules || checkPlaceRules(x, y, object)) {
+            tiles[x + sizeX * y] = object;
+        }
     }
 
     public boolean inBounds(int x, int y) {
@@ -130,12 +134,6 @@ public class World {
             }
         }
         ShadowMap.update();
-    }
-
-    private void setImpl(int x, int y, short object, boolean followingRules) {
-        if (!followingRules || checkPlaceRules(x, y, object)) {
-            tiles[x + sizeX * y] = object;
-        }
     }
 
     private boolean checkPlaceRules(int x, int y, short root) {

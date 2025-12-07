@@ -203,8 +203,8 @@ public class BuildMenu {
 
     // todo categories
     public static void addItem(Items item) {
-        for (int x = 0; x < items.length; x++) {
-            for (int y = 0; y < items[0].length; y++) {
+        for (int y = 0; y < items[0].length; y++) {
+            for (int x = 0; x < items.length; x++) {
                 if (items[x][y] == null) {
                     items[x][y] = item;
                     return;

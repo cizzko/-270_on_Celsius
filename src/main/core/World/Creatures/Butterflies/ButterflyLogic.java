@@ -1,5 +1,6 @@
-package core.World.Creatures;
+package core.World.Creatures.Butterflies;
 
+import core.World.Creatures.DynamicWorldObjects;
 import core.World.Textures.TextureDrawing;
 
 import java.util.HashMap;

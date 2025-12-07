@@ -112,8 +112,8 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
         CRITICAL // full stop working, need rebuild
     }
 
-    public Factories() {
-    }
+    //для листенера
+    public Factories() {}
 
     private Factories(int maxProductionProgress, float needEnergy, float maxHp, short maxStoredObjects, short id, String path, String sound, String name, Items[] outputObjects, Items[] inputObjects, Items[] fuel) {
         this.maxProductionProgress = maxProductionProgress;

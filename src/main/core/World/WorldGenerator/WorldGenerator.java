@@ -2,6 +2,7 @@ package core.World.WorldGenerator;
 
 import core.*;
 import core.EventHandling.EventHandler;
+import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
 import core.World.PerlinNoiseGenerator;
 import core.World.World;
 import core.ui.menu.CreatePlanet;
@@ -114,7 +115,6 @@ public class WorldGenerator {
 
         log.debug("version: 2.0");
         log.debug("World generator: starting generating world with size: {}x{}", world.sizeX, world.sizeY);
-        log.debug("starting generating world with size: {}x{}", world.sizeX, world.sizeY);
 
         var playGameScene = new PlayGameScene();
 
@@ -133,15 +133,24 @@ public class WorldGenerator {
 //        });
 
         step(() -> {
-            log("generating resources");
+            //log.debug("generating resources");
             //generateResources();
         });
 
-        step(() -> generateEnvironments(world));
+        step(() -> {
+            log.debug("generating envrionments");
+            generateEnvironments(world);
+        });
 
-        step(() -> copy());
+        step(() -> {
+            log.debug("generating: copy");
+            copy();
+        });
 
-        step(() -> generateCaves());
+        step(() -> {
+            log.debug("generating caves");
+            generateCaves();
+        });
 
         step(() -> {
             log.debug("regenerating shadow map");
@@ -254,6 +263,7 @@ public class WorldGenerator {
         doItAgain(lastY, currentBiomes);
     }
 
+    //что то типа сглаживания
     //todo просто чтоб работало, потом сделаю красиво
     private static void doItAgain(float lastY, Biomes currentBiome) {
         float lastX = world.sizeX - copySize - 90;
@@ -284,7 +294,6 @@ public class WorldGenerator {
     }
 
     private static void generateCaves() {
-        log.debug("generating caves");
         for (int b = 0; b < world.sizeX / 600; b++) {
             int minRadius = 2;
             int maxRadius = 4;
@@ -353,7 +362,6 @@ public class WorldGenerator {
     }
 
     private static void generateEnvironments(World world) {
-        log.debug("generating environments");
         generateTrees(world);
         generateDecorStones(world);
         generateHerb(world);
@@ -505,6 +513,7 @@ public class WorldGenerator {
     }
 
     private static void startGame(PlayGameScene playGameScene) {
+        world.registerListener(new WorkbenchLogic());
         world.registerListener(new Factories());
         Inventory.registerListener(new ElectricCables());
         Inventory.registerListener(new Factories());
