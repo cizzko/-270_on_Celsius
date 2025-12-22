@@ -1,6 +1,7 @@
 package core;
 
 import core.EventHandling.EventHandler;
+import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
 import core.World.WorldGenerator.Backdrop;
 import core.util.Color;
 import core.util.Commandline;
@@ -48,15 +49,19 @@ public final class PlayGameScene extends GameScene {
 
     @Override
     public void onInit() {
-
         Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Factories/lowTemperatureOven"));
         Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Factories/stoneCrusher"));
-        Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Blocks/smallStone"));
+//for tests
+        //        for (int i = 0; i < 50; i++) {
+//            Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Blocks/smallStone"));
+//            Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Blocks/grass"));
+//            Inventory.createElementTool("Tools/stick");
+//        }
 
         var player = DynamicObjects.getFirst();
         camera.position.set(player.getX(), player.getY());
         EventHandler.setDebugValue(() -> "Camera pos: " + camera.position);
-        // EventHandler.setDebugValue(() -> "Current time: " + sun.currentTime);
+        //EventHandler.setDebugValue(() -> "Current time: " + sun.currentTime);
     }
 
     @Override
@@ -99,6 +104,7 @@ public final class PlayGameScene extends GameScene {
         uiScene.draw();
         Commandline.draw();
         BuildMenu.draw();
+        WorkbenchLogic.draw();
         Inventory.draw();
         drawCurrentHP();
         drawBuildGrid();
@@ -172,6 +178,7 @@ public final class PlayGameScene extends GameScene {
                 "Size: " + w + "x" + h + " (" + size.width() + "x" + size.height() + ")", Styles.DIRTY_BRIGHT_BLACK);
 
         // Ближайший к центру игрока блок
+        //todo глянуть что это
         if (false) {
             Fill.rectangleBorder(cx * blockSize, cy * blockSize, blockSize, blockSize, green);
         }
