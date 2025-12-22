@@ -5,6 +5,7 @@ import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
+import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.StaticWorldObjects.Structures.Factories;
 import core.input.InputHandler;
@@ -23,9 +24,10 @@ public class BuildMenu {
     private static boolean isOpen = true, infoCreated;
     private static final Items[][] items = new Items[5][30];
     private static Point2i currentObject;
-    private static float scroll = -276;
+    public static float scroll = -276;
 
     public static void create() {
+        WorkbenchLogic.create();
         var defaultItems = Config.getProperties(("World/ItemsCharacteristics/DefaultBuildMenuItems.properties"));
 
         String[] details = defaultItems.getOrDefault("Details", "").split(",");
