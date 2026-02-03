@@ -48,6 +48,7 @@ public class World {
 
         if (Global.gameState == GameState.PLAYING) {
             for (StaticBlocksEvents listener : listeners) {
+                //todo везде проверяется что id != 0 и != 1 может тогда впринципе не отправлять уведомления с ними?
                 listener.placeStatic(x, y, object);
             }
 

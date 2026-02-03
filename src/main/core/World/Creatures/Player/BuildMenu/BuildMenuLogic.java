@@ -1,61 +1,25 @@
 package core.World.Creatures.Player.BuildMenu;
 
-import core.Application;
 import core.EventHandling.EventHandler;
-import core.EventHandling.Logging.Config;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
-import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.StaticWorldObjects.Structures.Factories;
-import core.input.InputHandler;
 import core.util.Color;
 import core.World.Textures.TextureDrawing;
-import core.assets.AssetsManager;
 import core.g2d.Fill;
 import core.math.Point2i;
 import core.ui.Styles;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
+import static core.World.Creatures.Player.ItemControl.buildMenuItems;
 import static core.World.Textures.TextureDrawing.*;
 
-public class BuildMenu {
+public class BuildMenuLogic {
     private static boolean isOpen = true, infoCreated;
-    private static final Items[][] items = new Items[5][30];
     private static Point2i currentObject;
     public static float scroll = -276;
-
-    public static void create() {
-        WorkbenchLogic.create();
-        var defaultItems = Config.getProperties(("World/ItemsCharacteristics/DefaultBuildMenuItems.properties"));
-
-        String[] details = defaultItems.getOrDefault("Details", "").split(",");
-        String[] tools = defaultItems.getOrDefault("Tools", "").split(",");
-        String[] weapons = defaultItems.getOrDefault("Weapons", "").split(",");
-        String[] placeables = defaultItems.getOrDefault("Placeables", "").split(",");
-
-        if (details[0].length() > 1) {
-            for (String detail : details) {
-                addItem(Items.createItem(AssetsManager.normalizePath(detail)));
-            }
-        }
-        if (tools[0].length() > 1) {
-            for (String tool : tools) {
-                addItem(Items.createItem(AssetsManager.normalizePath(tool)));
-            }
-        }
-        if (weapons[0].length() > 1) {
-            for (String weapon : weapons) {
-                addItem(Items.createItem(AssetsManager.normalizePath(weapon)));
-            }
-        }
-        if (placeables[0].length() > 1) {
-            for (String placeable : placeables) {
-                addItem(Items.createItem(StaticWorldObjects.createStatic(AssetsManager.normalizePath(placeable))));
-            }
-        }
-    }
 
     public static void inputUpdate() {
         updateBuildButton();
@@ -74,9 +38,9 @@ public class BuildMenu {
                         Inventory.decrementItem(obj.x, obj.y);
                     }
                 }
-                Items currentItem = items[currentObject.x][currentObject.y];
+                Items currentItem = buildMenuItems[currentObject.x][currentObject.y];
 
-                switch (items[currentObject.x][currentObject.y].type) {
+                switch (currentItem.type) {
                     case TOOL -> Inventory.createElementTool(currentItem.filename);
                     case DETAIL -> Inventory.createElementDetail(currentItem.filename);
                     case WEAPON -> Inventory.createElementWeapon(currentItem.filename);
@@ -95,7 +59,7 @@ public class BuildMenu {
     }
 
     private static void updateInfoButton() {
-        if (currentObject != null && items[currentObject.x][currentObject.y] != null && isOpen && !infoCreated && EventHandler.getRectangleClick(1877, 325, 1918, 366)) {
+        if (currentObject != null && buildMenuItems[currentObject.x][currentObject.y] != null && isOpen && !infoCreated && EventHandler.getRectangleClick(1877, 325, 1918, 366)) {
             infoCreated = true;
         } else if (infoCreated && EventHandler.getRectangleClick(607, 991, 649, 1032)) {
             infoCreated = false;
@@ -111,8 +75,8 @@ public class BuildMenu {
     private static Point2i[] hasRequiredItems() {
         Point2i menuCurrent = currentObject;
 
-        if (menuCurrent != null && items[menuCurrent.x][menuCurrent.y].requiredForBuild != null) {
-            Items[] required = items[menuCurrent.x][menuCurrent.y].requiredForBuild;
+        if (menuCurrent != null && buildMenuItems[menuCurrent.x][menuCurrent.y].requiredForBuild != null) {
+            Items[] required = buildMenuItems[menuCurrent.x][menuCurrent.y].requiredForBuild;
             Point2i[] hasNeededObject = new Point2i[required.length];
             int neededCounter = 0;
 
@@ -135,15 +99,15 @@ public class BuildMenu {
         if (isOpen) {
             batch.draw(atlas.byPath("UI/GUI/buildMenu/menuOpen"), 1650, 0);
 
-            for (int x = 0; x < items.length; x++) {
-                for (int y = 0; y < items[x].length; y++) {
-                    if (items[x][y] != null) {
+            for (int x = 0; x < buildMenuItems.length; x++) {
+                for (int y = 0; y < buildMenuItems[x].length; y++) {
+                    if (buildMenuItems[x][y] != null) {
                         float xCoord = 1660 + x * 54;
-                        //float yCoord = 57 + scroll + (items[x][y].type.ordinal() * 20) + y * 54f;
+                        //float yCoord = 57 + scroll + (buildMenuItems[x][y].type.ordinal() * 20) + y * 54f;
                         float yCoord = 57 + scroll + (y * 54f);
 
                         if (yCoord < 115 && yCoord > -60) {
-                            Inventory.drawInventoryItem(xCoord, yCoord, items[x][y].texture);
+                            Inventory.drawInventoryItem(xCoord, yCoord, buildMenuItems[x][y].texture);
 
                             if (EventHandler.getRectangleClick((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
                                 currentObject = new Point2i(x, y);
@@ -152,8 +116,8 @@ public class BuildMenu {
                     }
                 }
             }
-            if (currentObject != null && items[currentObject.x][currentObject.y] != null) {
-                // float yCoord = 47 + scroll + (items[currentObject.x][currentObject.y].type.ordinal() * 20) + currentObject.y * 54;
+            if (currentObject != null && buildMenuItems[currentObject.x][currentObject.y] != null) {
+                // float yCoord = 47 + scroll + (buildMenuItems[currentObject.x][currentObject.y].type.ordinal() * 20) + currentObject.y * 54;
                 float yCoord = 47 + scroll + (currentObject.y * 54);
 
                 if (yCoord < 105 && yCoord > -60) {
@@ -170,21 +134,21 @@ public class BuildMenu {
             batch.draw(atlas.byPath("UI/GUI/buildMenu/menuClosed"), 1650, 0);
         }
 
-        if (infoCreated && currentObject != null && items[currentObject.x][currentObject.y] != null) {
+        if (infoCreated && currentObject != null && buildMenuItems[currentObject.x][currentObject.y] != null) {
             Fill.rect(0, 0, 1920, 1080, Styles.DIRTY_BLACK);
             Fill.rect(560, 0, 800, 1080, Styles.DIRTY_BLACK);
             batch.draw(atlas.byPath("UI/GUI/buildMenu/exitBtn"), 605, 989);
 
-            TextureDrawing.drawText(650, 730, items[currentObject.x][currentObject.y].description);
-            Inventory.drawInventoryItem(650, 915, items[currentObject.x][currentObject.y].texture);
+            TextureDrawing.drawText(650, 730, buildMenuItems[currentObject.x][currentObject.y].description);
+            Inventory.drawInventoryItem(650, 915, buildMenuItems[currentObject.x][currentObject.y].texture);
 
             drawRequirements(650, 760);
         }
     }
 
     private static void drawRequirements(float x, float y) {
-        if (currentObject != null && items[currentObject.x][currentObject.y] != null) {
-            Items item = items[currentObject.x][currentObject.y];
+        if (currentObject != null && buildMenuItems[currentObject.x][currentObject.y] != null) {
+            Items item = buildMenuItems[currentObject.x][currentObject.y];
             Factories factory = Factories.getFactoryConst(StaticWorldObjects.getFileName(item.placeable));
 
             drawText((int) x, (int) (y + 130), item.name);
@@ -199,18 +163,6 @@ public class BuildMenu {
             }
             if (item.requiredForBuild != null) {
                 drawObjects(x, y, item.requiredForBuild, atlas.byPath("UI/GUI/buildMenu/build.png"));
-            }
-        }
-    }
-
-    // todo categories
-    public static void addItem(Items item) {
-        for (int y = 0; y < items[0].length; y++) {
-            for (int x = 0; x < items.length; x++) {
-                if (items[x][y] == null) {
-                    items[x][y] = item;
-                    return;
-                }
             }
         }
     }

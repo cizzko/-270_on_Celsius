@@ -1,13 +1,13 @@
 package core;
 
 import core.EventHandling.EventHandler;
+import core.World.Creatures.Player.BuildMenu.BuildMenuLogic;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
 import core.World.WorldGenerator.Backdrop;
 import core.util.Color;
 import core.util.Commandline;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Physics;
-import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.StaticWorldObjects.StaticWorldObjects;
@@ -52,11 +52,11 @@ public final class PlayGameScene extends GameScene {
         Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Factories/lowTemperatureOven"));
         Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Factories/stoneCrusher"));
 //for tests
-        //        for (int i = 0; i < 50; i++) {
-//            Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Blocks/smallStone"));
-//            Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Blocks/grass"));
-//            Inventory.createElementTool("Tools/stick");
-//        }
+        for (int i = 0; i < 50; i++) {
+            Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Blocks/smallStone"));
+            Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Blocks/grass"));
+            Inventory.createElementTool("Tools/stick");
+        }
 
         var player = DynamicObjects.getFirst();
         camera.position.set(player.getX(), player.getY());
@@ -67,7 +67,8 @@ public final class PlayGameScene extends GameScene {
     @Override
     protected void inputUpdate() {
         updateHotkeys(this);
-        BuildMenu.inputUpdate();
+        BuildMenuLogic.inputUpdate();
+        WorkbenchLogic.updateInput();
         Commandline.inputUpdate();
         updateToolInteraction();
         Inventory.inputUpdate();
@@ -103,7 +104,7 @@ public final class PlayGameScene extends GameScene {
 
         uiScene.draw();
         Commandline.draw();
-        BuildMenu.draw();
+        BuildMenuLogic.draw();
         WorkbenchLogic.draw();
         Inventory.draw();
         drawCurrentHP();

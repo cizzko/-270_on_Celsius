@@ -61,7 +61,7 @@ public class ConvertTypesToJson {
             try (var wr = json.newJsonWriter(Files.newBufferedWriter(indexFile, StandardCharsets.UTF_8))) {
                 wr.beginArray();
                 for (Path file : files) {
-                    if (file.startsWith(ITEMS_DIR) && !file.endsWith("DefaultBuildMenuItems.properties")) {
+                    if (file.startsWith(ITEMS_DIR)) {
                         wr.value(ITEMS_DIR.relativize(file).toString().replace(PROPERTIES_EXT, ""));
                     }
                 }
@@ -107,9 +107,9 @@ public class ConvertTypesToJson {
             String id = getId(canonicalPath(file));
             wr.name("id").value(id);
 
-            if (file.startsWith(ITEMS_DIR) &&
-                    !fullFileName.replace(".properties", "")
-                            .equalsIgnoreCase("defaultbuildmenuitems")) {
+//            todo а это можно было убирать?
+//            if (file.startsWith(ITEMS_DIR) &&
+//                    !fullFileName.replace(".properties", "").equalsIgnoreCase("defaultbuildmenuitems")) {
 
                 var categoryDir = file.getName(sourceDir.getNameCount() + 1);
                 String parentDir = categoryDir.toString().toLowerCase(Locale.ROOT)
@@ -123,7 +123,7 @@ public class ConvertTypesToJson {
                 };
 
                 wr.name("class-type").value(classType);
-            }
+//            }
 
             outer:
             for (var entry : prop.entrySet()) {

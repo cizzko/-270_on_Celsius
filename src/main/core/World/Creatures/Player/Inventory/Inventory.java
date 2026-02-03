@@ -1,8 +1,8 @@
 package core.World.Creatures.Player.Inventory;
 
 import core.EventHandling.EventHandler;
-import core.World.Creatures.Player.BuildMenu.BuildMenu;
 import core.World.Creatures.Player.Inventory.Items.Items;
+import core.World.Creatures.Player.ItemControl;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator.WorldGenerator;
@@ -41,7 +41,7 @@ public class Inventory {
     }
 
     public static void create() {
-        BuildMenu.create();
+        ItemControl.create();
     }
 
     public static void inputUpdate() {
@@ -275,6 +275,7 @@ public class Inventory {
         }
     }
 
+    //todo глянуть дубли
     public static void createElementWeapon(String name) {
         int id = name.hashCode();
 
