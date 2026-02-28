@@ -33,6 +33,7 @@ public class TextureDrawing {
 
     private static final Rectangle viewport = new Rectangle();
 
+    //todo переместить
     public static void drawObjects(float x, float y, Items[] items, Atlas.Region iconRegion) {
         if (items != null && ArrayUtils.findFreeCell(items) != 0) {
             batch.draw(iconRegion, x, y + 16);

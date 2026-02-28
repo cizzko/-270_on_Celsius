@@ -107,10 +107,6 @@ public class ConvertTypesToJson {
             String id = getId(canonicalPath(file));
             wr.name("id").value(id);
 
-//            todo а это можно было убирать?
-//            if (file.startsWith(ITEMS_DIR) &&
-//                    !fullFileName.replace(".properties", "").equalsIgnoreCase("defaultbuildmenuitems")) {
-
                 var categoryDir = file.getName(sourceDir.getNameCount() + 1);
                 String parentDir = categoryDir.toString().toLowerCase(Locale.ROOT)
                         .replace(PROPERTIES_EXT, "");

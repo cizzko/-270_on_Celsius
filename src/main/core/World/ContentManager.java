@@ -22,7 +22,7 @@ public class ContentManager {
 
     public void loadAll() {
         var contentDir = Global.assets.assetsDir().resolve("content");
-        // TODO чтение конфига структуры. Можно будет так сделать моды)
+        // чтение конфига структуры. Можно будет так сделать моды)
         // var structureJsonFile = contentDir.resolve("structure.json");
 
         record ContentSource(Type type, Path dir) {}

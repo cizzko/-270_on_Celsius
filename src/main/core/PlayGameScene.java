@@ -1,7 +1,7 @@
 package core;
 
 import core.EventHandling.EventHandler;
-import core.World.Creatures.Player.BuildMenu.BuildMenuLogic;
+import core.EventHandling.Logging.Config;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
 import core.World.WorldGenerator.Backdrop;
 import core.util.Color;
@@ -30,8 +30,8 @@ import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 public final class PlayGameScene extends GameScene {
     public final Sun sun = new Sun();
     public final PostEffect postEffect = new PostEffect();
-    //todo фелс ибо надо что то думать с круглым миром
-    public static boolean smoothedCamera = false;
+    //надо что то думать с круглым миром
+    public static boolean smoothedCamera;
 
     private boolean paused;
 
@@ -49,25 +49,17 @@ public final class PlayGameScene extends GameScene {
 
     @Override
     public void onInit() {
-        Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Factories/lowTemperatureOven"));
-        Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Factories/stoneCrusher"));
-//for tests
-        for (int i = 0; i < 50; i++) {
-            Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Blocks/smallStone"));
-            Inventory.createElementPlaceable(StaticWorldObjects.createStatic("Blocks/grass"));
-            Inventory.createElementTool("Tools/stick");
-        }
-
         var player = DynamicObjects.getFirst();
         camera.position.set(player.getX(), player.getY());
         EventHandler.setDebugValue(() -> "Camera pos: " + camera.position);
         //EventHandler.setDebugValue(() -> "Current time: " + sun.currentTime);
+
+        smoothedCamera = Config.getFromConfig("SmoothedCamera").equals("true");
     }
 
     @Override
     protected void inputUpdate() {
         updateHotkeys(this);
-        BuildMenuLogic.inputUpdate();
         WorkbenchLogic.updateInput();
         Commandline.inputUpdate();
         updateToolInteraction();
@@ -104,7 +96,6 @@ public final class PlayGameScene extends GameScene {
 
         uiScene.draw();
         Commandline.draw();
-        BuildMenuLogic.draw();
         WorkbenchLogic.draw();
         Inventory.draw();
         drawCurrentHP();
@@ -179,10 +170,9 @@ public final class PlayGameScene extends GameScene {
                 "Size: " + w + "x" + h + " (" + size.width() + "x" + size.height() + ")", Styles.DIRTY_BRIGHT_BLACK);
 
         // Ближайший к центру игрока блок
-        //todo глянуть что это
-        if (false) {
-            Fill.rectangleBorder(cx * blockSize, cy * blockSize, blockSize, blockSize, green);
-        }
+        //<место для вашего условия>
+        Fill.rectangleBorder(cx * blockSize, cy * blockSize, blockSize, blockSize, green);
+
         // Прямоугольник, который показывает занятое текстурой пространство
         Fill.rectangleBorder(player.getX(), player.getY(), size.width(), size.height(), red);
 

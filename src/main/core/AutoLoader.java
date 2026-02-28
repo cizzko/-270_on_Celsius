@@ -53,8 +53,8 @@ public final class AutoLoader {
             // не хочу ломать семантику языка. final значит нельзя трогать
             boolean isFinalField = Modifier.isFinal(field.getModifiers());
             var fieldType = field.getType();
-            if (isFinalField && // TODO это жёсткое требование, но мне так удобно
-                    GameObject.class.isAssignableFrom(fieldType)) {
+
+            if (isFinalField && GameObject.class.isAssignableFrom(fieldType)) {
                 TypeInfo innerTypeInfo = computeTypeInfo(fieldType);
                 allOwned &= innerTypeInfo.allOwned;
 
@@ -62,7 +62,7 @@ public final class AutoLoader {
                 try {
                     handle = lookup.unreflectVarHandle(field);
                 } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e); // TODO а может ли случиться?
+                    throw new RuntimeException(e);
                 }
 
                 inners.add(new InnerAssetBinding(fieldName, innerTypeInfo, handle));
@@ -94,7 +94,7 @@ public final class AutoLoader {
             try {
                 handle = lookup.unreflectVarHandle(field);
             } catch (IllegalAccessException e) {
-                throw new RuntimeException(e); // TODO а может ли случиться?
+                throw new RuntimeException(e);
             }
 
             allOwned &= owning;

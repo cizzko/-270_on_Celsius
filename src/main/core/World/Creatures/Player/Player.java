@@ -173,6 +173,7 @@ public class Player {
     }
 
     public static void drawBuildGrid() {
+        //todo починить округление
         if (!Config.getFromConfig("BuildGrid").equalsIgnoreCase("true")) {
             return;
         }

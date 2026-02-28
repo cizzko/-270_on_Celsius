@@ -169,7 +169,6 @@ final class AsyncAssetResolver<T, P, S>
                     try {
                         n.free();
                     } catch (Exception e) {
-                        // TODO а нас интересует это?
                         AssetsManager.log.error("[{}] Failed to release native resource {}", this, n, e);
                     }
                 }

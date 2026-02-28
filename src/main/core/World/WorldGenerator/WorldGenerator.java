@@ -472,8 +472,6 @@ public class WorldGenerator {
 
     private static void generateResources() {
         //вынес для удобства
-        //todo почему то дублирует путь, типа C:\other\-270_On_Celsius\-270_On_Celsius\src\
-        //причем с условной грязью все нормально, причину не знаю, надо разобраться
         short obj = createStatic("Blocks/aluminium");
 
         for (int i = 0; i < Math.random() * ((world.sizeX + world.sizeY) / 100f); i++) {

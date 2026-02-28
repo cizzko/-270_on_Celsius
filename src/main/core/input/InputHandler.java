@@ -183,6 +183,7 @@ public class InputHandler {
         return isSet(clicked, button);
     }
 
+    //для мыши
     public boolean justClicked(int button) {
         return isSet(clicked, button) && isSet(justClicked, button);
     }

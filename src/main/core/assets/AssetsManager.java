@@ -105,8 +105,7 @@ public final class AssetsManager {
     }
 
     public void unload(Class<?> type, String name) {
-        Global.app.ensureMainThread(); // TODO может менять поток?
-
+        Global.app.ensureMainThread();
         var assetMap = getAssets(type);
         if (assetMap == null) {
             return;
@@ -119,7 +118,7 @@ public final class AssetsManager {
     }
 
     public void unload(Object asset) {
-        Global.app.ensureMainThread(); // TODO может менять поток?
+        Global.app.ensureMainThread();
 
         var assetRef = refsByAssets.get(asset);
         if (assetRef == null) {

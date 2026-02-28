@@ -6,6 +6,7 @@ import core.World.Textures.TextureDrawing;
 import core.math.Point2i;
 
 import java.util.ArrayList;
+import java.util.Optional;
 
 import static core.Global.world;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getResistance;
@@ -158,25 +159,13 @@ public class HitboxMap {
     }
 
     public static Point2i[] checkIntersOutside(float x, float y, int sizeX, int sizeY) {
-        // todo ужс, переписать
-
-        Point2i[] d = checkIntersStaticDP(x, y, sizeX, sizeY);
-        if (d.length > 0) {
-            return d;
-        }
-        Point2i[] u = checkIntersStaticUP(x, y, sizeX, sizeY);
-        if (u.length > 0) {
-            return u;
-        }
-        Point2i[] r = checkIntersStaticRP(x, y, sizeX, sizeY);
-        if (r.length > 0) {
-            return r;
-        }
-        Point2i[] l = checkIntersStaticLP(x, y, sizeY);
-        if (l.length > 0) {
-            return l;
-        }
-        return null;
+        //не в стайл, но мне пофик, зато красиво
+        return Optional.of(checkIntersStaticDP(x, y, sizeX, sizeY))
+                .filter(d -> d.length > 0)
+                .or(() -> Optional.of(checkIntersStaticUP(x, y, sizeX, sizeY)).filter(u -> u.length > 0))
+                .or(() -> Optional.of(checkIntersStaticRP(x, y, sizeX, sizeY)).filter(r -> r.length > 0))
+                .or(() -> Optional.of(checkIntersStaticLP(x, y, sizeY)).filter(l -> l.length > 0))
+                .orElse(null);
     }
 
     public static DynamicWorldObjects checkIntersectionsDynamic(float x, float y, int sizeX, int sizeY) {
