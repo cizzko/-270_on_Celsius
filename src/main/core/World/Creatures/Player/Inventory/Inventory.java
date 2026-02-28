@@ -4,6 +4,7 @@ import core.EventHandling.EventHandler;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.ItemControl;
 import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.World.StaticWorldObjects.Structures.Factories;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator.WorldGenerator;
 import core.g2d.Atlas;
@@ -186,108 +187,50 @@ public class Inventory {
         }
     }
 
-    private static Point2i findFreeCell() {
-        for (int x = 0; x < inventoryObjects.length; x++) {
-            for (int y = 0; y < inventoryObjects[x].length; y++) {
-                if (x == 7 && y == 5) {
-                    continue;
-                }
-                if (inventoryObjects[x][y] == null) {
-                    return new Point2i(x, y);
-                }
-            }
-        }
-        return null;
-    }
+    public static Point2i findItemOrFree(int id) {
+        Point2i free = null;
 
-    public static int findCountID(int id) {
-        return Arrays.stream(inventoryObjects).flatMapToInt(row -> Arrays.stream(row).filter(obj -> obj != null && obj.id == id).mapToInt(obj -> 1)).sum() + 1;
-    }
-
-    public static Point2i findItemByID(int id) {
         for (int x = 0; x < inventoryObjects.length; x++) {
             for (int y = 0; y < inventoryObjects[x].length; y++) {
                 if (inventoryObjects[x][y] != null && inventoryObjects[x][y].id == id) {
                     return new Point2i(x, y);
                 }
+
+                //7 5 стрелочка
+                //не ретурн потому что приоритет на поиске
+                if (inventoryObjects[x][y] == null && free == null && !(x == 7 && y == 5)) {
+                    free = new Point2i(x, y);
+                }
             }
         }
-        return findFreeCell();
+        return free;
     }
 
-    public static void createElement(Items item) {
-        int id = item.name.hashCode();
+    //todo проверка на заполненность при крафте или при добавлении в инвентарь?
 
-        if (findCountID(id) > 1) {
-            Point2i cell = findItemByID(id);
-            inventoryObjects[cell.x][cell.y].countInCell++;
-            return;
-        }
-
-        Point2i cell = findFreeCell();
-        if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = item;
-        }
-    }
-
-    public static void createElementTool(String name) {
+    public static void createElement(String name) {
         int id = name.hashCode();
+        Point2i cell = findItemOrFree(id);
 
-        if (findCountID(id) > 1) {
-            Point2i cell = findItemByID(id);
+        if (inventoryObjects[cell.x][cell.y] != null) {
             inventoryObjects[cell.x][cell.y].countInCell++;
-            return;
-        }
-
-        Point2i cell = findFreeCell();
-        if (cell != null) {
+        } else {
             inventoryObjects[cell.x][cell.y] = Items.createItem(name);
         }
     }
 
     public static void createElementPlaceable(short object) {
         byte id = StaticWorldObjects.getId(object);
+        Point2i cell = findItemOrFree(id);
 
-        if (findCountID(id) > 1) {
-            Point2i cell = findItemByID(id);
+        if (inventoryObjects[cell.x][cell.y] != null) {
             inventoryObjects[cell.x][cell.y].countInCell++;
-            return;
-        }
-
-        Point2i cell = findFreeCell();
-        if (cell != null) {
+        } else {
             inventoryObjects[cell.x][cell.y] = Items.createItem(object);
         }
-    }
 
-    public static void createElementDetail(String name) {
-        int id = name.hashCode();
-
-        if (findCountID(id) > 1) {
-            Point2i cell = findItemByID(id);
-            inventoryObjects[cell.x][cell.y].countInCell++;
-            return;
-        }
-
-        Point2i cell = findFreeCell();
-        if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = Items.createItem(name);
-        }
-    }
-
-    //todo глянуть дубли
-    public static void createElementWeapon(String name) {
-        int id = name.hashCode();
-
-        if (findCountID(id) > 1) {
-            Point2i cell = findItemByID(id);
-            inventoryObjects[cell.x][cell.y].countInCell++;
-            return;
-        }
-
-        Point2i cell = findFreeCell();
-        if (cell != null) {
-            inventoryObjects[cell.x][cell.y] = Items.createItem(name);
+        if (StaticWorldObjects.getFileName(id).toLowerCase().contains("factories")) {
+            Factories.setFactoryConst(StaticWorldObjects.getFileName(id));
         }
     }
 }
