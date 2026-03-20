@@ -1,5 +1,6 @@
 package core.World.Textures;
 
+import core.World.StaticWorldObjects.Structures.Chests;
 import core.util.ArrayUtils;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
@@ -172,12 +173,14 @@ public class TextureDrawing {
                 if (getTexture(obj) == null) {
                     continue;
                 }
-                // TODO всё же тут нужно проверять объекты на поле зрения
+                // todo расширить проверку для структур, слева пропадают раньше чем должны
                 drawBlock(x, y, obj);
             }
         }
 
+        //todo вынести куда то
         Factories.draw();
+        Chests.draw();
 
         for (BlockPreview q : blocksQueue) {
             drawQueuedBlock(q.x, q.y, q.blockId, q.breakable);

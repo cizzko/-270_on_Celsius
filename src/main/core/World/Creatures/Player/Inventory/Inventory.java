@@ -4,7 +4,6 @@ import core.EventHandling.EventHandler;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.ItemControl;
 import core.World.StaticWorldObjects.StaticWorldObjects;
-import core.World.StaticWorldObjects.Structures.Factories;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator.WorldGenerator;
 import core.g2d.Atlas;
@@ -12,10 +11,11 @@ import core.math.Point2i;
 import core.math.Rectangle;
 import core.ui.Styles;
 
+import java.awt.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import static core.Global.*;
+import static core.World.Creatures.Player.Inventory.Items.ItemGrid.findItemOrFree;
 import static core.World.Textures.TextureDrawing.*;
 import static core.World.WorldUtils.getBlockUnderMousePoint;
 import static core.World.WorldUtils.getDistanceToMouse;
@@ -34,10 +34,10 @@ public class Inventory {
 
     public static Items getCurrent() {
         Point2i current = currentObject;
-        if (currentObject != null) {
-            return inventoryObjects[current.x][current.y];
-        }
 
+        if (currentObject != null) {
+            return inventoryObjects[current.x][current.y].clone();
+        }
         return null;
     }
 
@@ -63,6 +63,7 @@ public class Inventory {
             for (int y = 0; y < inventoryObjects[x].length; y++) {
                 item = inventoryObjects[x][y];
                 if (item != null) {
+                    //а чо тут +1..
                     drawInventoryItem(1498 + x * 54, 766 + y * 54f, item.countInCell + 1, item.texture);
                 }
             }
@@ -87,7 +88,7 @@ public class Inventory {
         }
     }
 
-    private static Point2i getObjectUnderMouse() {
+    public static Point2i getObjectUnderMouse() {
         Point2i mousePos = input.mousePos();
         int x = mousePos.x;
         int y = mousePos.y;
@@ -113,6 +114,17 @@ public class Inventory {
             batch.scale(scale);
             batch.draw(region, x + 5, y + 5);
         });
+    }
+
+    public static void deleteCurrentItem() {
+        Point2i current = currentObject;
+        inventoryObjects[current.x][current.y] = null;
+        currentObject = null;
+    }
+
+    public static void decrementCurrentItem() {
+        Point2i current = currentObject;
+        decrementItem(current.x, current.y);
     }
 
     public static void decrementItem(int x, int y) {
@@ -187,50 +199,26 @@ public class Inventory {
         }
     }
 
-    public static Point2i findItemOrFree(int id) {
-        Point2i free = null;
-
-        for (int x = 0; x < inventoryObjects.length; x++) {
-            for (int y = 0; y < inventoryObjects[x].length; y++) {
-                if (inventoryObjects[x][y] != null && inventoryObjects[x][y].id == id) {
-                    return new Point2i(x, y);
-                }
-
-                //7 5 стрелочка
-                //не ретурн потому что приоритет на поиске
-                if (inventoryObjects[x][y] == null && free == null && !(x == 7 && y == 5)) {
-                    free = new Point2i(x, y);
-                }
-            }
-        }
-        return free;
-    }
-
     //todo проверка на заполненность при крафте или при добавлении в инвентарь?
 
-    public static void createElement(String name) {
-        int id = name.hashCode();
-        Point2i cell = findItemOrFree(id);
+    private static void addItem(int id, Items item) {
+        for (InventoryEvents listener : listeners) {
+            listener.itemCreated(item);
+        }
+        Point2i cell = findItemOrFree(inventoryObjects, new Point2i(7, 5), id);
 
         if (inventoryObjects[cell.x][cell.y] != null) {
             inventoryObjects[cell.x][cell.y].countInCell++;
         } else {
-            inventoryObjects[cell.x][cell.y] = Items.createItem(name);
+            inventoryObjects[cell.x][cell.y] = item;
         }
     }
 
-    public static void createElementPlaceable(short object) {
-        byte id = StaticWorldObjects.getId(object);
-        Point2i cell = findItemOrFree(id);
+    public static void createElement(String name) {
+        addItem(name.hashCode(), Items.createItem(name));
+    }
 
-        if (inventoryObjects[cell.x][cell.y] != null) {
-            inventoryObjects[cell.x][cell.y].countInCell++;
-        } else {
-            inventoryObjects[cell.x][cell.y] = Items.createItem(object);
-        }
-
-        if (StaticWorldObjects.getFileName(id).toLowerCase().contains("factories")) {
-            Factories.setFactoryConst(StaticWorldObjects.getFileName(id));
-        }
+    public static void createElement(short object) {
+        addItem(StaticWorldObjects.getId(object), Items.createItem(object));
     }
 }

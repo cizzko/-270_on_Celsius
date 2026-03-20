@@ -17,7 +17,6 @@ public class Sun extends GameObject {
     private final Color sunsetColor = new Color();
 
     private long lastTime;
-    //todo позиция относительно мира а не игрока
     //public float x = 0, y = 0, worldX = (float) (Math.random() * (world.sizeX * TextureDrawing.blockSize));
     public float x = 0, y = 0, worldX = 0;
 

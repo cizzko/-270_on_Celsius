@@ -67,7 +67,6 @@ public class Structures implements Serializable {
             e.printStackTrace(); // ???
             return null;
         } catch (IOException e) {
-            // TODO использовать другой логер
             Application.log.error("Error when load structure, path: {}", path, e);
             return null;
         }

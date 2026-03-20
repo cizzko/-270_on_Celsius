@@ -3,6 +3,7 @@ package core;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
+import core.World.StaticWorldObjects.Structures.Chests;
 import core.World.WorldGenerator.Backdrop;
 import core.util.Color;
 import core.util.Commandline;
@@ -78,6 +79,7 @@ public final class PlayGameScene extends GameScene {
         updateFactoriesOutput();
         updateBlocksInteraction();
         Inventory.updateStaticBlocksPreview();
+        Chests.updateChests();
     }
 
     @Override

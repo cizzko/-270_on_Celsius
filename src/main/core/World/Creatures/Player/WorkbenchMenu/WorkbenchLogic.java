@@ -32,6 +32,19 @@ public class WorkbenchLogic implements StaticBlocksEvents {
     private static int current = 0, menuXPos = 680;
     private static final HashSet<Point2i> workbenchs = new HashSet<>();
 
+
+    @Override
+    public void onBlockChanged(int cellX, int cellY, short oldB, short newB) {
+        //todo что то придумать, проверять по имени файла это кпец
+        if (newB != 0) {
+            if (newB != -1 && StaticWorldObjects.getTexture(newB) != null && getFileName(newB).toLowerCase().contains("workbench")) {
+                workbenchs.add(new Point2i(cellX, cellY));
+            }
+        } else {
+            workbenchs.remove(new Point2i(cellX, cellY));
+        }
+    }
+
     public static void updateInput() {
         updateBenchButton();
         updateNearby();
@@ -166,19 +179,6 @@ public class WorkbenchLogic implements StaticBlocksEvents {
         };
     }
 
-    @Override
-    public void placeStatic(int cellX, int cellY, short id) {
-        //todo что то придумать, проверять по имени файла это кпец
-        if (id != 0 && id != -1 && StaticWorldObjects.getTexture(id) != null && getFileName(id).toLowerCase().contains("workbench")) {
-            workbenchs.add(new Point2i(cellX, cellY));
-        }
-    }
-
-    @Override
-    public void destroyStatic(int cellX, int cellY, short id) {
-
-    }
-
     private static void updateBuildButton() {
         if (isOpen && EventHandler.getRectangleClick(menuXPos + 580, 742, menuXPos + 625, 788)) {
             Point2i[] required = hasRequiredItems();
@@ -194,7 +194,7 @@ public class WorkbenchLogic implements StaticBlocksEvents {
 
                 switch (currentItem.type) {
                     case TOOL, DETAIL, WEAPON -> Inventory.createElement(currentItem.filename);
-                    case PLACEABLE -> Inventory.createElementPlaceable(currentItem.placeable);
+                    case PLACEABLE -> Inventory.createElement(currentItem.placeable);
                 }
             }
         }

@@ -12,7 +12,7 @@ import core.g2d.Atlas;
 import java.io.Serializable;
 import java.util.Map;
 
-public class Items implements Serializable {
+public class Items implements Serializable, Cloneable {
     public Items[] requiredForBuild;
     public Weapons weapon;
     public short placeable;
@@ -137,5 +137,14 @@ public class Items implements Serializable {
     public static float computeZoom(Sized size) {
         // 32 - target structure size
         return 32f / Math.max(size.width(), size.height());
+    }
+
+    @Override
+    public Items clone() {
+        try {
+            return (Items) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

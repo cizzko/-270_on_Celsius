@@ -4,6 +4,7 @@ import core.*;
 import core.EventHandling.EventHandler;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
 import core.World.PerlinNoiseGenerator;
+import core.World.StaticWorldObjects.Structures.Chests;
 import core.World.World;
 import core.ui.menu.CreatePlanet;
 import core.World.Creatures.Player.Inventory.Inventory;
@@ -102,8 +103,7 @@ public class WorldGenerator {
     }
 
     public static void generateWorld(CreatePlanet.GenerationParameters params) {
-        log.debug("first step");
-
+        long startTime = System.currentTimeMillis();
         int SizeX = params.size;
         int SizeY = params.size;
         World world = new World(SizeX, SizeY);
@@ -122,15 +122,9 @@ public class WorldGenerator {
         StaticObjectsConst.setDestroyed();
 
         step(() -> {
-            log.debug("generating relief");
+            log.debug("generating relief " + (System.currentTimeMillis() - startTime) + "ms");
             generateRelief(world);
         });
-
-//        кажется, теперь это лишнее
-//        step(() -> {
-//            log.debug("generating shadow map");
-//            ShadowMap.generate();
-//        });
 
         step(() -> {
             //log.debug("generating resources");
@@ -138,37 +132,37 @@ public class WorldGenerator {
         });
 
         step(() -> {
-            log.debug("generating envrionments");
+            log.debug("generating envrionments " + (System.currentTimeMillis() - startTime) + "ms");
             generateEnvironments(world);
         });
 
         step(() -> {
-            log.debug("generating: copy");
+            log.debug("generating: copy " + (System.currentTimeMillis() - startTime) + "ms");
             copy();
         });
 
         step(() -> {
-            log.debug("generating caves");
+            log.debug("generating caves " + (System.currentTimeMillis() - startTime) + "ms");
             generateCaves();
         });
 
         step(() -> {
-            log.debug("regenerating shadow map");
+            log.debug("regenerating shadow map " + (System.currentTimeMillis() - startTime) + "ms");
             ShadowMap.generate();
         });
 
         step(() -> {
-            log.debug("generating temperature map");
+            log.debug("generating temperature map " + (System.currentTimeMillis() - startTime) + "ms");
             TemperatureMap.create(playGameScene);
         });
 
         step(() -> {
-            log.debug("generating player");
+            log.debug("generating player " + (System.currentTimeMillis() - startTime) + "ms");
             Player.createPlayer(randomSpawn);
         });
 
         step(() -> {
-            log.debug("generating done!");
+            log.debug("generating done! " + (System.currentTimeMillis() - startTime) + "ms");
             scheduler.post(() -> startGame(playGameScene), Time.ONE_SECOND);
         });
     }
@@ -513,8 +507,11 @@ public class WorldGenerator {
     private static void startGame(PlayGameScene playGameScene) {
         world.registerListener(new WorkbenchLogic());
         world.registerListener(new Factories());
+        world.registerListener(new Chests());
         Inventory.registerListener(new ElectricCables());
         Inventory.registerListener(new Factories());
+        Inventory.registerListener(new Chests());
+
         Inventory.create();
 
         EventHandler.setDebugValue(() -> {

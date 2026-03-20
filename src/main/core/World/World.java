@@ -41,15 +41,12 @@ public class World {
     }
 
     public void set(int x, int y, short object, boolean followingRules) {
-        // Global.app.ensureMainThread();
-        assert object != -1;
-
+        short old = get(x, y);
         setImpls(x, y, object, followingRules);
 
         if (Global.gameState == GameState.PLAYING) {
             for (StaticBlocksEvents listener : listeners) {
-                //todo везде проверяется что id != 0 и != 1 может тогда впринципе не отправлять уведомления с ними?
-                listener.placeStatic(x, y, object);
+                listener.onBlockChanged(x, y, old, object);
             }
 
             if (x < WorldGenerator.copySize) {
@@ -61,9 +58,6 @@ public class World {
     }
 
     public void setImpls(int x, int y, short object, boolean followingRules) {
-        // Global.app.ensureMainThread();
-        assert object != -1;
-
         if (getConst(getId(object)).optionalTiles != null) {
             short[][] tiles = getConst(getId(object)).optionalTiles;
 
@@ -119,7 +113,7 @@ public class World {
 
             if (Global.gameState == GameState.PLAYING) {
                 for (StaticBlocksEvents listener : listeners) {
-                    listener.destroyStatic(x, y, id);
+                    listener.onBlockChanged(x, y, id, id);
                 }
             }
         }

@@ -38,7 +38,7 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
     private static final HashSet<Point2i> factories = new HashSet<>();
     private static Point2i lastClickedFactory = null;
 
-    public enum Breaking {
+    public enum breaking {
         WEAK_SLOW, // slow working
         WEAK_OVERCONSUMPTION, // high consumption
         AVERAGE_STOP, // stop working
@@ -46,26 +46,22 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
         CRITICAL // full stop working, need rebuild
     }
 
-    @Override
-    public void placeStatic(int cellX, int cellY, short id) {
-        // todo костыль года
-        if (id != 0 && id != -1 && StaticWorldObjects.getTexture(id) != null && StaticWorldObjects.getFileName(id).toLowerCase().contains("factories")) {
-            setFactoryConst(StaticWorldObjects.getFileName(id));
-            factories.add(new Point2i(cellX, cellY));
-        }
-    }
 
     @Override
-    public void destroyStatic(int cellX, int cellY, short id) {
-        // todo костыль века
-        if (id != 0 && id != -1 && StaticWorldObjects.getTexture(id) != null && StaticWorldObjects.getTexture(id).name().toLowerCase().contains("factories")) {
+    public void onBlockChanged(int cellX, int cellY, short oldB, short newB) {
+        if (newB != 0) {
+            if (newB != -1 && StaticWorldObjects.getId(oldB) != StaticWorldObjects.getId(newB) && StaticWorldObjects.getTexture(newB) != null && StaticWorldObjects.getFileName(newB).toLowerCase().contains("factories")) {
+                setFactoryConst(StaticWorldObjects.getFileName(newB));
+                factories.add(new Point2i(cellX, cellY));
+            }
+        } else {
             factories.remove(new Point2i(cellX, cellY));
         }
     }
 
     @Override
     public void itemDropped(int blockX, int blockY, Items item) {
-        if (world.get(blockX, blockY) != -1) {
+        if (world.get(blockX, blockY) != -1 && Inventory.currentObject != null) {
             Point2i root = Player.findRoot(blockX, blockY);
 
             if (root == null) {
@@ -74,14 +70,13 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
             if (factories.contains(root)) {
                 Factories factory = factoriesConst.get(StaticWorldObjects.getFileName(world.get(root.x, root.y)));
 
-                Point2i current = Inventory.currentObject;
                 int cell = ArrayUtils.findFreeCell(factory.inputStoredObjects);
 
-                if (cell != -1 && current != null) {
+                if (cell != -1) {
                     for (int i = 0; i < factory.inputObjects.length; i++) {
                         if (factory.inputObjects[i].id == item.id) {
                             factory.inputStoredObjects[cell] = Inventory.getCurrent();
-                            Inventory.decrementItem(current.x, current.y);
+                            Inventory.decrementCurrentItem();
 
                             return;
                         }
@@ -90,11 +85,11 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
 
                 cell = ArrayUtils.findFreeCell(factory.storedFuel);
 
-                if (cell != -1 && current != null) {
+                if (cell != -1) {
                     for (int i = 0; i < factory.fuel.length; i++) {
                         if (factory.fuel[i].id == item.id) {
                             factory.storedFuel[cell] = Inventory.getCurrent();
-                            Inventory.decrementItem(current.x, current.y);
+                            Inventory.decrementCurrentItem();
 
                             return;
                         }
@@ -104,12 +99,15 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
         }
     }
 
-    public enum breaking {
-        WEAK_SLOW, // slow working
-        WEAK_OVERCONSUMPTION, // high consumption
-        AVERAGE_STOP, // stop working
-        AVERAGE_MISWORKING, // misworking
-        CRITICAL // full stop working, need rebuild
+    @Override
+    public void itemCreated(Items item) {
+        if (item.type == Items.Types.PLACEABLE) {
+            String fileName = StaticWorldObjects.getFileName(item.placeable);
+
+            if (fileName.toLowerCase().contains("factories")) {
+                Factories.setFactoryConst(fileName);
+            }
+        }
     }
 
     //для листенера
@@ -193,8 +191,7 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
         this.breakingType = (breakingType == breaking.CRITICAL ? breaking.CRITICAL : null);
 
         switch (breakingType) {
-            case WEAK_SLOW, AVERAGE_STOP ->
-                    maxProductionProgress = Integer.parseInt(Config.getProperties(path).get("ProductionSpeed"));
+            case WEAK_SLOW, AVERAGE_STOP -> maxProductionProgress = Integer.parseInt(Config.getProperties(path).get("ProductionSpeed"));
             case AVERAGE_MISWORKING -> outputObjects = transformItems(Config.getProperties(path).get("OutputObjects"));
             case WEAK_OVERCONSUMPTION -> needEnergy = Integer.parseInt(Config.getProperties(path).get("NeedEnergy"));
         }
@@ -222,8 +219,8 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
 
             float addedX = StaticWorldObjects.getTexture(world.get(lastClickedFactory.x, lastClickedFactory.y)).width();
             float addedY = StaticWorldObjects.getTexture(world.get(lastClickedFactory.x, lastClickedFactory.y)).height();
-            float x = lastClickedFactory.x * 48 + addedX - (blockSize / 2f);
-            float y = lastClickedFactory.y * 48 + addedY - (blockSize / 2f);
+            float x = lastClickedFactory.x * blockSize + addedX - (blockSize / 2f);
+            float y = lastClickedFactory.y * blockSize + addedY - (blockSize / 2f);
 
             boolean input = factory.inputStoredObjects != null;
             boolean output = factory.outputStoredObjects != null;
@@ -245,7 +242,6 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
         }
     }
 
-    //todo сделать нормально
     private static boolean mouseDoubleClick() {
         if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
             lastMouseClickTime = System.currentTimeMillis();
@@ -268,9 +264,8 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
         }
 
         if (factory != null && factory.fuel == null && factory.breakingType != Factories.breaking.CRITICAL && factory.currentEnergy >= factory.needEnergy) {
-            //todo выправить место рисовки и отдебажить
-            float wy = 1 * blockSize;
-            float wx = 1 * blockSize;
+            float wy = blockSize;
+            float wx = blockSize;
 
             int iconY = (int) (wy + blockSize);
             int iconX = (int) (wx + blockSize);

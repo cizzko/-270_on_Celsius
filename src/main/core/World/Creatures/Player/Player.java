@@ -94,7 +94,7 @@ public class Player {
                 tool.lastHitTime = System.currentTimeMillis();
 
                 if (getHp(decrementHp(object, (int) tool.damage)) <= 0) {
-                    createElementPlaceable(object);
+                    createElement(object);
                     world.destroy(blockX, blockY);
                 } else {
                     world.set(blockX, blockY, decrementHp(object, (int) tool.damage), false);
@@ -160,7 +160,7 @@ public class Player {
                         short object = world.get(x + cellX, y + cellY);
 
                         if (getHp(decrementHp(object, hp)) <= 0 && getType(object) != StaticObjectsConst.Types.GAS) {
-                            createElementPlaceable(rootObj);
+                            createElement(rootObj);
                             world.destroy(cellX, cellY);
                             break;
                         } else if (getType(object) != StaticObjectsConst.Types.GAS) {

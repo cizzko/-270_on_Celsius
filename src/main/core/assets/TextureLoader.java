@@ -1,5 +1,6 @@
 package core.assets;
 
+import core.Application;
 import core.util.Color;
 import core.g2d.BitMap;
 import org.lwjgl.system.MemoryUtil;
@@ -50,7 +51,7 @@ public class TextureLoader {
                 return new GifImageData(reader.read(0).getWidth(), reader.read(0).getHeight(), frames);
             }
         } catch (IOException e) {
-            e.printStackTrace(); // TODO
+            Application.log.error(e.getMessage());
         }
         return null;
     }
