@@ -339,7 +339,6 @@ public final class AutoLoader {
     }
 
     private void cancelLoading(AssetState assetState) {
-        // TODO вообще, тут очень простая рекурсия, но у меня нет под рукой готового итератора
         for (Future<?> future : assetState.futures) {
             if (future != null) {
                 future.cancel(false);

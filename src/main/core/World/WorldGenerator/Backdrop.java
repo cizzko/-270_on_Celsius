@@ -10,6 +10,7 @@ public class Backdrop {
     //todo привязка
     private static final int scaleX = 2, scaleY = 2;
     //сначала сделать чтоб работало, потом делать красивее..
+    //todo есть идейка с дублированием и связыванием задников надо обдумать
     private static int lastX, nextX;
     private static Biomes lastBiome = null;
 

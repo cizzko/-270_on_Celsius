@@ -13,7 +13,7 @@ public class Factory extends StaticObjectsConst_V2 {
     public float needEnergy, maxHp;
     public int productionSpeed;
     public int maxItemCapacity;
-    public Factories.Breaking breakingType;
+    public Factories.breaking breakingType;
     public ItemStack[] input, output, fuel;
 
     public Factory(String id) {
@@ -24,7 +24,7 @@ public class Factory extends StaticObjectsConst_V2 {
     public void load(ContentLoader cnt) {
         super.load(cnt);
         var json = cnt.node();
-        this.breakingType = Factories.Breaking.valueOf(json.path("breaking").asText("CRITICAL").toUpperCase(Locale.ROOT));
+        this.breakingType = Factories.breaking.valueOf(json.path("breaking").asText("CRITICAL").toUpperCase(Locale.ROOT));
         this.needEnergy = json.path("need-energy").floatValue();
         this.maxHp = json.path("max-hp").floatValue();
         this.maxItemCapacity = json.path("max-item-capacity").intValue();
