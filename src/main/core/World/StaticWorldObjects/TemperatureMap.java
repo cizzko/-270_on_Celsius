@@ -17,7 +17,7 @@ public class TemperatureMap {
     public static float dayTemperatureDecrement = 0.04f, currentWorldTemperature;
 
     // todo как то криво работает
-    public static void create(PlayGameScene playGameScene) {
+    public static void create() {
         //todo
         //currentWorldTemperature = playGameScene.sun.currentTime / 100;
         currentWorldTemperature = 10;

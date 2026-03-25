@@ -56,10 +56,13 @@ public class ShadowMap {
     }
 
     private static void generateShadows() {
+        int shadowWhite = Color.rgba8888(165, 165, 165, 255);
+        int shadowDirtWhite = Color.rgba8888(85, 85, 85, 255);
+
         for (int x = 1; x < world.sizeX - 1; x++) {
             for (int y = 1; y < world.sizeY - 1; y++) {
                 if (checkHasGasAround(x, y, 1)) {
-                    setShadow(x, y, Color.rgba8888(165, 165, 165, 255));
+                    setShadow(x, y, shadowWhite);
                 } else {
                     setShadow(x, y, Color.WHITE);
                 }
@@ -69,7 +72,7 @@ public class ShadowMap {
         for (int x = 1; x < world.sizeX - 1; x++) {
             for (int y = 1; y < world.sizeY - 1; y++) {
                 if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
-                    setShadow(x, y, Color.rgba8888(85, 85, 85, 255));
+                    setShadow(x, y, shadowDirtWhite);
                 }
             }
         }
