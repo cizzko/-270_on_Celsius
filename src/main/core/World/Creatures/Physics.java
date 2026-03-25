@@ -257,6 +257,7 @@ public class Physics {
         }
     }
 
+    //todo не работает/работает криво
     private static float calculateFriction(DynamicWorldObjects ent) {
         ent.getHitboxTo(entityHitbox);
 

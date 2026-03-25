@@ -4,22 +4,27 @@ import core.World.StaticWorldObjects.StaticWorldObjects;
 
 public enum Biomes {
     //чем ближе к 90 тем меньше максимальный угол наклона линии генерации
-    mountains(60, 20, 160, getMountains(), "World\\Backdrops\\back"),
-    plain(40, 40, 140, getPlain(), "World\\Backdrops\\back"),
-    forest(40, 40, 140, getForest(), "World\\Backdrops\\back"),
-    desert(30, 60, 120, getDesert(), "World\\Backdrops\\back");
+    mountains(60, 20, 160, 1, getMountains(), "World\\Backdrops\\back"),
+    plain(30, 40, 140, 1, getPlain(), "World\\Backdrops\\back"),
+    forest(40, 40, 140, 1, getForest(), "World\\Backdrops\\back"),
+    desert(30, 60, 120, 1, getDesert(), "World\\Backdrops\\back"),
+    snowed(30, 60, 120, 1, getSnowed(), "World\\backdrops\\back");
 
     private static final Biomes defaultBiome = forest;
-    private final int blockGradientChance, upperBorder, bottomBorder;
+    private final int blockGradientChance, upperBorder, bottomBorder, chanceDecrease;
     private final String backdrop;
     private final short[] blocks;
 
-    Biomes(int blockGradientChance, int upperBorder, int bottomBorder, short[] blocks, String backdrop) {
+    //int blockGradientChance - насколько острым могут быть углы,
+    //int upperBorder - максимальный угол, int bottomBorder - максимальный угол,
+    //int chanceDecrease - шанс удаления одного или нескольких верхних блоков 0-100
+    Biomes(int blockGradientChance, int upperBorder, int bottomBorder, int chanceDecrease, short[] blocks, String backdrop) {
         this.blockGradientChance = blockGradientChance;
         this.upperBorder = upperBorder;
         this.bottomBorder = bottomBorder;
         this.blocks = blocks;
         this.backdrop = backdrop;
+        this.chanceDecrease = chanceDecrease;
     }
 
     public int getBlockGradientChance() {
@@ -32,6 +37,10 @@ public enum Biomes {
 
     public int getBottomBorder() {
         return bottomBorder;
+    }
+
+    public int getChanceDecrease() {
+        return chanceDecrease;
     }
 
     public short[] getBlocks() {
@@ -52,17 +61,19 @@ public enum Biomes {
 
     private static short[] getMountains() {
         return new short[]{
-                StaticWorldObjects.createStatic("Blocks/stone")};
+                StaticWorldObjects.createStatic("Blocks/snow"),
+                StaticWorldObjects.createStatic("Blocks/stone")
+        };
     }
 
-    //todo снег нарисовать
     private static short[] getPlain(){
         return new short[]{
                 StaticWorldObjects.createStatic("Blocks/grass"),
                 StaticWorldObjects.createStatic("Blocks/dirt"),
                 StaticWorldObjects.createStatic("Blocks/dirt"),
                 StaticWorldObjects.createStatic("Blocks/dirtStone"),
-                StaticWorldObjects.createStatic("Blocks/stone")};
+                StaticWorldObjects.createStatic("Blocks/stone")
+        };
     }
 
     private static short[] getForest() {
@@ -70,7 +81,8 @@ public enum Biomes {
                 StaticWorldObjects.createStatic("Blocks/grass"),
                 StaticWorldObjects.createStatic("Blocks/dirt"),
                 StaticWorldObjects.createStatic("Blocks/dirtStone"),
-                StaticWorldObjects.createStatic("Blocks/stone")};
+                StaticWorldObjects.createStatic("Blocks/stone")
+        };
     }
 
     private static short[] getDesert() {
@@ -78,6 +90,17 @@ public enum Biomes {
                 StaticWorldObjects.createStatic("Blocks/sand"),
                 StaticWorldObjects.createStatic("Blocks/sand"),
                 StaticWorldObjects.createStatic("Blocks/sand"),
-                StaticWorldObjects.createStatic("Blocks/stone")};
+                StaticWorldObjects.createStatic("Blocks/stone")
+        };
+    }
+
+    private static short[] getSnowed() {
+        return new short[]{
+                StaticWorldObjects.createStatic("Blocks/snow"),
+                StaticWorldObjects.createStatic("Blocks/snow"),
+                StaticWorldObjects.createStatic("Blocks/snow"),
+                StaticWorldObjects.createStatic("Blocks/snow"),
+                StaticWorldObjects.createStatic("Blocks/stone")
+        };
     }
 }

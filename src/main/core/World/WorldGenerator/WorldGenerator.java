@@ -23,6 +23,10 @@ import core.math.Point2i;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 import static core.Global.*;
@@ -153,7 +157,7 @@ public class WorldGenerator {
 
         step(() -> {
             log.debug("generating temperature map " + (System.currentTimeMillis() - startTime) + "ms");
-            TemperatureMap.create(playGameScene);
+            TemperatureMap.create();
         });
 
         step(() -> {
@@ -164,6 +168,7 @@ public class WorldGenerator {
         step(() -> {
             log.debug("generating done! " + (System.currentTimeMillis() - startTime) + "ms");
             scheduler.post(() -> startGame(playGameScene), Time.ONE_SECOND);
+            saveWorldImage(world.tiles,  world.sizeX, world.sizeY);
         });
     }
 
@@ -202,7 +207,6 @@ public class WorldGenerator {
         float lastY = world.sizeY / 2f;
         float angle = 90;
 
-        //чем ближе к 90 тем меньше максимальный угол наклона линии генерации
         int upperBorder = currentBiomes.getUpperBorder();
         int bottomBorder = currentBiomes.getBottomBorder();
         int blockGradient = currentBiomes.getBlockGradientChance();
@@ -215,7 +219,7 @@ public class WorldGenerator {
         do {
             angle = Math.clamp(angle + ((float) (Math.random() * blockGradient) - blockGradient / 2f), Math.clamp(upperBorder + (lastY - world.sizeY / 2f), upperBorder, 90), Math.clamp(bottomBorder - (world.sizeY / 2f - lastY), 90, bottomBorder));
 
-            int iters = (int) (Math.random() * (90 - Math.abs(90 - angle)));
+            int iters = (int) (Math.random() * 150 / (90 - Math.abs(90 - angle)));
             float deltaX = (float) (Math.sin(Math.toRadians(angle)));
             float deltaY = (float) (Math.cos(Math.toRadians(angle)));
 
@@ -257,6 +261,8 @@ public class WorldGenerator {
         doItAgain(lastY, currentBiomes);
     }
 
+
+
     //что то типа сглаживания
     //todo просто чтоб работало, потом сделаю красиво
     private static void doItAgain(float lastY, Biomes currentBiome) {
@@ -288,32 +294,37 @@ public class WorldGenerator {
     }
 
     private static void generateCaves() {
-        for (int b = 0; b < world.sizeX / 600; b++) {
+        int lastCave = 0;
+
+        for (int b = 0; b < world.sizeX / ((Math.random() * 200) + 100); b++) {
             int minRadius = 2;
-            int maxRadius = 4;
+            int maxRadius = 5;
             int startRadius = Math.max(minRadius, (int) (Math.random() * maxRadius));
             int x = (int) (Math.random() * world.sizeX);
-            int y = findTopmostSolidBlock(x, 5);
+            int y = Math.random() * 4 > 1 ? findTopmostSolidBlock(x, 5) : (int) (findTopmostSolidBlock(x, 5) - Math.random() * (world.sizeY / 5f));
 
-            generateCave(x, y, startRadius, minRadius, maxRadius);
+            if (Math.abs(lastCave - x) > 200) {
+                generateCave(x, y, startRadius, minRadius, maxRadius, false);
+                lastCave = x;
+            }
         }
     }
 
-    private static void generateCave(float x, float y, float radius, int minRadius, int maxRadius) {
+    private static void generateCave(float x, float y, float radius, int minRadius, int maxRadius, boolean isShoot) {
         if (minRadius <= 1 || minRadius == maxRadius) {
             return;
         }
 
         float startRadius = radius;
-        float angle = (float) ((Math.random() * 180) + 90);
+        float angle = (float) (((Math.random() * 180) + 90) + (isShoot ? ((Math.random() * 180) - 90) : 0));
 
         do {
             if (Math.random() * 30 < 1) {
-                radius = (int) Math.clamp(radius + (Math.random() * 2) - 1, minRadius, startRadius);
+                radius = (int) Math.clamp(radius + (Math.random() * 2) - 1, minRadius, startRadius * 2);
             }
             float start = 0;
-            float iters = (int) (Math.random() * 30);
-            angle = (float) Math.clamp(angle + ((Math.random() * 100) - 50), 87, 267);
+            float iters = (int) (Math.random() * 70);
+            angle = (float) Math.clamp(angle + ((Math.random() * 100) - 50), 91, 271);
 
             float deltaY = (float) (Math.cos(Math.toRadians(angle)));
             float deltaX = (float) (Math.sin(Math.toRadians(angle)));
@@ -323,11 +334,10 @@ public class WorldGenerator {
             }
 
             for (int j = 0; j < iters; j++) {
-                //todo позже
-                //отростки от основной пещеры, надо настроить
-//                if (Math.random() * 500 < 1) {
-//                    generateCave(x, y, radius, 2, (int) radius);
-//                }
+                //отростки от основной пещеры
+                if (Math.random() * (300 + (isShoot ? 120 : 0)) < 1) {
+                    generateCave(x, y, radius, 2, (int) radius, true);
+                }
 
                 y += deltaY;
                 x += deltaX;
@@ -349,7 +359,7 @@ public class WorldGenerator {
                     break;
                 }
             }
-            if (start > 0 && Math.random() * world.sizeY < y / 150f) {
+            if (Math.random() * world.sizeY < y / 100f) {
                 break;
             }
         } while (y < world.sizeY);
