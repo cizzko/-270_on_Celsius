@@ -1,9 +1,9 @@
 package core;
 
+import core.util.Color;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.g2d.Texture;
-import core.util.Color;
 
 import static core.Global.batch;
 import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
