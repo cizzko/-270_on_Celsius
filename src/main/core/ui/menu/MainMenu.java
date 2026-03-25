@@ -1,11 +1,11 @@
-package core.ui.menu;
+package core.UI.menu;
 
 import core.Application;
 import core.GameState;
 import core.Global;
-import core.UI;
-import core.ui.Dialog;
-import core.ui.Styles;
+import core.UI.Dialog;
+import core.UI.Styles;
+import core.UIMenus;
 
 import java.awt.*;
 import java.net.URI;
@@ -45,9 +45,9 @@ public class MainMenu extends Dialog {
     }
 
     private void settingsBtn() {
-        UI.settings().show();
+        UIMenus.settings().show();
         if (gameState == GameState.PLAYING) {
-            UI.pause().hide();
+            UIMenus.pause().hide();
         } else {
             hide();
         }
@@ -55,6 +55,6 @@ public class MainMenu extends Dialog {
 
     private void playButton() {
         hide();
-        UI.createPlanet().show();
+        UIMenus.createPlanet().show();
     }
 }

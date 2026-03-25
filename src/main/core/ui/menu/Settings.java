@@ -1,12 +1,12 @@
-package core.ui.menu;
+package core.UI.menu;
 
 import core.EventHandling.Logging.Config;
 import core.GameState;
 import core.Global;
 import core.Time;
-import core.UI;
+import core.UI.*;
+import core.UIMenus;
 import core.math.Vector2f;
-import core.ui.*;
 
 import static core.EventHandling.Logging.Config.*;
 import static core.Global.atlas;
@@ -117,7 +117,7 @@ public class Settings extends Dialog {
     private void exitBtn() {
         hide();
         if (Global.gameState != GameState.PLAYING) {
-            UI.mainMenu().show();
+            UIMenus.mainMenu().show();
         }
     }
 

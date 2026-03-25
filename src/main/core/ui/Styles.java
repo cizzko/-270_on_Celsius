@@ -1,8 +1,8 @@
-package core.ui;
+package core.UI;
 
 import core.Global;
-import core.util.Color;
 import core.g2d.Font;
+import core.util.Color;
 
 import static core.Global.assets;
 

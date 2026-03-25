@@ -1,4 +1,4 @@
-package core.ui;
+package core.UI;
 
 import core.Global;
 

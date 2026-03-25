@@ -1,8 +1,8 @@
 package core.assets;
 
 import core.Application;
-import core.util.Color;
 import core.g2d.BitMap;
+import core.util.Color;
 import org.lwjgl.system.MemoryUtil;
 
 import javax.imageio.ImageIO;

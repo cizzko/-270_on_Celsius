@@ -9,7 +9,6 @@ import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.math.Point2i;
 import core.math.Vector2f;
 
-import java.awt.*;
 import java.util.HashMap;
 
 import static core.Global.*;

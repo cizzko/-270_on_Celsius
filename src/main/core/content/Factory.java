@@ -3,7 +3,6 @@ package core.content;
 import core.World.ContentLoader;
 import core.World.ContentResolver;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
-import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticObjectsConst_V2;
 import core.World.StaticWorldObjects.Structures.Factories;
 

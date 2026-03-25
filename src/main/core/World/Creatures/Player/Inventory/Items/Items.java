@@ -2,12 +2,12 @@ package core.World.Creatures.Player.Inventory.Items;
 
 import core.EventHandling.Logging.Config;
 import core.Global;
-import core.util.Sized;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.assets.AssetsManager;
 import core.g2d.Atlas;
+import core.util.Sized;
 
 import java.io.Serializable;
 import java.util.Map;

@@ -1,7 +1,7 @@
-package core.ui;
+package core.UI;
 
-import core.util.Sized;
 import core.math.Point2i;
+import core.util.Sized;
 
 public interface Element {
     String id();

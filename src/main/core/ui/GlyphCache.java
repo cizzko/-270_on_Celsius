@@ -1,10 +1,8 @@
-package core.ui;
+package core.UI;
 
-import core.util.Color;
 import core.g2d.Font;
+import core.util.Color;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-
-import java.util.ArrayList;
 
 public final class GlyphCache {
     private final ObjectArrayList<GlyphData> glyphs = new ObjectArrayList<>();

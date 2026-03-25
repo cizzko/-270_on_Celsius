@@ -1,16 +1,13 @@
 package core;
 
 import core.EventHandling.EventHandler;
+import core.UI.Styles;
 import core.assets.AssetsManager;
 import core.g2d.Atlas;
 import core.g2d.Font;
 import core.g2d.Texture;
-import core.ui.Styles;
 
-import static core.Global.batch;
-import static core.Global.camera;
-import static core.Global.input;
-import static core.Global.uiScene;
+import static core.Global.*;
 
 public final class MenuScene extends GameScene {
 
@@ -34,7 +31,7 @@ public final class MenuScene extends GameScene {
 
         Styles.loadAll();
         EventHandler.init();
-        UI.mainMenu().show();
+        UIMenus.mainMenu().show();
     }
 
     @Override

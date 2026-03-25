@@ -3,19 +3,21 @@ package core.EventHandling;
 import core.EventHandling.Logging.Config;
 import core.Global;
 import core.PlayGameScene;
-import core.UI;
+import core.UI.Dialog;
+import core.UI.Element;
+import core.UI.Styles;
+import core.UI.TextArea;
+import core.UIMenus;
 import core.graphic.Layer;
-import core.ui.Dialog;
 import core.math.Point2i;
-import core.ui.Element;
-import core.ui.Styles;
-import core.ui.TextArea;
 import org.lwjgl.glfw.GLFWCharCallback;
 
 import java.util.function.Supplier;
 
-import static core.Global.*;
-import static core.Window.*;
+import static core.Global.batch;
+import static core.Global.input;
+import static core.Window.glfwWindow;
+import static core.Window.windowFocused;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class EventHandler {
@@ -74,14 +76,14 @@ public class EventHandler {
 
     public static void updateHotkeys(PlayGameScene scene) {
         if (input.justPressed(GLFW_KEY_ESCAPE)) {
-            UI.pause().toggle();
+            UIMenus.pause().toggle();
         }
 
         if (!windowFocused && Config.getFromConfig("Autopause").equals("true")) {
-            UI.pause().show();
+            UIMenus.pause().show();
         }
 
-        scene.setPaused(UI.pause().isShown());
+        scene.setPaused(UIMenus.pause().isShown());
 
         if ((input.justPressed(GLFW_KEY_BACKSPACE) || input.repeated(GLFW_KEY_BACKSPACE)) && isKeylogging()) {
             int length = keyLoggingText.length();

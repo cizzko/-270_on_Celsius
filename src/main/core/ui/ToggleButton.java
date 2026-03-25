@@ -1,10 +1,11 @@
-package core.ui;
+package core.UI;
 
-import core.util.Color;
 import core.g2d.Drawable;
 import core.g2d.Fill;
+import core.util.Color;
 
-import static core.Global.*;
+import static core.Global.batch;
+import static core.Global.input;
 import static core.World.Textures.TextureDrawing.drawText;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 

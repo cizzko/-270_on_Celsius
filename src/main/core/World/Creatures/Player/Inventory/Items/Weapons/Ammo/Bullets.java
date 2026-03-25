@@ -1,6 +1,6 @@
 package core.World.Creatures.Player.Inventory.Items.Weapons.Ammo;
 
-import core.ui.Sounds.Sound;
+import core.UI.Sounds.Sound;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import static core.Global.*;
-import static core.World.WorldGenerator.WorldGenerator.*;
+import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Bullets {

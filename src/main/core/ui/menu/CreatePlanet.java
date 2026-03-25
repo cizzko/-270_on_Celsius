@@ -1,10 +1,13 @@
-package core.ui.menu;
+package core.UI.menu;
 
 import core.Constants;
 import core.Global;
-import core.UI;
+import core.UI.Button;
+import core.UI.Dialog;
+import core.UI.ImageElement;
+import core.UI.Styles;
+import core.UIMenus;
 import core.World.WorldGenerator.WorldGenerator;
-import core.ui.*;
 
 import static core.Global.atlas;
 
@@ -24,7 +27,7 @@ public class CreatePlanet extends Dialog {
 
         addButton(Styles.SIMPLE_TEXT_BUTTON, b -> {
             hide();
-            UI.mainMenu().show();
+            UIMenus.mainMenu().show();
         })
         .set(40, 975, 240, 65)
         .setName(Global.lang.get("Return"));

@@ -1,7 +1,5 @@
 package core.World.Creatures.Birds;
 
-import core.World.Creatures.DynamicWorldObjects;
-
 public class Bird {
     public int flyTime, soaringTime;
     public float hunger, sleep;

@@ -1,10 +1,10 @@
 package core.World.Textures;
 
 import core.GameState;
-import core.util.Color;
+import core.UI.Styles;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.ui.Styles;
+import core.util.Color;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,7 +12,7 @@ import java.util.HashMap;
 import static core.Global.gameState;
 import static core.Global.world;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
-import static core.World.WorldGenerator.WorldGenerator.*;
+import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 
 public class ShadowMap {
     private static int[] shadows;

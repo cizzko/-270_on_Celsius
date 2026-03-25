@@ -1,7 +1,7 @@
-package core.ui;
+package core.UI;
 
-import core.util.Sized;
 import core.g2d.Drawable;
+import core.util.Sized;
 
 import java.util.List;
 import java.util.function.Consumer;

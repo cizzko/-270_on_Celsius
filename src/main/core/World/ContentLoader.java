@@ -7,7 +7,6 @@ import core.Global;
 import core.World.ContentManager.Type;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.StaticWorldObjects.BlockUnresolved;
-import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticObjectsConst_V2;
 import core.content.ButterflyType;
 import core.content.Factory;

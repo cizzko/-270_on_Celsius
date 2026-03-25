@@ -1,24 +1,22 @@
 package core;
 
+import core.UI.Element;
 import core.g2d.Camera2;
 import core.graphic.Layer;
 import core.input.InputListener;
-import core.ui.Element;
 import core.util.SnapshotArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.ArrayList;
+import static core.Global.batch;
 
-import static core.Global.*;
-
-public final class UiScene implements InputListener {
+public final class UIScene implements InputListener {
     public static final Logger log = LogManager.getLogger();
 
     private final Camera2 view = new Camera2();
     private final SnapshotArrayList<Element> elements = new SnapshotArrayList<>(new Element[16], true);
 
-    public UiScene(int width, int height) {
+    public UIScene(int width, int height) {
         view.setToOrthographic(width, height);
     }
 

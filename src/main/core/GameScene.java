@@ -1,7 +1,7 @@
 package core;
 
-import static core.Global.uiScene;
 import static core.Global.scheduler;
+import static core.Global.uiScene;
 import static core.util.DebugTools.rethrow;
 
 // У этой магии есть такие свойства:

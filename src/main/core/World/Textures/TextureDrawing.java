@@ -1,30 +1,30 @@
 package core.World.Textures;
 
-import core.World.StaticWorldObjects.Structures.Chests;
-import core.util.ArrayUtils;
-import core.World.Creatures.Player.Inventory.Items.Items;
-import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
-import core.g2d.Atlas;
-import core.util.Color;
+import core.UI.Styles;
 import core.Window;
 import core.World.Creatures.DynamicWorldObjects;
+import core.World.Creatures.Player.Inventory.Items.Items;
+import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
 import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.World.StaticWorldObjects.Structures.Chests;
 import core.World.StaticWorldObjects.Structures.Factories;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.WorldUtils;
+import core.g2d.Atlas;
 import core.g2d.Fill;
 import core.g2d.Font;
 import core.math.Point2i;
 import core.math.Rectangle;
-import core.ui.Styles;
+import core.util.ArrayUtils;
+import core.util.Color;
 
-import java.util.*;
+import java.util.ArrayDeque;
 
 import static core.Global.*;
-import static core.util.ArrayUtils.findEqualsObjects;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.WorldGenerator.WorldGenerator.*;
+import static core.util.ArrayUtils.findEqualsObjects;
 
 public class TextureDrawing {
     //todo разобраться с размерами

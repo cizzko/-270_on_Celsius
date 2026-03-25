@@ -2,7 +2,6 @@ package core.World.Creatures.Player;
 
 import core.EventHandling.Logging.Config;
 import core.Global;
-import core.util.Color;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Items;
@@ -14,13 +13,14 @@ import core.World.WorldGenerator.WorldGenerator;
 import core.g2d.Fill;
 import core.math.Point2i;
 import core.math.Rectangle;
+import core.util.Color;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.*;
-import static core.World.WorldGenerator.WorldGenerator.*;
+import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 import static core.World.WorldUtils.getDistanceToMouse;
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Player {
     public static Thread currentInteraction;

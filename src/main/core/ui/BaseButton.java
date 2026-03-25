@@ -1,9 +1,9 @@
-package core.ui;
+package core.UI;
 
 import core.EventHandling.EventHandler;
-import core.util.Color;
 import core.World.Textures.TextureDrawing;
 import core.g2d.Font;
+import core.util.Color;
 
 import java.util.function.Consumer;
 

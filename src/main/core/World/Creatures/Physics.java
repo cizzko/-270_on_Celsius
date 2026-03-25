@@ -2,18 +2,17 @@ package core.World.Creatures;
 
 import core.PlayGameScene;
 import core.Time;
-import core.World.Creatures.Player.Player;
 import core.World.HitboxMap;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
-import core.World.Textures.TextureDrawing;
 import core.math.Point2i;
 import core.math.Rectangle;
 import core.math.Vector2f;
 
 import java.util.Locale;
 
-import static core.Global.*;
+import static core.Global.camera;
+import static core.Global.world;
 import static core.World.Creatures.DynamicWorldObjects.GAP;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getResistance;

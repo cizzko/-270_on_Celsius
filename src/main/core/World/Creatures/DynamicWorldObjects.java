@@ -13,9 +13,11 @@ import core.math.Vector2f;
 import java.io.Serializable;
 import java.util.HashMap;
 
-import static core.Global.*;
+import static core.Global.input;
+import static core.Global.world;
 import static core.World.Creatures.Player.Player.noClip;
-import static core.World.StaticWorldObjects.StaticWorldObjects.*;
+import static core.World.StaticWorldObjects.StaticWorldObjects.getResistance;
+import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.Textures.TextureDrawing.blockSize;
 import static org.lwjgl.glfw.GLFW.*;
 

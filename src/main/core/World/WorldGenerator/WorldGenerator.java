@@ -1,23 +1,23 @@
 package core.World.WorldGenerator;
 
-import core.*;
 import core.EventHandling.EventHandler;
+import core.*;
+import core.UI.menu.CreatePlanet;
+import core.World.Creatures.DynamicWorldObjects;
+import core.World.Creatures.Player.Inventory.Inventory;
+import core.World.Creatures.Player.Player;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
 import core.World.PerlinNoiseGenerator;
-import core.World.StaticWorldObjects.Structures.Chests;
-import core.World.World;
-import core.ui.menu.CreatePlanet;
-import core.World.Creatures.Player.Inventory.Inventory;
+import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.World.StaticWorldObjects.Structures.Chests;
 import core.World.StaticWorldObjects.Structures.ElectricCables;
 import core.World.StaticWorldObjects.Structures.Factories;
-import core.World.Creatures.Player.Player;
-import core.World.Creatures.DynamicWorldObjects;
+import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
-import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.Textures.TextureDrawing;
+import core.World.World;
 import core.math.MathUtil;
 import core.math.Point2i;
 import org.apache.logging.log4j.LogManager;
@@ -27,7 +27,8 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.HashMap;
 
 import static core.Global.*;
 import static core.World.StaticWorldObjects.StaticObjectsConst.getConst;
@@ -168,7 +169,6 @@ public class WorldGenerator {
         step(() -> {
             log.debug("generating done! " + (System.currentTimeMillis() - startTime) + "ms");
             scheduler.post(() -> startGame(playGameScene), Time.ONE_SECOND);
-            saveWorldImage(world.tiles,  world.sizeX, world.sizeY);
         });
     }
 
@@ -533,7 +533,7 @@ public class WorldGenerator {
         });
 
         gameScene.onPreloadCompletion(() -> {
-            UI.createPlanet().hide();
+            UIMenus.createPlanet().hide();
 
             setGameScene(playGameScene);
             gameState = GameState.PLAYING;

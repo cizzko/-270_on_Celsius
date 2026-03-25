@@ -1,7 +1,7 @@
 package core.g2d;
 
-import core.util.Color;
 import core.math.MathUtil;
+import core.util.Color;
 
 import static core.Global.atlas;
 import static core.Global.batch;

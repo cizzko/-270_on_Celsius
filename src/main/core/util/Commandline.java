@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 
 import static core.EventHandling.EventHandler.keyLoggingText;
-import static core.Global.*;
+import static core.Global.input;
 import static core.World.Textures.TextureDrawing.drawRectangleText;
 import static org.lwjgl.glfw.GLFW.*;
 

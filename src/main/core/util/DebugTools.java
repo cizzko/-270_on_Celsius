@@ -1,8 +1,8 @@
 package core.util;
 
 import core.Global;
-import core.World.Textures.ShadowMap;
 import core.World.StaticWorldObjects.Structures.Structures;
+import core.World.Textures.ShadowMap;
 import core.math.Point2i;
 
 import java.text.DecimalFormat;
@@ -10,8 +10,8 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
 import static core.Global.world;
-import static core.Window.*;
-import static core.World.StaticWorldObjects.StaticWorldObjects.*;
+import static core.Window.glfwWindow;
+import static core.World.StaticWorldObjects.StaticWorldObjects.getId;
 import static core.World.WorldUtils.getBlockUnderMousePoint;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;

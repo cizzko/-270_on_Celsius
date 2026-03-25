@@ -1,10 +1,9 @@
 package core.World.StaticWorldObjects;
 
 import core.Global;
-import core.PlayGameScene;
-import core.util.Sized;
 import core.World.Weather.Sun;
 import core.math.Point2i;
+import core.util.Sized;
 
 import java.util.HashMap;
 

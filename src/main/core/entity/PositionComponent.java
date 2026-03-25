@@ -1,7 +1,5 @@
 package core.entity;
 
-import core.World.Textures.TextureDrawing;
-
 public interface PositionComponent {
     float getX();
     float getY();

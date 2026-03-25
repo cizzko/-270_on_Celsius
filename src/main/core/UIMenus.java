@@ -1,11 +1,11 @@
 package core;
 
-import core.ui.menu.CreatePlanet;
-import core.ui.menu.Pause;
-import core.ui.menu.MainMenu;
-import core.ui.menu.Settings;
+import core.UI.menu.CreatePlanet;
+import core.UI.menu.MainMenu;
+import core.UI.menu.Pause;
+import core.UI.menu.Settings;
 
-public final class UI {
+public final class UIMenus {
     private static MainMenu mainMenu;
     private static CreatePlanet createPlanet;
     private static Pause pause;

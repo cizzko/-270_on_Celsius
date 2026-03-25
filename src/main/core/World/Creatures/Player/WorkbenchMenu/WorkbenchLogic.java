@@ -12,7 +12,6 @@ import core.g2d.Fill;
 import core.math.Point2i;
 import core.util.Color;
 
-import java.awt.*;
 import java.util.HashSet;
 
 import static core.Global.*;
@@ -21,7 +20,7 @@ import static core.World.Creatures.Player.ItemControl.*;
 import static core.World.StaticWorldObjects.StaticWorldObjects.getFileName;
 import static core.World.Textures.TextureDrawing.drawObjects;
 import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_B;
 
 public class WorkbenchLogic implements StaticBlocksEvents {
     private static boolean isOpen, smallNearby, mediumNearby, largeNearby;

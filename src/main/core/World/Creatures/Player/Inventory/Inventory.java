@@ -1,6 +1,7 @@
 package core.World.Creatures.Player.Inventory;
 
 import core.EventHandling.EventHandler;
+import core.UI.Styles;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.ItemControl;
 import core.World.StaticWorldObjects.StaticWorldObjects;
@@ -9,14 +10,12 @@ import core.World.WorldGenerator.WorldGenerator;
 import core.g2d.Atlas;
 import core.math.Point2i;
 import core.math.Rectangle;
-import core.ui.Styles;
 
-import java.awt.*;
 import java.util.ArrayList;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Inventory.Items.ItemGrid.findItemOrFree;
-import static core.World.Textures.TextureDrawing.*;
+import static core.World.Textures.TextureDrawing.drawText;
 import static core.World.WorldUtils.getBlockUnderMousePoint;
 import static core.World.WorldUtils.getDistanceToMouse;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;

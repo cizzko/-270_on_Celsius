@@ -1,6 +1,5 @@
 package core.content;
 
-import core.Global;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.entity.BaseBlockEntity;
 import core.entity.BlockItemStorage;

@@ -1,7 +1,6 @@
 package core.World;
 
 import core.Global;
-import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticObjectsConst_V2;
 import core.content.CreatureType;
 import org.apache.logging.log4j.LogManager;

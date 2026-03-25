@@ -2,30 +2,30 @@ package core;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
-import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
-import core.World.StaticWorldObjects.Structures.Chests;
-import core.World.WorldGenerator.Backdrop;
-import core.util.Color;
-import core.util.Commandline;
+import core.UI.Styles;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
-import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
+import core.World.StaticWorldObjects.Structures.Chests;
 import core.World.Textures.TextureDrawing;
 import core.World.Weather.Sun;
+import core.World.WorldGenerator.Backdrop;
 import core.g2d.Fill;
 import core.graphic.Layer;
 import core.math.Rectangle;
 import core.math.Vector2f;
-import core.ui.Styles;
+import core.util.Color;
+import core.util.Commandline;
 
 import static core.EventHandling.EventHandler.debugLevel;
 import static core.EventHandling.EventHandler.updateHotkeys;
 import static core.Global.*;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.StaticWorldObjects.Structures.Factories.updateFactoriesOutput;
-import static core.World.Textures.TextureDrawing.*;
+import static core.World.Textures.TextureDrawing.blockSize;
+import static core.World.Textures.TextureDrawing.updateBlocksInteraction;
 import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 
 public final class PlayGameScene extends GameScene {

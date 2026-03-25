@@ -1,8 +1,8 @@
 package core.g2d;
 
-import core.util.Color;
 import core.pool.Pool;
 import core.pool.Poolable;
+import core.util.Color;
 
 import java.util.ArrayList;
 import java.util.Comparator;

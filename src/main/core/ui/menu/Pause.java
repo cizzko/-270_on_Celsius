@@ -1,10 +1,10 @@
-package core.ui.menu;
+package core.UI.menu;
 
 import core.GameState;
 import core.Global;
-import core.UI;
-import core.ui.Dialog;
-import core.ui.Styles;
+import core.UI.Dialog;
+import core.UI.Styles;
+import core.UIMenus;
 
 import static core.Global.input;
 
@@ -31,7 +31,7 @@ public class Pause extends Dialog {
 
     private void continueBtn() {
         hide();
-        UI.settings().hide();
+        UIMenus.settings().hide();
     }
 
     private void exitBtn() {
@@ -39,11 +39,11 @@ public class Pause extends Dialog {
     }
 
     private void settingsBtn() {
-        UI.settings().show();
+        UIMenus.settings().show();
         if (Global.gameState == GameState.PLAYING) {
             hide();
         } else {
-            UI.mainMenu().hide();
+            UIMenus.mainMenu().hide();
         }
     }
 

@@ -1,9 +1,9 @@
-package core.ui;
+package core.UI;
 
-import core.util.Color;
 import core.g2d.Atlas;
 import core.g2d.Fill;
 import core.g2d.Font;
+import core.util.Color;
 
 import static core.Global.*;
 import static core.World.Textures.TextureDrawing.getTextSize;

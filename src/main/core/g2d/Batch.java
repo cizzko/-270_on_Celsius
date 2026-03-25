@@ -1,12 +1,12 @@
 package core.g2d;
 
 import core.Global;
-import core.util.Disposable;
-import core.util.Color;
 import core.assets.AssetsManager;
 import core.math.Mat3;
 import core.pool.Pool;
 import core.pool.Poolable;
+import core.util.Color;
+import core.util.Disposable;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.system.MemoryUtil;
@@ -18,7 +18,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import static core.g2d.VertexAttribute.*;
-import static org.lwjgl.opengl.GL46.*;
+import static org.lwjgl.opengl.GL46.GL_DYNAMIC_DRAW;
+import static org.lwjgl.opengl.GL46.GL_TRIANGLES;
 
 public class Batch<S extends Batch.State> implements Disposable {
     protected static final Logger log = LogManager.getLogger();

@@ -1,13 +1,11 @@
 package core.World.Creatures;
 
 import core.Application;
-import core.World.Creatures.Birds.BirdLogic;
-import core.World.Creatures.Butterflies.ButterflyLogic;
 import core.World.Textures.TextureDrawing;
 
 import static core.Global.world;
-import static core.Window.*;
-import static core.World.WorldGenerator.WorldGenerator.*;
+import static core.Window.glfwWindow;
+import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
 public class CreaturesGenerate {

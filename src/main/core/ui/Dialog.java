@@ -1,6 +1,6 @@
-package core.ui;
+package core.UI;
 
-import static core.Global.*;
+import static core.Global.uiScene;
 
 // Никакой это не диалог. Просто базовая реализация BaseGroup.
 // Просто список для дочерних элементов без какой-то особой отрисовки по умолчанию

@@ -1,4 +1,4 @@
-package core.ui.Sounds;
+package core.UI.Sounds;
 
 import core.EventHandling.Logging.Config;
 import org.apache.logging.log4j.LogManager;

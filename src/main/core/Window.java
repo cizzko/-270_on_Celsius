@@ -2,16 +2,19 @@ package core;
 
 import com.sun.management.OperatingSystemMXBean;
 import core.EventHandling.Logging.Config;
-import core.World.ContentManager;
-import core.g2d.*;
+import core.g2d.Atlas;
+import core.g2d.Font;
+import core.g2d.SortingBatch;
 import core.input.InputHandler;
 import core.util.DebugTools;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.io.IoBuilder;
-import org.lwjgl.glfw.*;
+import org.lwjgl.glfw.GLFWErrorCallback;
+import org.lwjgl.glfw.GLFWImage;
+import org.lwjgl.glfw.GLFWWindowCloseCallback;
+import org.lwjgl.glfw.GLFWWindowFocusCallback;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.*;
 
 import javax.imageio.ImageIO;
@@ -22,7 +25,6 @@ import java.nio.file.Files;
 import static core.Global.*;
 import static core.assets.TextureLoader.decodeImage;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.glfw.GLFW.glfwGetVersionString;
 import static org.lwjgl.opengl.GL46.*;
 
 public final class Window extends Application {
@@ -125,7 +127,7 @@ public final class Window extends Application {
         //     keep(GLUtil.setupDebugMessageCallback());
         // }
 
-        uiScene = new UiScene(defaultWidth, defaultHeight);
+        uiScene = new UIScene(defaultWidth, defaultHeight);
         input = new InputHandler(defaultWidth, defaultHeight);
         input.init();
         input.addListener(uiScene);

@@ -1,8 +1,8 @@
-package core.ui;
+package core.UI;
 
-import core.util.Color;
 import core.g2d.Drawable;
 import core.g2d.Font;
+import core.util.Color;
 
 public abstract class Style {
 

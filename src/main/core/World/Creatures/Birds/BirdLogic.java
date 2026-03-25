@@ -3,7 +3,6 @@ package core.World.Creatures.Birds;
 import core.World.Creatures.DynamicWorldObjects;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class BirdLogic {
     public static ArrayList<Bird> birds = new ArrayList<>();

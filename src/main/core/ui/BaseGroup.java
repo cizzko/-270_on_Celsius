@@ -1,6 +1,6 @@
-package core.ui;
+package core.UI;
 
-import core.UiScene;
+import core.UIScene;
 import core.util.SnapshotArrayList;
 
 import java.util.List;
@@ -57,7 +57,7 @@ public abstract class BaseGroup<G extends BaseElement<G> & Group> extends BaseEl
                 try {
                     child.update();
                 } catch (Exception e) {
-                    UiScene.log.error("Exception while updating element {} in {}", child, this, e);
+                    UIScene.log.error("Exception while updating element {} in {}", child, this, e);
                 }
             }
         }

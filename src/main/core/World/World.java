@@ -2,7 +2,6 @@ package core.World;
 
 import core.GameState;
 import core.Global;
-import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Player;
 import core.World.StaticWorldObjects.StaticBlocksEvents;
 import core.World.StaticWorldObjects.StaticObjectsConst;

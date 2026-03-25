@@ -2,22 +2,23 @@ package core.World.StaticWorldObjects.Structures;
 
 import core.EventHandling.Logging.Config;
 import core.Global;
+import core.UI.Sounds.Sound;
 import core.Window;
-import core.World.Textures.TextureDrawing;
-import core.ui.Sounds.Sound;
-import core.util.ArrayUtils;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.InventoryEvents;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.Player;
-import core.util.Color;
 import core.World.StaticWorldObjects.StaticBlocksEvents;
 import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.World.Textures.TextureDrawing;
 import core.World.WorldUtils;
 import core.g2d.Fill;
 import core.math.Point2i;
+import core.util.ArrayUtils;
+import core.util.Color;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Player.playerSize;

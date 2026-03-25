@@ -1,7 +1,7 @@
-package core.ui;
+package core.UI;
 
-import core.util.Color;
 import core.g2d.Fill;
+import core.util.Color;
 
 public class Panel extends BaseGroup<Panel> {
     public final Style.Panel style;

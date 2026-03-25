@@ -1,8 +1,8 @@
-package core.ui;
+package core.UI;
 
+import core.math.Rectangle;
 import core.util.DebugTools;
 import core.util.Sized;
-import core.math.Rectangle;
 
 public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     protected static final int FLAG_X_CHANGED   = 1 << 0;
