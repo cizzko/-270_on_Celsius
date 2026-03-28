@@ -23,15 +23,11 @@ public class ConvertTypesToJson {
 
     private static HashMap<String, String> itemPathToIds = new HashMap<>();
 
-    private static void log(String str) {
-        System.out.println(str);
-    }
-
     public static void main(String[] args) throws IOException {
         var files = new ArrayList<Path>();
         class WalkVisitor extends SimpleFileVisitor<Path> {
             @Override
-            public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
+            public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) {
                 if (path.toString().endsWith(PROPERTIES_EXT)) {
                     files.add(path);
                 }
@@ -99,8 +95,7 @@ public class ConvertTypesToJson {
         }
 
         String fullFileName = file.getFileName().toString();
-        var jsonFile = file.resolveSibling(fullFileName
-                .replace(PROPERTIES_EXT, ".json"));
+        var jsonFile = file.resolveSibling(fullFileName.replace(PROPERTIES_EXT, ".json"));
 
         try (var wr = json.newJsonWriter(Files.newBufferedWriter(jsonFile, StandardCharsets.UTF_8))) {
             wr.beginObject();
@@ -108,8 +103,7 @@ public class ConvertTypesToJson {
             wr.name("id").value(id);
 
                 var categoryDir = file.getName(sourceDir.getNameCount() + 1);
-                String parentDir = categoryDir.toString().toLowerCase(Locale.ROOT)
-                        .replace(PROPERTIES_EXT, "");
+                String parentDir = categoryDir.toString().toLowerCase(Locale.ROOT).replace(PROPERTIES_EXT, "");
 
                 String classType = switch (parentDir) {
                     case "factories", "blocks" -> "block";
@@ -209,7 +203,8 @@ public class ConvertTypesToJson {
             prop("InputObjects", "input", ConvertTypesToJson::itemStackConverter),
             prop("OutputObjects", "output", ConvertTypesToJson::itemStackConverter),
             prop("Fuel", "fuel", ConvertTypesToJson::itemStackConverter),
-            prop("MaxHp", "max-hp", ConvertTypesToJson::integerConverter)
+            prop("MaxHp", "max-hp", ConvertTypesToJson::integerConverter),
+            prop("CreateWith", "create-with", ConvertTypesToJson::itemStackConverter)
     );
 
     static final List<String> removed = List.of("Name");
@@ -217,7 +212,6 @@ public class ConvertTypesToJson {
     private static void integerConverter(JsonWriter wr, String v) throws IOException {
         wr.value(Integer.parseInt(v));
     }
-
 
     public static String canonicalPath(Path file) {
         return ITEMS_DIR.relativize(file)
@@ -234,7 +228,7 @@ public class ConvertTypesToJson {
     private static String normalizePath(String v) {
         // Потому что \\ выглядит ужасно
         String unixLike = v.replace("\\", "/");
-        // Пути вида /World/Blocks/dirt.png тоже выглядят странно, будто мы к руту обращаемся)
+
         if (unixLike.startsWith("/")) {
             unixLike = unixLike.substring(1);
         }
