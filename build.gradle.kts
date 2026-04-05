@@ -64,10 +64,14 @@ val lwjglNatives = Pair(
                 "natives-windows${if (arch.startsWith("aarch64")) "-arm64" else ""}"
             else
                 "natives-windows-x86"
+        arrayOf("Mac OS X", "Darwin").any { name.startsWith(it) }                ->
+            if (arch.startsWith("aarch64") || arch.startsWith("armv8"))
+                "natives-macos-arm64"
+            else
+                "natives-macos"
         else -> throw Error("Unrecognized or unsupported platform. Please set \"lwjglNatives\" manually")
     }
 }
-
 
 allprojects {
     repositories {
