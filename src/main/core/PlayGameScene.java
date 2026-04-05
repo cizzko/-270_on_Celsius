@@ -54,7 +54,7 @@ public final class PlayGameScene extends GameScene {
         EventHandler.setDebugValue(() -> "Camera pos: " + camera.position);
         //EventHandler.setDebugValue(() -> "Current time: " + sun.currentTime);
 
-        smoothedCamera = Config.getFromConfig("SmoothedCamera").equals("true");
+        smoothedCamera = Config.getFromConfigBool("SmoothedCamera");
     }
 
     @Override

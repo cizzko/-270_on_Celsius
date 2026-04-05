@@ -25,11 +25,12 @@ import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 public class Player {
     public static Thread currentInteraction;
     public static boolean noClip = false, placeRules = true;
-    private static int transparencyHPline = Config.getFromConfig("AlwaysOnPlayerHPLine").equals("true") ? 220 : 0;
+    private static int transparencyHPline = Config.getFromConfigBool("AlwaysOnPlayerHPLine") ? 220 : 0;
     public static final int playerSize = 72;
     public static int lastDamage = 0;
     public static long lastDamageTime = System.currentTimeMillis();
     private static long lastChangeTransparency = System.currentTimeMillis(), lastChangeLengthDamage = System.currentTimeMillis();
+    private static final boolean buildGrid = Config.getFromConfigBool("BuildGrid");
 
     public static void createPlayer(boolean randomSpawn) {
         DynamicObjects.addFirst(DynamicWorldObjects.createDynamic("player", randomSpawn ? (int) (Math.random() * (world.sizeX * TextureDrawing.blockSize)) : world.sizeX * 8f));
@@ -174,7 +175,7 @@ public class Player {
 
     public static void drawBuildGrid() {
         //todo починить округление
-        if (!Config.getFromConfig("BuildGrid").equalsIgnoreCase("true")) {
+        if (!buildGrid) {
             return;
         }
 
@@ -202,7 +203,7 @@ public class Player {
         int currentHp = (int) DynamicObjects.getFirst().getCurrentHP();
         int maxHp = (int) DynamicObjects.getFirst().getMaxHp();
 
-        if (currentHp == maxHp && transparencyHPline > 0 && System.currentTimeMillis() - lastChangeTransparency >= 10 && !Config.getFromConfig("AlwaysOnPlayerHPLine").equals("true")) {
+        if (currentHp == maxHp && transparencyHPline > 0 && System.currentTimeMillis() - lastChangeTransparency >= 10 && !Config.getFromConfigBool("AlwaysOnPlayerHPLine")) {
             lastChangeTransparency = System.currentTimeMillis();
             transparencyHPline--;
         } else if (currentHp != maxHp) {

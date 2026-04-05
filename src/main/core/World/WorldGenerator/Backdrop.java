@@ -8,7 +8,7 @@ import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 
 public class Backdrop {
     //todo привязка
-    private static final int scaleX = 2, scaleY = 2;
+    private static final float scaleX = 1.5f, scaleY = 1.5f;
     //сначала сделать чтоб работало, потом делать красивее..
     //todo есть идейка с дублированием и связыванием задников надо обдумать
     private static int lastX, nextX;
@@ -19,18 +19,13 @@ public class Backdrop {
 
         if (currentBiome != lastBiome) {
             lastBiome = currentBiome;
-            lastX = (int) DynamicObjects.getFirst().getX() / blockSize;
-
-            for (int i = 0; i < 22; i++) {
-                if (world.getBiomes(i + lastX) != currentBiome) {
-                   nextX = i + lastX;
-                   break;
-                }
-            }
+            //lastX = (int) DynamicObjects.getFirst().getX() / blockSize;
         }
 
         batch.z(Layer.BACKGROUND);
         batch.pushState(() -> {
+            batch.scale(scaleX * 2, scaleY * 2);
+            batch.draw(atlas.byPath(currentBiome.getBackdrop()),((lastX - (DynamicObjects.getFirst().getX() / blockSize)) * 2) - 1500, 0);
             batch.scale(scaleX, scaleY);
             batch.draw(atlas.byPath(currentBiome.getBackdrop()),((lastX - (DynamicObjects.getFirst().getX() / blockSize)) * 3) - 1500, 0);
         });

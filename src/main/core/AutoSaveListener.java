@@ -7,7 +7,7 @@ public class AutoSaveListener implements ApplicationListener {
 
     @Override
     public void update() {
-        int worldSaveDelay = Integer.parseInt(Config.getFromConfig("AutosaveWorldFrequency"));
+        int worldSaveDelay = Config.getFromConfigInt("AutosaveWorldFrequency");
         if (System.currentTimeMillis() - lastSaveTimestamp >= worldSaveDelay) {
             // TODO реализовать
 

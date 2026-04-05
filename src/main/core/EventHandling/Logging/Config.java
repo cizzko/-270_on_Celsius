@@ -85,9 +85,35 @@ public class Config {
         return getProperties(assets.assetsDir().resolve(path));
     }
 
-    public static String getFromConfig(String key) {
-        checkConfig();
-        return config.get(key);
+    public static String getFromConfigStr(String key) {
+        String v = config.get(key);
+
+        if (v == null) {
+            log.error(key + " in config is null");
+        }
+        return String.valueOf(v);
+    }
+
+    public static boolean getFromConfigBool(String key) {
+        String v = config.get(key);
+
+        if (v == null) {
+            log.error(key + " in config is null");
+            v = "false";
+            config.put(key, v);
+        }
+        return Boolean.parseBoolean(v);
+    }
+
+    public static int getFromConfigInt(String key) {
+        String v = config.get(key);
+
+        if (v == null) {
+            log.error(key + " in config is null");
+            v = "0";
+            config.put(key, v);
+        }
+        return Integer.parseInt(v);
     }
 
     // fast commands

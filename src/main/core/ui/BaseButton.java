@@ -7,7 +7,7 @@ import core.util.Color;
 
 import java.util.function.Consumer;
 
-import static core.EventHandling.Logging.Config.getFromConfig;
+import static core.EventHandling.Logging.Config.getFromConfigBool;
 import static core.Global.input;
 
 public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B> {
@@ -15,6 +15,7 @@ public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B>
     public Color color;
     public String name, prompt;
     public Consumer<? super B> clickAction;
+    private static boolean showPrompts = getFromConfigBool("ShowPrompts");
 
     protected BaseButton(Group panel) {
         super(panel);
@@ -66,7 +67,7 @@ public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B>
     }
 
     protected void drawPrompt(BaseButton<?> button, Font font) {
-        if (getFromConfig("ShowPrompts").equals("true")) {
+        if (showPrompts) {
             if (EventHandler.isMousePressed(button) && System.currentTimeMillis() - input.getLastMouseMoveTimestamp() >= 1000 && button.prompt != null) {
                 TextureDrawing.drawRectangleText(input.mousePos().x, input.mousePos().y, 0, button.prompt,
                         false, Styles.DEFAULT_PANEL_COLOR, font);

@@ -45,29 +45,29 @@ public class Settings extends Dialog {
         graphicsSettings = mainPanel.add(new Dialog() {{
             setVisible(true);
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
-                boolean newState = !Boolean.parseBoolean(getFromConfig(INTERPOLATE_SUNSET_KEY));
+                boolean newState = getFromConfigBool(INTERPOLATE_SUNSET_KEY);
                 updateConfig(INTERPOLATE_SUNSET_KEY, Boolean.toString(newState));
             })
                     .setPosition(310, 980)
                     .setName(Global.lang.get(INTERPOLATE_SUNSET_KEY))
                     .setPrompt(Global.lang.get("InterpolateSunsetPrompt"))
-                    .setClicked(Boolean.parseBoolean(getFromConfig(INTERPOLATE_SUNSET_KEY)));
+                    .setClicked(getFromConfigBool(INTERPOLATE_SUNSET_KEY));
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
-                boolean newState = !Boolean.parseBoolean(getFromConfig(PRELOAD_RESOURCES_KEY));
+                boolean newState = getFromConfigBool(PRELOAD_RESOURCES_KEY);
                 updateConfig(PRELOAD_RESOURCES_KEY, Boolean.toString(newState));
             })
                     .setPosition(310, 910)
                     .setName(Global.lang.get(PRELOAD_RESOURCES_KEY))
                     .setPrompt(Global.lang.get("PreloadResourcesPrompt"))
-                    .setClicked(Boolean.parseBoolean(getFromConfig(PRELOAD_RESOURCES_KEY)));
+                    .setClicked(getFromConfigBool(PRELOAD_RESOURCES_KEY));
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
-                boolean newState = !Boolean.parseBoolean(getFromConfig(VERTICAL_SYNC_KEY));
+                boolean newState = getFromConfigBool(VERTICAL_SYNC_KEY);
                 updateConfig(VERTICAL_SYNC_KEY, Boolean.toString(newState));
             })
                     .setPosition(310, 840)
                     .setName(Global.lang.get(VERTICAL_SYNC_KEY))
                     .setPrompt(Global.lang.get("VerticalSyncPrompt"))
-                    .setClicked(Boolean.parseBoolean(getFromConfig(VERTICAL_SYNC_KEY)));
+                    .setClicked(getFromConfigBool(VERTICAL_SYNC_KEY));
         }});
         basicSettings = mainPanel.add(new Dialog() {{
             setVisible(false);
@@ -98,13 +98,13 @@ public class Settings extends Dialog {
                     .setPosition(310, 980)
                     .setName(Global.lang.get(SHOW_PROMPTS_KEY))
                     .setPrompt(Global.lang.get("ShowPromptsPrompt"))
-                    .setClicked(Boolean.parseBoolean(getFromConfig(SHOW_PROMPTS_KEY)));
+                    .setClicked(getFromConfigBool(SHOW_PROMPTS_KEY));
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
             })
                     .setPosition(310, 910)
                     .setName(Global.lang.get(DETECT_LANGUAGE_KEY))
                     .setPrompt(Global.lang.get("DetectLanguagePrompt"))
-                    .setClicked(Boolean.parseBoolean(getFromConfig(DETECT_LANGUAGE_KEY)));
+                    .setClicked(getFromConfigBool(DETECT_LANGUAGE_KEY));
             addImage(745, 965, atlas.byPath("UI/GUI/languageIcon.png"));
         }});
         mainPanel.add(new OtterBox(this));

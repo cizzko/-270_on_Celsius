@@ -27,9 +27,9 @@ public final class LangTranslation {
 
     public void load() throws IOException {
         // detect language
-        if (Config.getFromConfig("DetectLanguage").equals("true")) {
+        if (Config.getFromConfigBool("DetectLanguage")) {
             String detected = null;
-            for (String candidate : new String[]{Locale.getDefault().getLanguage(), Config.getFromConfig("Language")}) {
+            for (String candidate : new String[]{Locale.getDefault().getLanguage(), Config.getFromConfigStr("Language")}) {
                 if (lang.getLanguages().contains(candidate)) {
                     detected = candidate;
                     break;
@@ -43,7 +43,7 @@ public final class LangTranslation {
 
             language = detected;
         } else {
-            language = Config.getFromConfig("Language");
+            language = Config.getFromConfigStr("Language");
         }
 
         JsonObject json;

@@ -11,8 +11,8 @@ import java.util.HashSet;
 public class Sound {
     private static final Logger log = LogManager.getLogger();
 
-    private static final int effectVolume = Integer.parseInt(Config.getFromConfig("EffectsVolume"));
-    private static final int musicVolume = Integer.parseInt(Config.getFromConfig("SoundsVolume"));
+    private static final int effectVolume = Config.getFromConfigInt("EffectsVolume");
+    private static final int musicVolume = Config.getFromConfigInt("SoundsVolume");
     private static int volume;
     private static boolean suppVolumeLevel = true, error = false;
     public static HashSet<String> sounds = new HashSet<>();

@@ -21,9 +21,9 @@ import static core.Window.windowFocused;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class EventHandler {
-    private static boolean keyLogging = false;
+    private static boolean keyLogging, autopause = Config.getFromConfigBool("Autopause");
     public static final StringBuilder keyLoggingText = new StringBuilder(256);
-    public static int debugLevel = Integer.parseInt(Config.getFromConfig("Debug"));
+    public static int debugLevel = Config.getFromConfigInt("Debug");
 
     private static final class DebugBox extends TextArea {
         private final Supplier<String> format;
@@ -79,7 +79,7 @@ public class EventHandler {
             UIMenus.pause().toggle();
         }
 
-        if (!windowFocused && Config.getFromConfig("Autopause").equals("true")) {
+        if (!windowFocused && autopause) {
             UIMenus.pause().show();
         }
 

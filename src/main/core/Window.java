@@ -45,7 +45,7 @@ public final class Window extends Application {
         //content.loadAll();
 
         Config.checkConfig();
-        if (Integer.parseInt(Config.getFromConfig("Debug")) >= 2) {
+        if (Config.getFromConfigInt("Debug") >= 2) {
             Configuration.DEBUG.set(true);
             Configuration.DEBUG_STREAM.set(IoBuilder.forLogger(lwjglLogger)
                     .setLevel(Level.DEBUG)
@@ -109,12 +109,12 @@ public final class Window extends Application {
 
         printComputerInfo();
 
-        if (Config.getFromConfig("VerticalSync").equals("true")) {
+        if (Config.getFromConfigBool("VerticalSync")) {
             log.info("Framerate: Vertical Sync");
             glfwSwapInterval(1);
         } else {
             glfwSwapInterval(0);
-            int targetFPS = Integer.parseInt(Config.getFromConfig("TargetFPS"));
+            int targetFPS = Config.getFromConfigInt("TargetFPS");
             log.info("Framerate: {} fps", targetFPS);
             setFramerate(targetFPS);
         }
