@@ -1,0 +1,9 @@
+{
+  "id": "chest",
+  "class-type": "block",
+  "Resistance": 100,
+  "texture": "World/Blocks/chest",
+  "Type": "solid",
+  "max-hp": 100,
+  "Density": 1,
+  "create-with": {

@@ -1,11 +1,11 @@
 {
-  "id": "aluminum",
+  "id": "snow",
   "class-type": "block",
   "Resistance": 100,
-  "texture": "World/Blocks/aluminum",
+  "texture": "World/Blocks/snow",
   "Type": "solid",
-  "max-hp": 100,
+  "max-hp": 60,
   "Density": 1,
   "LightTransmission": 80,
-  "Name": "aluminum"
+  "Name": "snow"
 }

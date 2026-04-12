@@ -4,18 +4,28 @@ import core.GameObject;
 import core.Load;
 import core.World.Creatures.Physics;
 import core.World.Textures.TextureDrawing;
+import core.World.WorldGenerator.Backdrop;
+import core.World.WorldGenerator.Biomes;
 import core.g2d.Texture;
+import core.graphic.Layer;
 import core.util.Color;
 
 import static core.EventHandling.Logging.Config.getFromConfigBool;
-import static core.Global.batch;
-import static core.Global.world;
+import static core.Global.*;
+import static core.Global.atlas;
+import static core.World.Textures.TextureDrawing.blockSize;
 import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 
 public class Sun extends GameObject {
     private final Color skyColor = new Color();
     private final Color sunColor = new Color();
     private final Color sunsetColor = new Color();
+    //todo привязка
+    private static final float scaleX = 1.5f, scaleY = 1.5f;
+    //сначала сделать чтоб работало, потом делать красивее..
+    //todo есть идейка с дублированием и связыванием задников надо обдумать
+    private static int lastX, nextX;
+    private static Biomes lastBiome = null;
 
     private long lastTime;
     //public float x = 0, y = 0, worldX = (float) (Math.random() * (world.sizeX * TextureDrawing.blockSize));
@@ -36,6 +46,13 @@ public class Sun extends GameObject {
     //todo решить что делать с солнцем (!)
     //todo обновление: все плохо я не знаю как это делать без z координаты
     public void update() {
+        Biomes currentBiome = world.getBiomes((int) DynamicObjects.getFirst().getX() / blockSize);
+
+        if (currentBiome != lastBiome) {
+            lastBiome = currentBiome;
+            //lastX = (int) DynamicObjects.getFirst().getX() / blockSize;
+        }
+
         if (worldX >= (world.sizeX - Physics.swap) * TextureDrawing.blockSize) {
             worldX = 0;
         }
@@ -102,6 +119,13 @@ public class Sun extends GameObject {
 //        batch.draw(skyBackgroundTex, skyColor);
 //        batch.draw(sunsetTex, sunsetColor);
 
+        batch.z(Layer.BACKGROUND);
+        batch.pushState(() -> {
+            batch.scale(scaleX * 2, scaleY * 2);
+            batch.draw(atlas.byPath(lastBiome.getBackdrop()),((lastX - (DynamicObjects.getFirst().getX() / blockSize)) * 2) - 1500, 0);
+            batch.scale(scaleX, scaleY);
+            batch.draw(atlas.byPath(lastBiome.getBackdrop()),((lastX - (DynamicObjects.getFirst().getX() / blockSize)) * 3) - 1500, 0);
+        });
         batch.z(-2);
         batch.draw(sunTex, sunColor, x, y);
     }

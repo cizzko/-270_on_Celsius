@@ -72,7 +72,6 @@ public final class PlayGameScene extends GameScene {
         updatePlayerPos();
         postEffect.update();
         sun.update();
-        Backdrop.update();
         updateInventoryInteraction();
         Weapons.updateAmmo();
         updateFactoriesOutput();

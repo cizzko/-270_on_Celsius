@@ -552,6 +552,7 @@ public class WorldGenerator {
         return null;
     }
 
+    //todo назватб
     public static void saveWorldImage(short[] tiles, int sizeX, int sizeY) {
         BufferedImage image = new BufferedImage(sizeX, sizeY, BufferedImage.TYPE_INT_RGB);
         String path = "C:\\other\\-270_On_Celsius\\-270_On_Celsius\\src\\assets\\aa.png";

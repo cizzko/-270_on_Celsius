@@ -25,4 +25,5 @@ module core.main {
     requires transitive org.lwjgl.glfw.natives;
     requires transitive org.lwjgl.opengl.natives;
     requires transitive org.lwjgl.jemalloc.natives;
+    requires core.main;
 }

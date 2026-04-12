@@ -32,6 +32,8 @@ public final class AtlasGenerator {
     // скорее всего это ошибка округления текстурных координат.
     // Что-то типа наслаивания (?)
     private static final int PIXEL_GAP = 2;
+    // Максимальный размер по одной из осей для текстуры
+    public static int MAX_EXTENT = 1024;
 
     static final class Region {
         final Path path;
@@ -63,6 +65,7 @@ public final class AtlasGenerator {
     public static void main(String[] args) throws IOException {
         Path basePath = Path.of("src/assets/");
         Path outputDir = Path.of("src/assets/");
+
         Set<Path> ignore = Set.of(
                 basePath.resolve("World/Other/background.png"),
                 basePath.resolve("World/Sky/skyBackground0.png"),
@@ -70,7 +73,9 @@ public final class AtlasGenerator {
                 basePath.resolve("World/Sun/InterpolatedSunset.png"),
                 basePath.resolve("World/Sun/nonInterpolatedSunset.png"),
                 basePath.resolve("UI/GUI/modifiedTemperature.png"),
-                basePath.resolve("World/Sun/sun.png")
+                basePath.resolve("World/Sun/sun.png"),
+                basePath.resolve("World/Backdrops/back.png"),
+                basePath.resolve("aa.png")
         );
         Path error = basePath.resolve("World/textureNotFound.png");
         String baseName = "sprites"; // sptrites.atlas, sprites.atlas.meta
@@ -176,6 +181,12 @@ public final class AtlasGenerator {
         for (Region reg : regionMap.values()) {
             log("Loading image '" + reg.path + "'");
             reg.regionImage = ImageIO.read(sourceDir.resolve(reg.path).toFile());
+        }
+
+        for (Region reg : regionMap.values()) {
+            if (reg.ow() >= MAX_EXTENT || reg.oh() >= MAX_EXTENT) {
+                log("WARNING: '" + reg.path + "' is too big for packing");
+            }
         }
 
         ArrayList<Region> regions = new ArrayList<>(regionMap.values());

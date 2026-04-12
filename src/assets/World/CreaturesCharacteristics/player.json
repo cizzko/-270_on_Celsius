@@ -1,5 +1,2 @@
 {
-  "id": "player",
-  "texture": "World/Creatures/playerLeft/player0",
-  "Weight": 80
-}
+  "id": "player"

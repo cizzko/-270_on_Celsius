@@ -1,0 +1,5 @@
+{
+  "id": "stone-oven",
+  "class-type": "block",
+  "texture": "World/Blocks/stoneOven",
+  "input": {

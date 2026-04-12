@@ -1,0 +1,8 @@
+{
+  "id": "workbench-small",
+  "class-type": "block",
+  "Resistance": 100,
+  "texture": "World/Blocks/workbenchSmall",
+  "Type": "solid",
+  "max-hp": 100,
+  "requirements": {

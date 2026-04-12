@@ -289,6 +289,8 @@ public final class AssetsManager {
         AssetHandler<T, ?, ?> handler = getHandler(type);
 
         handler.release(releaser, asset);
+
+        log.debug("Released: {}", asset);
     }
 
     private void incrementRefCount(BaseAssetResolver parent, Asset<?> loadedInst) {
@@ -365,6 +367,7 @@ public final class AssetsManager {
         var typeMap = getAssetsOrCreate(type);
         typeMap.put(name, asset);
         refsByAssets.put(asset.value, asset);
+        log.debug("Loaded: {}", asset);
     }
 
     static final class Asset<T> {
