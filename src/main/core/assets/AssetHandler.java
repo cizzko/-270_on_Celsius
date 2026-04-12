@@ -25,7 +25,7 @@ public abstract class AssetHandler<T, P, S> {
 
     public abstract void loadAsync(AssetResolver res, String name, P params, S state);
 
-    public abstract T loadSync(String name, P params, S state) throws Exception;
+    public abstract T loadSync(AssetResolver res, String name, P params, S state) throws Exception;
 
     protected abstract P createParams();
 

@@ -20,4 +20,9 @@ public interface AssetResolver {
     }
 
     <T, P> Future<T> load(Class<T> type, String name, AssetsManager.LoadType loadType, Consumer<? super P> paramsModifier);
+
+    void checkIfFailed();
+
+    // Возвращает null в случае ошибки. Ошибка проверяется через checkIfFailed()
+    <T> T join(Future<? extends T> future);
 }

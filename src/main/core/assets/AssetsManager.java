@@ -39,7 +39,7 @@ public final class AssetsManager {
         this.workingDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
         this.dataDir = switch (Platform.get()) {
             case WINDOWS -> Path.of(System.getenv("AppData"), appName).toAbsolutePath();
-            case MACOSX -> workingDir; // TODO не знаю
+            case MACOSX -> workingDir; // TODO дарвин
             case LINUX -> {
                 String userHome = System.getProperty("user.home");
                 String xdgDataHome = System.getenv("XDG_DATA_HOME");

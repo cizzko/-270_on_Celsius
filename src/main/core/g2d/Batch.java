@@ -7,6 +7,7 @@ import core.pool.Pool;
 import core.pool.Poolable;
 import core.util.Color;
 import core.util.Disposable;
+import core.util.FutureExc;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.system.MemoryUtil;
@@ -134,7 +135,7 @@ public class Batch<S extends Batch.State> implements Disposable {
     public Batch(int bufferSize, Supplier<? extends S> constr, BiConsumer<S, S> extender) {
         this.statePool = new Pool<>(constr, MAX_NESTING);
         this.extender = extender;
-        this.shader = Global.assets.load(Shader.class, "default", AssetsManager.LoadType.SYNC).resultNow();
+        this.shader = FutureExc.join(Global.assets.load(Shader.class, "default", AssetsManager.LoadType.SYNC));
 
         int vertexCount = bufferSize * VERTEX_PER_SPRITE;
         vertices = MemoryUtil.memAllocFloat(vertexCount);

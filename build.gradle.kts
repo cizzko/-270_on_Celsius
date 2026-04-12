@@ -138,6 +138,12 @@ jlink {
         options.add("--strip-native-debug-symbols")
         options.add("exclude-debuginfo-files");
     }
+    if (System.getProperty("os.name")!!.startsWith("Darwin") || System.getProperty("os.name")!!.startsWith("Mac OS X")) {
+        options.addAll(listOf(
+            "-XstartOnFirstThread"
+        ))
+    }
+
     launcher {
         name = "celsius"
         args = listOf("--packaged")

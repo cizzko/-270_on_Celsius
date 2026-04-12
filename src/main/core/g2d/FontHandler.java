@@ -126,8 +126,9 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
     }
 
     @Override
-    public Font loadSync(String name, Void params, State state) {
-        var glyphData = state.texture.resultNow();
+    public Font loadSync(AssetResolver res, String name, Void params, State state) {
+        var glyphData = res.join(state.texture);
+        res.checkIfFailed();
 
         var fnt = glyphData.fnt;
         fnt.texture = Texture.load(glyphData.atlas, GL_TEXTURE_2D, 0, 0, 1, 1);

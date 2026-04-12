@@ -34,7 +34,7 @@ public final class TextureHandler extends AssetHandler<Texture, Void, TextureHan
     }
 
     @Override
-    public Texture loadSync(String name, Void params, TextureHandler.State state) {
+    public Texture loadSync(AssetResolver res, String name, Void params, State state) {
         final int glTarget = GL_TEXTURE_2D;
         int glHandle = glGenTextures();
 
@@ -45,7 +45,9 @@ public final class TextureHandler extends AssetHandler<Texture, Void, TextureHan
         glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
         int w, h;
-        try (var img = state.imageData.resultNow()) {
+        try (var img = res.join(state.imageData)) {
+            res.checkIfFailed();
+
             w = img.width();
             h = img.height();
             glTexImage2D(glTarget, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data());

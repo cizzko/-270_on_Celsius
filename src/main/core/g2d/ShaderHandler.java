@@ -27,9 +27,10 @@ public final class ShaderHandler extends AssetHandler<Shader, Void, ShaderHandle
     }
 
     @Override
-    public Shader loadSync(String name, Void params, ShaderHandler.State state) {
-        String vertSource = state.vertSource.resultNow();
-        String fragSource = state.fragSource.resultNow();
+    public Shader loadSync(AssetResolver res, String name, Void params, ShaderHandler.State state) throws Exception {
+        String vertSource = res.join(state.vertSource);
+        String fragSource = res.join(state.fragSource);
+        res.checkIfFailed();
         return Shader.load(vertSource, fragSource);
     }
 

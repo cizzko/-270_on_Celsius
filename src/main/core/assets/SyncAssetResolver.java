@@ -1,6 +1,7 @@
 package core.assets;
 
 import core.Global;
+import core.util.FutureScope;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -18,6 +19,7 @@ final class SyncAssetResolver<T, P, S>
 
     final AssetsManager.Asset<T> desc;
     final ArrayList<AssetsManager.Asset<?>> depends = new ArrayList<>();
+    final FutureScope executionScope = new FutureScope();
 
     SyncAssetResolver(AssetHandler<T, P, S> loader, String name, P params, S state) {
         this.desc = new AssetsManager.Asset<>(loader.type(), name);
@@ -25,6 +27,15 @@ final class SyncAssetResolver<T, P, S>
         this.name = name;
         this.params = params;
         this.state = state;
+    }
+
+    public void checkIfFailed() {
+        executionScope.checkIfFailed();
+    }
+
+    @Override
+    public <T> T join(Future<? extends T> future) {
+        return executionScope.join(future);
     }
 
     @Override
@@ -50,7 +61,10 @@ final class SyncAssetResolver<T, P, S>
     public CompletableFuture<T> load() {
         return Global.scheduler.execute(() -> {
             loader.loadAsync(this, name, params, state);
-            desc.value = loader.loadSync(name, params, state);
+            desc.value = loader.loadSync(this, name, params, state);
+
+            executionScope.checkIfFailed();
+
             desc.dependencies = depends.isEmpty() ? null : depends.toArray(new AssetsManager.Asset[0]);
             Global.assets.setLoaded(loader.type(), name, desc);
             return desc.value;

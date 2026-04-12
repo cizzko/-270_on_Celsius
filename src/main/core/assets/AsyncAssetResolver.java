@@ -1,6 +1,7 @@
 package core.assets;
 
 import core.Global;
+import core.util.FutureScope;
 import org.lwjgl.system.NativeResource;
 
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ final class AsyncAssetResolver<T, P, S>
     final AssetsManager.Asset<T> desc;
     final ArrayList<AssetsManager.Asset<?>> depends = new ArrayList<>();
     final ArrayList<ForkJoinTask<?>> tasks = new ArrayList<>();
+    final FutureScope executionScope = new FutureScope();
 
     public AsyncAssetResolver(AsyncAssetResolver<?, ?, ?> parent,
                               AssetHandler<T, P, S> loader, String name, P params, S state) {
@@ -64,6 +66,16 @@ final class AsyncAssetResolver<T, P, S>
     }
 
     @Override
+    public void checkIfFailed() {
+        executionScope.checkIfFailed();
+    }
+
+    @Override
+    public <T> T join(Future<? extends T> future) {
+        return executionScope.join(future);
+    }
+
+    @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
         if (super.cancel(mayInterruptIfRunning)) {
             parent.cancel(false); // AsyncAssetResolver не должен прерываться
@@ -80,6 +92,8 @@ final class AsyncAssetResolver<T, P, S>
     @Override
     protected T compute() {
         // TODO разобраться с обёртыванием исключений в RuntimeException
+        // todo скат начудесатил и не хочет исправлять асинк
+        // todo не работает
 
         loader.loadAsync(this, name, params, state);
 
@@ -97,6 +111,7 @@ final class AsyncAssetResolver<T, P, S>
             if (i == 0) { // запустим последний таск на этом потоке, всё равно предстоит ждать
                 t.quietlyInvoke();
                 var exc = t.getException();
+
                 if (exc != null) {
                     anyExc = exc;
                 }
@@ -134,7 +149,9 @@ final class AsyncAssetResolver<T, P, S>
         }
 
         var syncAction = Global.scheduler.post(() -> {
-            T assetInst = loader.loadSync(name, params, state);
+            T assetInst = loader.loadSync(this, name, params, state);
+
+            executionScope.checkIfFailed();
             if (assetInst == null) {
                 throw new IllegalStateException(
                         loader + " returned null for asset '" +
