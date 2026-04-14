@@ -75,10 +75,10 @@ public final class AtlasGenerator {
                 basePath.resolve("UI/GUI/modifiedTemperature.png"),
                 basePath.resolve("World/Sun/sun.png"),
                 basePath.resolve("World/Backdrops/back.png"),
-                basePath.resolve("aa.png")
+                basePath.resolve("worldImage.png")
         );
         Path error = basePath.resolve("World/textureNotFound.png");
-        String baseName = "sprites"; // sptrites.atlas, sprites.atlas.meta
+        String baseName = "sprites"; // sprites.atlas, sprites.atlas.meta
         process(outputDir, baseName, basePath, error, ignore, 64, 1024 * 8);
     }
 

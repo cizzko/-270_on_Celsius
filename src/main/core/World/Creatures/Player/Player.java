@@ -12,7 +12,6 @@ import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator.WorldGenerator;
 import core.g2d.Fill;
 import core.math.Point2i;
-import core.math.Rectangle;
 import core.util.Color;
 
 import static core.Global.*;
@@ -30,7 +29,6 @@ public class Player {
     public static int lastDamage = 0;
     public static long lastDamageTime = System.currentTimeMillis();
     private static long lastChangeTransparency = System.currentTimeMillis(), lastChangeLengthDamage = System.currentTimeMillis();
-    private static final boolean buildGrid = Config.getFromConfigBool("BuildGrid");
 
     public static void createPlayer(boolean randomSpawn) {
         DynamicObjects.addFirst(DynamicWorldObjects.createDynamic("player", randomSpawn ? (int) (Math.random() * (world.sizeX * TextureDrawing.blockSize)) : world.sizeX * 8f));
@@ -169,24 +167,6 @@ public class Player {
                         }
                     }
                 }
-            }
-        }
-    }
-
-    public static void drawBuildGrid() {
-        //todo починить округление
-        if (!buildGrid) {
-            return;
-        }
-
-        Point2i current = currentObject;
-        if (current != null) {
-            short placeable = inventoryObjects[current.x][current.y].placeable;
-            var mousePos = input.mousePos();
-            if (placeable != 0 && underMouseItem == null && !Rectangle.contains(1487, 756, 500, 500, mousePos)) {
-                batch.draw(atlas.byPath("World/buildGrid.png"),
-                        Color.rgba8888(230, 230, 230, 150),
-                        mousePos.x - 243f, mousePos.y - 244f);
             }
         }
     }

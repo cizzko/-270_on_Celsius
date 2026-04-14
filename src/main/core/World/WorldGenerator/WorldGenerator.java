@@ -2,6 +2,7 @@ package core.World.WorldGenerator;
 
 import core.EventHandling.EventHandler;
 import core.*;
+import core.EventHandling.Logging.Config;
 import core.UI.menu.CreatePlanet;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.Inventory.Inventory;
@@ -27,6 +28,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.HashMap;
 
@@ -171,6 +173,9 @@ public class WorldGenerator {
             scheduler.post(() -> startGame(playGameScene), Time.ONE_SECOND);
             saveWorldImage(world.tiles,  world.sizeX, world.sizeY);
         });
+
+        //todo у
+//        Inventory.createElement("Blocks\\aluminum");
     }
 
     private static void step(Runnable step) {
@@ -552,36 +557,32 @@ public class WorldGenerator {
         return null;
     }
 
-    //todo назватб
     public static void saveWorldImage(short[] tiles, int sizeX, int sizeY) {
-        BufferedImage image = new BufferedImage(sizeX, sizeY, BufferedImage.TYPE_INT_RGB);
-        String path = "C:\\other\\-270_On_Celsius\\-270_On_Celsius\\src\\assets\\aa.png";
+        if (Config.getFromConfigInt("Debug") >= 2) {
+            BufferedImage image = new BufferedImage(sizeX, sizeY, BufferedImage.TYPE_INT_RGB);
+            Path path = assets.assetsDir().resolve("worldImage.png");
 
-        for (int y = 0; y < sizeY; y++) {
-            for (int x = 0; x < sizeX; x++) {
-                // Твоя формула индексации
-                short block = tiles[x + sizeX * y];
+            for (int y = 0; y < sizeY; y++) {
+                for (int x = 0; x < sizeX; x++) {
+                    short block = tiles[x + sizeX * y];
 
-                // Если блок НЕ 0, рисуем БЕЛЫМ (0xFFFFFF)
-                if (block != 0) {
-                    // Рисуем сверху вниз: если y=0 это низ мира, то в картинке это sizeY-1
-                    image.setRGB(x, (sizeY - 1) - y, 0xFFFFFF);
-                } else {
-                    image.setRGB(x, (sizeY - 1) - y, 0x000000);
+                    if (block != 0) {
+                        image.setRGB(x, (sizeY - 1) - y, 0xFFFFFF);
+                    } else {
+                        image.setRGB(x, (sizeY - 1) - y, 0x000000);
+                    }
                 }
             }
-        }
 
-        try {
-            File outputFile = new File(path);
-            // Создаем папки, если их нет
-            if (outputFile.getParentFile() != null) {
-                outputFile.getParentFile().mkdirs();
+            try {
+                File outputFile = new File(path.toUri());
+                if (outputFile.getParentFile() != null) {
+                    outputFile.getParentFile().mkdirs();
+                }
+                ImageIO.write(image, "png", outputFile);
+            } catch (IOException e) {
+                log.error(e.getMessage());
             }
-            ImageIO.write(image, "png", outputFile);
-            System.out.println("Мир успешно сохранен: " + path);
-        } catch (IOException e) {
-            System.err.println("Ошибка при сохранении: " + e.getMessage());
         }
     }
 }

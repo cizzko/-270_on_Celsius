@@ -10,10 +10,7 @@ import core.util.DebugTools;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.io.IoBuilder;
-import org.lwjgl.glfw.GLFWErrorCallback;
-import org.lwjgl.glfw.GLFWImage;
-import org.lwjgl.glfw.GLFWWindowCloseCallback;
-import org.lwjgl.glfw.GLFWWindowFocusCallback;
+import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.*;
@@ -173,15 +170,14 @@ public final class Window extends Application {
         // TODO упадёт когда доделаю оконный режим
         long monPtr = glfwGetPrimaryMonitor();
         if (monPtr != MemoryUtil.NULL) {
-            int w, h;
-            try (var stack = MemoryStack.stackPush()) {
-                var wPtr = stack.mallocInt(1);
-                var hPtr = stack.mallocInt(1);
-                glfwGetMonitorPhysicalSize(monPtr, wPtr, hPtr);
-                w = wPtr.get();
-                h = hPtr.get();
+            GLFWVidMode vidmode = glfwGetVideoMode(monPtr);
+
+            if (vidmode != null) {
+                int w = vidmode.width();
+                int h = vidmode.height();
+
+                log.info("Screen resolution: {}x{}", w, h);
             }
-            log.info("Screen resolution: {}x{}", w, h);
         } else {
             // у меня на wayland такое возможно
             // не хочу это сейчас исправлять, поскольку есть планы как вывести тут важную информацию
@@ -192,9 +188,8 @@ public final class Window extends Application {
             log.info("CPU: {}", System.getenv("PROCESSOR_IDENTIFIER"));
         }
         var memMxbean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
-        memMxbean.getCpuLoad();
+        double gib = 1024d * 1024d * 1024d;
 
-        double gib = 1024d / 1024d / 1024d;
         log.info("Heap max capacity: {} GiB", DebugTools.FLOATS.format(Runtime.getRuntime().maxMemory() / gib));
         log.info("Total memory size: {} GiB", DebugTools.FLOATS.format(memMxbean.getTotalMemorySize() / gib));
     }

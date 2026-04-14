@@ -1,6 +1,7 @@
 package core.World.Creatures.Player.Inventory;
 
 import core.EventHandling.EventHandler;
+import core.EventHandling.Logging.Config;
 import core.UI.Styles;
 import core.World.Creatures.Player.Inventory.Items.Items;
 import core.World.Creatures.Player.ItemControl;
@@ -10,6 +11,7 @@ import core.World.WorldGenerator.WorldGenerator;
 import core.g2d.Atlas;
 import core.math.Point2i;
 import core.math.Rectangle;
+import core.util.Color;
 
 import java.util.ArrayList;
 
@@ -26,6 +28,7 @@ public class Inventory {
     public static Point2i currentObject, underMouseItem;
     public static Items.Types currentObjectType;
     private static final ArrayList<InventoryEvents> listeners = new ArrayList<>();
+    private static final boolean buildGrid = Config.getFromConfigBool("BuildGrid");
 
     public static void registerListener(InventoryEvents event) {
         listeners.add(event);
@@ -149,6 +152,23 @@ public class Inventory {
             if (placeable != 0 && underMouseItem == null && !Rectangle.contains(1488, 756, 500, 500, input.mousePos())) {
                 boolean isDeclined = getDistanceToMouse() < 8 && WorldGenerator.checkPlaceRules(blockX, blockY, placeable);
                 TextureDrawing.addToBlocksQueue(blockX, blockY, placeable, isDeclined);
+                drawBuildGrid(blockX, blockY);
+            }
+        }
+    }
+
+    public static void drawBuildGrid(int blockX, int blockY) {
+        if (!buildGrid) {
+            return;
+        }
+
+        Point2i current = currentObject;
+        if (current != null) {
+            short placeable = inventoryObjects[current.x][current.y].placeable;
+
+            batch.matrix(camera.projection);
+            if (placeable != 0 && underMouseItem == null) {
+                batch.draw(atlas.byPath("World/buildGrid.png"), Color.rgba8888(230, 230, 230, 150), WorldGenerator.findX(blockX, blockY) - 243f, WorldGenerator.findY(blockX, blockY) - 244f);
             }
         }
     }

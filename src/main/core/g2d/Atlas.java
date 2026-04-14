@@ -61,8 +61,8 @@ public final class Atlas {
         }
 
         void computeTextureCoordinates() {
-            this.u = x / (float) atlas.texture.width();
-            this.v = y / (float) atlas.texture.height();
+            this.u = (x + 0.5f) / (float) atlas.texture.width();
+            this.v = (y + 0.5f) / (float) atlas.texture.height();
             this.u2 = (x + width) / (float) atlas.texture.width();
             this.v2 = (y + height) / (float) atlas.texture.height();
         }

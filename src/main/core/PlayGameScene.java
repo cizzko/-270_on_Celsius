@@ -99,7 +99,6 @@ public final class PlayGameScene extends GameScene {
         WorkbenchLogic.draw();
         Inventory.draw();
         drawCurrentHP();
-        drawBuildGrid();
     }
 
     @Override
