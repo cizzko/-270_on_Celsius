@@ -95,15 +95,13 @@ public class InputHandler {
                 scrollChange = (float) yoffset;
             }
         }));
-        glfwSetWindowSizeCallback(glfwWindow, Global.app.keep(new GLFWWindowSizeCallback() {
-            @Override
-            public void invoke(long window, int w, int h) {
-                width = w;
-                height = h;
-                GL46.glViewport(0, 0, w, h);
-                onResize(w, h);
-            }
-        }));
+        //тут было glfwSetWindowSizeCallback, но интерфейс плыл, должно помочь
+        glfwSetFramebufferSizeCallback(glfwWindow, (window, fbW, fbH) -> {
+            width = fbW;
+            height = fbH;
+            GL46.glViewport(0, 0, fbW, fbH);
+            onResize(fbW, fbH);
+        });
     }
 
     public void update() {

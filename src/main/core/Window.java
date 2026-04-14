@@ -208,13 +208,14 @@ public final class Window extends Application {
         //   с которым динамические сущности взаимодействуют, то разве не должен быть обратным порядок?
         // 6) Отрисовка мира в порядке отображения
         updateTime();
-
         input.update();
+
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        
         gameScene.loop();
         batch.flush();
 
         glfwSwapBuffers(glfwWindow);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         nextFrame();
     }
