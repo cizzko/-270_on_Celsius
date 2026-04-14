@@ -166,6 +166,7 @@ public class Inventory {
         if (current != null) {
             short placeable = inventoryObjects[current.x][current.y].placeable;
 
+            //todo
             batch.matrix(camera.projection);
             if (placeable != 0 && underMouseItem == null) {
                 batch.draw(atlas.byPath("World/buildGrid.png"), Color.rgba8888(230, 230, 230, 150), WorldGenerator.findX(blockX, blockY) - 243f, WorldGenerator.findY(blockX, blockY) - 244f);

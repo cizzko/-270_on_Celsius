@@ -87,7 +87,7 @@ public final class Window extends Application {
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
-        if (Config.getFromConfigStr("DebugPlatform").equals("MACOSX") || Platform.get() == Platform.MACOSX) {
+        if (Config.getFromConfigBool("DebugMACOSX") || Platform.get() == Platform.MACOSX) {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
