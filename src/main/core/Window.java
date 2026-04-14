@@ -15,6 +15,7 @@ import org.lwjgl.glfw.GLFWImage;
 import org.lwjgl.glfw.GLFWWindowCloseCallback;
 import org.lwjgl.glfw.GLFWWindowFocusCallback;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GLUtil;
 import org.lwjgl.system.*;
 
 import javax.imageio.ImageIO;
@@ -54,26 +55,26 @@ public final class Window extends Application {
             Configuration.DEBUG_STACK.set(true);
         }
 
-        glfwSetErrorCallback(Global.app.keep(new GLFWErrorCallback() {
-            private final Marker GLFW = MarkerManager.getMarker("GLFW");
-            private final Int2ObjectOpenHashMap<String> ERROR_CODES;
-            {
-                ERROR_CODES = new Int2ObjectOpenHashMap<>(APIUtil.apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, org.lwjgl.glfw.GLFW.class));
-                ERROR_CODES.trim();
-            }
-
-            @Override
-            public void invoke(int error, long description) {
-                String errorStr = ERROR_CODES.get(error);
-                String msg = getDescription(description);
-                lwjglLogger.error(GLFW, "error code: {}, description: {}", errorStr, msg);
-
-                StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-                for (int i = 4; i < stack.length; i++) {
-                    lwjglLogger.error(GLFW,"\tat {}", stack[i]);
-                }
-            }
-        }));
+//        glfwSetErrorCallback(Global.app.keep(new GLFWErrorCallback() {
+//            private final Marker GLFW = MarkerManager.getMarker("GLFW");
+//            private final Int2ObjectOpenHashMap<String> ERROR_CODES;
+//            {
+//                ERROR_CODES = new Int2ObjectOpenHashMap<>(APIUtil.apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, org.lwjgl.glfw.GLFW.class));
+//                ERROR_CODES.trim();
+//            }
+//
+//            @Override
+//            public void invoke(int error, long description) {
+//                String errorStr = ERROR_CODES.get(error);
+//                String msg = getDescription(description);
+//                lwjglLogger.error(GLFW, "error code: {}, description: {}", errorStr, msg);
+//
+//                StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+//                for (int i = 4; i < stack.length; i++) {
+//                    lwjglLogger.error(GLFW,"\tat {}", stack[i]);
+//                }
+//            }
+//        }));
 
         switch (System.getenv("XDG_SESSION_TYPE")) {
             case "wayland" -> {
@@ -85,8 +86,16 @@ public final class Window extends Application {
         if (!glfwInit()) {
             throw new RuntimeException("Failed to initialize GLFW");
         }
+
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+
+        if (Config.getFromConfigStr("DebugPlatform").equals("MACOSX") || Platform.get() == Platform.MACOSX) {
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        }
 
         glfwWindow = glfwCreateWindow(defaultWidth, defaultHeight, "-270 on Celsius", glfwGetPrimaryMonitor(), MemoryUtil.NULL);
         if (glfwWindow == MemoryUtil.NULL) {
@@ -121,11 +130,10 @@ public final class Window extends Application {
 
         GL.createCapabilities();
 
-        // Великий инструмент.
-        // if (Integer.parseInt(Config.getFromConfig("Debug")) >= 2) {
-        //     glEnable(GL_DEBUG_OUTPUT);
-        //     keep(GLUtil.setupDebugMessageCallback());
-        // }
+         if (Config.getFromConfigInt("Debug") >= 3) {
+             glEnable(GL_DEBUG_OUTPUT);
+             keep(GLUtil.setupDebugMessageCallback());
+         }
 
         uiScene = new UIScene(defaultWidth, defaultHeight);
         input = new InputHandler(defaultWidth, defaultHeight);
