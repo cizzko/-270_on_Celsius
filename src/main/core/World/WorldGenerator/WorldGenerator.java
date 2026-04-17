@@ -341,7 +341,7 @@ public class WorldGenerator {
 
             for (int j = 0; j < iters; j++) {
                 //отростки от основной пещеры
-                if (Math.random() * (300 + (isShoot ? 120 : 0)) < 1) {
+                if (Math.random() * (200 + (isShoot ? 120 : 0)) < 1) {
                     generateCave(x, y, radius, 2, (int) radius, true);
                 }
 

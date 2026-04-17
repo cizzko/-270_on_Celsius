@@ -3,7 +3,7 @@ package core;
 public final class Constants {
     private Constants() {}
 
-    public static final String versionStamp = "0.1";
+    public static final String versionStamp = "0.22";
     public static final String version = "beta " + versionStamp + " (non stable)";
     public static final String appName = "Celsius";
 

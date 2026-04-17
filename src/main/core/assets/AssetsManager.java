@@ -48,6 +48,7 @@ public final class AssetsManager {
                 }
                 yield Path.of(userHome,  "/.local/share/", appName).toAbsolutePath();
             }
+            default -> throw new IllegalStateException("Unexpected value: " + Platform.get());
         };
         if (Files.notExists(dataDir)) {
             Files.createDirectories(dataDir);

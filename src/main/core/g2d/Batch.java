@@ -200,8 +200,6 @@ public class Batch<S extends Batch.State> implements Disposable {
         vertexCount = 0;
     }
 
-    // drawing
-
     public final void draw(Drawable drawable, Color color) {
         draw(drawable, color, 0, 0);
     }

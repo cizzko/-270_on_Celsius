@@ -19,6 +19,20 @@ sourceSets {
     }
 }
 
+tasks.withType<JavaExec> {
+    doFirst {
+        if (System.getProperty("os.name")?.contains("Linux") == true) {
+            val gpuInfo = providers.exec {
+                commandLine("sh", "-c", "glxinfo | grep 'OpenGL vendor' || echo 'unknown'")
+            }.standardOutput.asText.get()
+
+            if (System.getenv("XDG_SESSION_TYPE") == "wayland" && gpuInfo.contains("NVIDIA")) {
+                environment("__GL_THREADED_OPTIMIZATIONS", "0")
+            }
+        }
+    }
+}
+
 tasks.named<JavaCompile>("compileToolsJava") {
     dependsOn(tasks.compileJava)
     classpath = sourceSets["main"].runtimeClasspath + sourceSets["main"].output
@@ -48,7 +62,7 @@ tasks.classes {
     finalizedBy(genatlas)
 }
 
-val lwjglVersion = "3.3.3"
+val lwjglVersion = "3.4.1"
 val lwjglNatives = Pair(
     System.getProperty("os.name")!!,
     System.getProperty("os.arch")!!
