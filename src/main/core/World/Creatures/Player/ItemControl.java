@@ -35,10 +35,10 @@ public class ItemControl {
                     }
 
                     switch (createWith) {
-                        case "smallWorkbench" -> addItem(smallWorkbenchItems, Items.createItem(StaticWorldObjects.createStatic(fileName)));
-                        case "mediumWorkbench" -> addItem(mediumWorkbenchItems, Items.createItem(fileName));
-                        case "largeWorkbench" -> addItem(largeWorkbenchItems, Items.createItem(fileName));
-                        case "player" -> put(fileName);
+                        case "smallWorkbench" -> put(smallWorkbenchItems, fileName);
+                        case "mediumWorkbench" -> put(mediumWorkbenchItems, fileName);
+                        case "largeWorkbench" -> put(largeWorkbenchItems, fileName);
+                        default -> put(buildMenuItems, fileName);
                     }
 
                 } catch (IOException e) {
@@ -50,11 +50,11 @@ public class ItemControl {
         }
     }
 
-    private static void put(String name) {
+    private static void put(Items[][] items, String name) {
         if (name.startsWith("Blocks") || name.startsWith("Factories")) {
-            addItem(buildMenuItems, Items.createItem(StaticWorldObjects.createStatic(AssetsManager.normalizePath(name))));
+            addItem(items, Items.createItem(StaticWorldObjects.createStatic(AssetsManager.normalizePath(name))));
         } else if (name.startsWith("Weapons") || name.startsWith("Details") || name.startsWith("Tools")) {
-            addItem(buildMenuItems, Items.createItem(AssetsManager.normalizePath(name)));
+            addItem(items, Items.createItem(AssetsManager.normalizePath(name)));
         }
     }
 

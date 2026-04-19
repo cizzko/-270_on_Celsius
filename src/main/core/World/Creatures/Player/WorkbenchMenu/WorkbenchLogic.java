@@ -76,6 +76,7 @@ public class WorkbenchLogic implements StaticBlocksEvents {
         workbenchs.forEach(point -> {
 
             //todo что то придумать, проверять по имени файла это кпец
+            //проверка что до ближайшего не больше 16
             if (Math.abs(DynamicObjects.getFirst().getX() / TextureDrawing.blockSize - point.x) < 16) {
                 String name = getFileName(world.get(point.x, point.y)).toLowerCase();
 
@@ -168,6 +169,7 @@ public class WorkbenchLogic implements StaticBlocksEvents {
         }
     }
 
+    //текущая вкладка
     private static Items[][] getCurrentItems() {
         return switch (current) {
             //todo звездочки

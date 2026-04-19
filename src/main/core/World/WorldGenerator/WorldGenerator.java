@@ -171,11 +171,8 @@ public class WorldGenerator {
         step(() -> {
             log.debug("generating done! " + (System.currentTimeMillis() - startTime) + "ms");
             scheduler.post(() -> startGame(playGameScene), Time.ONE_SECOND);
-            saveWorldImage(world.tiles,  world.sizeX, world.sizeY);
+            saveWorldImage(world.tiles, world.sizeX, world.sizeY);
         });
-
-        //todo у
-//        Inventory.createElement("Blocks\\aluminum");
     }
 
     private static void step(Runnable step) {

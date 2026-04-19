@@ -12,6 +12,7 @@ import core.g2d.Atlas;
 import core.math.Point2i;
 import core.math.Rectangle;
 import core.util.Color;
+import core.util.StringUtils;
 
 import java.util.ArrayList;
 
@@ -234,7 +235,10 @@ public class Inventory {
         }
     }
 
+    //todo неудобно
+    //todo дабл нормализация
     public static void createElement(String name) {
+        name = StringUtils.normalizePath(name);
         addItem(name.hashCode(), Items.createItem(name));
     }
 

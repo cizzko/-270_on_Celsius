@@ -3,6 +3,7 @@ package core.tool;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.stream.JsonWriter;
+import core.util.StringUtils;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -14,6 +15,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
+
+import static core.util.StringUtils.normalizePath;
 
 public class ConvertTypesToJson {
 
@@ -171,7 +174,7 @@ public class ConvertTypesToJson {
     static void itemStackConverter(JsonWriter wr, String v) throws IOException {
         wr.beginObject();
         var counts = Arrays.stream(v.split(","))
-                .map(ConvertTypesToJson::normalizePath)
+                .map(StringUtils::normalizePath)
                 .collect(Collectors.groupingBy(ConvertTypesToJson::getId, Collectors.counting()));
         for (var e : counts.entrySet()) {
             String itemPath = e.getKey();
@@ -223,15 +226,5 @@ public class ConvertTypesToJson {
         var id = itemPathToIds.get(file);
         Objects.requireNonNull(id, file::toString);
         return id;
-    }
-
-    private static String normalizePath(String v) {
-        // Потому что \\ выглядит ужасно
-        String unixLike = v.replace("\\", "/");
-
-        if (unixLike.startsWith("/")) {
-            unixLike = unixLike.substring(1);
-        }
-        return unixLike;
     }
 }

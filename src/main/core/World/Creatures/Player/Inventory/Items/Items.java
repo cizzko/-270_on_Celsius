@@ -8,6 +8,7 @@ import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.assets.AssetsManager;
 import core.g2d.Atlas;
 import core.util.Sized;
+import core.util.StringUtils;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -117,7 +118,7 @@ public class Items implements Serializable, Cloneable {
     }
 
     public static Items createItem(String fileName) {
-        String type = fileName.toLowerCase();
+        String type = StringUtils.normalizePath(fileName.toLowerCase());
         if (type.startsWith("blocks")) {
             return createPlaceable(StaticWorldObjects.createStatic(fileName));
         } else if (type.startsWith("weapons")) {
