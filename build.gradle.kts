@@ -1,6 +1,6 @@
 plugins {
     java
-    id("org.beryx.jlink") version "3.1.1"
+    id("org.beryx.jlink") version "4.0.0"
 }
 
 sourceSets {
@@ -140,6 +140,8 @@ application {
 }
 
 jlink {
+    mainClass.set("core.Main")
+
     mergedModule {
         requires("java.desktop")
     }
