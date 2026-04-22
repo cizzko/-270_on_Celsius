@@ -79,7 +79,7 @@ public class StaticObjectsConst implements Cloneable {
     }
 
     public static void setConst(String name, byte id, short[][] optionalTiles) {
-        if (constants.get(id) == null) {
+        if (!constants.containsKey(id)) {
             StaticObjectsConst staticConst = createConst("World/ItemsCharacteristics/" + name + ".json", id);
             staticConst.optionalTiles = optionalTiles;
             staticConst.originalFileName = name;

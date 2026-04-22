@@ -28,7 +28,7 @@ public class Chests implements StaticBlocksEvents, InventoryEvents {
             if (newB != -1 && StaticWorldObjects.getId(oldB) != StaticWorldObjects.getId(newB) && StaticWorldObjects.getTexture(newB) != null && getFileName(newB).toLowerCase().contains("chest")) {
                 chests.put(new Point2i(cellX, cellY), new Items[3][3]);
             }
-        } else  {
+        } else {
             chests.remove(new Point2i(cellX, cellY));
         }
     }
@@ -106,7 +106,7 @@ public class Chests implements StaticBlocksEvents, InventoryEvents {
     }
 
     public static void draw() {
-        if (current != null) {
+        if (current != null && chests.containsKey(current)) {
             Items[][] currentChest = chests.get(current);
             float xPos = current.x * blockSize - 61;
             float yPos = current.y * blockSize + 56;
