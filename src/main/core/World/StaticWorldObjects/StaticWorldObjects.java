@@ -43,40 +43,58 @@ public abstract class StaticWorldObjects implements Serializable {
         }
     }
 
+    private static StaticObjectsConst get(short id) {
+        return StaticObjectsConst.getConst(getId(id));
+    }
+
     public static float getMaxHp(short id) {
-        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).maxHp : 0;
+        StaticObjectsConst c = get(id);
+        return (c != null) ? c.maxHp : 0;
     }
 
     public static float getDensity(short id) {
-        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).density : 0;
-    }
-
-    public static Atlas.Region getTexture(short id) {
-        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).texture : null;
-    }
-
-    public static String getName(short id) {
-        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).objectName : "";
-    }
-
-    public static String getFileName(short id) {
-        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).originalFileName : null;
-    }
-
-    public static StaticObjectsConst.Types getType(short id) {
-        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).type : null;
+        StaticObjectsConst c = get(id);
+        return (c != null) ? c.density : 0;
     }
 
     public static float getResistance(short id) {
-        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).resistance : 0;
+        StaticObjectsConst c = get(id);
+        return (c != null) ? c.resistance : 0;
     }
 
     public static int getLightTransmission(short id) {
-        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).lightTransmission : 0;
+        StaticObjectsConst c = get(id);
+        return (c != null) ? c.lightTransmission : 0;
+    }
+
+    public static Atlas.Region getTexture(short id) {
+        StaticObjectsConst c = get(id);
+        return (c != null) ? c.texture : null;
+    }
+
+    public static String getName(short id) {
+        StaticObjectsConst c = get(id);
+        return (c != null) ? c.objectName : "";
+    }
+
+    public static String getFileName(short id) {
+        StaticObjectsConst c = get(id);
+        return (c != null) ? c.originalFileName : null;
+    }
+
+    public static StaticObjectsConst.Types getType(short id) {
+        StaticObjectsConst c = get(id);
+        return (c != null) ? c.type : StaticObjectsConst.Types.SOLID;
     }
 
     public static Runnable getOnInteraction(short id) {
-        return StaticObjectsConst.checkIsHere(getId(id)) ? StaticObjectsConst.getConst(getId(id)).onInteraction : null;
+        StaticObjectsConst c = get(id);
+        return (c != null) ? c.onInteraction : null;
+    }
+
+    public static boolean hasMotherBlock(short id) {
+        StaticObjectsConst c = get(id);
+        return (c != null) && c.hasMotherBlock;
     }
 
     public static byte getId(short id) {
