@@ -1,6 +1,6 @@
 {
-  "id": "aluminum-pipe",
-  "class-type": "detail",
-  "texture": "World/Items/aluminumPipe",
+  "Id": "aluminum-pipe",
+  "Class-type": "detail",
+  "Texture": "World/Items/aluminumPipe",
   "Name": "Aluminum pipe"
 }

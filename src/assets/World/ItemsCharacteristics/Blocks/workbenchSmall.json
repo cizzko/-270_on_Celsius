@@ -1,8 +1,15 @@
 {
-  "id": "workbench-small",
-  "class-type": "block",
+  "Id": "workbench-small",
+  "Class-type": "block",
   "Resistance": 100,
-  "texture": "World/Blocks/workbenchSmall",
-  "Type": "solid",
-  "max-hp": 100,
-  "requirements": {
+  "Texture": "World/Blocks/workbenchSmall",
+  "Type": "SOLID",
+  "Max-hp": 100,
+  "Requirements": {
+    "small-stone": 2
+  },
+  "Density": 1,
+  "Create-with": "player",
+  "Light-transmission": 100,
+  "Name": "Small workbench"
+}

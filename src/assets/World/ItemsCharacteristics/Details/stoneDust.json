@@ -1,6 +1,6 @@
 {
-  "id": "stone-dust",
-  "class-type": "detail",
-  "texture": "World/Items/stoneDust",
+  "Id": "stone-dust",
+  "Class-type": "detail",
+  "Texture": "World/Items/stoneDust",
   "Name": "Stone dust"
 }

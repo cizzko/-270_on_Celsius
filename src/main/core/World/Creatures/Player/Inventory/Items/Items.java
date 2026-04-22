@@ -1,6 +1,6 @@
 package core.World.Creatures.Player.Inventory.Items;
 
-import core.EventHandling.Logging.Config;
+import com.google.gson.JsonObject;
 import core.Global;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.StaticWorldObjects.StaticObjectsConst;
@@ -47,88 +47,97 @@ public class Items implements Serializable, Cloneable {
         this.type = type;
     }
 
-    private static DefaultValues getDefault(Map<String, String> properties) {
-        Atlas.Region texture = Global.atlas.byPath(properties.getOrDefault("Path", "World/textureNotFound.png"));
-        String description = properties.getOrDefault("Description", "");
-        String name = properties.getOrDefault("Name", "");
-        String requiredForBuild = properties.getOrDefault("RequiredForBuild", null);
+    //todo поленился сделать красиво, потом
 
-        if (requiredForBuild != null) {
-            String[] required = requiredForBuild.split(",");
-            // required for build items
-            Items[] output = new Items[required.length];
+    private static DefaultValues getDefault(JsonObject json) {
+        String path = json.has("Texture") ? json.get("Texture").getAsString() : "World/textureNotFound.png";
+        Atlas.Region texture = Global.atlas.byPath(path);
 
-            for (int i = 0; i < required.length; i++) {
-                required[i] = AssetsManager.normalizePath(required[i]);
-                output[i] = createItem(required[i]);
+        String name = json.has("Name") ? json.get("Name").getAsString() : "";
+        String description = json.has("Description") ? json.get("Description").getAsString() : "";
+
+        Items[] output = null;
+
+        if (json.has("Requirements") && json.get("Requirements").isJsonObject()) {
+            JsonObject reqs = json.getAsJsonObject("Requirements");
+            var keys = reqs.keySet();
+            output = new Items[keys.size()];
+
+            int i = 0;
+            for (String itemKey : keys) {
+                output[i] = createItem(AssetsManager.normalizePath(itemKey));
+                i++;
             }
-            return new DefaultValues(name, texture, description, output);
         }
 
-        return new DefaultValues(name, texture, description, null);
+        return new DefaultValues(name, texture, description, output);
     }
 
     public static Items createWeapon(String fileName) {
-        var weapon = Config.getProperties("World/ItemsCharacteristics/" + fileName + ".properties");
-        DefaultValues defaultValues = getDefault(weapon);
+        JsonObject json = Global.assets.jsonReader("World/ItemsCharacteristics/" + fileName + ".json");
+        DefaultValues defaultValues = getDefault(json);
 
         int id = fileName.hashCode();
-        float fireRate = Float.parseFloat(weapon.getOrDefault("FireRate", "100"));
-        float damage = Float.parseFloat(weapon.getOrDefault("Damage", "100"));
-        float ammoSpeed = Float.parseFloat(weapon.getOrDefault("AmmoSpeed", "100"));
-        float reloadTime = Float.parseFloat(weapon.getOrDefault("ReloadTime", "100"));
-        float bulletSpread = Float.parseFloat(weapon.getOrDefault("BulletSpread", "0"));
-        int magazineSize = Integer.parseInt(weapon.getOrDefault("MagazineSize", "10"));
-        String sound = AssetsManager.normalizePath(weapon.getOrDefault("Sound", null));
-        String bulletPath = AssetsManager.normalizePath(weapon.getOrDefault("BulletPath", "World/Items/someBullet.png"));
-        Weapons.Types type = Weapons.Types.valueOf(weapon.getOrDefault("Type", "BULLET"));
+
+        float fireRate = json.has("FireRate") ? json.get("FireRate").getAsFloat() : 100f;
+        float damage = json.has("Damage") ? json.get("Damage").getAsFloat() : 100f;
+        float ammoSpeed = json.has("AmmoSpeed") ? json.get("AmmoSpeed").getAsFloat() : 100f;
+        float reloadTime = json.has("ReloadTime") ? json.get("ReloadTime").getAsFloat() : 100f;
+        float bulletSpread = json.has("BulletSpread") ? json.get("BulletSpread").getAsFloat() : 0f;
+        int magazineSize = json.has("MagazineSize") ? json.get("MagazineSize").getAsInt() : 10;
+
+        String sound = json.has("Sound") ? AssetsManager.normalizePath(json.get("Sound").getAsString()) : null;
+        String bulletPath = json.has("BulletPath") ? AssetsManager.normalizePath(json.get("BulletPath").getAsString()) : "World/Items/someBullet.png";
+
+        Weapons.Types type = json.has("Type") ? Weapons.Types.valueOf(json.get("Type").getAsString().toUpperCase()) : Weapons.Types.BULLET;
 
         return new Items(new Weapons(fireRate, damage, ammoSpeed, reloadTime, bulletSpread, magazineSize, sound, bulletPath, type), (short) 0, null, null, id, defaultValues.texture(), defaultValues.description, defaultValues.name, fileName, defaultValues.requiredForBuild, Types.WEAPON);
     }
 
     public static Items createTool(String fileName) {
-        var tool = Config.getProperties("World/ItemsCharacteristics/" + fileName + ".properties");
-        DefaultValues defaultValues = getDefault(tool);
+        JsonObject json = Global.assets.jsonReader("World/ItemsCharacteristics/" + fileName + ".json");
+        DefaultValues defaultValues = getDefault(json);
 
         int id = fileName.hashCode();
-        float maxHp = Float.parseFloat(tool.getOrDefault("MaxHp", "100"));
-        float damage = Float.parseFloat(tool.getOrDefault("Damage", "30"));
-        float secBetweenHits = Float.parseFloat(tool.getOrDefault("SecBetweenHits", "100"));
-        float maxInteractionRange = Float.parseFloat(tool.getOrDefault("MaxInteractionRange", "8"));
+
+        float maxHp = json.has("Max-hp") ? json.get("Max-hp").getAsFloat() : 100f;
+        float damage = json.has("Damage") ? json.get("Damage").getAsFloat() : 30f;
+        float secBetweenHits = json.has("SecBetweenHits") ? json.get("SecBetweenHits").getAsFloat() : 100f;
+        float maxInteractionRange = json.has("MaxInteractionRange") ? json.get("MaxInteractionRange").getAsFloat() : 8f;
 
         return new Items(null, (short) 0, new Tools(maxHp, damage, secBetweenHits, maxInteractionRange), null, id, defaultValues.texture(), defaultValues.description, defaultValues.name, fileName, defaultValues.requiredForBuild, Types.TOOL);
     }
 
     public static Items createPlaceable(short placeable) {
-        var detail = Config.getProperties("World/ItemsCharacteristics/" + StaticWorldObjects.getFileName(StaticWorldObjects.getId(placeable)) + ".properties");
-        DefaultValues defaultValues = getDefault(detail);
+        String fileName = StaticWorldObjects.getFileName(StaticWorldObjects.getId(placeable));
+        JsonObject json = Global.assets.jsonReader("World/ItemsCharacteristics/" + fileName + ".json");
+        DefaultValues defaultValues = getDefault(json);
+
         StaticObjectsConst placeableProp = StaticObjectsConst.getConst(StaticWorldObjects.getId(placeable));
         int id = StaticWorldObjects.getId(placeable);
 
-        return new Items(null, placeable, null, null, id, placeableProp.texture, "", placeableProp.objectName, StaticWorldObjects.getFileName(placeable), defaultValues.requiredForBuild, Types.PLACEABLE);
+        return new Items(null, placeable, null, null, id, placeableProp.texture, "", placeableProp.objectName, fileName, defaultValues.requiredForBuild, Types.PLACEABLE);
     }
 
     public static Items createDetail(String fileName) {
-        var detail = Config.getProperties("World/ItemsCharacteristics/" + fileName + ".properties");
-        fileName = AssetsManager.normalizePath(fileName);
-        DefaultValues defaultValues = getDefault(detail);
-        int id = fileName.hashCode();
+        JsonObject json = Global.assets.jsonReader("World/ItemsCharacteristics/" + fileName + ".json");
+        String normPath = AssetsManager.normalizePath(fileName);
+        DefaultValues defaultValues = getDefault(json);
 
-        return new Items(null, (short) 0, null, new Details(""), id, defaultValues.texture(), defaultValues.description, defaultValues.name, fileName, defaultValues.requiredForBuild, Types.DETAIL);
+        return new Items(null, (short) 0, null, new Details(""), normPath.hashCode(), defaultValues.texture(), defaultValues.description, defaultValues.name, normPath, defaultValues.requiredForBuild, Types.DETAIL);
     }
 
+
     public static Items createItem(String fileName) {
-        String type = StringUtils.normalizePath(fileName.toLowerCase());
-        if (type.startsWith("blocks")) {
-            return createPlaceable(StaticWorldObjects.createStatic(fileName));
-        } else if (type.startsWith("weapons")) {
-            return createWeapon(fileName);
-        } else if (type.startsWith("details")) {
-            return createDetail(fileName);
-        } else if (type.startsWith("tools")) {
-            return createTool(fileName);
-        }
-        return null;
+        String path = StringUtils.normalizePath(fileName.toLowerCase());
+
+        return switch (path.split("/")[0]) {
+            case "blocks"  -> createPlaceable(StaticWorldObjects.createStatic(fileName));
+            case "weapons" -> createWeapon(fileName);
+            case "details" -> createDetail(fileName);
+            case "tools"   -> createTool(fileName);
+            default        -> null;
+        };
     }
 
     public static Items createItem(short placeable) {

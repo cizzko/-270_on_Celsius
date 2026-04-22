@@ -1,5 +1,23 @@
 {
-  "id": "stone-oven",
-  "class-type": "block",
-  "texture": "World/Blocks/stoneOven",
-  "input": {
+  "Id": "stone-oven",
+  "Class-type": "block",
+  "Texture": "World/Blocks/stoneOven",
+  "Input": {
+    "small-stone": 1
+  },
+  "Max-hp": 100,
+  "Requirements": {
+    "small-stone": 2
+  },
+  "Fuel": {
+    "stick": 1
+  },
+  "ProductionSpeed": 3000,
+  "NeedEnergy": 0,
+  "Create-with": "smallWorkbench",
+  "MaxStoredObjects": 10,
+  "Output": {
+    "trunk": 1
+  },
+  "Name": "Stone oven"
+}

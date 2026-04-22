@@ -121,6 +121,7 @@ public class Structures implements Serializable {
         }
     }
 
+    //todo properties -> json
     public static void bindStructure(String name, byte id) {
         var file = assets.assetsDir().resolve("World/ItemsCharacteristics/" + name + ".properties");
         if (Files.notExists(file)) {

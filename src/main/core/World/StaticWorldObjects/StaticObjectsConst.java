@@ -1,5 +1,8 @@
 package core.World.StaticWorldObjects;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.annotations.SerializedName;
 import core.EventHandling.Logging.Config;
 import core.Global;
 import core.World.StaticWorldObjects.Structures.Structures;
@@ -10,14 +13,36 @@ import java.util.concurrent.ConcurrentHashMap;
 public class StaticObjectsConst implements Cloneable {
     private static final ConcurrentHashMap<Byte, StaticObjectsConst> constants = new ConcurrentHashMap<>();
     public short[][] optionalTiles;
-    public float maxHp, density, resistance;
-    public int lightTransmission;
-    public boolean hasMotherBlock;
-    // original file name - filename, object name - name at file
-    public String originalFileName, objectName;
+
+    //гсон сам заменяет параметр если находит его
+    //а если нет, то применяется дефолтный
+    @SerializedName("Max-hp")
+    public float maxHp = 100f;
+
+    @SerializedName("Density")
+    public float density = 1f;
+
+    @SerializedName("Resistance")
+    public float resistance = 100f;
+
+    @SerializedName("Light-transmission")
+    public int lightTransmission = 100;
+
+    @SerializedName("Has-mother-block")
+    public boolean hasMotherBlock = false;
+
+    @SerializedName("Type")
+    public Types type = Types.SOLID;
+
+    @SerializedName("Name")
+    public String objectName = "notFound";
+
+    @SerializedName("Texture")
+    private String texturePath;
+
+    public String originalFileName;
     public Atlas.Region texture;
     public Runnable onInteraction;
-    public Types type;
 
     public enum Types {
         GAS,
@@ -35,6 +60,7 @@ public class StaticObjectsConst implements Cloneable {
         }
     }
 
+    //да тут можно красивый билдер сделать но зачем оно же приват
     private StaticObjectsConst(boolean hasMotherBlock, float maxHp, float density, float resistance, int lightTransmission, Atlas.Region texture, String objectName, String originalFileName, short[][] optionalTiles, Types type) {
         this.hasMotherBlock = hasMotherBlock;
         this.maxHp = maxHp;
@@ -54,7 +80,7 @@ public class StaticObjectsConst implements Cloneable {
 
     public static void setConst(String name, byte id, short[][] optionalTiles) {
         if (constants.get(id) == null) {
-            StaticObjectsConst staticConst = createConst("World/ItemsCharacteristics/" + name + ".properties", id);
+            StaticObjectsConst staticConst = createConst("World/ItemsCharacteristics/" + name + ".json", id);
             staticConst.optionalTiles = optionalTiles;
             staticConst.originalFileName = name;
 
@@ -65,19 +91,17 @@ public class StaticObjectsConst implements Cloneable {
     }
 
     public static StaticObjectsConst createConst(String path, byte id) {
-        if (!constants.contains(id)) {
-            var props = Config.getProperties(path);
-            boolean hasMotherBlock = Boolean.parseBoolean(props.getOrDefault("HasMotherBlock", "false"));
-            float density = Float.parseFloat(props.getOrDefault("Density", "1"));
-            float resistance = Float.parseFloat(props.getOrDefault("Resistance", "100"));
-            int lightTransmission = Integer.parseInt(props.getOrDefault("LightTransmission", "100"));
-            int maxHp = Integer.parseInt(props.getOrDefault("MaxHp", "100"));
-            Atlas.Region texture = Global.atlas.byPath(props.get("Path"));
-            String enumType = props.getOrDefault("Type", Types.SOLID.name());
-            String objectName = props.getOrDefault("Name", "notFound");
+        if (!constants.containsKey(id)) {
+            JsonObject asJson = Global.assets.jsonReader(path);
+            StaticObjectsConst obj = new Gson().fromJson(asJson, StaticObjectsConst.class);
+            obj.originalFileName = path;
 
-            return new StaticObjectsConst(hasMotherBlock, maxHp, density, resistance, lightTransmission,
-                    texture, objectName, objectName, null, Types.valueOf(enumType.toUpperCase()));
+            if (asJson.has("Texture")) {
+                obj.texture = Global.atlas.byPath(asJson.get("Texture").getAsString());
+            }
+
+            constants.put(id, obj);
+            return obj;
         }
         return constants.get(id);
     }
@@ -92,9 +116,5 @@ public class StaticObjectsConst implements Cloneable {
 
     public static StaticObjectsConst getConst(byte id) {
         return constants.get(id);
-    }
-
-    public static boolean checkIsHere(byte id) {
-        return constants.get(id) != null;
     }
 }

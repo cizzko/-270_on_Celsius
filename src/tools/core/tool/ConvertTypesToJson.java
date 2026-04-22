@@ -49,7 +49,7 @@ public class ConvertTypesToJson {
             // redHammer.json -> redHammer -> red-hammer
             String fileName = fullFileName.replace(".properties", "");
             String id = camel2Snake(fileName);
-            itemPathToIds.put(canonicalPath(file), id);
+            itemPathToIds.put(StringUtils.normalizePath(canonicalPath(file)), StringUtils.normalizePath(id));
         }
 
         try (var threadPool = Executors.newVirtualThreadPerTaskExecutor()) {
@@ -103,7 +103,7 @@ public class ConvertTypesToJson {
         try (var wr = json.newJsonWriter(Files.newBufferedWriter(jsonFile, StandardCharsets.UTF_8))) {
             wr.beginObject();
             String id = getId(canonicalPath(file));
-            wr.name("id").value(id);
+            wr.name("Id").value(id);
 
                 var categoryDir = file.getName(sourceDir.getNameCount() + 1);
                 String parentDir = categoryDir.toString().toLowerCase(Locale.ROOT).replace(PROPERTIES_EXT, "");
@@ -115,8 +115,7 @@ public class ConvertTypesToJson {
                     default -> throw new IllegalStateException("Unexpected value: " + parentDir);
                 };
 
-                wr.name("class-type").value(classType);
-//            }
+                wr.name("Class-type").value(classType);
 
             outer:
             for (var entry : prop.entrySet()) {
@@ -201,19 +200,25 @@ public class ConvertTypesToJson {
     }
 
     static final List<PropertyMapping> PROPERTIES = List.of(
-            prop("Path", "texture", ConvertTypesToJson::texturePathConverter),
-            prop("RequiredForBuild", "requirements", ConvertTypesToJson::itemStackConverter),
-            prop("InputObjects", "input", ConvertTypesToJson::itemStackConverter),
-            prop("OutputObjects", "output", ConvertTypesToJson::itemStackConverter),
-            prop("Fuel", "fuel", ConvertTypesToJson::itemStackConverter),
-            prop("MaxHp", "max-hp", ConvertTypesToJson::integerConverter),
-            prop("CreateWith", "create-with", ConvertTypesToJson::itemStackConverter)
+            prop("Path", "Texture", ConvertTypesToJson::texturePathConverter),
+            prop("RequiredForBuild", "Requirements", ConvertTypesToJson::itemStackConverter),
+            prop("InputObjects", "Input", ConvertTypesToJson::itemStackConverter),
+            prop("OutputObjects", "Output", ConvertTypesToJson::itemStackConverter),
+            prop("Fuel", "Fuel", ConvertTypesToJson::itemStackConverter),
+            prop("MaxHp", "Max-hp", ConvertTypesToJson::integerConverter),
+            prop("CreateWith", "Create-with", ConvertTypesToJson::identityConverter),
+            prop("LightTransmission", "Light-transmission", ConvertTypesToJson::integerConverter),
+            prop("HasMotherBlock", "Has-mother-block", ConvertTypesToJson::identityConverter)
     );
 
     static final List<String> removed = List.of("Name");
 
     private static void integerConverter(JsonWriter wr, String v) throws IOException {
         wr.value(Integer.parseInt(v));
+    }
+
+    static void identityConverter(JsonWriter wr, String v) throws IOException {
+        wr.value(v);
     }
 
     public static String canonicalPath(Path file) {
@@ -223,7 +228,9 @@ public class ConvertTypesToJson {
     }
 
     private static String getId(String file) {
+        file = StringUtils.normalizePath(file);
         var id = itemPathToIds.get(file);
+
         Objects.requireNonNull(id, file::toString);
         return id;
     }

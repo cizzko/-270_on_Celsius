@@ -1,11 +1,11 @@
 {
-  "Id": "stone",
+  "Id": "aluminum",
   "Class-type": "block",
   "Resistance": 100,
-  "Texture": "World/Blocks/stone",
+  "Texture": "World/Blocks/aluminum",
   "Type": "SOLID",
   "Max-hp": 100,
   "Density": 1,
   "Light-transmission": 80,
-  "Name": "stone"
+  "Name": "aluminum"
 }

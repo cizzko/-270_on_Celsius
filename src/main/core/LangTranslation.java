@@ -46,11 +46,8 @@ public final class LangTranslation {
             language = Config.getFromConfigStr("Language");
         }
 
-        JsonObject json;
-        try (var reader = Global.assets.resourceReader(TRANSLATE_JSONC)) {
-            json = JsonParser.parseReader(reader)
-                    .getAsJsonObject();
-        }
+        JsonObject json = Global.assets.jsonReader(TRANSLATE_JSONC);
+
         loadLanguages(json);
         loadTranslations(json.getAsJsonObject(language));
     }

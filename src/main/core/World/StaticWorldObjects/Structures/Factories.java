@@ -135,6 +135,7 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
         this.name = name;
     }
 
+    //todo properties -> json
     public static void setFactoryConst(String name) {
         String originalName = name;
         name = "World/ItemsCharacteristics/" + name + ".properties";

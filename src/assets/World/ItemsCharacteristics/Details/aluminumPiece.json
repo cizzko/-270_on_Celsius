@@ -1,6 +1,6 @@
 {
-  "id": "aluminum-piece",
-  "class-type": "detail",
-  "texture": "World/Items/aluminumPiece",
+  "Id": "aluminum-piece",
+  "Class-type": "detail",
+  "Texture": "World/Items/aluminumPiece",
   "Name": "aluminum piece"
 }

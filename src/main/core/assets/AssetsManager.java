@@ -1,5 +1,7 @@
 package core.assets;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import core.Global;
 import core.g2d.AtlasHandler;
 import core.g2d.FontHandler;
@@ -101,6 +103,15 @@ public final class AssetsManager {
         Path resolve = assetsDir.resolve(path);
         if (Files.isRegularFile(resolve)) {
             return Files.newBufferedReader(resolve, StandardCharsets.UTF_8);
+        }
+        return null;
+    }
+
+    public JsonObject jsonReader(String path) {
+        try (var reader = resourceReader(path)) {
+            return JsonParser.parseReader(reader).getAsJsonObject();
+        } catch (IOException e) {
+            log.error(e);
         }
         return null;
     }

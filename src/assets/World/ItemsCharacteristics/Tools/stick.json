@@ -1,9 +1,9 @@
 {
-  "id": "stick",
-  "class-type": "tool",
-  "texture": "World/Items/stick",
+  "Id": "stick",
+  "Class-type": "tool",
+  "Texture": "World/Items/stick",
   "Description": "You can chop nettles with this stick",
-  "max-hp": 100,
+  "Max-hp": 100,
   "MaxInteractionRange": 3,
   "Damage": 1,
   "SecBetweenHits": 200,
