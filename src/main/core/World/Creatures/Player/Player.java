@@ -93,6 +93,7 @@ public class Player {
                 tool.lastHitTime = System.currentTimeMillis();
 
                 if (getHp(decrementHp(object, (int) tool.damage)) <= 0) {
+                    //todo сделать лежачие предметы (подойти подобрать)
                     createElement(object);
                     world.destroy(blockX, blockY);
                 } else {
@@ -116,6 +117,7 @@ public class Player {
 
                 if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
                     tool.lastHitTime = System.currentTimeMillis();
+                    //если уничтожает то тут в инвентарь
                     decrementHpMulti(blockX, blockY, (int) tool.damage, root);
                 }
             } else {
@@ -125,6 +127,7 @@ public class Player {
     }
 
     // searches for the root of a structure within a radius of 4 blocks
+    //todo есть шанс нахождения не своего корня
     public static Point2i findRoot(int cellX, int cellY) {
         if (!world.inBounds(cellX, cellY)) {
             return null;

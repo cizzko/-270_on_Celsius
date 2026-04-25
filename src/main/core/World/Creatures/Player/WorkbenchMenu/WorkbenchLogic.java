@@ -186,16 +186,22 @@ public class WorkbenchLogic implements StaticBlocksEvents {
             Items[][] currentItems = getCurrentItems();
 
             if (required != null) {
+                Items currentItem = currentItems[currentObject.x][currentObject.y];
+                boolean succes = true;
+
+                switch (currentItem.type) {
+                    case TOOL, DETAIL, WEAPON -> succes = Inventory.createElement(currentItem.filename);
+                    case PLACEABLE -> succes = Inventory.createElement(currentItem.placeable);
+                }
+
+                if (!succes) {
+                    return;
+                }
+
                 for (Point2i obj : required) {
                     if (obj != null) {
                         Inventory.decrementItem(obj.x, obj.y);
                     }
-                }
-                Items currentItem = currentItems[currentObject.x][currentObject.y];
-
-                switch (currentItem.type) {
-                    case TOOL, DETAIL, WEAPON -> Inventory.createElement(currentItem.filename);
-                    case PLACEABLE -> Inventory.createElement(currentItem.placeable);
                 }
             }
         }

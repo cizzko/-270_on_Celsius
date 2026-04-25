@@ -220,29 +220,31 @@ public class Inventory {
         }
     }
 
-    //todo проверка на заполненность при крафте или при добавлении в инвентарь?
-
-    private static void addItem(int id, Items item) {
-        for (InventoryEvents listener : listeners) {
-            listener.itemCreated(item);
-        }
+    private static boolean addItem(int id, Items item) {
         Point2i cell = findItemOrFree(inventoryObjects, new Point2i(7, 5), id);
+
+        //нету места -> добавление неудачно
+        if (cell == null) {
+            return false;
+        }
 
         if (inventoryObjects[cell.x][cell.y] != null) {
             inventoryObjects[cell.x][cell.y].countInCell++;
         } else {
             inventoryObjects[cell.x][cell.y] = item;
         }
+        for (InventoryEvents listener : listeners) {
+            listener.itemCreated(item);
+        }
+        return true;
     }
 
-    //todo неудобно
-    //todo дабл нормализация
-    public static void createElement(String name) {
+    public static boolean createElement(String name) {
         name = StringUtils.normalizePath(name);
-        addItem(name.hashCode(), Items.createItem(name));
+        return addItem(name.hashCode(), Items.createItem(name));
     }
 
-    public static void createElement(short object) {
-        addItem(StaticWorldObjects.getId(object), Items.createItem(object));
+    public static boolean createElement(short object) {
+        return addItem(StaticWorldObjects.getId(object), Items.createItem(object));
     }
 }

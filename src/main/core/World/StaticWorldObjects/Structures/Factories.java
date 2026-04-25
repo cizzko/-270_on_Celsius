@@ -257,10 +257,9 @@ public class Factories implements StaticBlocksEvents, InventoryEvents {
 
         if (mouseDoubleClick() && factory != null && factory.outputStoredObjects[0] != null) {
             for (int i = 0; i < factory.outputStoredObjects.length; i++) {
-                if (factory.outputStoredObjects[i] == null) {
+                if (factory.outputStoredObjects[i] == null || !Inventory.createElement(factory.outputStoredObjects[i].name)) {
                     break;
                 }
-                Inventory.createElement(factory.outputStoredObjects[i].name);
                 factory.outputStoredObjects[i] = null;
             }
         }
