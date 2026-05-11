@@ -10,5 +10,9 @@
   },
   "Density": 1,
   "CreateWith": "workbenchSmall",
-  "LightTransmission": 100
+  "LightTransmission": 100,
+  "Size": {
+    "width": 4,
+    "height": 4
+  }
 }

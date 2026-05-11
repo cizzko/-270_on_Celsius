@@ -1,7 +1,7 @@
 {
   "Id": "trunk",
   "ClassType": "block",
-  "Resistance": 0,
+  "Resistance": 95,
   "Texture": "World/Blocks/trunk",
   "Type": "SOLID",
   "MaxHp": 100,

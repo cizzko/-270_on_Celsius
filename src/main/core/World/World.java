@@ -14,10 +14,10 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 public class World {
     public final int sizeX, sizeY;
-    public final short[] tiles;
-    public final byte[] hp;
+    public final /* unsigned */ short[] tiles;
+    public final /* unsigned */ byte[] hp;
 
-    // public final short[] blockId;
+    // Будущее к которому стремимся:
     // public final byte[] temperature;
     // public final byte[] light;
     public final Int2ObjectOpenHashMap<TileData> data = new Int2ObjectOpenHashMap<>();
@@ -26,11 +26,8 @@ public class World {
     //todo может диапазоны хранить?
     public final Biomes[] biomes;
 
-    private int pos2index(int x, int y) {
-        return x + sizeX * y;
-    }
-
     public World(int sizeX, int sizeY) {
+        // assert sizeX > 0 && sizeY > 0;
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         this.tiles = new short[sizeX * sizeY];
@@ -48,6 +45,8 @@ public class World {
         this.biomes[x] = biomes;
     }
 
+    /// @param damage должно быть в отрезке `[0, 255]`
+    /// @return `true` если блок уничтожен
     public boolean damage(int x, int y, int damage) {
         int newHp = getHp(x, y) - damage;
 
@@ -78,17 +77,94 @@ public class World {
         }
     }
 
+    public void setData(int x, int y, TileData data) {
+        this.data.put(pos2index(x, y), data);
+    }
+
+    public TileData getData(int x, int y) {
+        return data.get(pos2index(x, y));
+    }
+
+    public BlockEntity getEntity(int x, int y) {
+        var rootPos = getRootBlockPos(x, y);
+        if (rootPos != null) {
+            return entity.get(pos2index(rootPos.x, rootPos.y));
+        }
+        return entity.get(pos2index(x, y));
+    }
+
+    public boolean inBounds(int x, int y) {
+        return x >= 0 && x < sizeX && y >= 0 && y < sizeY;
+    }
+
+    public Biomes getBiomes(int x) {
+        if (x < 0 || x >= sizeX) {
+            return Biomes.getDefault();
+        }
+
+        return biomes[x];
+    }
+
+    /// @return {@code null} в случае выхода за границу. Если это воздух, то возвращается {@link StaticObjectsConst#AIR}
+    public StaticObjectsConst getBlock(int x, int y) {
+        // Global.app.ensureMainThread();
+        if (!inBounds(x, y)) {
+            return null;
+        }
+        int blockId = Short.toUnsignedInt(tiles[pos2index(x, y)]);
+        return Global.content.getConstByBlockId(blockId);
+    }
+
+    /// @return {@code -1} в случае выхода за границу. В остальных случаях здоровье в отрезке `[0, 255]`
+    public int getHp(int x, int y) {
+        // Global.app.ensureMainThread();
+        return inBounds(x, y) ? hp[pos2index(x, y)] : -1;
+    }
+
+    /// @param newHp новое значение здоровья блока. Должно быть в отрезке `[0, 255]`
+    public void setHp(int x, int y, int newHp) {
+        // Global.app.ensureMainThread();
+        if (newHp < 0 || newHp >= (1 << 8))
+            throw new IllegalArgumentException("HP out of range: [0, 255]");
+
+        if (inBounds(x, y)) {
+            var root = getRootBlockPos(x, y);
+
+            if (root != null) {
+                var rootBlock = getBlock(root.x, root.y);
+
+                for (int blockX = 0; blockX < rootBlock.tileCountY; blockX++) {
+                    for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
+                        hp[pos2index(x + blockX, y + blockY)] = (byte) newHp;
+                    }
+                }
+            } else {
+                hp[pos2index(x, y)] = (byte) newHp;
+            }
+        }
+    }
+
+    /// @return {@code -1} в случае выхода за границу. В остальных случаях неотрицательный blockId
+    public int getBlockId(int x, int y) {
+        // Global.app.ensureMainThread();
+        return inBounds(x, y) ? Short.toUnsignedInt(tiles[pos2index(x, y)]) : -1;
+    }
+
+    // region Приватные методы
+
+    private int pos2index(int x, int y) {
+        return x + sizeX * y;
+    }
+
     private void setImpls(int x, int y, StaticObjectsConst object, boolean followingRules) {
         if (object == StaticObjectsConst.AIR) {
             destroyBlock(x, y);
             return;
         }
 
-        // TODO: А что происходит если ставится на место большого блока?
         deleteEntity(x, y);
-        var newEntity = object.createEntity();
+        var newEntity = object.createEntity(x, y);
         if (newEntity != null) {
-            newEntity.setPosition(x, y);
             entity.put(pos2index(x, y), newEntity);
         }
         setHp(x, y, object.maxHp);
@@ -138,72 +214,6 @@ public class World {
         }
     }
 
-    public void setData(int x, int y, TileData data) {
-        this.data.put(pos2index(x, y), data);
-    }
-
-    public TileData getData(int x, int y) {
-        return data.get(pos2index(x, y));
-    }
-
-    public BlockEntity getEntity(int x, int y) {
-        var rootPos = getRootBlockPos(x, y);
-        if (rootPos != null) {
-            return entity.get(pos2index(rootPos.x, rootPos.y));
-        }
-        return entity.get(pos2index(x, y));
-    }
-
-    public boolean inBounds(int x, int y) {
-        return x >= 0 && x < sizeX && y >= 0 && y < sizeY;
-    }
-
-    public Biomes getBiomes(int x) {
-        if (x < 0 || x >= sizeX) {
-            return Biomes.getDefault();
-        }
-
-        return biomes[x];
-    }
-
-    public StaticObjectsConst getBlock(int x, int y) {
-        // Global.app.ensureMainThread();
-        if (!inBounds(x, y)) {
-            return null;
-        }
-        int id = tiles[pos2index(x, y)];
-        return Global.content.getConstByBlockId(id);
-    }
-
-    public int getHp(int x, int y) {
-        // Global.app.ensureMainThread();
-        return inBounds(x, y) ? hp[pos2index(x, y)] : -1;
-    }
-
-    public void setHp(int x, int y, int newHp) {
-        // Global.app.ensureMainThread();
-        if (inBounds(x, y)) {
-            var root = getRootBlockPos(x, y);
-
-            if (root != null) {
-                var rootBlock = getBlock(root.x, root.y);
-
-                for (int blockX = 0; blockX < rootBlock.tileCountY; blockX++) {
-                    for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
-                        hp[pos2index(x + blockX, y + blockY)] = (byte) newHp;
-                    }
-                }
-            } else {
-                hp[pos2index(x, y)] = (byte) newHp;
-            }
-        }
-    }
-
-    public short getBlockId(int x, int y) {
-        // Global.app.ensureMainThread();
-        return inBounds(x, y) ? tiles[pos2index(x, y)] : -1;
-    }
-
     private void deleteEntity(int x, int y) {
         var rootEntity = entity.remove(pos2index(x, y));
         if (rootEntity != null) {
@@ -247,7 +257,7 @@ public class World {
             for (int xBlock = 0; xBlock < root.tileCountX; xBlock++) {
                 var underBlock = getBlock(x + xBlock, y - 1);
 
-                if (underBlock == null || underBlock.type != StaticObjectsConst.Types.SOLID) {
+                if (underBlock == null || underBlock.type != StaticObjectsConst.Type.SOLID) {
                     return false;
                 }
                 for (int yBlock = 0; yBlock < root.tileCountY; yBlock++) {
@@ -260,7 +270,7 @@ public class World {
         } else {
             for (Point2i d : MathUtil.CROSS_OFFSETS) {
                 var block = getBlock(x + d.x, y + d.y);
-                if (block == null || block.type == StaticObjectsConst.Types.SOLID) {
+                if (block == null || block.type == StaticObjectsConst.Type.SOLID) {
                     return true;
                 }
             }

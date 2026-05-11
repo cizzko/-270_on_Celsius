@@ -9,7 +9,7 @@ import core.g2d.Texture;
 import core.graphic.Layer;
 import core.util.Color;
 
-import static core.EventHandling.Logging.Config.getFromConfigBool;
+import static core.EventHandling.Logging.Config.getBoolean;
 import static core.Global.*;
 import static core.World.Textures.TextureDrawing.blockSize;
 import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
@@ -37,7 +37,7 @@ public class Sun extends GameObject {
     protected Texture sunTex;
 
     protected String sunsetTexName() {
-        String sunsetType = getFromConfigBool("InterpolateSunset") ? "" : "non";
+        String sunsetType = getBoolean("InterpolateSunset") ? "" : "non";
         return "World/Sun/" + sunsetType + "InterpolatedSunset.png";
     }
 

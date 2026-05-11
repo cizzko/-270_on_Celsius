@@ -21,7 +21,7 @@ import static core.Window.windowFocused;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class EventHandler {
-    private static boolean keyLogging, autopause = Config.getFromConfigBool("Autopause");
+    private static boolean keyLogging, autopause = Config.getBoolean("Autopause");
     public static final StringBuilder keyLoggingText = new StringBuilder(256);
     public static int debugLevel = Config.getFromConfigInt("Debug");
 
@@ -43,7 +43,7 @@ public class EventHandler {
             if (!visible()) {
                 return;
             }
-            batch.draw(Layer.DEBUG, () -> super.draw());
+            batch.draw(Layer.DEBUG, super::draw);
         }
     }
     private static final Dialog debugDialog = new Dialog();

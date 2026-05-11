@@ -27,6 +27,7 @@ import java.awt.image.BufferedImage;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 
+import static core.EventHandling.EventHandler.debugLevel;
 import static core.Global.*;
 import static core.assets.TextureLoader.decodeImage;
 import static org.lwjgl.glfw.GLFW.*;
@@ -50,7 +51,7 @@ public final class Window extends Application {
         //content.loadAll();
 
         Config.checkConfig();
-        if (Config.getFromConfigInt("Debug") >= 2) {
+        if (debugLevel >= 2) {
             Configuration.DEBUG.set(true);
             Configuration.DEBUG_STREAM.set(IoBuilder.forLogger(lwjglLogger)
                     .setLevel(Level.DEBUG)
@@ -94,7 +95,7 @@ public final class Window extends Application {
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
-        if (Config.getFromConfigBool("DebugMACOSX") || Platform.get() == Platform.MACOSX) {
+        if (Config.getBoolean("DebugMACOSX") || Platform.get() == Platform.MACOSX) {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
             glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -122,7 +123,7 @@ public final class Window extends Application {
 
         printComputerInfo();
 
-        if (Config.getFromConfigBool("VerticalSync")) {
+        if (Config.getBoolean("VerticalSync")) {
             log.info("Framerate: Vertical Sync");
             glfwSwapInterval(1);
         } else {
@@ -134,7 +135,7 @@ public final class Window extends Application {
 
         GL.createCapabilities();
 
-         if (Config.getFromConfigInt("Debug") >= 3) {
+         if (debugLevel >= 3) {
              glEnable(GL_DEBUG_OUTPUT);
              keep(GLUtil.setupDebugMessageCallback());
          }

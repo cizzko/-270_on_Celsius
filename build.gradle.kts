@@ -1,6 +1,7 @@
 plugins {
     java
     id("org.beryx.jlink") version "4.0.0"
+    id("com.github.ben-manes.versions") version "0.54.0"
 }
 
 sourceSets {
@@ -96,25 +97,25 @@ allprojects {
 
     dependencies {
         implementation("com.google.code.gson:gson:2.10.1")
-        implementation("com.fasterxml.jackson.core:jackson-databind:2.18.0")
+        implementation("com.fasterxml.jackson.core:jackson-databind:2.21.3")
         compileOnly("com.github.spotbugs:spotbugs-annotations:4.8.6")
     }
 
     tasks.compileJava {
         options.encoding = "UTF-8"
-        options.release.set(21)
+        options.release = 21
     }
 
     java {
         toolchain {
-            languageVersion = JavaLanguageVersion.of(21)
+            languageVersion = JavaLanguageVersion.of(26)
         }
     }
 }
 
 dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
-    implementation("it.unimi.dsi:fastutil:8.5.15")
+    implementation("it.unimi.dsi:fastutil:8.5.18")
     implementation("org.apache.logging.log4j:log4j-api:3.0.0-beta2")
     implementation("org.apache.logging.log4j:log4j-core:3.0.0-beta2")
     implementation("org.apache.logging.log4j:log4j-iostreams:3.0.0-beta2")

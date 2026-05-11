@@ -22,7 +22,7 @@ public class HitboxMap {
         for (int i = 0; i < tarYSize; i++) {
             var block = world.getBlock(tarX + tarXSize, tarY + i + 1);
             if (block == null ||
-                    (block.resistance >= 100 && x + sizeX >= (block.type == StaticObjectsConst.Types.SOLID
+                    (block.resistance >= 100 && x + sizeX >= (block.type == StaticObjectsConst.Type.SOLID
                             ? findX(tarX + tarXSize, tarY + i + 1) : world.sizeX * TextureDrawing.blockSize))) {
                 return true;
             }
@@ -40,7 +40,7 @@ public class HitboxMap {
         for (int i = 0; i < tarYSize; i++) {
             var block = world.getBlock(tarX + tarXSize, tarY + i + 1);
             if (block == null ||
-                    (block.resistance >= 100 && x + sizeX >= (block.type == StaticObjectsConst.Types.SOLID
+                    (block.resistance >= 100 && x + sizeX >= (block.type == StaticObjectsConst.Type.SOLID
                             ? findX(tarX + tarXSize, tarY + i + 1) : world.sizeX * TextureDrawing.blockSize))) {
                 inters.add(new Point2i(tarX + tarXSize, tarY + i + 1));
             }
@@ -56,7 +56,7 @@ public class HitboxMap {
         for (int i = 0; i < tarYSize; i++) {
             var block = world.getBlock(tarX, tarY + i + 1);
 
-            if (tarX < 0 || tarY < 0 || block == null || (block.resistance >= 100 && block.type == StaticObjectsConst.Types.SOLID)) {
+            if (tarX < 0 || tarY < 0 || block == null || (block.resistance >= 100 && block.type == StaticObjectsConst.Type.SOLID)) {
                 return true;
             }
         }
@@ -72,7 +72,7 @@ public class HitboxMap {
         for (int i = 0; i < tarYSize; i++) {
             var block = world.getBlock(tarX, tarY + i + 1);
 
-            if (tarX < 0 || tarY < 0 || block == null || (block.resistance >= 100 && block.type == StaticObjectsConst.Types.SOLID)) {
+            if (tarX < 0 || tarY < 0 || block == null || (block.resistance >= 100 && block.type == StaticObjectsConst.Type.SOLID)) {
                 inters.add(new Point2i(tarX, tarY + i + 1));
             }
         }
@@ -87,7 +87,7 @@ public class HitboxMap {
         for (int dx = 0; dx <= tarXSize; dx++) {
             var block = world.getBlock(tarX + dx, tarY);
 
-            if (block == null || block.type == StaticObjectsConst.Types.SOLID) {
+            if (block == null || block.type == StaticObjectsConst.Type.SOLID) {
                 return true;
             }
         }
@@ -103,7 +103,7 @@ public class HitboxMap {
         for (int dx = 0; dx <= tarXSize; dx++) {
             var block = world.getBlock(tarX + dx, tarY);
 
-            if (block == null || block.type == StaticObjectsConst.Types.SOLID) {
+            if (block == null || block.type == StaticObjectsConst.Type.SOLID) {
                 inters.add(new Point2i(tarX + dx, tarY));
             }
         }
@@ -119,7 +119,7 @@ public class HitboxMap {
         for (int dx = 0; dx <= tarXSize; dx++) {
             var block = world.getBlock(tarX + dx, tarY + tarYSize);
             if (block == null ||
-                    (block.resistance == 100 && (y + sizeY >= (block.type == StaticObjectsConst.Types.SOLID
+                    (block.resistance == 100 && (y + sizeY >= (block.type == StaticObjectsConst.Type.SOLID
                             ? findY(tarX + dx, tarY + tarYSize) : world.sizeY * TextureDrawing.blockSize)))) {
                 return true;
             }
@@ -138,7 +138,7 @@ public class HitboxMap {
             var block = world.getBlock(tarX + i, tarY + tarYSize);
             if (block == null ||
                     (block.resistance == 100 &&
-                            (y + sizeY >= (block.type == StaticObjectsConst.Types.SOLID
+                            (y + sizeY >= (block.type == StaticObjectsConst.Type.SOLID
                                     ? findY(tarX + i, tarY + tarYSize) : world.sizeY * TextureDrawing.blockSize)))) {
                 inters.add(new Point2i(tarX + i, tarY + tarYSize));
             }
@@ -162,7 +162,7 @@ public class HitboxMap {
                 if (sizeBlock == null) {
                     continue;
                 }
-                if (block.type == StaticObjectsConst.Types.SOLID) {
+                if (block.type == StaticObjectsConst.Type.SOLID) {
                     return new Point2i(tarX + xPos, tarY + yPos);
                 }
             }

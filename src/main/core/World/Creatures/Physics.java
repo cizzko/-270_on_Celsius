@@ -85,7 +85,7 @@ public class Physics {
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
                 var block = world.getBlock(x, y);
-                if (block == null || block.type == StaticObjectsConst.Types.SOLID) {
+                if (block == null || block.type == StaticObjectsConst.Type.SOLID) {
                     blockHitbox.set(x * blockSize, y * blockSize, blockSize, blockSize);
 
                     if (blockHitbox.overlaps(entityHitbox)) {
@@ -185,28 +185,12 @@ public class Physics {
                 vel.y -= ent.getWeight() * GRAVITY * dt;
             }
 
-            if (Math.abs(y - ent.getY()) <= moveThreshold) {
-                //vel.y = 0;
-            }
+            float k = calculateFriction(ent);
+            float perSecondRetention = Math.clamp(1.0f - k * ent.getWeight() * FRICTION_FACTOR, 0.0f, 1.0f);
+            float retentionForDt = (float) Math.pow(perSecondRetention, dt);
+            vel.x *= retentionForDt;
 
-            // TODO Вообще, если говорить о силе трения, то вот мои мысли:
-            //   1) Сила трения направлена против движения (-Math.signum(vel.x) * ...)
-            //      И она должна зависеть от массы объекта, как и должна по 3 закону Ньютона
-            //      действовать на другое тело с противоположным направлением. Это о вопросе коллизий между сущностями
-            //   2) Я думаю разделить просчёт коэффициента сопротивления в 2 этапа. Задумка следующая:
-            //      Есть коэфф. сопротивления среды. Типа сопротивления воздуха (базовое сопротивление),
-            //      сопротивление в листве и может что-то подобное. А также есть сопротивление с поверхностью.
-            //      В зависимости от вектора скорости алгоритм должен определить грань, с которой происходит сопротивление
-            //      и просчитать сопротивление всех блоков (исходя из теоретических соображений это сумма всех коэффициентов)
-            //      Потом сопротивление среды и сопротивление с гранью складываются и (опционально) умножаются на массу
-            float friction = calculateFriction(ent);
 
-            if (friction > 0) {
-                //vel.x -= Math.signum(vel.x) * (dt * friction * ent.getWeight() * FRICTION_FACTOR);
-                //vel.x -= Math.signum(vel.x) * Math.min(Math.abs(vel.x), friction * dt * ent.getWeight() * FRICTION_FACTOR);
-                vel.x *= friction * ent.getWeight() * FRICTION_FACTOR;
-                //System.out.println(friction + " | " +  ent.getWeight() + " | " + FRICTION_FACTOR + " | " + friction * ent.getWeight() * FRICTION_FACTOR + " | " + vel.x);
-            }
             // TODO Тут или в логике игрока (Player#update()) должен быть расчёт силы удара.
             //      Как я описал в ЛС, это F=m*a, то есть можно нужно рассчитать ускорение
             //      как изменение скорости за время и умножить на массу игрока. Так мы получим численное нечто,
@@ -224,6 +208,7 @@ public class Physics {
             if (vel.y < 0 && hasFloor) {
                 vel.y = 0;
             }
+            if (Math.abs(vel.x) < moveThreshold) vel.x = 0;
         }
     }
 

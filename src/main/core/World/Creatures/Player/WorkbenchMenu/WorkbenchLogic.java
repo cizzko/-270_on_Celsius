@@ -133,7 +133,7 @@ public class WorkbenchLogic {
                         float yCoord = 1000 + scroll + (y * 54f);
 
                         if (yCoord < 755) {
-                            Inventory.drawInventoryItem(xCoord, yCoord, currentWorkbench[x][y].getItem().texture);
+                            Inventory.drawItem(xCoord, yCoord, currentWorkbench[x][y].getItem());
 
                             if (EventHandler.getRectangleClick((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
                                 currentObject = new Point2i(x, y);
