@@ -7,7 +7,7 @@ import core.Global;
 import core.World.ContentManager.Type;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.StaticWorldObjects.BlockUnresolved;
-import core.World.StaticWorldObjects.StaticObjectsConst_V2;
+import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.content.ButterflyType;
 import core.content.Factory;
 import core.content.PlayerType;
@@ -30,7 +30,7 @@ public class ContentLoader {
         ctor(Type.ITEM, "tool", ItemTool::new);
         ctor(Type.ITEM, "block", ItemBlock::new);
 
-        ctor(Type.BLOCK, "block", StaticObjectsConst_V2::new);
+        ctor(Type.BLOCK, "block", StaticObjectsConst::new);
         ctor(Type.BLOCK, "factory", Factory::new);
 
         ctor(Type.CREATURE, "player", PlayerType::new);
@@ -46,7 +46,7 @@ public class ContentLoader {
         var typeTable = constructors.get(type);
         var constr = typeTable.get(classType);
         if (constr == null) {
-            throw malformed("Unknown 'class-type': '" + classType + "'");
+            throw malformed("Unknown 'ClassType': '" + classType + "'");
         }
         T cont;
         try {
@@ -58,7 +58,7 @@ public class ContentLoader {
     }
 
     public <T extends ContentType> T readContent() {
-        String classType = node.required("class-type").asText(null);
+        String classType = node.required("ClassType").asText(null);
         T content = createContent(type, classType, id);
         content.load(this);
         return content;
@@ -80,12 +80,12 @@ public class ContentLoader {
             throw exception("Exception while reading json '" + path + "'", e);
         }
         this.node = node;
-        if (!node.path("id").isTextual()) {
-            throw malformed("'id' property must be specified as string");
+        if (!node.path("Id").isTextual()) {
+            throw malformed("'Id' property must be specified as string");
         }
-        this.id = node.path("id").asText();
-        if (!node.path("class-type").isTextual()) {
-            throw malformed("'class-type' property must be specified as string");
+        this.id = node.path("Id").asText();
+        if (!node.path("ClassType").isTextual()) {
+            throw malformed("'ClassType' property must be specified as string");
         }
     }
 
@@ -105,6 +105,9 @@ public class ContentLoader {
     public ItemStack[] readItemStacksUnresolved(JsonNode node) {
         switch (node.getNodeType()) {
             case OBJECT -> {
+                if (node.isEmpty()) {
+                    return ItemStack.EMPTY_ARRAY;
+                }
                 var itemStacks = new ItemStack[node.size()];
                 int i = 0;
                 for (var it = node.fields(); it.hasNext(); ) {
@@ -126,7 +129,7 @@ public class ContentLoader {
         return Global.atlas.byPath(node.path(propName).asText(null));
     }
 
-    public StaticObjectsConst_V2 readBlockUnresolved(String propName) {
+    public StaticObjectsConst readBlockUnresolved(String propName) {
         return new BlockUnresolved(node.path(propName).asText(null));
     }
 }

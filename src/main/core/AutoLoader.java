@@ -1,7 +1,7 @@
 package core;
 
-import core.util.DebugTools;
 import core.assets.AssetsManager;
+import core.util.DebugTools;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

@@ -1,6 +1,6 @@
 package core.World.WorldGenerator;
 
-import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.Global;
 
 public enum Biomes {
     //чем ближе к 90 тем меньше максимальный угол наклона линии генерации
@@ -59,48 +59,52 @@ public enum Biomes {
         return Biomes.values()[(int) (Math.random() * Biomes.values().length)];
     }
 
+    private static short shortIdByName(String name) {
+        return (short) Global.content.getBlockIdByType(Global.content.getConstById(name));
+    }
+
     private static short[] getMountains() {
         return new short[]{
-                StaticWorldObjects.createStatic("Blocks/snow"),
-                StaticWorldObjects.createStatic("Blocks/stone")
+                shortIdByName("snow"),
+                shortIdByName("stone")
         };
     }
 
     private static short[] getPlain(){
         return new short[]{
-                StaticWorldObjects.createStatic("Blocks/grass"),
-                StaticWorldObjects.createStatic("Blocks/dirt"),
-                StaticWorldObjects.createStatic("Blocks/dirt"),
-                StaticWorldObjects.createStatic("Blocks/dirtStone"),
-                StaticWorldObjects.createStatic("Blocks/stone")
+                shortIdByName("grass"),
+                shortIdByName("dirt"),
+                shortIdByName("dirt"),
+                shortIdByName("dirtStone"),
+                shortIdByName("stone")
         };
     }
 
     private static short[] getForest() {
         return new short[]{
-                StaticWorldObjects.createStatic("Blocks/grass"),
-                StaticWorldObjects.createStatic("Blocks/dirt"),
-                StaticWorldObjects.createStatic("Blocks/dirtStone"),
-                StaticWorldObjects.createStatic("Blocks/stone")
+                shortIdByName("grass"),
+                shortIdByName("dirt"),
+                shortIdByName("dirtStone"),
+                shortIdByName("stone")
         };
     }
 
     private static short[] getDesert() {
         return new short[]{
-                StaticWorldObjects.createStatic("Blocks/sand"),
-                StaticWorldObjects.createStatic("Blocks/sand"),
-                StaticWorldObjects.createStatic("Blocks/sand"),
-                StaticWorldObjects.createStatic("Blocks/stone")
+                shortIdByName("sand"),
+                shortIdByName("sand"),
+                shortIdByName("sand"),
+                shortIdByName("stone")
         };
     }
 
     private static short[] getSnowed() {
         return new short[]{
-                StaticWorldObjects.createStatic("Blocks/snow"),
-                StaticWorldObjects.createStatic("Blocks/snow"),
-                StaticWorldObjects.createStatic("Blocks/snow"),
-                StaticWorldObjects.createStatic("Blocks/snow"),
-                StaticWorldObjects.createStatic("Blocks/stone")
+                shortIdByName("snow"),
+                shortIdByName("snow"),
+                shortIdByName("snow"),
+                shortIdByName("snow"),
+                shortIdByName("stone")
         };
     }
 }

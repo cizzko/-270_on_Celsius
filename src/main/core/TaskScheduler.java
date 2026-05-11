@@ -2,7 +2,9 @@ package core;
 
 import java.util.ArrayList;
 import java.util.Objects;
-import java.util.concurrent.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.RejectedExecutionException;
 
 public final class TaskScheduler {
     // TODO тут нужна MPSC очередь, желательно фиксированного размера

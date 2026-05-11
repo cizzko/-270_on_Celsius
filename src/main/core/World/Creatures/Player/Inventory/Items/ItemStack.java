@@ -3,12 +3,14 @@ package core.World.Creatures.Player.Inventory.Items;
 import core.World.Item;
 
 import java.util.Objects;
+import java.util.function.Supplier;
 
 public final class ItemStack {
     public static final ItemStack[] EMPTY_ARRAY = {};
 
     private Item item;
     private int count;
+    private ItemData data;
 
     public ItemStack(Item item) {
         this(item, 1);
@@ -34,6 +36,8 @@ public final class ItemStack {
         return same.length == 0 ? EMPTY_ARRAY : new ItemStack[same.length];
     }
 
+    public ItemStack clone() { return copy(); }
+
     public Item getItem() {
         return item;
     }
@@ -42,12 +46,29 @@ public final class ItemStack {
         return count;
     }
 
+    public ItemData getData() {
+        return data;
+    }
+
+    public <T extends ItemData> T getOrCreateData(Supplier<? extends T> constr) {
+        if (data == null) {
+            data = constr.get();
+        }
+        @SuppressWarnings("unchecked")
+        T t = (T) data;
+        return t;
+    }
+
     public void setItem(Item item) {
         this.item = item;
     }
 
     public void setCount(int count) {
         this.count = requireNonNegativeCount(count);
+    }
+
+    public void setData(ItemData data) {
+        this.data = data;
     }
 
     public void set(Item item, int count) {
@@ -88,7 +109,7 @@ public final class ItemStack {
         if (!(o instanceof ItemStack itemStack)) {
             return false;
         }
-        return count == itemStack.count && item.equals(itemStack.item);
+        return count == itemStack.count && item.equals(itemStack.item) && data.equals(itemStack.data);
     }
 
     @Override
@@ -96,6 +117,9 @@ public final class ItemStack {
         int h = 5381;
         h += (h << 5) + item.hashCode();
         h += (h << 5) + count;
+        if (data != null) {
+            h += (h << 5) + data.hashCode();
+        }
         return h;
     }
 
@@ -104,6 +128,7 @@ public final class ItemStack {
         return "ItemStack{" +
                 "item=" + item +
                 ", count=" + count +
+                (data != null ? (", data=" + data) : "") +
                 '}';
     }
 }

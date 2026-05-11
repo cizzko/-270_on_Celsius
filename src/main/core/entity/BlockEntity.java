@@ -1,12 +1,15 @@
 package core.entity;
 
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
-import core.World.StaticWorldObjects.StaticObjectsConst_V2;
-import core.math.Rectangle;
+import core.World.StaticWorldObjects.StaticObjectsConst;
 
-public interface BlockEntity extends Entity, DrawComponent, HealthComponent {
-    StaticObjectsConst_V2 getBlock();
-    boolean canInsert(ItemStack stack);
-    boolean itemInsertion(ItemStack item);
-    void getHitbox(Rectangle out);
+public interface BlockEntity extends Entity, DrawComponent {
+
+    StaticObjectsConst getBlock();
+
+    boolean insertItem(ItemStack item);
+
+    default void onMouseClick() {}
+
+    default void onMouseHover() {}
 }

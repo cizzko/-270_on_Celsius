@@ -4,7 +4,6 @@ import core.GameObject;
 import core.Load;
 import core.World.Creatures.Physics;
 import core.World.Textures.TextureDrawing;
-import core.World.WorldGenerator.Backdrop;
 import core.World.WorldGenerator.Biomes;
 import core.g2d.Texture;
 import core.graphic.Layer;
@@ -12,7 +11,6 @@ import core.util.Color;
 
 import static core.EventHandling.Logging.Config.getFromConfigBool;
 import static core.Global.*;
-import static core.Global.atlas;
 import static core.World.Textures.TextureDrawing.blockSize;
 import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 

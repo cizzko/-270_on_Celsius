@@ -2,11 +2,14 @@ package core.World.Creatures;
 
 import core.Application;
 import core.EventHandling.EventHandler;
+import core.Global;
 import core.Time;
 import core.World.HitboxMap;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.WorldGenerator.WorldGenerator;
+import core.World.WorldUtils;
 import core.g2d.Atlas;
+import core.math.Point2i;
 import core.math.Rectangle;
 import core.math.Vector2f;
 
@@ -16,8 +19,6 @@ import java.util.HashMap;
 import static core.Global.input;
 import static core.Global.world;
 import static core.World.Creatures.Player.Player.noClip;
-import static core.World.StaticWorldObjects.StaticWorldObjects.getResistance;
-import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.Textures.TextureDrawing.blockSize;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -87,7 +88,7 @@ public class DynamicWorldObjects implements Serializable {
             return;
         }
 
-        float speed = noClip ? 2f : 1f;
+        float speed = noClip ? 2f : 6f;
         if (input.pressed(GLFW_KEY_LEFT_SHIFT) || input.pressed(GLFW_KEY_RIGHT_SHIFT)) {
             speed *= 1.5f;
         }
@@ -111,14 +112,46 @@ public class DynamicWorldObjects implements Serializable {
         if (jumpedTicks > 0) {
             jumpedTicks = Math.max(jumpedTicks - Time.delta, 0);
         } else {
-            boolean hasFloor = hasFloor();
-            if (hasFloor && Math.abs(velocity.y) <= GAP && input.pressed(GLFW_KEY_SPACE)) {
-                tmp.y += 7;
-                jumpedTicks = 5;
+            if (hasFloor() && Math.abs(velocity.y) <= GAP && input.pressed(GLFW_KEY_SPACE)) {
+                tmp.y += 9;
+                jumpedTicks = 5 * Math.max(Time.delta, 0.01f);
             }
         }
 
         velocity.add(tmp);
+
+        Point2i blockUnderMouse = WorldUtils.getBlockUnderMousePoint();
+        if (world.getBlock(blockUnderMouse.x, blockUnderMouse.y) == null) {
+            return;
+        }
+        Point2i root = world.getRootBlockPos(blockUnderMouse.x, blockUnderMouse.y);
+        if (root == null) {
+            root = blockUnderMouse;
+        }
+        var blockEntity = world.getEntity(root.x, root.y);
+        if (blockEntity != null) {
+            if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) blockEntity.onMouseClick();
+
+            blockEntity.onMouseHover();
+
+            final char interactionChar = 'E';
+            if (input.pressed(interactionChar)) {
+//                blockEntity.onInteraction();
+                // ====== То есть это хотим ======
+//                int iconY = (root.y * blockSize) + blockSize;
+//                int iconX = (root.x * blockSize) + blockSize;
+//                batch.draw(atlas.byPath("UI/GUI/interactionIcon.png"), iconX, iconY);
+//                batch.draw(Window.defaultFont.getGlyph(interactionChar),
+//                        (root.x * blockSize + 16) + blockSize,
+//                        (root.y * blockSize + 12) + blockSize);
+//
+//                if (interactionButtonPressed) {
+//                    currentInteraction = new Thread(interaction);
+//                    currentInteraction.start();
+//                }
+            }
+        }
+
     }
 
     public boolean hasFloor() {
@@ -126,11 +159,11 @@ public class DynamicWorldObjects implements Serializable {
         int maxX = (int) Math.floor((x + getTexture().width()) / blockSize);
         int minY = (int) Math.floor((y - GAP) / blockSize);
         for (int x = minX; x <= maxX; x++) {
-            short block = world.get(x, minY);
-            if (block == -1) {
+            var block = world.getBlock(x, minY);
+            if (block == null) {
                 return true;
             }
-            if (getResistance(block) >= 100 && getType(block) == StaticObjectsConst.Types.SOLID) {
+            if (block.type == StaticObjectsConst.Types.SOLID) {
                 return true;
             }
         }

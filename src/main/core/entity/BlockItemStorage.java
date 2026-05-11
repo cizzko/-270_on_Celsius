@@ -3,8 +3,8 @@ package core.entity;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 
 public class BlockItemStorage {
-    private final ItemStack[] items;
-    private final int maxCapacity;
+    public final ItemStack[] items;
+    public final int maxCapacity;
 
     private int total;
 
@@ -14,6 +14,18 @@ public class BlockItemStorage {
             this.items[i] = new ItemStack(items[i].getItem(), 0);
         }
         this.maxCapacity = maxCapacity;
+    }
+
+    public boolean removeFirst() {
+        for (ItemStack item : items) {
+            int count = item.getCount();
+            if (count > 0) {
+                total -= count;
+                item.setCount(0);
+                return true;
+            }
+        }
+        return false;
     }
 
     public int add(ItemStack stack) {
@@ -30,5 +42,9 @@ public class BlockItemStorage {
 
     public int total() {
         return total;
+    }
+
+    public boolean isEmpty() {
+        return total > 0;
     }
 }

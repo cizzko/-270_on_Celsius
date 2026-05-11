@@ -3,18 +3,16 @@ package core.World.Creatures.Player.Inventory;
 import core.EventHandling.EventHandler;
 import core.EventHandling.Logging.Config;
 import core.UI.Styles;
-import core.World.Creatures.Player.Inventory.Items.Items;
-import core.World.Creatures.Player.ItemControl;
-import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.World.Item;
+import core.World.ItemBlock;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator.WorldGenerator;
 import core.g2d.Atlas;
 import core.math.Point2i;
 import core.math.Rectangle;
 import core.util.Color;
-import core.util.StringUtils;
-
-import java.util.ArrayList;
+import core.util.Sized;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Inventory.Items.ItemGrid.findItemOrFree;
@@ -25,27 +23,17 @@ import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Inventory {
     public static boolean inventoryOpen = false;
-    public static Items[][] inventoryObjects = new Items[8][6];
+    public static final ItemStack[][] inventoryObjects = new ItemStack[8][6];
     public static Point2i currentObject, underMouseItem;
-    public static Items.Types currentObjectType;
-    private static final ArrayList<InventoryEvents> listeners = new ArrayList<>();
     private static final boolean buildGrid = Config.getFromConfigBool("BuildGrid");
 
-    public static void registerListener(InventoryEvents event) {
-        listeners.add(event);
-    }
-
-    public static Items getCurrent() {
+    public static ItemStack getCurrent() {
         Point2i current = currentObject;
 
         if (currentObject != null) {
-            return inventoryObjects[current.x][current.y].clone();
+            return inventoryObjects[current.x][current.y];
         }
         return null;
-    }
-
-    public static void create() {
-        ItemControl.create();
     }
 
     public static void inputUpdate() {
@@ -60,14 +48,12 @@ public class Inventory {
     public static void draw() {
         String gridTex = "UI/GUI/inventory/inventory" + (inventoryOpen ? "Open" : "Closed");
         batch.draw(atlas.byPath(gridTex), inventoryOpen ? 1488 : 1866, 756);
-        Items item;
 
         for (int x = inventoryOpen ? 0 : 7; x < inventoryObjects.length; x++) {
             for (int y = 0; y < inventoryObjects[x].length; y++) {
-                item = inventoryObjects[x][y];
+                ItemStack item = inventoryObjects[x][y];
                 if (item != null) {
-                    //а чо тут +1..
-                    drawInventoryItem(1498 + x * 54, 766 + y * 54f, item.countInCell + 1, item.texture);
+                    drawInventoryItem(1498 + x * 54, 766 + y * 54f, item.getCount(), item.getItem().texture);
                 }
             }
         }
@@ -77,12 +63,12 @@ public class Inventory {
 
             Point2i mousePos = input.mousePos();
             if (underMouseItem != null) {
-                Items focusedItems = inventoryObjects[underMouseItem.x][underMouseItem.y];
-                float scale = Items.computeZoom(focusedItems.texture);
+                ItemStack focusedItems = inventoryObjects[underMouseItem.x][underMouseItem.y];
+                float scale = computeZoom(focusedItems.getItem().texture);
 
                 batch.pushState(() -> {
                     batch.scale(scale);
-                    batch.draw(focusedItems.texture, mousePos.x - 15, mousePos.y - 15);
+                    batch.draw(focusedItems.getItem().texture, mousePos.x - 15, mousePos.y - 15);
                 });
             }
             if ((inventoryOpen || current.x > 6)) {
@@ -107,11 +93,16 @@ public class Inventory {
 
     public static void drawInventoryItem(float x, float y, int countInCell, Atlas.Region region) {
         drawInventoryItem(x, y, region);
-        drawText(x + 31, y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell), Styles.DIRTY_BRIGHT_BLACK);
+        drawText(x + 28, y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell), Styles.DIRTY_BRIGHT_BLACK);
+    }
+
+    public static float computeZoom(Sized size) {
+        // 32 - target structure size
+        return 32f / Math.max(size.width(), size.height());
     }
 
     public static void drawInventoryItem(float x, float y, Atlas.Region region) {
-        float scale = Items.computeZoom(region);
+        float scale = computeZoom(region);
 
         batch.pushState(() -> {
             batch.scale(scale);
@@ -130,29 +121,25 @@ public class Inventory {
         decrementItem(current.x, current.y);
     }
 
-    public static void decrementItem(int x, int y) {
-        if (inventoryObjects[x][y] != null) {
-            inventoryObjects[x][y].countInCell--;
+    public static void decrementItem(int x, int y) { decrementItem(x, y, 1); }
 
-            if (inventoryObjects[x][y].countInCell < 0) {
-                inventoryObjects[x][y] = null;
-                currentObject = null;
-            }
+    public static void decrementItem(int x, int y, int count) {
+        if (inventoryObjects[x][y].decrement(count)) {
+            inventoryObjects[x][y] = null;
+            currentObject = null;
         }
     }
 
     public static void updateStaticBlocksPreview() {
         Point2i current = currentObject;
-
-        if (current != null) {
-            short placeable = inventoryObjects[current.x][current.y].placeable;
+        if (current != null && inventoryObjects[current.x][current.y].getItem() instanceof ItemBlock b) {
             Point2i mouseBlockPos = input.mouseBlockPos();
             int blockX = mouseBlockPos.x;
             int blockY = mouseBlockPos.y;
 
-            if (placeable != 0 && underMouseItem == null && !Rectangle.contains(1488, 756, 500, 500, input.mousePos())) {
-                boolean isDeclined = getDistanceToMouse() < 8 && WorldGenerator.checkPlaceRules(blockX, blockY, placeable);
-                TextureDrawing.addToBlocksQueue(blockX, blockY, placeable, isDeclined);
+            if (underMouseItem == null && !Rectangle.contains(1488, 756, 500, 500, input.mousePos())) {
+                boolean isDeclined = getDistanceToMouse() < 8 && world.checkPlaceRules(blockX, blockY, b.block);
+                TextureDrawing.addBlockPreview(blockX, blockY, (short) content.getBlockIdByType(b.block), (byte) b.block.maxHp, isDeclined);
                 drawBuildGrid(blockX, blockY);
             }
         }
@@ -164,13 +151,13 @@ public class Inventory {
         }
 
         Point2i current = currentObject;
-        if (current != null) {
-            short placeable = inventoryObjects[current.x][current.y].placeable;
+        if (current != null && inventoryObjects[current.x][current.y].getItem() instanceof ItemBlock) {
 
             //todo
             batch.matrix(camera.projection);
-            if (placeable != 0 && underMouseItem == null) {
-                batch.draw(atlas.byPath("World/buildGrid.png"), Color.rgba8888(230, 230, 230, 150), WorldGenerator.findX(blockX, blockY) - 243f, WorldGenerator.findY(blockX, blockY) - 244f);
+            if (underMouseItem == null) {
+                batch.draw(atlas.byPath("World/buildGrid.png"), Color.rgba8888(230, 230, 230, 150),
+                        WorldGenerator.findX(blockX, blockY) - 243f, WorldGenerator.findY(blockX, blockY) - 244f);
             }
         }
     }
@@ -183,20 +170,18 @@ public class Inventory {
 
             if (currentObject != underMouse && hasUnderMouseItem) {
                 currentObject = underMouse;
-                currentObjectType = inventoryObjects[underMouse.x][underMouse.y].type;
 
                 if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
                     underMouseItem = underMouse;
                 }
             } else if (!hasUnderMouseItem) {
                 currentObject = null;
-                currentObjectType = null;
             }
         }
     }
 
     private static void moveItems(Point2i from, Point2i to) {
-        Items buff = inventoryObjects[from.x][from.y];
+        var buff = inventoryObjects[from.x][from.y];
         inventoryObjects[from.x][from.y] = inventoryObjects[to.x][to.y];
         inventoryObjects[to.x][to.y] = buff;
     }
@@ -212,39 +197,31 @@ public class Inventory {
             } else {
                 Point2i mousePos = getBlockUnderMousePoint();
 
-                for (InventoryEvents listener : listeners) {
-                    listener.itemDropped(mousePos.x, mousePos.y, inventoryObjects[underMouseItem.x][underMouseItem.y]);
+                var blockEntity = world.getEntity(mousePos.x, mousePos.y);
+                if (blockEntity != null) {
+                    blockEntity.insertItem(inventoryObjects[underMouseItem.x][underMouseItem.y]);
                 }
             }
             underMouseItem = null;
         }
     }
 
-    private static boolean addItem(int id, Items item) {
-        Point2i cell = findItemOrFree(inventoryObjects, new Point2i(7, 5), id);
+    public static boolean addItem(Item item) {
+        Point2i cell = findItemOrFree(inventoryObjects, new Point2i(7, 5), item);
 
         //нету места -> добавление неудачно
         if (cell == null) {
             return false;
         }
 
+        ItemStack stack;
         if (inventoryObjects[cell.x][cell.y] != null) {
-            inventoryObjects[cell.x][cell.y].countInCell++;
+            stack = inventoryObjects[cell.x][cell.y];
+            stack.increment();
         } else {
-            inventoryObjects[cell.x][cell.y] = item;
-        }
-        for (InventoryEvents listener : listeners) {
-            listener.itemCreated(item);
+            stack = new ItemStack(item);
+            inventoryObjects[cell.x][cell.y] = stack;
         }
         return true;
-    }
-
-    public static boolean createElement(String name) {
-        name = StringUtils.normalizePath(name);
-        return addItem(name.hashCode(), Items.createItem(name));
-    }
-
-    public static boolean createElement(short object) {
-        return addItem(StaticWorldObjects.getId(object), Items.createItem(object));
     }
 }

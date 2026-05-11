@@ -30,6 +30,8 @@ public final class MenuScene extends GameScene {
         Window.defaultFont = font;
 
         Styles.loadAll();
+        content.loadAll();
+
         EventHandler.init();
         UIMenus.mainMenu().show();
     }

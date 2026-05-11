@@ -2,52 +2,74 @@ package core.World;
 
 import core.GameState;
 import core.Global;
-import core.World.Creatures.Player.Player;
-import core.World.StaticWorldObjects.StaticBlocksEvents;
 import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.World.StaticWorldObjects.TileData;
 import core.World.Textures.ShadowMap;
 import core.World.WorldGenerator.Biomes;
 import core.World.WorldGenerator.WorldGenerator;
+import core.entity.BlockEntity;
 import core.math.MathUtil;
 import core.math.Point2i;
-
-import java.util.ArrayList;
-
-import static core.World.StaticWorldObjects.StaticObjectsConst.getConst;
-import static core.World.StaticWorldObjects.StaticWorldObjects.*;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 public class World {
     public final int sizeX, sizeY;
     public final short[] tiles;
+    public final byte[] hp;
+
+    // public final short[] blockId;
+    // public final byte[] temperature;
+    // public final byte[] light;
+    public final Int2ObjectOpenHashMap<TileData> data = new Int2ObjectOpenHashMap<>();
+    public final Int2ObjectOpenHashMap<BlockEntity> entity = new Int2ObjectOpenHashMap<>();
+
     //todo может диапазоны хранить?
     public final Biomes[] biomes;
 
-    private final ArrayList<StaticBlocksEvents> listeners = new ArrayList<>();
+    private int pos2index(int x, int y) {
+        return x + sizeX * y;
+    }
 
     public World(int sizeX, int sizeY) {
         this.sizeX = sizeX;
         this.sizeY = sizeY;
         this.tiles = new short[sizeX * sizeY];
+        this.hp = new byte[sizeX * sizeY];
         this.biomes = new Biomes[sizeX];
     }
 
-    public void registerListener(StaticBlocksEvents listener) {
-        listeners.add(listener);
+    public void update() {
+        for (BlockEntity entity : entity.values()) {
+            entity.update();
+        }
     }
 
     public void setBiomes(int x, Biomes biomes) {
         this.biomes[x] = biomes;
     }
 
-    public void set(int x, int y, short object, boolean followingRules) {
-        short old = get(x, y);
+    public boolean damage(int x, int y, int damage) {
+        int newHp = getHp(x, y) - damage;
+
+        if (newHp <= 0) {
+            set(x, y, null, false);
+            return true;
+        }
+        setHp(x, y, newHp);
+        return false;
+    }
+
+    public void destroy(int x, int y) {
+        set(x, y, null, false);
+    }
+
+    public void set(int x, int y, StaticObjectsConst object, boolean followingRules) {
+        if (object == null)
+            object = StaticObjectsConst.AIR;
+
         setImpls(x, y, object, followingRules);
 
         if (Global.gameState == GameState.PLAYING) {
-            for (StaticBlocksEvents listener : listeners) {
-                listener.onBlockChanged(x, y, old, object);
-            }
-
             if (x < WorldGenerator.copySize) {
                 setImpls(sizeX - WorldGenerator.copySize + x, y, object, followingRules);
             } else if (x > sizeX - WorldGenerator.copySize) {
@@ -56,25 +78,80 @@ public class World {
         }
     }
 
-    public void setImpls(int x, int y, short object, boolean followingRules) {
-        if (getConst(getId(object)).optionalTiles != null) {
-            short[][] tiles = getConst(getId(object)).optionalTiles;
+    private void setImpls(int x, int y, StaticObjectsConst object, boolean followingRules) {
+        if (object == StaticObjectsConst.AIR) {
+            destroyBlock(x, y);
+            return;
+        }
 
-            for (int blockX = 0; blockX < tiles.length; blockX++) {
-                for (int blockY = 0; blockY < tiles[0].length; blockY++) {
-                    if (tiles[blockX][blockY] != 0 && getType(tiles[blockX][blockY]) != StaticObjectsConst.Types.GAS) {
-                        setImpl(x + blockX, y + blockY, tiles[blockX][blockY], followingRules);
+        // TODO: А что происходит если ставится на место большого блока?
+        deleteEntity(x, y);
+        var newEntity = object.createEntity();
+        if (newEntity != null) {
+            newEntity.setPosition(x, y);
+            entity.put(pos2index(x, y), newEntity);
+        }
+        setHp(x, y, object.maxHp);
+
+        var tileData = object.createData();
+        if (tileData != null) {
+            data.put(pos2index(x, y), tileData);
+        }
+
+        if (object.isMultiblock()) {
+            for (int currentX = 0; currentX < object.tileCountX; currentX++) {
+                for (int currentY = 0; currentY < object.tileCountY; currentY++) {
+                    int partX = x + currentX, partY = y + currentY;
+
+                    setImpl(partX, partY, object, followingRules);
+                    setHp(partX, partY, object.maxHp);
+
+                    if (partX != x || partY != y) {
+                        setData(partX, partY, new TileData.MultiblockPart((byte) (partX - x), (byte) (partY - y)));
                     }
                 }
             }
+        } else {
+            setImpl(x, y, object, followingRules);
         }
-        setImpl(x, y, object, followingRules);
     }
 
-    private void setImpl(int x, int y, short object, boolean followingRules) {
-        if (!followingRules || checkPlaceRules(x, y, object)) {
-            tiles[x + sizeX * y] = object;
+    private void destroyBlock(int x, int y) {
+        var old = getBlock(x, y);
+        if (old == null) {
+            return;
         }
+        var root = getRootBlockPos(x, y);
+        if (root != null)  {
+            deleteMultiblockFromRoot(root.x, root.y);
+        } else {
+            deleteEntity(x, y);
+            data.remove(pos2index(x, y));
+            tiles[x + sizeX * y] = 0;
+            ShadowMap.update();
+        }
+    }
+
+    private void setImpl(int x, int y, StaticObjectsConst block, boolean followingRules) {
+        if (!followingRules || checkPlaceRules(x, y, block)) {
+            tiles[x + sizeX * y] = (short) Global.content.getBlockIdByType(block);
+        }
+    }
+
+    public void setData(int x, int y, TileData data) {
+        this.data.put(pos2index(x, y), data);
+    }
+
+    public TileData getData(int x, int y) {
+        return data.get(pos2index(x, y));
+    }
+
+    public BlockEntity getEntity(int x, int y) {
+        var rootPos = getRootBlockPos(x, y);
+        if (rootPos != null) {
+            return entity.get(pos2index(rootPos.x, rootPos.y));
+        }
+        return entity.get(pos2index(x, y));
     }
 
     public boolean inBounds(int x, int y) {
@@ -89,67 +166,101 @@ public class World {
         return biomes[x];
     }
 
-    public short get(int x, int y) {
+    public StaticObjectsConst getBlock(int x, int y) {
         // Global.app.ensureMainThread();
-        return inBounds(x, y) ? tiles[x + sizeX * y] : -1;
+        if (!inBounds(x, y)) {
+            return null;
+        }
+        int id = tiles[pos2index(x, y)];
+        return Global.content.getConstByBlockId(id);
     }
 
-    public void destroy(int x, int y) {
+    public int getHp(int x, int y) {
         // Global.app.ensureMainThread();
+        return inBounds(x, y) ? hp[pos2index(x, y)] : -1;
+    }
 
-        short id = get(x, y);
-        if (id != 0) {
-            if (getConst(getId(id)).hasMotherBlock || getConst(getId(id)).optionalTiles != null) {
-                Point2i root = Player.findRoot(x, y);
+    public void setHp(int x, int y, int newHp) {
+        // Global.app.ensureMainThread();
+        if (inBounds(x, y)) {
+            var root = getRootBlockPos(x, y);
 
-                if (root != null) {
-                    deleteTiles(get(root.x, root.y), root.x, root.y);
+            if (root != null) {
+                var rootBlock = getBlock(root.x, root.y);
+
+                for (int blockX = 0; blockX < rootBlock.tileCountY; blockX++) {
+                    for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
+                        hp[pos2index(x + blockX, y + blockY)] = (byte) newHp;
+                    }
                 }
             } else {
-                set(x, y, (short) 0, false);
-                ShadowMap.update();
-            }
-
-            if (Global.gameState == GameState.PLAYING) {
-                for (StaticBlocksEvents listener : listeners) {
-                    listener.onBlockChanged(x, y, id, id);
-                }
+                hp[pos2index(x, y)] = (byte) newHp;
             }
         }
     }
 
-    // region Детали реализации
+    public short getBlockId(int x, int y) {
+        // Global.app.ensureMainThread();
+        return inBounds(x, y) ? tiles[pos2index(x, y)] : -1;
+    }
 
-    private void deleteTiles(short id, int cellX, int cellY) {
-        StaticObjectsConst objType = getConst(getId(id));
-        for (int blockX = 0; blockX < objType.optionalTiles.length; blockX++) {
-            for (int blockY = 0; blockY < objType.optionalTiles[0].length; blockY++) {
-                tiles[(cellX + blockX) + sizeX * (cellY + blockY)] = (short) 0;
+    private void deleteEntity(int x, int y) {
+        var rootEntity = entity.remove(pos2index(x, y));
+        if (rootEntity != null) {
+            rootEntity.remove();
+        }
+    }
+
+    private void deleteMultiblockFromRoot(int x, int y) {
+        var rootBlock = getBlock(x, y);
+        assert rootBlock != null;
+        deleteEntity(x, y);
+        data.remove(pos2index(x, y));
+
+        for (int blockX = 0; blockX < rootBlock.tileCountY; blockX++) {
+            for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
+                tiles[pos2index(x + blockX, y + blockY)] = (short) 0;
             }
         }
         ShadowMap.update();
     }
 
-    private boolean checkPlaceRules(int x, int y, short root) {
-        if (getId(get(x, y)) != 0) {
+    public Point2i getRootBlockPos(int x, int y) {
+        if (getData(x, y) instanceof TileData.MultiblockPart part) {
+            return new Point2i(x - part.rootOffsetX, y - part.rootOffsetY);
+        } else {
+            var block = getBlock(x, y);
+            if (block.isMultiblock()) {
+                return new Point2i(x, y); // Корень
+            } else {
+                return null;
+            }
+        }
+    }
+
+    public boolean checkPlaceRules(int x, int y, StaticObjectsConst root) {
+        var currentBlock = getBlock(x, y);
+        if (currentBlock != StaticObjectsConst.AIR) {
             return false;
         }
-        if (getConst(getId(root)).optionalTiles != null) {
-            short[][] tiles = getConst(getId(root)).optionalTiles;
+        if (root.isMultiblock()) {
+            for (int xBlock = 0; xBlock < root.tileCountX; xBlock++) {
+                var underBlock = getBlock(x + xBlock, y - 1);
 
-            for (int xBlock = 0; xBlock < tiles.length; xBlock++) {
-                if (getResistance(get(x + xBlock, y - 1)) < 100) {
+                if (underBlock == null || underBlock.type != StaticObjectsConst.Types.SOLID) {
                     return false;
                 }
-                for (int yBlock = 0; yBlock < tiles[0].length; yBlock++) {
-                    if (getId(get(x + xBlock, y)) != 0) {
+                for (int yBlock = 0; yBlock < root.tileCountY; yBlock++) {
+                    var block = getBlock(x + xBlock, y);
+                    if (block != StaticObjectsConst.AIR) {
                         return false;
                     }
                 }
             }
         } else {
             for (Point2i d : MathUtil.CROSS_OFFSETS) {
-                if (!(getResistance(get(x + d.x, y + d.y)) < 100)) {
+                var block = getBlock(x + d.x, y + d.y);
+                if (block == null || block.type == StaticObjectsConst.Types.SOLID) {
                     return true;
                 }
             }

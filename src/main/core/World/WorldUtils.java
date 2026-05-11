@@ -12,7 +12,9 @@ public class WorldUtils {
     }
 
     public static int getDistanceToMouse() {
-        return (int) Math.abs((DynamicObjects.getFirst().getX() / TextureDrawing.blockSize - getBlockUnderMousePoint().x) + (DynamicObjects.getFirst().getY() / TextureDrawing.blockSize - getBlockUnderMousePoint().y));
+        return (int) Math.abs((
+                DynamicObjects.getFirst().getX() / TextureDrawing.blockSize - getBlockUnderMousePoint().x)
+                + (DynamicObjects.getFirst().getY() / TextureDrawing.blockSize - getBlockUnderMousePoint().y));
     }
 
     public static int getDistanceBetweenBlocks(Point2i mainPoint, Point2i secondPoint) {

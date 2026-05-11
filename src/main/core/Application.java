@@ -7,6 +7,7 @@ import org.lwjgl.system.NativeResource;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import static core.EventHandling.EventHandler.setDebugValue;
 import static core.util.ImportClassMethod.exec;
 import static core.util.ImportClassMethod.jshell;
 
@@ -40,6 +41,8 @@ public class Application {
         try {
             Thread.currentThread().setName("UpdateThread");
             init();
+            setDebugValue(() -> "deltaTime: " + Time.delta);
+
             while (running) {
                 update();
             }

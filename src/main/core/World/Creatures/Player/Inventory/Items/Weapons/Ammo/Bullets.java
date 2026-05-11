@@ -3,10 +3,9 @@ package core.World.Creatures.Player.Inventory.Items.Weapons.Ammo;
 import core.UI.Sounds.Sound;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.Items;
-import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
+import core.World.Creatures.Player.Inventory.Items.ItemData;
 import core.World.HitboxMap;
-import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.World.ItemWeapon;
 import core.World.Textures.TextureDrawing;
 import core.g2d.Atlas;
 import core.math.Point2i;
@@ -35,13 +34,16 @@ public class Bullets {
     }
 
     public static void updateBullets() {
-        if (Inventory.currentObjectType == Items.Types.WEAPON) {
-            Weapons weapon = Inventory.getCurrent().weapon;
+        var curr = Inventory.getCurrent();
+        if (curr != null && curr.getItem() instanceof ItemWeapon w) {
+            long nowTime = System.currentTimeMillis();
+            var data = curr.getOrCreateData(ItemData.Weapon::new);
 
-            if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && System.currentTimeMillis() - weapon.lastShootTime >= weapon.fireRate) {
-                weapon.lastShootTime = System.currentTimeMillis();
-                Bullets.createBullet(DynamicObjects.getFirst().getX(), DynamicObjects.getFirst().getY(), weapon.ammoSpeed, weapon.damage, Math.abs((float) Math.toDegrees(Math.atan2(input.mousePos().y - 540, input.mousePos().x - 960)) - 180));
-                Sound.playSound(weapon.sound, Sound.types.EFFECT, false);
+            if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && nowTime - data.lastShootTime >= w.fireRate) {
+                data.lastShootTime = nowTime;
+                Bullets.createBullet(DynamicObjects.getFirst().getX(), DynamicObjects.getFirst().getY(),
+                        w.ammoSpeed, w.damage, Math.abs((float) Math.toDegrees(Math.atan2(input.mousePos().y - 540, input.mousePos().x - 960)) - 180));
+                Sound.playSound(w.sound, Sound.types.EFFECT, false);
             }
         }
 
@@ -59,20 +61,16 @@ public class Bullets {
                 bullet.y += deltaY;
                 bullet.damage -= 0.01f;
 
-                Point2i staticObjectPoint = HitboxMap.checkIntersInside(x, y, 8, 8);
+                Point2i staticPos = HitboxMap.checkIntersInside(x, y, 8, 8);
 
-                if (staticObjectPoint != null) {
-                    short staticObject = world.get(staticObjectPoint.x, staticObjectPoint.y);
+                if (staticPos != null) {
+                    var staticObject = world.getBlock(staticPos.x, staticPos.y);
                     DynamicWorldObjects dynamicObject = HitboxMap.checkIntersectionsDynamic(x, y, 8, 8);
 
-                    if (staticObject > 0) {
-                        float hp = StaticWorldObjects.getHp(staticObject);
-                        world.set(staticObjectPoint.x, staticObjectPoint.y, StaticWorldObjects.decrementHp(staticObject, (int) bullet.damage), false);
+                    if (staticObject != null) {
+                        float hp = world.getHp(staticPos.x, staticPos.y);
+                        world.damage(staticPos.x, staticPos.y, (int) bullet.damage);
                         bulletsIter.next().damage -= hp;
-
-                        if (world.get(staticObjectPoint.x, staticObjectPoint.y) <= 0) {
-                            world.destroy(staticObjectPoint.x, staticObjectPoint.y);
-                        }
                     } else if (dynamicObject != null) {
                         float hp = dynamicObject.getCurrentHP();
                         dynamicObject.incrementCurrentHP(-bullet.damage);

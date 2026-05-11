@@ -3,46 +3,29 @@ package core.World.Creatures.Player.WorkbenchMenu;
 import core.EventHandling.EventHandler;
 import core.Global;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.Items;
-import core.World.StaticWorldObjects.StaticBlocksEvents;
-import core.World.StaticWorldObjects.StaticWorldObjects;
-import core.World.StaticWorldObjects.Structures.Factories;
+import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.World.ItemBlock;
+import core.World.StaticWorldObjects.TileData;
 import core.World.Textures.TextureDrawing;
+import core.content.Factory;
 import core.g2d.Fill;
 import core.math.Point2i;
 import core.util.Color;
 
-import java.util.HashSet;
-
 import static core.Global.*;
 import static core.World.Creatures.Player.Inventory.Inventory.inventoryObjects;
 import static core.World.Creatures.Player.ItemControl.*;
-import static core.World.StaticWorldObjects.StaticWorldObjects.getFileName;
 import static core.World.Textures.TextureDrawing.drawObjects;
 import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_B;
 
-public class WorkbenchLogic implements StaticBlocksEvents {
+public class WorkbenchLogic {
     private static boolean isOpen, smallNearby, mediumNearby, largeNearby;
     private static Point2i currentObject;
     private static float scroll = -276;
     private static final Color fogging = new Color(0, 0, 0, 117);
     //todo не помешает перевести меню в гуи
     private static int current = 0, menuXPos = 680;
-    private static final HashSet<Point2i> workbenchs = new HashSet<>();
-
-
-    @Override
-    public void onBlockChanged(int cellX, int cellY, short oldB, short newB) {
-        //todo что то придумать, проверять по имени файла это кпец
-        if (newB != 0) {
-            if (newB != -1 && StaticWorldObjects.getTexture(newB) != null && getFileName(newB).toLowerCase().contains("workbench")) {
-                workbenchs.add(new Point2i(cellX, cellY));
-            }
-        } else {
-            workbenchs.remove(new Point2i(cellX, cellY));
-        }
-    }
 
     public static void updateInput() {
         updateBenchButton();
@@ -73,27 +56,31 @@ public class WorkbenchLogic implements StaticBlocksEvents {
     }
 
     private static void updateNearby() {
-        workbenchs.forEach(point -> {
+        world.data.int2ObjectEntrySet().forEach(e -> {
+            int idx = e.getIntKey();
+            int x = idx % world.sizeX;
+            int y = idx / world.sizeX;
+            if (e.getValue() instanceof TileData.Workbench w) {
+                //todo что то придумать, проверять по имени файла это кпец
+                //проверка что до ближайшего не больше 16
+                if (Math.abs(DynamicObjects.getFirst().getX() / TextureDrawing.blockSize -x) < 16) {
+                    String name = world.getBlock(x, y).id.toLowerCase();
 
-            //todo что то придумать, проверять по имени файла это кпец
-            //проверка что до ближайшего не больше 16
-            if (Math.abs(DynamicObjects.getFirst().getX() / TextureDrawing.blockSize - point.x) < 16) {
-                String name = getFileName(world.get(point.x, point.y)).toLowerCase();
-
-                if (name.contains("small")) {
-                    smallNearby = true;
+                    if (name.contains("small")) {
+                        smallNearby = true;
+                    }
+                    if (name.contains("medium")) {
+                        mediumNearby = true;
+                    }
+                    if (name.contains("large")) {
+                        largeNearby = true;
+                    }
+                } else {
+                    smallNearby = false;
+                    mediumNearby = false;
+                    largeNearby = false;
+                    current = 0;
                 }
-                if (name.contains("medium")) {
-                    mediumNearby = true;
-                }
-                if (name.contains("large")) {
-                    largeNearby = true;
-                }
-            } else {
-                smallNearby = false;
-                mediumNearby = false;
-                largeNearby = false;
-                current = 0;
             }
         });
     }
@@ -136,7 +123,7 @@ public class WorkbenchLogic implements StaticBlocksEvents {
                 Fill.rect(menuXPos + 8, 634, 46, 46, fogging);
             }
 
-            Items[][] currentWorkbench = getCurrentItems();
+            ItemStack[][] currentWorkbench = getCurrentItems();
 
             for (int x = 0; x < currentWorkbench.length; x++) {
                 for (int y = 0; y < currentWorkbench[x].length; y++) {
@@ -146,7 +133,7 @@ public class WorkbenchLogic implements StaticBlocksEvents {
                         float yCoord = 1000 + scroll + (y * 54f);
 
                         if (yCoord < 755) {
-                            Inventory.drawInventoryItem(xCoord, yCoord, currentWorkbench[x][y].texture);
+                            Inventory.drawInventoryItem(xCoord, yCoord, currentWorkbench[x][y].getItem().texture);
 
                             if (EventHandler.getRectangleClick((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
                                 currentObject = new Point2i(x, y);
@@ -158,7 +145,7 @@ public class WorkbenchLogic implements StaticBlocksEvents {
 
             //todo описания
             if (currentObject != null && currentWorkbench[currentObject.x][currentObject.y] != null) {
-                TextureDrawing.drawText(menuXPos + 585, 703, currentWorkbench[currentObject.x][currentObject.y].name);
+                TextureDrawing.drawText(menuXPos + 585, 703, currentWorkbench[currentObject.x][currentObject.y].getItem().getName());
                 drawRequirements(menuXPos + 590,  648);
                 batch.draw(atlas.byPath("UI/GUI/inventory/inventoryCurrent.png"), menuXPos + 62 + currentObject.x * 54,  986 + scroll + (currentObject.y * 54));
             }
@@ -170,7 +157,7 @@ public class WorkbenchLogic implements StaticBlocksEvents {
     }
 
     //текущая вкладка
-    private static Items[][] getCurrentItems() {
+    private static ItemStack[][] getCurrentItems() {
         return switch (current) {
             //todo звездочки
             case 1 -> largeWorkbenchItems;
@@ -181,46 +168,44 @@ public class WorkbenchLogic implements StaticBlocksEvents {
     }
 
     private static void updateBuildButton() {
-        if (isOpen && EventHandler.getRectangleClick(menuXPos + 580, 742, menuXPos + 625, 788)) {
-            Point2i[] required = hasRequiredItems();
-            Items[][] currentItems = getCurrentItems();
+        if (!isOpen || !EventHandler.getRectangleClick(menuXPos + 580, 742, menuXPos + 625, 788)) {
+            return;
+        }
+        var required = hasRequiredItems();
+        if (required == null) {
+            return;
+        }
+        ItemStack[][] currentItems = getCurrentItems();
+        var currentItem = currentItems[currentObject.x][currentObject.y];
+        boolean success = Inventory.addItem(currentItem.getItem());
 
-            if (required != null) {
-                Items currentItem = currentItems[currentObject.x][currentObject.y];
-                boolean succes = true;
+        if (!success) {
+            return;
+        }
 
-                switch (currentItem.type) {
-                    case TOOL, DETAIL, WEAPON -> succes = Inventory.createElement(currentItem.filename);
-                    case PLACEABLE -> succes = Inventory.createElement(currentItem.placeable);
-                }
-
-                if (!succes) {
-                    return;
-                }
-
-                for (Point2i obj : required) {
-                    if (obj != null) {
-                        Inventory.decrementItem(obj.x, obj.y);
-                    }
-                }
+        for (var obj : required) {
+            if (obj != null) {
+                Inventory.decrementItem(obj.x, obj.y, obj.count);
             }
         }
     }
 
-    private static Point2i[] hasRequiredItems() {
-        Point2i menuCurrent = currentObject;
-        Items[][] currentItems = getCurrentItems();
+    record ItemCraftTransaction(int x, int y, int count) {}
 
-        if (menuCurrent != null && currentItems[menuCurrent.x][menuCurrent.y].requiredForBuild != null) {
-            Items[] required = currentItems[menuCurrent.x][menuCurrent.y].requiredForBuild;
-            Point2i[] hasNeededObject = new Point2i[required.length];
+    private static ItemCraftTransaction[] hasRequiredItems() {
+        Point2i menuCurrent = currentObject;
+        var currentItems = getCurrentItems();
+
+        if (menuCurrent != null && currentItems[menuCurrent.x][menuCurrent.y].getItem().requirements != null) {
+            var required = currentItems[menuCurrent.x][menuCurrent.y].getItem().requirements;
+            ItemCraftTransaction[] hasNeededObject = new ItemCraftTransaction[required.length];
             int neededCounter = 0;
 
             for (int i = 0; i < required.length; i++) {
                 for (int x = 0; x < inventoryObjects.length; x++) {
                     for (int y = 0; y < inventoryObjects[x].length; y++) {
-                        if (inventoryObjects[x][y] != null && inventoryObjects[x][y].id == required[i].id) {
-                            hasNeededObject[i] = new Point2i(x, y);
+                        if (inventoryObjects[x][y] != null && inventoryObjects[x][y].getItem() == required[i].getItem()) {
+                            hasNeededObject[i] = new ItemCraftTransaction(x, y, required[i].getCount());
                             neededCounter++;
                         }
                     }
@@ -232,23 +217,16 @@ public class WorkbenchLogic implements StaticBlocksEvents {
     }
 
     private static void drawRequirements(float x, float y) {
-        Items[][] currentItems = getCurrentItems();
+        var currentItems = getCurrentItems();
 
-        if (currentObject != null && currentItems[currentObject.x][currentObject.y] != null) {
-            Items item = currentItems[currentObject.x][currentObject.y];
-            Factories factory = Factories.getFactoryConst(StaticWorldObjects.getFileName(item.placeable));
-
-            if (factory != null) {
-                if (factory.inputObjects != null) {
-                    drawObjects(x, y - 41, factory.inputObjects, atlas.byPath("UI/GUI/buildMenu/factoryIn.png"));
-                }
-                if (factory.outputObjects != null) {
-                    drawObjects(x, y - 82, factory.outputObjects, atlas.byPath("UI/GUI/buildMenu/factoryOut.png"));
-                }
-            }
-            if (item.requiredForBuild != null) {
-                drawObjects(x, y, item.requiredForBuild, atlas.byPath("UI/GUI/buildMenu/build.png"));
-            }
+        if (currentObject == null || currentItems[currentObject.x][currentObject.y] == null) {
+            return;
         }
+        var stack = currentItems[currentObject.x][currentObject.y];
+        if (stack.getItem() instanceof ItemBlock itemBlock && itemBlock.block instanceof Factory factory) {
+            drawObjects(x, y - 41, factory.input, atlas.byPath("UI/GUI/buildMenu/factoryIn.png"));
+            drawObjects(x, y - 82, factory.output, atlas.byPath("UI/GUI/buildMenu/factoryOut.png"));
+        }
+        drawObjects(x, y, stack.getItem().requirements, atlas.byPath("UI/GUI/buildMenu/build.png"));
     }
 }

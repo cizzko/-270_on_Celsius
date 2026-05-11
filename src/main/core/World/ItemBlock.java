@@ -1,10 +1,10 @@
 package core.World;
 
-import core.World.StaticWorldObjects.StaticObjectsConst_V2;
+import core.World.StaticWorldObjects.StaticObjectsConst;
 
 public non-sealed class ItemBlock extends Item {
     // То, что можно поставить
-    public StaticObjectsConst_V2 block;
+    public StaticObjectsConst block;
 
     public ItemBlock(String id) {
         super(id);
@@ -18,6 +18,7 @@ public non-sealed class ItemBlock extends Item {
 
     @Override
     public void resolve(ContentResolver res) {
+        super.resolve(res);
         block = res.resolveBlock(block);
     }
 }

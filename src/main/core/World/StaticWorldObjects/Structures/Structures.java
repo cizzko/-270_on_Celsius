@@ -1,12 +1,6 @@
 package core.World.StaticWorldObjects.Structures;
 
 import core.Application;
-import core.EventHandling.Logging.Config;
-import core.Global;
-import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.StaticWorldObjects.StaticWorldObjects;
-import core.World.Textures.TextureDrawing;
-import core.g2d.Atlas;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -15,7 +9,6 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 
 import static core.Global.assets;
-import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 
 public class Structures implements Serializable {
     private static final HashMap<String, Structures> structures = new HashMap<>();
@@ -48,7 +41,7 @@ public class Structures implements Serializable {
 
         for (int x = 0; x < blocks.length; x++) {
             for (int y = 0; y < blocks[x].length; y++) {
-                bindedBlocks[x][y] = StaticWorldObjects.createStatic(blocks[x][y]);
+//                bindedBlocks[x][y] = blocks[x][y];
             }
         }
         return bindedBlocks;
@@ -108,11 +101,11 @@ public class Structures implements Serializable {
 
             for (int x = 0; x < blocks.length; x++) {
                 for (int y = 0; y < blocks[x].length; y++) {
-                    names[x][y] = StaticWorldObjects.getFileName(blocks[x][y]);
+//                    names[x][y] = StaticWorldObjects.getFileName(blocks[x][y]);
 
-                    if (lowestSolidBlock == -1 && y == 0 && getType(blocks[x][y]) == StaticObjectsConst.Types.SOLID) {
-                        lowestSolidBlock = x;
-                    }
+//                    if (lowestSolidBlock == -1 && y == 0 && getType(blocks[x][y]) == StaticObjectsConst.Types.SOLID) {
+//                        lowestSolidBlock = x;
+//                    }
                 }
             }
             write(new Structures(lowestSolidBlock, names), name);
@@ -121,39 +114,13 @@ public class Structures implements Serializable {
         }
     }
 
-    //todo properties -> json
     public static void bindStructure(String name, byte id) {
         var file = assets.assetsDir().resolve("World/ItemsCharacteristics/" + name + ".properties");
         if (Files.notExists(file)) {
             Structures str = getStructure(name);
             if (str != null) {
-                var blocks = bindStructures(str.blocks);
-                StaticObjectsConst.setConst(name, id, blocks);
-            }
-        } else {
-            var prop = Config.getProperties(file);
-            Atlas.Region texture = Global.atlas.byPath(prop.get("Path"));
-            short[][] blocks = new short[texture.width() / TextureDrawing.blockSize][texture.height() / TextureDrawing.blockSize];
-
-            if (blocks.length > 1 || blocks[0].length > 1) {
-                byte maxHp = Byte.parseByte(prop.getOrDefault("MaxHp", "100"));
-
-                StaticObjectsConst rootConst = StaticObjectsConst.getConst(id);
-                StaticObjectsConst tailConst = rootConst.clone();
-
-                tailConst.optionalTiles = null;
-                tailConst.texture = null;
-                tailConst.hasMotherBlock = true;
-
-                for (int x = 0; x < blocks.length; x++) {
-                    for (int y = 0; y < blocks[0].length; y++) {
-                        byte tailId = StaticWorldObjects.generateId(name + "" + x + "" + y);
-                        blocks[x][y] = (short) ((maxHp & 0xFF) << 8 | tailId & 0xFF);
-                        StaticObjectsConst.setConst(tailConst, tailId);
-                    }
-                }
-                rootConst.optionalTiles = blocks;
-                StaticObjectsConst.setConst(rootConst, id);
+//                var blocks = bindStructures(str.blocks);
+//                StaticObjectsConst.setConst(name, id, blocks);
             }
         }
     }

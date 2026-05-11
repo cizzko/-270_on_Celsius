@@ -1,120 +1,106 @@
 package core.World.StaticWorldObjects;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.annotations.SerializedName;
-import core.EventHandling.Logging.Config;
-import core.Global;
-import core.World.StaticWorldObjects.Structures.Structures;
+import core.World.ContentLoader;
+import core.World.ContentResolver;
+import core.World.ContentType;
+import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.World.Textures.TextureDrawing;
+import core.entity.BlockEntity;
 import core.g2d.Atlas;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.Locale;
 
-public class StaticObjectsConst implements Cloneable {
-    private static final ConcurrentHashMap<Byte, StaticObjectsConst> constants = new ConcurrentHashMap<>();
-    public short[][] optionalTiles;
+public class StaticObjectsConst implements ContentType {
+    public static StaticObjectsConst AIR;
 
-    //гсон сам заменяет параметр если находит его
-    //а если нет, то применяется дефолтный
-    @SerializedName("Max-hp")
-    public float maxHp = 100f;
+    public final String id;
 
-    @SerializedName("Density")
-    public float density = 1f;
+    public int tileCountX, tileCountY;
 
-    @SerializedName("Resistance")
-    public float resistance = 100f;
-
-    @SerializedName("Light-transmission")
-    public int lightTransmission = 100;
-
-    @SerializedName("Has-mother-block")
-    public boolean hasMotherBlock = false;
-
-    @SerializedName("Type")
-    public Types type = Types.SOLID;
-
-    @SerializedName("Name")
-    public String objectName = "notFound";
-
-    @SerializedName("Texture")
-    private String texturePath;
-
-    public String originalFileName;
+    public int maxHp;
+    public float density, resistance;
+    public int lightTransmission;
+    public boolean hasMotherBlock;
     public Atlas.Region texture;
-    public Runnable onInteraction;
+    public ItemStack[] requirements;
+    public StaticObjectsConst createWith;
+    public Types type;
+
+    public StaticObjectsConst(String id) {
+        this.id = id;
+    }
+
+    @Override
+    public void load(ContentLoader cnt) {
+        this.maxHp = cnt.node().path("MaxHp").asInt(100);
+        this.texture = cnt.readTexture("Texture");
+        this.requirements = cnt.readItemStacksUnresolved(cnt.node().path("Requirements"));
+
+        this.tileCountX = texture.width() / TextureDrawing.blockSize;
+        this.tileCountY = texture.height() / TextureDrawing.blockSize;
+
+        String createWithId = cnt.node().path("CreateWith").asText(null);
+        this.createWith = (createWithId == null || createWithId.equals("player")) ? null : cnt.readBlockUnresolved("CreateWith");
+
+        this.hasMotherBlock = (cnt.node().path("HasMotherBlock").asBoolean(false));
+        this.density = (float) cnt.node().path("Density").asDouble(1);
+        this.resistance = (float) cnt.node().path("Resistance").asDouble(90);
+        this.lightTransmission = (cnt.node().path("LightTransmission").asInt(100));
+        this.type = Types.valueOf(cnt.node().path("Type").asText(Types.SOLID.name()).toUpperCase(Locale.ROOT));
+    }
+
+    @Override
+    public void resolve(ContentResolver res) {
+        this.requirements = res.resolveItemStacks(requirements);
+        if (createWith != null) {
+            this.createWith = res.resolveBlock(createWith);
+        }
+    }
+
+    @Override
+    public final String id() {
+        return id;
+    }
+
+    public boolean isMultiblock() { return tileCountX > 1 || tileCountY > 1; }
+
+    public TileData createData() {
+        return switch (id) {
+            case "workbenchSmall" -> new TileData.Workbench(TileData.Workbench.Type.SMALL);
+            default -> null;
+        };
+    }
+
+    public /* @Nullable */ BlockEntity createEntity() {
+        return null;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof StaticObjectsConst that)) {
+            return false;
+        }
+        return id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "StaticObjectsConst['" + id + "']";
+    }
 
     public enum Types {
         GAS,
         LIQUID,
         SOLID,
-        PLASMA
-    }
-
-    @Override
-    public StaticObjectsConst clone() {
-        try {
-            return (StaticObjectsConst) super.clone();
-        } catch (CloneNotSupportedException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    //да тут можно красивый билдер сделать но зачем оно же приват
-    private StaticObjectsConst(boolean hasMotherBlock, float maxHp, float density, float resistance, int lightTransmission, Atlas.Region texture, String objectName, String originalFileName, short[][] optionalTiles, Types type) {
-        this.hasMotherBlock = hasMotherBlock;
-        this.maxHp = maxHp;
-        this.density = density;
-        this.texture = texture;
-        this.objectName = objectName;
-        this.originalFileName = originalFileName;
-        this.type = type;
-        this.lightTransmission = lightTransmission;
-        this.optionalTiles = optionalTiles;
-        this.resistance = resistance;
-    }
-
-    public static void setConst(StaticObjectsConst staticConst, byte id) {
-        constants.put(id, staticConst);
-    }
-
-    public static void setConst(String name, byte id, short[][] optionalTiles) {
-        if (!constants.containsKey(id)) {
-            StaticObjectsConst staticConst = createConst("World/ItemsCharacteristics/" + name + ".json", id);
-            staticConst.optionalTiles = optionalTiles;
-            staticConst.originalFileName = name;
-
-            constants.put(id, staticConst);
-
-            Structures.bindStructure(name, id);
-        }
-    }
-
-    public static StaticObjectsConst createConst(String path, byte id) {
-        if (!constants.containsKey(id)) {
-            JsonObject asJson = Global.assets.jsonReader(path);
-            StaticObjectsConst obj = new Gson().fromJson(asJson, StaticObjectsConst.class);
-            obj.originalFileName = path;
-
-            if (asJson.has("Texture")) {
-                obj.texture = Global.atlas.byPath(asJson.get("Texture").getAsString());
-            }
-
-            constants.put(id, obj);
-            return obj;
-        }
-        return constants.get(id);
-    }
-
-    public static void setConst(String name, byte id) {
-        setConst(name, id, null);
-    }
-
-    public static void setDestroyed() {
-        constants.put((byte) 0, new StaticObjectsConst(false, 0, 0, 0, 100, null, "Destroyed", null, null, Types.GAS));
-    }
-
-    public static StaticObjectsConst getConst(byte id) {
-        return constants.get(id);
+        PLASMA,
+        WALKABLE  // Листва, паутина и остальные блоки, через которые можно проходить (падать)
     }
 }

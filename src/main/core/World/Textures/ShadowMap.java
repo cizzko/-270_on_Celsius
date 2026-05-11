@@ -3,7 +3,7 @@ package core.World.Textures;
 import core.GameState;
 import core.UI.Styles;
 import core.World.Creatures.DynamicWorldObjects;
-import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.World.StaticWorldObjects.StaticObjectsConst.Types;
 import core.util.Color;
 
 import java.util.Arrays;
@@ -11,7 +11,6 @@ import java.util.HashMap;
 
 import static core.Global.gameState;
 import static core.Global.world;
-import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 
 public class ShadowMap {
@@ -147,8 +146,17 @@ public class ShadowMap {
         deletedColorDynamic = color;
     }
 
+    private static boolean isNotGas(int x, int y) {
+        var block = world.getBlock(x, y);
+        return block != null && block.type != Types.GAS;
+    }
+    
     private static boolean checkHasGasAround(int x, int y, int radius) {
-        return getType(world.get(x - radius, y)) != StaticObjectsConst.Types.GAS && getType(world.get(x + radius, y)) != StaticObjectsConst.Types.GAS && getType(world.get(x, y - radius)) != StaticObjectsConst.Types.GAS && getType(world.get(x, y + radius)) != StaticObjectsConst.Types.GAS && getType(world.get(x, y)) != StaticObjectsConst.Types.GAS;
+        return isNotGas(x - radius, y) &&
+               isNotGas(x + radius, y) &&
+               isNotGas(x, y - radius) &&
+               isNotGas(x, y + radius) &&
+               isNotGas(x, y);
     }
 
     private static boolean checkHasDegreeAround(int x, int y, int radius) {

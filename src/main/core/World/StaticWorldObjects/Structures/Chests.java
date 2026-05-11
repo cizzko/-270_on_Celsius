@@ -3,9 +3,9 @@ package core.World.StaticWorldObjects.Structures;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.InventoryEvents;
 import core.World.Creatures.Player.Inventory.Items.ItemGrid;
-import core.World.Creatures.Player.Inventory.Items.Items;
+import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.StaticWorldObjects.StaticBlocksEvents;
-import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.math.Point2i;
 import core.math.Vector2f;
 
@@ -13,20 +13,20 @@ import java.util.HashMap;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Inventory.Inventory.drawInventoryItem;
-import static core.World.StaticWorldObjects.StaticWorldObjects.getFileName;
 import static core.World.Textures.TextureDrawing.blockSize;
 import static core.World.WorldUtils.getBlockUnderMousePoint;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
+//todo есть повод починить
 public class Chests implements StaticBlocksEvents, InventoryEvents {
-    private static HashMap<Point2i, Items[][]> chests = new HashMap<>();
+    private static HashMap<Point2i, ItemStack[][]> chests = new HashMap<>();
     private static Point2i current, draggedItem;
 
     @Override
-    public void onBlockChanged(int cellX, int cellY, short oldB, short newB) {
-        if (newB != 0) {
-            if (newB != -1 && StaticWorldObjects.getId(oldB) != StaticWorldObjects.getId(newB) && StaticWorldObjects.getTexture(newB) != null && getFileName(newB).toLowerCase().contains("chest")) {
-                chests.put(new Point2i(cellX, cellY), new Items[3][3]);
+    public void onBlockChanged(int cellX, int cellY, StaticObjectsConst oldB, StaticObjectsConst newB) {
+        if (newB != null) {
+            if (oldB != newB && newB.texture != null && newB.id.equals("chest")) {
+                chests.put(new Point2i(cellX, cellY), new ItemStack[3][3]);
             }
         } else {
             chests.remove(new Point2i(cellX, cellY));
@@ -34,14 +34,13 @@ public class Chests implements StaticBlocksEvents, InventoryEvents {
     }
 
     @Override
-    public void itemDropped(int blockX, int blockY, Items item) {
-        Items[][] grid = chests.get(new Point2i(blockX, blockY));
+    public void itemDropped(int blockX, int blockY, ItemStack item) {
+        ItemStack[][] grid = chests.get(new Point2i(blockX, blockY));
 
         if (grid != null) {
-            Point2i cell = ItemGrid.findItemOrFree(grid, item.id);
-
+            Point2i cell = ItemGrid.findItemOrFree(grid, item.getItem());
             if (grid[cell.x][cell.y] != null) {
-                grid[cell.x][cell.y].countInCell++;
+                grid[cell.x][cell.y].increment();
             } else {
                 grid[cell.x][cell.y] = Inventory.getCurrent();
             }
@@ -59,7 +58,7 @@ public class Chests implements StaticBlocksEvents, InventoryEvents {
     }
 
     private static void updateGetItem() {
-        Items[][] chest = (current != null) ? chests.get(current) : null;
+        ItemStack[][] chest = (current != null) ? chests.get(current) : null;
 
         if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && chest != null) {
             Vector2f worldPos = input.mouseWorldPos();
@@ -80,20 +79,21 @@ public class Chests implements StaticBlocksEvents, InventoryEvents {
                 Point2i inventoryUMB = Inventory.getObjectUnderMouse();
 
                 if (inventoryUMB != null && Inventory.inventoryObjects[inventoryUMB.x][inventoryUMB.y] == null) {
+                    // TODO КОПИРОВАТЬ В МАССИВ С СУНДУКА
                     Inventory.inventoryObjects[inventoryUMB.x][inventoryUMB.y] = chest[draggedItem.x][draggedItem.y];
                     chest[draggedItem.x][draggedItem.y] = null;
                 }
                 draggedItem = null;
             } else {
-                Items item = chest[draggedItem.x][draggedItem.y];
+                ItemStack item = chest[draggedItem.x][draggedItem.y];
 
                 if (item != null) {
                     Point2i mousePos = input.mousePos();
-                    float scale = Items.computeZoom(item.texture);
+                    float scale = item.getItem().getUiScale();
 
                     batch.pushState(() -> {
                         batch.scale(scale);
-                        batch.draw(item.texture, mousePos.x - 15, mousePos.y - 15);
+                        batch.draw(item.getItem().texture, mousePos.x - 15, mousePos.y - 15);
                     });
                 }
             }
@@ -107,19 +107,18 @@ public class Chests implements StaticBlocksEvents, InventoryEvents {
 
     public static void draw() {
         if (current != null && chests.containsKey(current)) {
-            Items[][] currentChest = chests.get(current);
+            ItemStack[][] currentChest = chests.get(current);
             float xPos = current.x * blockSize - 61;
             float yPos = current.y * blockSize + 56;
 
             batch.draw(atlas.byPath("UI/GUI/inventory/chestInventory.png"), xPos, yPos);
 
-            Items item;
-
             for (int x = 0; x < 3; x++) {
                 for (int y = 0; y < 3; y++) {
-                    item = currentChest[x][y];
-                    if (item != null) {
-                        drawInventoryItem(10 + xPos + x * 54, 10 + yPos + y * 54f, item.countInCell + 1, item.texture);
+                    var itemStack = currentChest[x][y];
+
+                    if (itemStack != null) {
+                        drawInventoryItem(10 + xPos + x * 54, 10 + yPos + y * 54f, itemStack.getCount(), itemStack.getItem().texture);
                     }
                 }
             }

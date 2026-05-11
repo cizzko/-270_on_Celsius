@@ -4,19 +4,20 @@ import core.EventHandling.Logging.Config;
 import core.Global;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.Items;
-import core.World.Creatures.Player.Inventory.Items.Tools;
+import core.World.Creatures.Player.Inventory.Items.ItemData;
+import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.World.ItemBlock;
+import core.World.ItemTool;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.TextureDrawing;
-import core.World.WorldGenerator.WorldGenerator;
 import core.g2d.Fill;
 import core.math.Point2i;
 import core.util.Color;
 
-import static core.Global.*;
+import static core.Global.input;
+import static core.Global.world;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
-import static core.World.StaticWorldObjects.StaticWorldObjects.*;
 import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 import static core.World.WorldUtils.getDistanceToMouse;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
@@ -41,8 +42,11 @@ public class Player {
     }
 
     // todo это наверное все же инвентарь, нежели игрок?
+    //todo хотелось бы иметь рисование и взаимодействие поближе
     private static void updatePlaceableInteraction() {
-        if (underMouseItem == null && currentObjectType == Items.Types.PLACEABLE && input.clicked(GLFW_MOUSE_BUTTON_LEFT)) {
+        ItemStack item = Inventory.getCurrent();
+
+        if (input.clicked(GLFW_MOUSE_BUTTON_LEFT) && underMouseItem == null && item != null && item.getItem() instanceof ItemBlock itemBlock) {
             if (input.mousePos().x > (Inventory.inventoryOpen ? 1487 : 1866)) {
                 if (input.mousePos().y > 756) {
                     return;
@@ -50,17 +54,15 @@ public class Player {
             }
             Point2i blockUMB = Global.input.mouseBlockPos();
 
-            if (getType(world.get(blockUMB.x, blockUMB.y)) == StaticObjectsConst.Types.GAS && getDistanceToMouse() <= 9) {
-                Items item = Inventory.getCurrent();
-                if (item != null && item.placeable != 0) {
-                    updatePlaceableBlock(item.placeable, blockUMB.x, blockUMB.y);
-                }
+            var block = world.getBlock(blockUMB.x, blockUMB.y);
+            if (block != null && block.type == StaticObjectsConst.Types.GAS && getDistanceToMouse() <= 9) {
+                updatePlaceableBlock(itemBlock.block, blockUMB.x, blockUMB.y);
             }
         }
     }
 
-    private static void updatePlaceableBlock(short placeable, int blockX, int blockY) {
-        if (!placeRules || WorldGenerator.checkPlaceRules(blockX, blockY, placeable)) {
+    private static void updatePlaceableBlock(StaticObjectsConst placeable, int blockX, int blockY) {
+        if (!placeRules || world.checkPlaceRules(blockX, blockY, placeable)) {
             decrementItem(currentObject.x, currentObject.y);
             world.set(blockX, blockY, placeable, false);
             ShadowMap.update();
@@ -68,110 +70,58 @@ public class Player {
     }
 
     public static void updateToolInteraction() {
-        Items item = Inventory.getCurrent();
-        if (item != null && item.tool != null) {
+        ItemStack item = Inventory.getCurrent();
+        if (item != null && item.getItem() instanceof ItemTool tool) {
+            // TODO: Проверка на тип даты
+            var data = item.getOrCreateData(ItemData.Tool::new);
 
-            Tools tool = item.tool;
             Point2i blockUMB = Global.input.mouseBlockPos();
             int blockX = blockUMB.x;
             int blockY = blockUMB.y;
-            short object = world.get(blockX, blockY);
+            var object = world.getBlock(blockX, blockY);
+            if (object == null || object == StaticObjectsConst.AIR) {
+                return;
+            }
 
-            if (object != 0 && getTexture(object) != null && !StaticObjectsConst.getConst(getId(object)).hasMotherBlock && StaticObjectsConst.getConst(getId(object)).optionalTiles == null) {
-                updateNonStructure(blockX, blockY, object, tool);
-            } else if (StaticObjectsConst.getConst(getId(object)).hasMotherBlock || StaticObjectsConst.getConst(getId(object)).optionalTiles != null) {
-                updateStructure(blockX, blockY, object, tool);
+            if (object.isMultiblock()) {
+                updateStructure(blockX, blockY, object, tool, data);
+            } else {
+                updateNonStructure(blockX, blockY, object, tool, data);
             }
         }
     }
 
-    private static void updateNonStructure(int blockX, int blockY, short object, Tools tool) {
+    //тулы
+    private static void updateNonStructure(int blockX, int blockY, StaticObjectsConst object, ItemTool tool, ItemData.Tool data) {
+        int blockId = world.getBlockId(blockX, blockY);
+        int hp = world.getHp(blockX, blockY);
+
         if (getDistanceToMouse() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
-            TextureDrawing.addToBlocksQueue(blockX, blockY, object, true);
+            TextureDrawing.addBlockPreview(blockX, blockY, (short) blockId, (byte) hp, true);
 
-            if (input.clicked(GLFW_MOUSE_BUTTON_LEFT) && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
-                tool.lastHitTime = System.currentTimeMillis();
+            long nowTime = System.currentTimeMillis();
+            if (input.clicked(GLFW_MOUSE_BUTTON_LEFT) && nowTime - data.lastHitTime >= tool.secBetweenHits && hp > 0) {
+                data.lastHitTime = nowTime;
 
-                if (getHp(decrementHp(object, (int) tool.damage)) <= 0) {
-                    //todo сделать лежачие предметы (подойти подобрать)
-                    createElement(object);
-                    world.destroy(blockX, blockY);
-                } else {
-                    world.set(blockX, blockY, decrementHp(object, (int) tool.damage), false);
+                if (Global.world.damage(blockX, blockY, tool.damage)) {
+                    //todo сделать лежачие предметы (подойти подобрать). Тут ещё выпадание предметов должно быть
+                    Inventory.addItem(Global.content.itemById(object));
                 }
             }
         } else {
-            TextureDrawing.addToBlocksQueue(blockX, blockY, object, false);
+            TextureDrawing.addBlockPreview(blockX, blockY, (short) blockId, (byte) hp, false);
         }
     }
 
-    private static void updateStructure(int blockX, int blockY, short object, Tools tool) {
-        Point2i root = findRoot(blockX, blockY);
+    private static void updateStructure(int blockX, int blockY, StaticObjectsConst object, ItemTool tool, ItemData.Tool data) {
+        Point2i root = world.getRootBlockPos(blockX, blockY);
 
-        if (root != null) {
-            blockX = root.x;
-            blockY = root.y;
+        assert root != null;
 
-            if (getDistanceToMouse() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) {
-                TextureDrawing.addToBlocksQueue(blockX, blockY, world.get(root.x, root.y), true);
+        blockX = root.x;
+        blockY = root.y;
 
-                if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && getId(object) != 0 && System.currentTimeMillis() - tool.lastHitTime >= tool.secBetweenHits && getHp(object) > 0) {
-                    tool.lastHitTime = System.currentTimeMillis();
-                    //если уничтожает то тут в инвентарь
-                    decrementHpMulti(blockX, blockY, (int) tool.damage, root);
-                }
-            } else {
-                TextureDrawing.addToBlocksQueue(blockX, blockY, world.get(root.x, root.y), false);
-            }
-        }
-    }
-
-    // searches for the root of a structure within a radius of 4 blocks
-    //todo есть шанс нахождения не своего корня
-    public static Point2i findRoot(int cellX, int cellY) {
-        if (!world.inBounds(cellX, cellY)) {
-            return null;
-        }
-
-        if (!StaticObjectsConst.getConst(getId(world.get(cellX, cellY))).hasMotherBlock) {
-            if (StaticObjectsConst.getConst(getId(world.get(cellX, cellY))).optionalTiles == null) {
-                return null;
-            }
-        }
-        int maxCellsX = 4;
-        int maxCellsY = 4;
-
-        for (int blockX = 0; blockX < maxCellsX; blockX++) {
-            for (int blockY = 0; blockY < maxCellsY; blockY++) {
-                StaticObjectsConst objConst = StaticObjectsConst.getConst(getId(world.get(cellX - blockX, cellY - blockY)));
-                if (objConst != null && objConst.optionalTiles != null) {
-                    return new Point2i(cellX - blockX, cellY - blockY);
-                }
-            }
-        }
-        return null;
-    }
-
-    private static void decrementHpMulti(int cellX, int cellY, int hp, Point2i root) {
-        if (root != null) {
-            if (world.get(root.x, root.y) != 0) {
-                short rootObj = world.get(root.x, root.y);
-
-                for (int x = -(cellX - root.x); x < StaticObjectsConst.getConst(getId(rootObj)).optionalTiles.length - (cellX - root.x); x++) {
-                    for (int y = -(cellY - root.y); y < StaticObjectsConst.getConst(getId(rootObj)).optionalTiles[0].length - (cellY - root.y); y++) {
-                        short object = world.get(x + cellX, y + cellY);
-
-                        if (getHp(decrementHp(object, hp)) <= 0 && getType(object) != StaticObjectsConst.Types.GAS) {
-                            createElement(rootObj);
-                            world.destroy(cellX, cellY);
-                            break;
-                        } else if (getType(object) != StaticObjectsConst.Types.GAS) {
-                            world.tiles[(x + cellX) + world.sizeX * (y + cellY)] = decrementHp(object, hp);
-                        }
-                    }
-                }
-            }
-        }
+        updateNonStructure(blockX, blockY, object, tool, data);
     }
 
     public static void playerMaxHP() {
@@ -186,14 +136,15 @@ public class Player {
         int currentHp = (int) DynamicObjects.getFirst().getCurrentHP();
         int maxHp = (int) DynamicObjects.getFirst().getMaxHp();
 
-        if (currentHp == maxHp && transparencyHPline > 0 && System.currentTimeMillis() - lastChangeTransparency >= 10 && !Config.getFromConfigBool("AlwaysOnPlayerHPLine")) {
-            lastChangeTransparency = System.currentTimeMillis();
+        long nowTime = System.currentTimeMillis();
+        if (currentHp == maxHp && transparencyHPline > 0 && nowTime - lastChangeTransparency >= 10 && !Config.getFromConfigBool("AlwaysOnPlayerHPLine")) {
+            lastChangeTransparency = nowTime;
             transparencyHPline--;
         } else if (currentHp != maxHp) {
             transparencyHPline = 220;
         }
-        if (lastDamage > 0 && System.currentTimeMillis() - lastChangeLengthDamage >= 15 && System.currentTimeMillis() - lastDamageTime >= 300) {
-            lastChangeLengthDamage = System.currentTimeMillis();
+        if (lastDamage > 0 && nowTime - lastChangeLengthDamage >= 15 && nowTime - lastDamageTime >= 300) {
+            lastChangeLengthDamage = nowTime;
             lastDamage--;
         }
 

@@ -61,7 +61,7 @@ public class ConvertTypesToJson {
                 wr.beginArray();
                 for (Path file : files) {
                     if (file.startsWith(ITEMS_DIR)) {
-                        wr.value(ITEMS_DIR.relativize(file).toString().replace(PROPERTIES_EXT, ""));
+                        wr.value(StringUtils.normalizePath(ITEMS_DIR.relativize(file).toString().replace(PROPERTIES_EXT, "")));
                     }
                 }
                 wr.endArray();
@@ -115,7 +115,7 @@ public class ConvertTypesToJson {
                     default -> throw new IllegalStateException("Unexpected value: " + parentDir);
                 };
 
-                wr.name("Class-type").value(classType);
+                wr.name("ClassType").value(classType);
 
             outer:
             for (var entry : prop.entrySet()) {
@@ -205,10 +205,10 @@ public class ConvertTypesToJson {
             prop("InputObjects", "Input", ConvertTypesToJson::itemStackConverter),
             prop("OutputObjects", "Output", ConvertTypesToJson::itemStackConverter),
             prop("Fuel", "Fuel", ConvertTypesToJson::itemStackConverter),
-            prop("MaxHp", "Max-hp", ConvertTypesToJson::integerConverter),
-            prop("CreateWith", "Create-with", ConvertTypesToJson::identityConverter),
-            prop("LightTransmission", "Light-transmission", ConvertTypesToJson::integerConverter),
-            prop("HasMotherBlock", "Has-mother-block", ConvertTypesToJson::identityConverter)
+            prop("MaxHp", "MaxHp", ConvertTypesToJson::integerConverter),
+            prop("CreateWith", "CreateWith", ConvertTypesToJson::identityConverter),
+            prop("LightTransmission", "LightTransmission", ConvertTypesToJson::integerConverter),
+            prop("HasMotherBlock", "HasMotherBlock", ConvertTypesToJson::identityConverter)
     );
 
     static final List<String> removed = List.of("Name");

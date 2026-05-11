@@ -3,61 +3,56 @@ package core.World.Textures;
 import core.UI.Styles;
 import core.Window;
 import core.World.Creatures.DynamicWorldObjects;
-import core.World.Creatures.Player.Inventory.Items.Items;
+import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
-import core.World.StaticWorldObjects.StaticWorldObjects;
+import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.Structures.Chests;
-import core.World.StaticWorldObjects.Structures.Factories;
 import core.World.StaticWorldObjects.TemperatureMap;
-import core.World.WorldUtils;
+import core.World.StaticWorldObjects.TileData;
 import core.g2d.Atlas;
 import core.g2d.Fill;
 import core.g2d.Font;
 import core.math.Point2i;
 import core.math.Rectangle;
-import core.util.ArrayUtils;
 import core.util.Color;
 
 import java.util.ArrayDeque;
 
 import static core.Global.*;
-import static core.World.Creatures.Player.Player.*;
-import static core.World.StaticWorldObjects.StaticWorldObjects.*;
+import static core.World.Creatures.Player.Player.playerSize;
 import static core.World.WorldGenerator.WorldGenerator.*;
-import static core.util.ArrayUtils.findEqualsObjects;
 
 public class TextureDrawing {
     //todo разобраться с размерами
     public static final int blockSize = 48;
 
-    private static final ArrayDeque<BlockPreview> blocksQueue = new ArrayDeque<>();
+    private static final ArrayDeque<BlockPreview> previewBlocks = new ArrayDeque<>();
 
     private static final Rectangle viewport = new Rectangle();
 
     //todo переместить
-    public static void drawObjects(float x, float y, Items[] items, Atlas.Region iconRegion) {
-        if (items != null && ArrayUtils.findFreeCell(items) != 0) {
-            batch.draw(iconRegion, x, y + 16);
+    public static void drawObjects(float x, float y, ItemStack[] items, Atlas.Region iconRegion) {
+        if (items.length == 0) {
+            return;
+        }
+        batch.draw(iconRegion, x, y + 16);
 
-            for (int i = 0; i < ArrayUtils.findDistinctObjects(items); i++) {
-                Items item = items[i];
-                if (item != null) {
-                    float scale = Items.computeZoom(item.texture);
-                    int countInCell = findEqualsObjects(items, item);
+        for (int i = 0; i < items.length; i++) {
+            var item = items[i];
+            float scale = item.getItem().getUiScale();
 
-                    drawText((x + (i * 54)) + playerSize + 31, y + 3, countInCell > 9 ? "9+" : String.valueOf(countInCell), Styles.DIRTY_BRIGHT_BLACK);
+            drawText((x + (i * 54)) + playerSize + 28, y + 3,
+                    item.getCount() > 9 ? "9+" : String.valueOf(item.getCount()), Styles.DIRTY_BRIGHT_BLACK);
 
-                    int finalI = i;
-                    batch.pushState(() -> {
-                        batch.scale(scale);
-                        batch.draw(item.texture, ((x + (finalI * 54)) + playerSize + 5), (y + 15));
-                    });
-                }
-            }
+            int finalI = i;
+            batch.pushState(() -> {
+                batch.scale(scale);
+                batch.draw(item.getItem().texture, ((x + (finalI * 54)) + playerSize + 5), (y + 15));
+            });
         }
     }
 
-    public record BlockPreview(int x, int y, short blockId, boolean breakable) {}
+    public record BlockPreview(int x, int y, short blockId, byte hp, boolean breakable) {}
 
     public static void drawText(float x, float y, String text, Color color) {
         float startX = x;
@@ -166,40 +161,37 @@ public class TextureDrawing {
                 if (!world.inBounds(x, y)) {
                     continue;
                 }
-                short obj = world.get(x, y);
-                if (obj == -1 || obj == 0) {
+                var obj = world.getBlock(x, y);
+                if (obj == null || obj == StaticObjectsConst.AIR || obj.texture == atlas.getErrorRegion()) {
                     continue;
                 }
-                if (getTexture(obj) == null) {
-                    continue;
-                }
+                int hp = world.getHp(x, y);
                 // todo расширить проверку для структур, слева пропадают раньше чем должны
-                drawBlock(x, y, obj);
+                drawBlock(x, y, obj, hp);
             }
         }
 
         //todo вынести куда то
-        Factories.draw();
         Chests.draw();
 
-        for (BlockPreview q : blocksQueue) {
-            drawQueuedBlock(q.x, q.y, q.blockId, q.breakable);
+        for (BlockPreview q : previewBlocks) {
+            drawQueuedBlock(q.x, q.y, q.blockId, q.hp, q.breakable);
         }
-        blocksQueue.clear();
+        previewBlocks.clear();
     }
 
     private static final Color tmp = new Color();
 
-    private static void drawQueuedBlock(int x, int y, short blockId, boolean breakable) {
-        if (blockId == -1 || StaticWorldObjects.getTexture(blockId) == null) {
+    private static void drawQueuedBlock(int x, int y, short blockId, byte hp, boolean breakable) {
+        var block = content.getConstByBlockId(blockId);
+        if (block == null || block.texture == atlas.getErrorRegion()) {
             return;
         }
 
-        byte hp = getHp(blockId);
-        float wx = x * blockSize;
-        float wy = y * blockSize;
+        int wx = x * blockSize;
+        int wy = y * blockSize;
 
-        if (isOnCamera(wx, wy, getTexture(blockId))) {
+        if (isOnCamera(wx, wy, block.texture)) {
             Color color = ShadowMap.getColorTo(x, y, tmp);
             int a = (color.r() + color.g() + color.b()) / 3;
             if (breakable) {
@@ -208,24 +200,19 @@ public class TextureDrawing {
                 color.set(a, Math.max(0, a - 150), Math.max(0, a - 150), 255);
             }
 
-            batch.draw(getTexture(blockId), color, wx, wy);
-
-            float maxHp = getMaxHp(blockId);
-            if (hp > maxHp / 1.5f) {
-                // ???
-            } else if (hp < maxHp / 3) {
-                batch.draw(atlas.byPath("World/Blocks/damaged1.png"), wx, wy);
-            } else {
-                batch.draw(atlas.byPath("World/Blocks/damaged0.png"), wx, wy);
-            }
+            batch.draw(block.texture, color, wx, wy);
+            drawDamage(block, hp, wx, wy);
         }
     }
 
-    private static void drawBlock(int x, int y, short obj) {
-        byte hp = getHp(obj);
-
+    private static void drawBlock(int x, int y, StaticObjectsConst obj, int hp) {
         int xBlock = findX(x, y);
         int yBlock = findY(x, y);
+
+        if (world.getData(x, y) instanceof TileData.MultiblockPart) {
+            drawDamage(obj, hp, xBlock, yBlock);
+            return;
+        }
 
         Color color = ShadowMap.getColorTo(x, y, tmp);
         int upperLimit = 100;
@@ -242,49 +229,27 @@ public class TextureDrawing {
             color.set(color.r() - a, color.g() - (a / 2), color.b(), color.a());
         }
 
-        batch.draw(getTexture(obj), color, xBlock, yBlock);
+        batch.draw(obj.texture, color, xBlock, yBlock);
+        drawDamage(obj, hp, xBlock, yBlock);
 
-        float maxHp = getMaxHp(obj);
-        if (hp > maxHp / 1.5f) {
+        var blockEntity = world.getEntity(x, y);
+        if (blockEntity != null) {
+            blockEntity.draw();
+        }
+    }
+
+    private static void drawDamage(StaticObjectsConst obj, int hp, int xBlock, int yBlock) {
+        if (hp > obj.maxHp / 1.5f) {
             // ???
-        } else if (hp < maxHp / 3) {
+        } else if (hp < obj.maxHp / 3) {
             batch.draw(atlas.byPath("World/Blocks/damaged1"), xBlock, yBlock);
         } else {
             batch.draw(atlas.byPath("World/Blocks/damaged0"), xBlock, yBlock);
         }
     }
 
-    public static void addToBlocksQueue(int blockX, int blockY, short obj, boolean breakable) {
-        blocksQueue.add(new BlockPreview(blockX, blockY, obj, breakable));
-    }
-
-    public static void updateBlocksInteraction() {
-        char interactionChar = 'E';
-        Point2i mousePos = WorldUtils.getBlockUnderMousePoint();
-        Point2i root = findRoot(mousePos.x, mousePos.y);
-        boolean interactionButtonPressed = input.pressed(interactionChar);
-
-        if (root != null) {
-            Runnable interaction = StaticWorldObjects.getOnInteraction(world.get(root.x, root.y));
-
-            if (currentInteraction != null && currentInteraction.isAlive() && interactionButtonPressed) {
-                currentInteraction.interrupt();
-                return;
-            }
-            if (interaction != null) {
-                int iconY = (root.y * blockSize) + blockSize;
-                int iconX = (root.x * blockSize) + blockSize;
-                batch.draw(atlas.byPath("UI/GUI/interactionIcon.png"), iconX, iconY);
-                batch.draw(Window.defaultFont.getGlyph(interactionChar),
-                        (root.x * blockSize + 16) + blockSize,
-                        (root.y * blockSize + 12) + blockSize);
-
-                if (interactionButtonPressed) {
-                    currentInteraction = new Thread(interaction);
-                    currentInteraction.start();
-                }
-            }
-        }
+    public static void addBlockPreview(int blockX, int blockY, short blockId, byte hp, boolean breakable) {
+        previewBlocks.add(new BlockPreview(blockX, blockY, blockId, hp, breakable));
     }
 
     public static boolean isOnCamera(float x, float y, Atlas.Region texture) {

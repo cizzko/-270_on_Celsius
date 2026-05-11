@@ -5,7 +5,6 @@ import java.io.Serializable;
 public non-sealed class ItemWeapon extends Item implements Serializable {
     public int magazineSize;
     public float fireRate, damage, ammoSpeed, reloadTime, bulletSpread;
-    public long lastShootTime = System.currentTimeMillis();
     public String sound, bulletPath;
     public Types type;
 
