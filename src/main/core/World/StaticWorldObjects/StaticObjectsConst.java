@@ -5,6 +5,7 @@ import core.World.ContentResolver;
 import core.World.ContentType;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.Textures.TextureDrawing;
+import core.content.block.ChestEntity;
 import core.entity.BlockEntity;
 import core.g2d.Atlas;
 
@@ -15,7 +16,7 @@ public class StaticObjectsConst implements ContentType {
 
     public final String id;
 
-    public int tileCountX, tileCountY;
+    public byte tileCountX, tileCountY;
 
     public int maxHp;
     public float density, resistance;
@@ -23,8 +24,8 @@ public class StaticObjectsConst implements ContentType {
     public boolean hasMotherBlock;
     public Atlas.Region texture;
     public ItemStack[] requirements;
-    public StaticObjectsConst createWith;
-    public Types type;
+    public /* @Nullable */ StaticObjectsConst createWith;
+    public Type type;
 
     public StaticObjectsConst(String id) {
         this.id = id;
@@ -36,8 +37,8 @@ public class StaticObjectsConst implements ContentType {
         this.texture = cnt.readTexture("Texture");
         this.requirements = cnt.readItemStacksUnresolved(cnt.node().path("Requirements"));
 
-        this.tileCountX = texture.width() / TextureDrawing.blockSize;
-        this.tileCountY = texture.height() / TextureDrawing.blockSize;
+        this.tileCountX = (byte) (texture.width() / TextureDrawing.blockSize);
+        this.tileCountY = (byte) (texture.height() / TextureDrawing.blockSize);
 
         String createWithId = cnt.node().path("CreateWith").asText(null);
         this.createWith = (createWithId == null || createWithId.equals("player")) ? null : cnt.readBlockUnresolved("CreateWith");
@@ -45,8 +46,8 @@ public class StaticObjectsConst implements ContentType {
         this.hasMotherBlock = (cnt.node().path("HasMotherBlock").asBoolean(false));
         this.density = (float) cnt.node().path("Density").asDouble(1);
         this.resistance = (float) cnt.node().path("Resistance").asDouble(90);
-        this.lightTransmission = (cnt.node().path("LightTransmission").asInt(100));
-        this.type = Types.valueOf(cnt.node().path("Type").asText(Types.SOLID.name()).toUpperCase(Locale.ROOT));
+        this.lightTransmission = cnt.node().path("LightTransmission").asInt(100);
+        this.type = Type.valueOf(cnt.node().path("Type").asText(Type.SOLID.name()).toUpperCase(Locale.ROOT));
     }
 
     @Override
@@ -71,9 +72,16 @@ public class StaticObjectsConst implements ContentType {
         };
     }
 
-    public /* @Nullable */ BlockEntity createEntity() {
-        return null;
+    public /* @Nullable */ BlockEntity createEntity(int x, int y) {
+        var ent = constructEntity();
+        if (ent != null) {
+            ent.setPosition(x, y);
+            ent.init();
+        }
+        return ent;
     }
+
+    protected /* @Nullable */ BlockEntity constructEntity() { return null; }
 
     @Override
     public boolean equals(Object o) {
@@ -96,7 +104,7 @@ public class StaticObjectsConst implements ContentType {
         return "StaticObjectsConst['" + id + "']";
     }
 
-    public enum Types {
+    public enum Type {
         GAS,
         LIQUID,
         SOLID,

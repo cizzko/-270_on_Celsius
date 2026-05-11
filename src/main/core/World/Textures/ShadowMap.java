@@ -3,7 +3,7 @@ package core.World.Textures;
 import core.GameState;
 import core.UI.Styles;
 import core.World.Creatures.DynamicWorldObjects;
-import core.World.StaticWorldObjects.StaticObjectsConst.Types;
+import core.World.StaticWorldObjects.StaticObjectsConst.Type;
 import core.util.Color;
 
 import java.util.Arrays;
@@ -148,9 +148,9 @@ public class ShadowMap {
 
     private static boolean isNotGas(int x, int y) {
         var block = world.getBlock(x, y);
-        return block != null && block.type != Types.GAS;
+        return block != null && block.type != Type.GAS;
     }
-    
+
     private static boolean checkHasGasAround(int x, int y, int radius) {
         return isNotGas(x - radius, y) &&
                isNotGas(x + radius, y) &&
@@ -174,14 +174,5 @@ public class ShadowMap {
         data.put("AddedColorDynamic", addedColorDynamic);
 
         return data;
-    }
-
-    public static void setAllData(HashMap<String, Object> data) {
-        shadows = (int[]) data.get("Shadows");
-        shadowsDynamic = (HashMap<DynamicWorldObjects, Color>) data.get("ShadowsDynamic");
-        deletedColor = (Color) data.get("DeletedColor");
-        deletedColorDynamic = (Color) data.get("DeletedColorDynamic");
-        addedColor = (Color) data.get("AddedColor");
-        addedColorDynamic = (Color) data.get("AddedColorDynamic");
     }
 }

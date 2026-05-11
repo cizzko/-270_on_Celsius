@@ -27,9 +27,9 @@ public final class LangTranslation {
 
     public void load() throws IOException {
         // detect language
-        if (Config.getFromConfigBool("DetectLanguage")) {
+        if (Config.getBoolean("DetectLanguage")) {
             String detected = null;
-            for (String candidate : new String[]{Locale.getDefault().getLanguage(), Config.getFromConfigStr("Language")}) {
+            for (String candidate : new String[]{Locale.getDefault().getLanguage(), Config.getString("Language", "en")}) {
                 if (lang.getLanguages().contains(candidate)) {
                     detected = candidate;
                     break;
@@ -43,13 +43,18 @@ public final class LangTranslation {
 
             language = detected;
         } else {
-            language = Config.getFromConfigStr("Language");
+            language = Config.getString("Language", "en");
         }
 
         JsonObject json = Global.assets.jsonReader(TRANSLATE_JSONC);
 
         loadLanguages(json);
-        loadTranslations(json.getAsJsonObject(language));
+        JsonObject langMap = json.getAsJsonObject(language);
+        if (langMap != null) {
+            loadTranslations(langMap);
+        } else {
+            log.warn("Unknown language {}", language);
+        }
     }
 
     private void loadTranslations(JsonObject json) {

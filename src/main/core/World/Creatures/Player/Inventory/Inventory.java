@@ -8,11 +8,9 @@ import core.World.Item;
 import core.World.ItemBlock;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator.WorldGenerator;
-import core.g2d.Atlas;
 import core.math.Point2i;
 import core.math.Rectangle;
 import core.util.Color;
-import core.util.Sized;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Inventory.Items.ItemGrid.findItemOrFree;
@@ -25,7 +23,7 @@ public class Inventory {
     public static boolean inventoryOpen = false;
     public static final ItemStack[][] inventoryObjects = new ItemStack[8][6];
     public static Point2i currentObject, underMouseItem;
-    private static final boolean buildGrid = Config.getFromConfigBool("BuildGrid");
+    private static final boolean buildGrid = Config.getBoolean("BuildGrid");
 
     public static ItemStack getCurrent() {
         Point2i current = currentObject;
@@ -53,7 +51,7 @@ public class Inventory {
             for (int y = 0; y < inventoryObjects[x].length; y++) {
                 ItemStack item = inventoryObjects[x][y];
                 if (item != null) {
-                    drawInventoryItem(1498 + x * 54, 766 + y * 54f, item.getCount(), item.getItem().texture);
+                    drawItemStack(1498 + x * 54, 766 + y * 54f, item);
                 }
             }
         }
@@ -63,11 +61,9 @@ public class Inventory {
 
             Point2i mousePos = input.mousePos();
             if (underMouseItem != null) {
-                ItemStack focusedItems = inventoryObjects[underMouseItem.x][underMouseItem.y];
-                float scale = computeZoom(focusedItems.getItem().texture);
-
                 batch.pushState(() -> {
-                    batch.scale(scale);
+                    ItemStack focusedItems = inventoryObjects[underMouseItem.x][underMouseItem.y];
+                    batch.scale(focusedItems.getItem().getUiScale());
                     batch.draw(focusedItems.getItem().texture, mousePos.x - 15, mousePos.y - 15);
                 });
             }
@@ -91,22 +87,15 @@ public class Inventory {
         return null;
     }
 
-    public static void drawInventoryItem(float x, float y, int countInCell, Atlas.Region region) {
-        drawInventoryItem(x, y, region);
-        drawText(x + 28, y - 7, countInCell > 9 ? "9+" : String.valueOf(countInCell), Styles.DIRTY_BRIGHT_BLACK);
+    public static void drawItemStack(float x, float y, ItemStack item) {
+        drawItem(x, y, item.getItem());
+        drawText(x + 28, y - 7, item.getCount() > 9 ? "9+" : String.valueOf(item.getCount()), Styles.DIRTY_BRIGHT_BLACK);
     }
 
-    public static float computeZoom(Sized size) {
-        // 32 - target structure size
-        return 32f / Math.max(size.width(), size.height());
-    }
-
-    public static void drawInventoryItem(float x, float y, Atlas.Region region) {
-        float scale = computeZoom(region);
-
+    public static void drawItem(float x, float y, Item item) {
         batch.pushState(() -> {
-            batch.scale(scale);
-            batch.draw(region, x + 5, y + 5);
+            batch.scale(item.getUiScale());
+            batch.draw(item.texture, x + 5, y + 5);
         });
     }
 
@@ -198,8 +187,11 @@ public class Inventory {
                 Point2i mousePos = getBlockUnderMousePoint();
 
                 var blockEntity = world.getEntity(mousePos.x, mousePos.y);
-                if (blockEntity != null) {
-                    blockEntity.insertItem(inventoryObjects[underMouseItem.x][underMouseItem.y]);
+                var currentInMouse = inventoryObjects[underMouseItem.x][underMouseItem.y];
+                if (blockEntity != null && blockEntity.insertItem(currentInMouse)) {
+                    if (currentInMouse.isEmpty()) {
+                        inventoryObjects[underMouseItem.x][underMouseItem.y] = null;
+                    }
                 }
             }
             underMouseItem = null;
@@ -207,20 +199,20 @@ public class Inventory {
     }
 
     public static boolean addItem(Item item) {
-        Point2i cell = findItemOrFree(inventoryObjects, new Point2i(7, 5), item);
+        Point2i freeCell = findItemOrFree(inventoryObjects, new Point2i(7, 5), item);
 
         //нету места -> добавление неудачно
-        if (cell == null) {
+        if (freeCell == null) {
             return false;
         }
 
         ItemStack stack;
-        if (inventoryObjects[cell.x][cell.y] != null) {
-            stack = inventoryObjects[cell.x][cell.y];
+        if (inventoryObjects[freeCell.x][freeCell.y] != null) {
+            stack = inventoryObjects[freeCell.x][freeCell.y];
             stack.increment();
         } else {
             stack = new ItemStack(item);
-            inventoryObjects[cell.x][cell.y] = stack;
+            inventoryObjects[freeCell.x][freeCell.y] = stack;
         }
         return true;
     }

@@ -19,8 +19,7 @@ import static core.World.Textures.TextureDrawing.blockSize;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class FactoryEntity extends BaseBlockEntity<Factory> {
-    public float currentEnergy;
-    public float currentProductionProgress;
+    public float energy, progress;
     public long lastMouseClickTime;
 
     public ItemStack[] outputStored;
@@ -50,12 +49,12 @@ public class FactoryEntity extends BaseBlockEntity<Factory> {
             }
         }
 
-        if (hasRequiredInput() && block.malfunction != Factory.Malfunction.CRITICAL && currentEnergy >= block.needEnergy) {
-            currentProductionProgress += block.productionSpeed * Time.delta;
-            int produced = (int) Math.floor(currentProductionProgress);
+        if (hasRequiredInput() && block.malfunction != Factory.Malfunction.CRITICAL && energy >= block.needEnergy) {
+            progress += block.productionSpeed * Time.delta;
+            int produced = (int) Math.floor(progress);
             if (produced > 0) {
                 for (int c = 0; c < produced; ++c) { produceItem(); }
-                currentProductionProgress -= produced;
+                progress -= produced;
             }
         }
     }

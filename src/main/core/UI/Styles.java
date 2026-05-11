@@ -83,7 +83,7 @@ public class Styles {
     public static final Style.Text DEBUG_TEXT = new Style.Text() {
         @Override
         public void load() {
-            color = DIRTY_BRIGHT_BLACK;
+            color = Color.WHITE;
             font = assets.load(Font.class, "arial.ttf").resultNow();
         }
     };

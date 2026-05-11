@@ -1,5 +1,6 @@
 package core.World.Creatures.Player.Inventory.Items;
 
+import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Item;
 import core.math.Point2i;
 
@@ -24,5 +25,44 @@ public class ItemGrid {
 
     public static Point2i findItemOrFree(ItemStack[][] items, Item item) {
         return findItemOrFree(items, null, item);
+    }
+
+    public static boolean tryAddTo(ItemStack[][] grid, ItemStack toAdd) {
+        int si = -1, sj = -1;
+        outer:
+        for (int i = 0; i < grid.length; i++) {
+            ItemStack[] line = grid[i];
+            for (int j = 0; j < line.length; j++) {
+                ItemStack itemStack = line[j];
+                // Приоритет: добавление в уже существующие ячейки с предметами такого же типа
+                if (itemStack != null && itemStack.isSame(toAdd)) {
+                    si = i;
+                    sj = j;
+                    break outer;
+                }
+
+                if (itemStack == null && (si == -1 /* || sj == -1 */)) {
+                    si = i;
+                    sj = j;
+                }
+            }
+        }
+
+        if (si != -1 /* && sj != -1 */) {
+            // assert sj != -1;
+            if (grid[si][sj] == null)
+                grid[si][sj] = toAdd;
+            else
+                grid[si][sj].add(toAdd.getCount());
+            return true;
+        }
+
+        return false;
+    }
+
+    public static void moveTo(ItemStack[][] from, ItemStack[][] to, Point2i fromCell, Point2i toCell) {
+        // TODO: а что происходит с to[toCell.x][toCell.y] ?
+        to[toCell.x][toCell.y] = from[fromCell.x][fromCell.y];
+        from[fromCell.x][fromCell.y] = null;
     }
 }

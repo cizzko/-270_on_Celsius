@@ -1,5 +1,11 @@
 package core.World.StaticWorldObjects;
 
+/**
+ * У некоторых блоков есть дополнительная информация.
+ * <p>
+ * Такая информация должна определять только особенности взаимодействия с блоком
+ * и не меняться в течении жизни блока.
+ */
 public abstract class TileData {
     // TODO: для сохранения мира
     // void serialize()
@@ -15,6 +21,10 @@ public abstract class TileData {
         }
     }
 
+    /**
+     * У больших блоков, текстура которых занимает больше одного тайла есть связанные блоки.
+     * Как раз у этих блоков и присутствует информация о смещении относительно корневого блока.
+     */
     public static class MultiblockPart extends TileData {
         public byte rootOffsetX, rootOffsetY;
 

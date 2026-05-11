@@ -25,7 +25,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 public class Player {
     public static Thread currentInteraction;
     public static boolean noClip = false, placeRules = true;
-    private static int transparencyHPline = Config.getFromConfigBool("AlwaysOnPlayerHPLine") ? 220 : 0;
+    private static int transparencyHPline = Config.getBoolean("AlwaysOnPlayerHPLine") ? 220 : 0;
     public static final int playerSize = 72;
     public static int lastDamage = 0;
     public static long lastDamageTime = System.currentTimeMillis();
@@ -55,7 +55,7 @@ public class Player {
             Point2i blockUMB = Global.input.mouseBlockPos();
 
             var block = world.getBlock(blockUMB.x, blockUMB.y);
-            if (block != null && block.type == StaticObjectsConst.Types.GAS && getDistanceToMouse() <= 9) {
+            if (block != null && block.type == StaticObjectsConst.Type.GAS && getDistanceToMouse() <= 9) {
                 updatePlaceableBlock(itemBlock.block, blockUMB.x, blockUMB.y);
             }
         }
@@ -137,7 +137,7 @@ public class Player {
         int maxHp = (int) DynamicObjects.getFirst().getMaxHp();
 
         long nowTime = System.currentTimeMillis();
-        if (currentHp == maxHp && transparencyHPline > 0 && nowTime - lastChangeTransparency >= 10 && !Config.getFromConfigBool("AlwaysOnPlayerHPLine")) {
+        if (currentHp == maxHp && transparencyHPline > 0 && nowTime - lastChangeTransparency >= 10 && !Config.getBoolean("AlwaysOnPlayerHPLine")) {
             lastChangeTransparency = nowTime;
             transparencyHPline--;
         } else if (currentHp != maxHp) {

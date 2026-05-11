@@ -42,7 +42,7 @@ public class Factory extends StaticObjectsConst {
     }
 
     @Override
-    public FactoryEntity createEntity() { return new FactoryEntity(this); }
+    protected FactoryEntity constructEntity() { return new FactoryEntity(this); }
 
     public enum Malfunction {
         WEAK_SLOW, // slow working

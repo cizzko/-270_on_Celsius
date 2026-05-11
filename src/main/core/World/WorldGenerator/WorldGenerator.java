@@ -1,14 +1,13 @@
 package core.World.WorldGenerator;
 
 import core.EventHandling.EventHandler;
-import core.EventHandling.Logging.Config;
 import core.*;
 import core.UI.menu.CreatePlanet;
 import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.Player;
 import core.World.PerlinNoiseGenerator;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.StaticWorldObjects.StaticObjectsConst.Types;
+import core.World.StaticWorldObjects.StaticObjectsConst.Type;
 import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
@@ -422,7 +421,7 @@ public class WorldGenerator {
                 int y = findFreeVerticalCell(x);
                 if (y - 1 > 0) {
                     var block = world.getBlock(x, y - 1);
-                    if (block != null && block.type == Types.SOLID && block.resistance >= 100) {
+                    if (block != null && block.type == Type.SOLID && block.resistance >= 100) {
                         world.set(x, y, smallStone, false);
                     }
                 }
@@ -493,7 +492,7 @@ public class WorldGenerator {
                 if (x > 0 && y > 0 && x < world.sizeX && y < world.sizeY) {
                     var block = world.getBlock(x, y);
 
-                    if (block != null && block.type == Types.SOLID && blocks[x - xCell][y - yCell].type == Types.SOLID) {
+                    if (block != null && block.type == Type.SOLID && blocks[x - xCell][y - yCell].type == Type.SOLID) {
                         return true;
                     }
                 }
@@ -509,7 +508,7 @@ public class WorldGenerator {
         for (int y = 0; y < world.sizeY; y++) {
             StaticObjectsConst block = world.getBlock(x, y);
 
-            if (block == null || block.type == Types.GAS) {
+            if (block == null || block.type == Type.GAS) {
                 return y;
             }
         }
@@ -527,7 +526,7 @@ public class WorldGenerator {
 
             for (int x = 0; x < noise.length; x++) {
                 for (int y = 0; y < noise[0].length; y++) {
-                    if (noise[x][y] && world.getBlock(x + randPos.x, y + randPos.y).type == Types.SOLID) {
+                    if (noise[x][y] && world.getBlock(x + randPos.x, y + randPos.y).type == Type.SOLID) {
                         world.set(x + randPos.x, y + randPos.y, obj, false);
                     }
                 }
@@ -545,9 +544,9 @@ public class WorldGenerator {
         for (int y = world.sizeY; y > 0; y -= period) {
             var block = world.getBlock(cellX, y);
 
-            if (block != null && block.type == Types.SOLID) {
+            if (block != null && block.type == Type.SOLID) {
                 for (int i = y; i < y + period; i++) {
-                    if (world.getBlock(cellX, i + 1).type == Types.GAS && world.getBlock(cellX, i).type == Types.SOLID) {
+                    if (world.getBlock(cellX, i + 1).type == Type.GAS && world.getBlock(cellX, i).type == Type.SOLID) {
                         return i;
                     }
                 }
@@ -587,7 +586,7 @@ public class WorldGenerator {
         int randX = (int) (Math.random() * world.sizeX);
 
         for (int i = world.sizeY; i > 0; i--) {
-            if (world.getBlock(randX, i).type == Types.SOLID) {
+            if (world.getBlock(randX, i).type == Type.SOLID) {
                 return new Point2i(randX, (int) (Math.random() * world.sizeY - i) + i);
             }
         }
@@ -595,7 +594,7 @@ public class WorldGenerator {
     }
 
     public static void saveWorldImage(short[] tiles, int sizeX, int sizeY) {
-        if (Config.getFromConfigInt("Debug") >= 2) {
+        if (EventHandler.debugLevel >= 2) {
             BufferedImage image = new BufferedImage(sizeX, sizeY, BufferedImage.TYPE_INT_RGB);
             Path path = assets.assetsDir().resolve("worldImage.png");
 

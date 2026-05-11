@@ -88,7 +88,10 @@ public class DynamicWorldObjects implements Serializable {
             return;
         }
 
-        float speed = noClip ? 2f : 6f;
+        if (input.justPressed(GLFW_KEY_F1)) Global.app.setFramerate(60);
+        if (input.justPressed(GLFW_KEY_F2)) Global.app.setFramerate(1000);
+
+        float speed = noClip ? 2f : 7f;
         if (input.pressed(GLFW_KEY_LEFT_SHIFT) || input.pressed(GLFW_KEY_RIGHT_SHIFT)) {
             speed *= 1.5f;
         }
@@ -100,7 +103,7 @@ public class DynamicWorldObjects implements Serializable {
         int xf = input.axis(GLFW_KEY_A, GLFW_KEY_D);
 
         if (!noClip) {
-            tmp.set(xf, 0).scale(speed);
+            tmp.set(xf, 0).scale(speed * Time.delta);
         } else {
             velocity.set(0, 0);
 
@@ -163,7 +166,7 @@ public class DynamicWorldObjects implements Serializable {
             if (block == null) {
                 return true;
             }
-            if (block.type == StaticObjectsConst.Types.SOLID) {
+            if (block.type == StaticObjectsConst.Type.SOLID) {
                 return true;
             }
         }

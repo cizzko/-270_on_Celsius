@@ -7,7 +7,13 @@ public interface BlockEntity extends Entity, DrawComponent {
 
     StaticObjectsConst getBlock();
 
-    boolean insertItem(ItemStack item);
+    /**
+     * Проба добавления предмета в блок.
+     *
+     * @param item Не нулевой, не пустой стек предметов
+     * @return {@code true} если предмет принят, как полностью, так может и частично
+     */
+    default boolean insertItem(ItemStack item) { return false; }
 
     default void onMouseClick() {}
 

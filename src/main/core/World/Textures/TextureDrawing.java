@@ -6,7 +6,6 @@ import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.StaticWorldObjects.Structures.Chests;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.StaticWorldObjects.TileData;
 import core.g2d.Atlas;
@@ -170,9 +169,6 @@ public class TextureDrawing {
                 drawBlock(x, y, obj, hp);
             }
         }
-
-        //todo вынести куда то
-        Chests.draw();
 
         for (BlockPreview q : previewBlocks) {
             drawQueuedBlock(q.x, q.y, q.blockId, q.hp, q.breakable);

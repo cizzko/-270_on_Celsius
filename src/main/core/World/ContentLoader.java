@@ -97,7 +97,7 @@ public class ContentLoader {
         throw new RuntimeException(message, e);
     }
 
-    private RuntimeException malformed(String message) {
+    public RuntimeException malformed(String message) {
         Path relPath = assets.assetsDir().relativize(path);
         return new RuntimeException("[" + type + ", path='" + relPath +  "', id='" + id + "'] " + message);
     }

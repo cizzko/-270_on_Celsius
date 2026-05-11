@@ -9,7 +9,6 @@ import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.StaticWorldObjects.Structures.Chests;
 import core.World.StaticWorldObjects.TileData;
 import core.World.Textures.TextureDrawing;
 import core.World.Weather.Sun;
@@ -66,7 +65,7 @@ public final class PlayGameScene extends GameScene {
 
         //EventHandler.setDebugValue(() -> "Current time: " + sun.currentTime);
 
-        smoothedCamera = Config.getFromConfigBool("SmoothedCamera");
+        smoothedCamera = Config.getBoolean("SmoothedCamera");
 
         //todo у предметы
         for (int i = 0; i < 10; i++) {
@@ -100,7 +99,6 @@ public final class PlayGameScene extends GameScene {
         Weapons.updateAmmo();
         world.update();
         Inventory.updateStaticBlocksPreview();
-        Chests.updateChests();
     }
 
     @Override

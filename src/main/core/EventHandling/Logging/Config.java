@@ -85,31 +85,33 @@ public class Config {
         return getProperties(assets.assetsDir().resolve(path));
     }
 
-    public static String getFromConfigStr(String key) {
+    public static String getString(String key, String def) {
         String v = config.get(key);
 
         if (v == null) {
-            log.error(key + " in config is null");
+            log.error("String '{}' not found in config", key);
+            return def;
         }
-        return String.valueOf(v);
+        return v;
     }
 
-    public static boolean getFromConfigBool(String key) {
-        String v = config.get(key);
+    public static boolean getBoolean(String key) {
+        return getBoolean(key, false);
+    }
 
+    public static boolean getBoolean(String key, boolean def) {
+        String v = config.get(key);
         if (v == null) {
-            log.error(key + " in config is null");
-            v = "false";
-            config.put(key, v);
+            log.error("Boolean '{}' not found in config", key);
+            return def;
         }
         return Boolean.parseBoolean(v);
     }
 
     public static int getFromConfigInt(String key) {
         String v = config.get(key);
-
         if (v == null) {
-            log.error(key + " in config is null");
+            log.error("{} in config is null", key);
             v = "0";
             config.put(key, v);
         }

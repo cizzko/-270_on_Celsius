@@ -7,7 +7,7 @@ import core.util.Color;
 
 import java.util.function.Consumer;
 
-import static core.EventHandling.Logging.Config.getFromConfigBool;
+import static core.EventHandling.Logging.Config.getBoolean;
 import static core.Global.input;
 
 public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B> {
@@ -15,7 +15,7 @@ public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B>
     public Color color;
     public String name, prompt;
     public Consumer<? super B> clickAction;
-    private static boolean showPrompts = getFromConfigBool("ShowPrompts");
+    private static boolean showPrompts = getBoolean("ShowPrompts");
 
     protected BaseButton(Group panel) {
         super(panel);
