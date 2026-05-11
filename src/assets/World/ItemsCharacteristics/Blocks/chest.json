@@ -1,15 +1,14 @@
 {
   "Id": "chest",
-  "Class-type": "block",
+  "ClassType": "block",
   "Resistance": 100,
   "Texture": "World/Blocks/chest",
   "Type": "SOLID",
-  "Max-hp": 100,
+  "MaxHp": 100,
   "Requirements": {
     "trunk": 2
   },
   "Density": 1,
-  "Create-with": "smallWorkbench",
-  "Light-transmission": 100,
-  "Name": "chest"
+  "CreateWith": "workbenchSmall",
+  "LightTransmission": 100
 }

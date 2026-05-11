@@ -1,11 +1,10 @@
 {
   "Id": "trunk",
-  "Class-type": "block",
+  "ClassType": "block",
   "Resistance": 0,
   "Texture": "World/Blocks/trunk",
   "Type": "SOLID",
-  "Max-hp": 100,
+  "MaxHp": 100,
   "Density": 1,
-  "Light-transmission": 150,
-  "Name": "treeTrunk"
+  "LightTransmission": 150
 }

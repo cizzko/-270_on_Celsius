@@ -1,6 +1,5 @@
 {
-  "Id": "aluminum-ingot",
-  "Class-type": "detail",
-  "Texture": "World/Items/aluminumIngot",
-  "Name": "Aluminum ingot"
+  "Id": "aluminumIngot",
+  "ClassType": "detail",
+  "Texture": "World/Items/aluminumIngot"
 }

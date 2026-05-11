@@ -1,11 +1,10 @@
 {
   "Id": "sand",
-  "Class-type": "block",
+  "ClassType": "block",
   "Resistance": 120,
   "Texture": "World/Blocks/sand",
   "Type": "SOLID",
-  "Max-hp": 50,
+  "MaxHp": 50,
   "Density": 1,
-  "Light-transmission": 100,
-  "Name": "sand"
+  "LightTransmission": 100
 }

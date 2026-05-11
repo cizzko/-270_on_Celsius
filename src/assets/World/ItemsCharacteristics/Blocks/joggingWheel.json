@@ -1,11 +1,10 @@
 {
-  "Id": "jogging-wheel",
-  "Class-type": "block",
+  "Id": "joggingWheel",
+  "ClassType": "block",
   "Resistance": 0,
   "Texture": "World/Blocks/joggingWheel",
   "Type": "SOLID",
-  "Max-hp": 100,
+  "MaxHp": 100,
   "Density": 1,
-  "Light-transmission": 80,
-  "Name": "joggingWheel"
+  "LightTransmission": 80
 }

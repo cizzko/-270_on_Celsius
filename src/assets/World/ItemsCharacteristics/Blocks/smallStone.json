@@ -1,11 +1,10 @@
 {
-  "Id": "small-stone",
-  "Class-type": "block",
+  "Id": "smallStone",
+  "ClassType": "block",
   "Resistance": 0,
   "Texture": "World/Blocks/smallStone",
-  "Type": "SOLID",
-  "Max-hp": 1,
+  "Type": "WALKABLE",
+  "MaxHp": 1,
   "Density": 1,
-  "Light-transmission": 255,
-  "Name": "smallStone"
+  "LightTransmission": 255
 }

@@ -1,11 +1,10 @@
 {
   "Id": "dirt",
-  "Class-type": "block",
+  "ClassType": "block",
   "Resistance": 100,
   "Texture": "World/Blocks/dirt",
   "Type": "SOLID",
-  "Max-hp": 100,
+  "MaxHp": 100,
   "Density": 1,
-  "Light-transmission": 100,
-  "Name": "dirt"
+  "LightTransmission": 100
 }

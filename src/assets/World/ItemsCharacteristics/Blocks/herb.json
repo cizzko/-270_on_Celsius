@@ -1,11 +1,10 @@
 {
   "Id": "herb",
-  "Class-type": "block",
+  "ClassType": "block",
   "Resistance": 0,
   "Texture": "World/Blocks/herb",
-  "Type": "SOLID",
-  "Max-hp": 1,
+  "Type": "WALKABLE",
+  "MaxHp": 1,
   "Density": 1,
-  "Light-transmission": 120,
-  "Name": "herb"
+  "LightTransmission": 120
 }

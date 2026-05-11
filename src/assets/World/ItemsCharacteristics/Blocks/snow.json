@@ -1,11 +1,10 @@
 {
   "Id": "snow",
-  "Class-type": "block",
+  "ClassType": "block",
   "Resistance": 100,
   "Texture": "World/Blocks/snow",
   "Type": "SOLID",
-  "Max-hp": 60,
+  "MaxHp": 60,
   "Density": 1,
-  "Light-transmission": 80,
-  "Name": "snow"
+  "LightTransmission": 80
 }

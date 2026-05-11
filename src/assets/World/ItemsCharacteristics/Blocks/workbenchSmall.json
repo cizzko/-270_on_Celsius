@@ -1,15 +1,14 @@
 {
-  "Id": "workbench-small",
-  "Class-type": "block",
+  "Id": "workbenchSmall",
+  "ClassType": "block",
   "Resistance": 100,
   "Texture": "World/Blocks/workbenchSmall",
   "Type": "SOLID",
-  "Max-hp": 100,
+  "MaxHp": 100,
   "Requirements": {
-    "small-stone": 2
+    "smallStone": 2
   },
   "Density": 1,
-  "Create-with": "player",
-  "Light-transmission": 100,
-  "Name": "Small workbench"
+  "CreateWith": "player",
+  "LightTransmission": 100
 }
