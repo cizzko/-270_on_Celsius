@@ -286,6 +286,7 @@ public class WorldGenerator {
         int totalIters = 0;
 
         do {
+            //todo
             maxAngleChange = Math.clamp((int) ((y / (float) world.sizeY) * 80), 10, 50);
 
             if (Math.random() * 25 < 1 || radius > maxRadius) {
