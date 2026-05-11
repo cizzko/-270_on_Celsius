@@ -4,26 +4,24 @@ import core.PlayGameScene;
 import core.Time;
 import core.World.HitboxMap;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.StaticWorldObjects.StaticWorldObjects;
 import core.math.Point2i;
 import core.math.Rectangle;
 import core.math.Vector2f;
 
+import java.util.BitSet;
 import java.util.Locale;
 
-import static core.Global.camera;
-import static core.Global.world;
+import static core.Global.*;
 import static core.World.Creatures.DynamicWorldObjects.GAP;
 import static core.World.Creatures.Player.Player.*;
-import static core.World.StaticWorldObjects.StaticWorldObjects.getResistance;
-import static core.World.StaticWorldObjects.StaticWorldObjects.getType;
 import static core.World.Textures.TextureDrawing.blockSize;
 import static core.World.WorldGenerator.WorldGenerator.*;
 
 public class Physics {
     private static final float ANSWER = 42; // хихи, хаха
-    private static final float GRAVITY = 1.25f * ANSWER * 1e-4f;
+    public static final float GRAVITY = 1.25f * ANSWER * 1e-4f;
     public static final short swap = 25;
+    public static final float FRICTION_FACTOR = 0.97f / 76f;
 
     public static void updatePhysics(PlayGameScene scene) {
         if (scene.isPaused()) {
@@ -86,8 +84,8 @@ public class Physics {
 
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
-                short block = world.get(x, y);
-                if (block == -1 || getResistance(block) >= 100 && getType(block) == StaticObjectsConst.Types.SOLID) {
+                var block = world.getBlock(x, y);
+                if (block == null || block.type == StaticObjectsConst.Types.SOLID) {
                     blockHitbox.set(x * blockSize, y * blockSize, blockSize, blockSize);
 
                     if (blockHitbox.overlaps(entityHitbox)) {
@@ -114,12 +112,14 @@ public class Physics {
             if (staticObjectPoint != null) {
                 float damage = 0;
                 for (Point2i point : staticObjectPoint) {
-                    short staticObject = world.get(point.x, point.y);
-                    float currentDamage = ((((StaticWorldObjects.getResistance(staticObject) / 100) * StaticWorldObjects.getDensity(staticObject)) + (entity.getWeight() + (Math.max(Math.abs(vectorY), Math.abs(vectorX)) - minVectorIntersDamage)) * intersDamageMultiplier)) / staticObjectPoint.length;
+                    var block = world.getBlock(point.x, point.y);
+                    float currentDamage = ((((block.resistance / 100) * block.density)
+                            + (entity.getWeight() + (Math.max(Math.abs(vectorY), Math.abs(vectorX)) - minVectorIntersDamage)) * intersDamageMultiplier))
+                            / staticObjectPoint.length;
 
                     damage += currentDamage;
-                    short object1 = StaticWorldObjects.decrementHp(staticObject, (int) (currentDamage + (getResistance(staticObject) / 100) * StaticWorldObjects.getDensity(staticObject)) / staticObjectPoint.length);
-                    world.set(point.x, point.y, object1, false);
+                    int blockDamage = (int) (currentDamage + (block.resistance / 100) * block.density) / staticObjectPoint.length;
+                    world.damage(point.x, point.y, blockDamage);
                 }
                 entity.incrementCurrentHP(-damage);
 
@@ -135,7 +135,7 @@ public class Physics {
         }
     }
 
-    static final float STEPS = Time.ONE_SECOND;
+    static final float STEPS = 1f / Time.ONE_SECOND;
 
     private static void update() {
         DynamicObjects.getFirst().updateInput();
@@ -176,19 +176,17 @@ public class Physics {
                 continue;
             }
 
-            float x = ent.getX(), y = ent.getY();
+            float y = ent.getY();
             boolean hasFloor = ent.hasFloor();
-            move(ent, dt);
+
             Vector2f vel = ent.velocity;
-            if (Math.abs(x - ent.getX()) <= moveThreshold) {
-                vel.x = 0;
-            }
-            if (Math.abs(y - ent.getY()) <= moveThreshold) {
-                vel.y = 0;
-            }
 
             if (!hasFloor) {
                 vel.y -= ent.getWeight() * GRAVITY * dt;
+            }
+
+            if (Math.abs(y - ent.getY()) <= moveThreshold) {
+                //vel.y = 0;
             }
 
             // TODO Вообще, если говорить о силе трения, то вот мои мысли:
@@ -202,9 +200,13 @@ public class Physics {
             //      и просчитать сопротивление всех блоков (исходя из теоретических соображений это сумма всех коэффициентов)
             //      Потом сопротивление среды и сопротивление с гранью складываются и (опционально) умножаются на массу
             float friction = calculateFriction(ent);
-            vel.x *= friction;
-            // vel.y *= friction
 
+            if (friction > 0) {
+                //vel.x -= Math.signum(vel.x) * (dt * friction * ent.getWeight() * FRICTION_FACTOR);
+                //vel.x -= Math.signum(vel.x) * Math.min(Math.abs(vel.x), friction * dt * ent.getWeight() * FRICTION_FACTOR);
+                vel.x *= friction * ent.getWeight() * FRICTION_FACTOR;
+                //System.out.println(friction + " | " +  ent.getWeight() + " | " + FRICTION_FACTOR + " | " + friction * ent.getWeight() * FRICTION_FACTOR + " | " + vel.x);
+            }
             // TODO Тут или в логике игрока (Player#update()) должен быть расчёт силы удара.
             //      Как я описал в ЛС, это F=m*a, то есть можно нужно рассчитать ускорение
             //      как изменение скорости за время и умножить на массу игрока. Так мы получим численное нечто,
@@ -216,6 +218,11 @@ public class Physics {
             }
             if (Math.abs(vel.y) >= maxSpeed) {
                 vel.y = Math.signum(vel.y) * maxSpeed;
+            }
+            move(ent, dt);
+
+            if (vel.y < 0 && hasFloor) {
+                vel.y = 0;
             }
         }
     }
@@ -256,32 +263,40 @@ public class Physics {
         }
     }
 
-    //todo не работает/работает криво
     private static float calculateFriction(DynamicWorldObjects ent) {
         ent.getHitboxTo(entityHitbox);
 
         int minX = (int) Math.floor(entityHitbox.x / blockSize);
-        int minY = (int) Math.floor(entityHitbox.y / blockSize);
+        int minY = (int) Math.floor((entityHitbox.y - GAP) / blockSize);
 
         int maxX = (int) Math.floor((entityHitbox.x + entityHitbox.width) / blockSize);
         int maxY = (int) Math.floor((entityHitbox.y + entityHitbox.height) / blockSize);
 
-        float resistance = 0;
+        float resistance = 100;
+        BitSet appliedResistances = new BitSet();
+
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
-                short block = world.get(x, y);
-                float res = getResistance(block);
-                if (res > 0) {
+                var block = world.getBlock(x, y);
+                if (block != null && block.resistance > 0) {
                     blockHitbox.set(x * blockSize, y * blockSize, blockSize, blockSize);
 
                     if (blockHitbox.overlaps(entityHitbox)) {
-                        resistance += res;
+                        int blockId = content.getBlockIdByType(block);
+                        if (!appliedResistances.get(blockId)) {
+                            appliedResistances.set(blockId);
+
+                            resistance = Math.min(resistance, block.resistance);
+                        }
                     }
                 }
             }
         }
-
         float friction = resistance / 100f;
-        return 1f - Math.max(0.3f, friction);
+        if (friction > 1) {
+            friction = 1;
+        }
+
+        return friction;
     }
 }
