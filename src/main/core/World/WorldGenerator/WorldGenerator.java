@@ -249,7 +249,7 @@ public class WorldGenerator {
         int upperX = 100;
         int downedX = 100;
 
-        double caves = world.sizeX / ((Math.random() * 30) + 50);
+        int caves = (int) (world.sizeX / ((Math.random() * 30) + 50));
 
         for (int b = 0; b < caves; b++) {
             int minRadius = 2;
@@ -261,10 +261,10 @@ public class WorldGenerator {
             if (isUpper) {
                 upper++;
                 iters += generateCave(upperX, findTopmostSolidBlock(upperX, 5), startRadius, minRadius, maxRadius - 2, 100, 260, (int) ((Math.random() * 130) + 40), 40, 200);
-                upperX += (int) ((Math.random() * (world.sizeX / (caves / 2))) + (world.sizeX / (caves / 4)));
+                upperX += (int) ((Math.random() * (world.sizeX / (caves / 2f))) + (world.sizeX / (caves / 4f)));
             } else {
                 iters += generateCave(downedX, (int) (findTopmostSolidBlock(downedX, 3) - Math.random() * (world.sizeY / 2.4f)), startRadius, minRadius, maxRadius, 80, 280, (int) (Math.random() * 360), 40, 240);
-                downedX += (int) ((Math.random() * (world.sizeX / (caves / 2))) + (world.sizeX / (caves / 4)));
+                downedX += (int) ((Math.random() * (world.sizeX / (caves / 2f))) + (world.sizeX / (caves / 4f)));
             }
 
             //магическое число после которого пещеры постепенно превращаются в кашу
@@ -272,7 +272,8 @@ public class WorldGenerator {
                 //break;
             }
         }
-        System.out.println("Caves: " + caves + " | " + iters);
+        log.debug("spawned {} caves with {} iters", caves, iters);
+
         clearFloatingIslands(world.tiles, world.sizeX, world.sizeY, 50);
     }
 
