@@ -7,14 +7,11 @@ import core.math.Point2i;
 import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 
 public class WorldUtils {
-    public static Point2i getBlockUnderMousePoint() {
-        return Global.input.mouseBlockPos();
-    }
 
     public static int getDistanceToMouse() {
-        return (int) Math.abs((
-                DynamicObjects.getFirst().getX() / TextureDrawing.blockSize - getBlockUnderMousePoint().x)
-                + (DynamicObjects.getFirst().getY() / TextureDrawing.blockSize - getBlockUnderMousePoint().y));
+        return (int) Math.abs(
+                (DynamicObjects.getFirst().getX() / TextureDrawing.blockSize - Global.input.mouseBlockPos().x) +
+                (DynamicObjects.getFirst().getY() / TextureDrawing.blockSize - Global.input.mouseBlockPos().y));
     }
 
     public static int getDistanceBetweenBlocks(Point2i mainPoint, Point2i secondPoint) {

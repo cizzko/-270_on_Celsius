@@ -11,7 +11,6 @@ import java.util.Locale;
 
 import static core.Global.world;
 import static core.Window.glfwWindow;
-import static core.World.WorldUtils.getBlockUnderMousePoint;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
@@ -36,7 +35,7 @@ public class DebugTools {
 
                         if (!mousePressed) {
                             mousePressed = true;
-                            lastMousePosBlocks = getBlockUnderMousePoint().copy();
+                            lastMousePosBlocks = Global.input.mouseBlockPos().copy();
                             lastMousePos.set(mousePos.x, mousePos.y);
                         }
                     }
@@ -57,8 +56,8 @@ public class DebugTools {
     private static void copy() {
         int startX = lastMousePosBlocks.x;
         int startY = lastMousePosBlocks.y;
-        int targetX = getBlockUnderMousePoint().x;
-        int targetY = getBlockUnderMousePoint().y;
+        int targetX = Global.input.mouseBlockPos().x;
+        int targetY = Global.input.mouseBlockPos().y;
 
         short[][] objects = new short[targetX - startX][targetY - startY];
 
@@ -74,7 +73,7 @@ public class DebugTools {
     }
 
     private static void delete() {
-        Point2i block = getBlockUnderMousePoint();
+        Point2i block = Global.input.mouseBlockPos();
 
         for (int x = lastMousePosBlocks.x; x < block.x; x++) {
             for (int y = lastMousePosBlocks.y; y < block.y; y++) {

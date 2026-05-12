@@ -1,6 +1,6 @@
 package core.UI.Sounds;
 
-import core.EventHandling.Logging.Config;
+import core.EventHandling.Config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -11,8 +11,8 @@ import java.util.HashSet;
 public class Sound {
     private static final Logger log = LogManager.getLogger();
 
-    private static final int effectVolume = Config.getFromConfigInt("EffectsVolume");
-    private static final int musicVolume = Config.getFromConfigInt("SoundsVolume");
+    private static final int effectVolume = Config.getInt("EffectsVolume");
+    private static final int musicVolume = Config.getInt("SoundsVolume");
     private static int volume;
     private static boolean suppVolumeLevel = true, error = false;
     public static HashSet<String> sounds = new HashSet<>();

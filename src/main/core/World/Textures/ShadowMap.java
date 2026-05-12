@@ -160,19 +160,9 @@ public class ShadowMap {
     }
 
     private static boolean checkHasDegreeAround(int x, int y, int radius) {
-        return getDegree(x - radius, y) > 0 && getDegree(x + radius, y) > 0 && getDegree(x, y + radius) > 0 && getDegree(x, y - radius) > 0;
-    }
-
-    public static HashMap<String, Object> getShadowData() {
-        HashMap<String, Object> data = new HashMap<>();
-
-        data.put("Shadows", shadows);
-        data.put("ShadowsDynamic", shadowsDynamic);
-        data.put("DeletedColor", deletedColor);
-        data.put("DeletedColorDynamic", deletedColorDynamic);
-        data.put("AddedColor", addedColor);
-        data.put("AddedColorDynamic", addedColorDynamic);
-
-        return data;
+        return getDegree(x - radius, y) > 0 &&
+               getDegree(x + radius, y) > 0 &&
+               getDegree(x, y + radius) > 0 &&
+               getDegree(x, y - radius) > 0;
     }
 }

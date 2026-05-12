@@ -2,13 +2,13 @@ package core.UI;
 
 import core.math.Point2i;
 import core.util.Sized;
+import org.jetbrains.annotations.Nullable;
 
 public interface Element {
     String id();
 
     // null если это корневой элемент интерфейса, т.е. специальная затычка
-    // @Nullable
-    Group parent();
+    @Nullable Group parent();
 
     float x();
 

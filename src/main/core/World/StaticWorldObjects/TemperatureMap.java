@@ -27,23 +27,6 @@ public class TemperatureMap {
         }
     }
 
-    public static HashMap<String, Object> getTemperatures() {
-        HashMap<String, Object> map = new HashMap<>();
-        map.put("WorldTemperatureDecrement", dayTemperatureDecrement);
-        map.put("WorldCurrentTemperature", currentWorldTemperature);
-        map.put("WorldBlocksTemperature", temperature);
-        map.put("WorldBlocksIndividualTemps", individualTemperature);
-
-        return map;
-    }
-
-    public static void setData(HashMap<String, Object> map) {
-        dayTemperatureDecrement = (float) map.get("WorldTemperatureDecrement");
-        currentWorldTemperature = (float) map.get("WorldCurrentTemperature");
-        temperature = (float[]) map.get("WorldBlocksTemperature");
-        individualTemperature = (HashMap<Point2i, Float>) map.get("WorldBlocksIndividualTemps");
-    }
-
     public static float getTemp(int cellX, int cellY) {
         float temp = individualTemperature.getOrDefault(new Point2i(cellX, cellY), Float.MIN_VALUE);
 

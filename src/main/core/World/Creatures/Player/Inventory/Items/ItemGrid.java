@@ -1,7 +1,7 @@
 package core.World.Creatures.Player.Inventory.Items;
 
-import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Item;
+import core.entity.BlockEntity;
 import core.math.Point2i;
 
 public class ItemGrid {
@@ -27,7 +27,7 @@ public class ItemGrid {
         return findItemOrFree(items, null, item);
     }
 
-    public static boolean tryAddTo(ItemStack[][] grid, ItemStack toAdd) {
+    public static BlockEntity.TransitionResult tryAddTo(ItemStack[][] grid, ItemStack toAdd) {
         int si = -1, sj = -1;
         outer:
         for (int i = 0; i < grid.length; i++) {
@@ -50,19 +50,30 @@ public class ItemGrid {
 
         if (si != -1 /* && sj != -1 */) {
             // assert sj != -1;
-            if (grid[si][sj] == null)
+            if (grid[si][sj] == null) {
                 grid[si][sj] = toAdd;
-            else
+                return BlockEntity.TransitionResult.MOVE;
+            } else {
                 grid[si][sj].add(toAdd.getCount());
-            return true;
+                toAdd.setCount(0);
+                return BlockEntity.TransitionResult.PARTIAL_MOVE;
+            }
         }
 
-        return false;
+        return BlockEntity.TransitionResult.FAILED;
     }
 
     public static void moveTo(ItemStack[][] from, ItemStack[][] to, Point2i fromCell, Point2i toCell) {
         // TODO: а что происходит с to[toCell.x][toCell.y] ?
         to[toCell.x][toCell.y] = from[fromCell.x][fromCell.y];
         from[fromCell.x][fromCell.y] = null;
+    }
+
+    public static void insertCopy(ItemStack[] to, int toIndex, ItemStack[] from, int fromIndex) {
+        if (to[toIndex] == null) {
+            to[toIndex] = from[fromIndex].copy();
+        } else {
+            to[toIndex].add(from[fromIndex].getCount());
+        }
     }
 }

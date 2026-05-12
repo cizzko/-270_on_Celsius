@@ -1,4 +1,4 @@
-module core.main {
+open module core.main {
     requires org.lwjgl;
     requires org.lwjgl.glfw;
     requires org.lwjgl.opengl;
@@ -13,6 +13,10 @@ module core.main {
     requires com.google.gson;
     requires com.fasterxml.jackson.databind;
     requires it.unimi.dsi.fastutil;
+    requires org.jetbrains.annotations;
+
+    exports core.World to com.fasterxml.jackson.databind;
+    exports core.World.Creatures.Player.Inventory.Items to com.fasterxml.jackson.databind;
 
     requires java.desktop;
     requires jdk.management;

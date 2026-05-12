@@ -1,0 +1,22 @@
+{
+  "Id": "stoneOven",
+  "ClassType": "factory",
+  "Type": "WALKABLE",
+  "Texture": "textures/blocks/stoneOven",
+  "Input": {
+    "smallStone": 1
+  },
+  "MaxHp": 100,
+  "Requirements": {
+    "smallStone": 2
+  },
+  "Fuel": {
+    "stick": 2
+  },
+  "ProductionSpeed": 200,
+  "CreateWith": "workbenchSmall",
+  "MaxStoredObjects": 10,
+  "Output": {
+    "trunk": 1
+  }
+}

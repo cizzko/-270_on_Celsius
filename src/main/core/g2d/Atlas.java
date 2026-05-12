@@ -1,5 +1,7 @@
 package core.g2d;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.util.Map;
 
 public final class Atlas {
@@ -14,8 +16,7 @@ public final class Atlas {
         return texture;
     }
 
-    // @Nullable
-    public Region find(String regionName) {
+    public @Nullable Region find(String regionName) {
         return regions.get(regionName);
     }
 

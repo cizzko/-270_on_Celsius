@@ -1,0 +1,10 @@
+{
+  "Id": "stickRope",
+  "ClassType": "detail",
+  "Texture": "textures/items/stickRope",
+  "Requirements": {
+    "stick": 1,
+    "herb": 1
+  },
+  "CreateWith": "player"
+}

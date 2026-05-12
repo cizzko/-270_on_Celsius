@@ -1,7 +1,7 @@
 package core.entity;
 
 import core.World.HitboxMap;
-import core.content.CreatureType;
+import core.content.creatures.CreatureType;
 import core.g2d.Atlas;
 import core.math.Rectangle;
 import core.math.Vector2f;

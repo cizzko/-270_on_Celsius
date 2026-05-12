@@ -71,7 +71,7 @@ final class AsyncAssetResolver<T, P, S>
     }
 
     @Override
-    public <T> T join(Future<? extends T> future) {
+    public <R> R join(Future<? extends R> future) {
         return executionScope.join(future);
     }
 
@@ -92,8 +92,6 @@ final class AsyncAssetResolver<T, P, S>
     @Override
     protected T compute() {
         // TODO разобраться с обёртыванием исключений в RuntimeException
-        // todo скат начудесатил и не хочет исправлять асинк
-        // todo не работает
 
         loader.loadAsync(this, name, params, state);
 
@@ -104,7 +102,7 @@ final class AsyncAssetResolver<T, P, S>
         Throwable anyExc = null;
         for (int i = last; i >= 0; --i) {
             ForkJoinTask<?> t = tasks.get(i);
-            if (isCancelled()) { // нас мог оповестил дочерний таск
+            if (isCancelled()) { // нас мог оповестить дочерний таск
                 break;
             }
 

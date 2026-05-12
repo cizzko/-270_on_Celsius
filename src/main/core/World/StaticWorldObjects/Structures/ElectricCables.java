@@ -1,6 +1,5 @@
 package core.World.StaticWorldObjects.Structures;
 
-import core.World.Creatures.Player.Inventory.InventoryEvents;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.Textures.TextureDrawing;
 import core.math.Point2i;
@@ -8,7 +7,7 @@ import core.math.Point2i;
 import java.util.ArrayDeque;
 import java.util.LinkedHashSet;
 
-public class ElectricCables implements InventoryEvents {
+public class ElectricCables {
     private LinkedHashSet<Point2i> points;
     private float currentVoltage = 0, currentHp = 100;
     private final float maxVoltage = 1;
@@ -17,7 +16,6 @@ public class ElectricCables implements InventoryEvents {
     private static Point2i lastPlacedCable;
     private static ArrayDeque<ElectricCables> cables = new ArrayDeque<>();
 
-    @Override
     public void itemDropped(int blockX, int blockY, ItemStack item) {
 //        //todo проверять на название - слишком надежно, нет?
 //        if (StaticWorldObjects.getType(world.get(blockX, blockY)) == StaticObjectsConst.Types.SOLID && item.name.toLowerCase().equals("electric cable")) {

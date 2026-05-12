@@ -1,5 +1,10 @@
 package core.World;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import core.Application;
 import core.GameState;
 import core.Global;
 import core.World.StaticWorldObjects.StaticObjectsConst;
@@ -12,6 +17,10 @@ import core.math.MathUtil;
 import core.math.Point2i;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+
+@JsonSerialize(using = World.WorldSerializer.class)
 public class World {
     public final int sizeX, sizeY;
     public final /* unsigned */ short[] tiles;
@@ -23,7 +32,6 @@ public class World {
     public final Int2ObjectOpenHashMap<TileData> data = new Int2ObjectOpenHashMap<>();
     public final Int2ObjectOpenHashMap<BlockEntity> entity = new Int2ObjectOpenHashMap<>();
 
-    //todo может диапазоны хранить?
     public final Biomes[] biomes;
 
     public World(int sizeX, int sizeY) {
@@ -157,22 +165,17 @@ public class World {
     }
 
     private void setImpls(int x, int y, StaticObjectsConst object, boolean followingRules) {
+        destroyBlock(x, y);
         if (object == StaticObjectsConst.AIR) {
-            destroyBlock(x, y);
             return;
         }
 
-        deleteEntity(x, y);
         var newEntity = object.createEntity(x, y);
         if (newEntity != null) {
             entity.put(pos2index(x, y), newEntity);
         }
-        setHp(x, y, object.maxHp);
 
-        var tileData = object.createData();
-        if (tileData != null) {
-            data.put(pos2index(x, y), tileData);
-        }
+        setHp(x, y, object.maxHp);
 
         if (object.isMultiblock()) {
             for (int currentX = 0; currentX < object.tileCountX; currentX++) {
@@ -180,10 +183,10 @@ public class World {
                     int partX = x + currentX, partY = y + currentY;
 
                     setImpl(partX, partY, object, followingRules);
-                    setHp(partX, partY, object.maxHp);
 
                     if (partX != x || partY != y) {
-                        setData(partX, partY, new TileData.MultiblockPart((byte) (partX - x), (byte) (partY - y)));
+                        setHp(partX, partY, object.maxHp);
+                        setData(partX, partY, new TileData.MultiblockPart((partX - x), (partY - y)));
                     }
                 }
             }
@@ -202,15 +205,17 @@ public class World {
             deleteMultiblockFromRoot(root.x, root.y);
         } else {
             deleteEntity(x, y);
-            data.remove(pos2index(x, y));
-            tiles[x + sizeX * y] = 0;
+            int idx = pos2index(x, y);
+            data.remove(idx);
+            tiles[idx] = 0;
+            setHp(x, y, 0);
             ShadowMap.update();
         }
     }
 
     private void setImpl(int x, int y, StaticObjectsConst block, boolean followingRules) {
         if (!followingRules || checkPlaceRules(x, y, block)) {
-            tiles[x + sizeX * y] = (short) Global.content.getBlockIdByType(block);
+            tiles[pos2index(x, y)] = (short) Global.content.getBlockIdByType(block);
         }
     }
 
@@ -229,7 +234,10 @@ public class World {
 
         for (int blockX = 0; blockX < rootBlock.tileCountY; blockX++) {
             for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
-                tiles[pos2index(x + blockX, y + blockY)] = (short) 0;
+                int idx = pos2index(x + blockX, y + blockY);
+                tiles[idx] = 0;
+                hp[idx] = 0;
+                data.remove(idx);
             }
         }
         ShadowMap.update();
@@ -240,7 +248,7 @@ public class World {
             return new Point2i(x - part.rootOffsetX, y - part.rootOffsetY);
         } else {
             var block = getBlock(x, y);
-            if (block.isMultiblock()) {
+            if (block != null && block.isMultiblock()) {
                 return new Point2i(x, y); // Корень
             } else {
                 return null;
@@ -280,4 +288,55 @@ public class World {
     }
 
     // endregion
+
+    public static class WorldSerializer extends StdSerializer<World> {
+
+        public WorldSerializer() {
+            super(World.class);
+        }
+
+        @Override
+        public void serialize(World value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeStartObject();
+            gen.writeNumberField("sizeX", value.sizeX);
+            gen.writeNumberField("sizeY", value.sizeY);
+            gen.writeObjectField("tiles", value.tiles);
+            gen.writeObjectField("hp", value.hp);
+
+            if (!value.data.isEmpty()) {
+                gen.writeObjectFieldStart("data");
+
+                value.data.int2ObjectEntrySet().fastForEach(e -> {
+                    try {
+                        gen.writeFieldName(Integer.toString(e.getIntKey()));
+                        e.getValue().serialize(gen, provider);
+                    } catch (IOException exc) {
+                        Application.log.error(exc);
+                        throw new UncheckedIOException(exc);
+                    }
+                });
+                gen.writeEndObject();
+            }
+
+
+            if (!value.entity.isEmpty()) {
+                gen.writeObjectFieldStart("entity");
+
+                value.entity.int2ObjectEntrySet().fastForEach(e -> {
+                    try {
+                        gen.writeFieldName(Integer.toString(e.getIntKey()));
+                        e.getValue().serialize(gen, provider);
+                    } catch (IOException exc) {
+                        Application.log.error(exc);
+                        throw new UncheckedIOException(exc);
+                    }
+                });
+                gen.writeEndObject();
+            }
+
+            // public final Biomes[] biomes;
+
+            gen.writeEndObject();
+        }
+    }
 }

@@ -1,7 +1,7 @@
 package core;
 
 import com.sun.management.OperatingSystemMXBean;
-import core.EventHandling.Logging.Config;
+import core.EventHandling.Config;
 import core.g2d.Atlas;
 import core.g2d.Font;
 import core.g2d.SortingBatch;
@@ -128,7 +128,7 @@ public final class Window extends Application {
             glfwSwapInterval(1);
         } else {
             glfwSwapInterval(0);
-            int targetFPS = Config.getFromConfigInt("TargetFPS");
+            int targetFPS = Config.getInt("TargetFPS", 60);
             log.info("Framerate: {} fps", targetFPS);
             setFramerate(targetFPS);
         }
@@ -216,6 +216,10 @@ public final class Window extends Application {
         //   с которым динамические сущности взаимодействуют, то разве не должен быть обратным порядок?
         // 6) Отрисовка мира в порядке отображения
         updateTime();
+
+        for (ApplicationListener listener : listeners) {
+            listener.update();
+        }
 
         input.update();
         gameScene.loop();

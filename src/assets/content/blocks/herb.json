@@ -1,0 +1,10 @@
+{
+  "Id": "herb",
+  "ClassType": "block",
+  "Resistance": 0,
+  "Texture": "textures/blocks/herb",
+  "Type": "WALKABLE",
+  "MaxHp": 1,
+  "Density": 1,
+  "LightTransmission": 120
+}

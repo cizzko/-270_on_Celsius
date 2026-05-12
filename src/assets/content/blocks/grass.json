@@ -1,0 +1,10 @@
+{
+  "Id": "grass",
+  "ClassType": "block",
+  "Resistance": 95,
+  "Texture": "textures/blocks/grass",
+  "Type": "SOLID",
+  "MaxHp": 100,
+  "Density": 1,
+  "LightTransmission": 120
+}

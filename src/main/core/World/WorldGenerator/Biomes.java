@@ -1,14 +1,19 @@
 package core.World.WorldGenerator;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import core.Global;
+import core.content.serialize.SerializableContent;
 
-public enum Biomes {
+import java.io.IOException;
+
+public enum Biomes implements SerializableContent {
     //чем ближе к 90 тем меньше максимальный угол наклона линии генерации
-    mountains(60, 20, 160, 1, getMountains(), "World\\Backdrops\\back"),
-    plain(30, 40, 140, 1, getPlain(), "World\\Backdrops\\back"),
-    forest(40, 40, 140, 1, getForest(), "World\\Backdrops\\back"),
-    desert(30, 60, 120, 1, getDesert(), "World\\Backdrops\\back"),
-    snowed(30, 60, 120, 1, getSnowed(), "World\\backdrops\\back");
+    mountains(60, 20, 160, 1, getMountains(), "World/Backdrops/back"),
+    plain(30, 40, 140, 1, getPlain(), "World/Backdrops/back"),
+    forest(40, 40, 140, 1, getForest(), "World/Backdrops/back"),
+    desert(30, 60, 120, 1, getDesert(), "World/Backdrops/back"),
+    snowed(30, 60, 120, 1, getSnowed(), "World/backdrops/back");
 
     private static final Biomes defaultBiome = forest;
     private final int blockGradientChance, upperBorder, bottomBorder, chanceDecrease;
@@ -106,5 +111,10 @@ public enum Biomes {
                 shortIdByName("snow"),
                 shortIdByName("stone")
         };
+    }
+
+    @Override
+    public void serialize(JsonGenerator gen, SerializerProvider provider) throws IOException {
+
     }
 }

@@ -1,6 +1,6 @@
 package core.World.Creatures.Player.Inventory.Items;
 
-public sealed class ItemData {
+public abstract class ItemData {
 
     public static final class Tool extends ItemData {
         public long lastHitTime;

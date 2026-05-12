@@ -7,7 +7,7 @@ import core.util.Color;
 
 import java.util.function.Consumer;
 
-import static core.EventHandling.Logging.Config.getBoolean;
+import static core.EventHandling.Config.getBoolean;
 import static core.Global.input;
 
 public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B> {

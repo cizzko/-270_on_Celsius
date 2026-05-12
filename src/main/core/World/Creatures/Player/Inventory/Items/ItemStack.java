@@ -1,10 +1,17 @@
 package core.World.Creatures.Player.Inventory.Items;
 
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import core.World.Item;
+import core.content.serialize.SerializableContent;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Supplier;
 
+@JsonSerialize(using = ItemStack.ItemStackSerializer.class)
 public final class ItemStack {
     public static final ItemStack[] EMPTY_ARRAY = {};
 
@@ -121,6 +128,54 @@ public final class ItemStack {
             h += (h << 5) + data.hashCode();
         }
         return h;
+    }
+
+    public static class ItemStackGridSerializer extends StdSerializer<ItemStack[][]> {
+
+        public ItemStackGridSerializer() {
+            super(ItemStack[][].class);
+        }
+
+        @Override
+        public void serialize(ItemStack[][] value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeStartObject();
+            gen.writeNumberField("width", value.length);
+            gen.writeNumberField("height", value[0].length);
+            {
+                gen.writeArrayFieldStart("items");
+                for (ItemStack[] line : value) {
+                    for (ItemStack item : line) {
+                        if (item != null) {
+                            gen.writeObject(item);
+                        }
+                    }
+                }
+                gen.writeEndArray();
+            }
+
+            gen.writeEndObject();
+        }
+    }
+
+    public static class ItemStackSerializer extends StdSerializer<ItemStack> {
+
+        public ItemStackSerializer() {
+            super(ItemStack.class);
+        }
+
+        @Override
+        public void serialize(ItemStack value, JsonGenerator gen, SerializerProvider provider) throws IOException {
+            gen.writeStartObject();
+            gen.writeStringField("item", value.item.id);
+            if (value.count != 1) {
+                gen.writeNumberField("count", value.count);
+            }
+            if (value.data instanceof SerializableContent ser) {
+                gen.writeFieldName("data");
+                ser.serialize(gen, provider);
+            }
+            gen.writeEndObject();
+        }
     }
 
     @Override

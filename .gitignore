@@ -13,3 +13,4 @@ logs
 config.properties
 fastCommands.properties
 /src/assets/worldImage.png
+open_worl*.json

@@ -9,7 +9,7 @@ import core.g2d.Texture;
 import core.graphic.Layer;
 import core.util.Color;
 
-import static core.EventHandling.Logging.Config.getBoolean;
+import static core.EventHandling.Config.getBoolean;
 import static core.Global.*;
 import static core.World.Textures.TextureDrawing.blockSize;
 import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;

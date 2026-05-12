@@ -34,26 +34,6 @@ public class WorldGenerator {
 
     public static ArrayDeque<DynamicWorldObjects> DynamicObjects = new ArrayDeque<>();
 
-    public static HashMap<String, Object> getWorldData() {
-        HashMap<String, Object> objects = TemperatureMap.getTemperatures();
-
-        // objects.put("StaticWorldObjects", convertNames(world.tiles));
-        // objects.put("DynamicWorldObjects", DynamicObjects);
-        // objects.put("ShadowsData", ShadowMap.getShadowData());
-        // objects.put("Inventory", Inventory.inventoryObjects);
-
-        // objects.put("WorldSizeX", SizeX);
-        // objects.put("WorldSizeY", SizeY);
-        // objects.put("WorldIntersDamageMultiplier", intersDamageMultiplier);
-        // objects.put("WorldMinVectorIntersDamage", minVectorIntersDamage);
-        // objects.put("WorldDayCount", dayCount);
-        // objects.put("WorldCurrentTime", Sun.currentTime);
-        // TODO Это не должно читаться с кнопки. Нужно переместить во внутреннее состояние объекта
-        // objects.put("WorldGenerateCreatures", buttons.get(Json.getName("GenerateCreatures")).isClicked);
-
-        return objects;
-    }
-
     //для рисования
     public static int findX(int x, int y) {
         return ((x + world.sizeX * y) % world.sizeX) * TextureDrawing.blockSize;
@@ -140,11 +120,11 @@ public class WorldGenerator {
         int height = world.sizeY;
         int width = world.sizeX;
 
-        for (int x = 0; x < copySize; x++) {
-            for (int y = 0; y < height; y++) {
-                world.set(width - copySize + x, y, world.getBlock(x, y), false);
-            }
-        }
+        // for (int x = 0; x < copySize; x++) {
+        //     for (int y = 0; y < height; y++) {
+        //         world.set(width - copySize + x, y, world.getBlock(x, y), false);
+        //     }
+        // }
     }
 
     private static void generateRelief(World world) {

@@ -28,7 +28,7 @@ public non-sealed class ItemWeapon extends Item implements Serializable {
         this.magazineSize = cnt.node().path("MagazineSize").asInt(10);
         // TODO тут должны загружаться [XXX]Unresolved типы и потом проверяться. То есть звук и пуля(?) соответственно
         // this.sound = assets.assetsDir().resolve(cnt.node().path("Sound").asText(null));
-        // this.bulletPath = assets.assetsDir(cnt.node().path("BulletPath").asText("World/Items/someBullet.png"));
+        // this.bulletPath = assets.assetsDir(cnt.node().path("BulletPath").asText("textures/items/someBullet.png"));
         this.type = ItemWeapon.Types.valueOf(cnt.node().path("type").asText("BULLET"));
     }
 }

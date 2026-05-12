@@ -1,6 +1,6 @@
 package core.entity;
 
-import core.content.CreatureType;
+import core.content.creatures.CreatureType;
 import core.math.Rectangle;
 
 public interface CreatureEntity extends Entity, DrawComponent, PositionComponent, VelocityComponent, HealthComponent {

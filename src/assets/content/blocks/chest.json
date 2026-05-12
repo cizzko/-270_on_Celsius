@@ -1,0 +1,18 @@
+{
+  "Id": "chest",
+  "ClassType": "chest",
+  "Resistance": 100,
+  "Texture": "textures/blocks/chest",
+  "Type": "SOLID",
+  "MaxHp": 100,
+  "Requirements": {
+    "trunk": 2
+  },
+  "Density": 1,
+  "CreateWith": "workbenchSmall",
+  "LightTransmission": 100,
+  "Size": {
+    "Width": 3,
+    "Height": 3
+  }
+}
