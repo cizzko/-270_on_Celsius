@@ -69,7 +69,7 @@ public class StaticObjectsConst implements ContentType {
     public @Nullable BlockEntity createEntity(int x, int y) {
         var ent = constructEntity();
         if (ent != null) {
-            ent.setPosition(x, y);
+            ent.setPosition(x*TextureDrawing.blockSize, y*TextureDrawing.blockSize);
             ent.init();
         }
         return ent;

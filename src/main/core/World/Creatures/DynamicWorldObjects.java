@@ -10,6 +10,7 @@ import core.Time;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.HitboxMap;
 import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.World.Textures.TextureDrawing;
 import core.World.World;
 import core.World.WorldGenerator.WorldGenerator;
 import core.g2d.Atlas;
@@ -32,8 +33,6 @@ public class DynamicWorldObjects implements Serializable {
     private static final HashMap<String, Byte> ids = new HashMap<>();
     private static byte lastId = -128;
     private final byte id;
-    private short currentFrame;
-    private long lastFrameTime = System.currentTimeMillis();
     private float x, y, currentHp;
     private float jumpedTicks; // откат прыжка
 
@@ -41,7 +40,6 @@ public class DynamicWorldObjects implements Serializable {
 
     private DynamicWorldObjects(byte id, float x, float y, float maxHp) {
         this.id = id;
-        this.currentFrame = 0;
         this.x = x;
         this.y = y;
         this.currentHp = maxHp;
@@ -51,44 +49,6 @@ public class DynamicWorldObjects implements Serializable {
         float dx = ox - this.x;
         float dy = oy - this.y;
         return (dx * dx + dy * dy) <= radius*radius;
-    }
-
-    public static DynamicWorldObjects createDynamic(String name, float x) {
-        byte id = generateId(name);
-        DynamicObjectsConst obj = DynamicObjectsConst.bindDynamic(name, id);
-        int topmostBlock = WorldGenerator.findTopmostSolidBlock((int) (x / blockSize), 5) + 1;
-
-        if (HitboxMap.checkIntersInside(x, topmostBlock * blockSize, obj.texture.width(), obj.texture.height()) != null) {
-            Application.log.warn("Unable spawning at: ({}, {})", x, topmostBlock * blockSize);
-            return createDynamic(name, x + blockSize);
-        }
-
-        return new DynamicWorldObjects(generateId(name), x, topmostBlock * blockSize, DynamicObjectsConst.getConst(id).maxHp);
-    }
-
-    public static DynamicWorldObjects createDynamic(String name, float x, float y) {
-        byte id = generateId(name);
-        DynamicObjectsConst.bindDynamic(name, id);
-        return new DynamicWorldObjects(generateId(name), x, y, DynamicObjectsConst.getConst(id).maxHp);
-    }
-
-    private static byte generateId(String name) {
-        if (name == null) {
-            return 0;
-        }
-        byte id = ids.getOrDefault(name, (byte) 0);
-
-        if (id != 0) {
-            return id;
-        } else {
-            lastId++;
-
-            if (lastId == 126) {
-                Application.log.warn("Number of id's dynamic objects exceeded, errors will occur");
-            }
-            ids.put(name, lastId);
-            return lastId;
-        }
     }
 
     private static final Vector2f tmp = new Vector2f();
@@ -255,36 +215,12 @@ public class DynamicWorldObjects implements Serializable {
         return DynamicObjectsConst.getConst(id).maxHp;
     }
 
-    public void setCurrentHp(float hp) {
-        this.currentHp = hp;
-    }
-
     public float getCurrentHP() {
         return currentHp;
     }
 
     public void incrementCurrentHP(float increment) {
         this.currentHp += increment;
-    }
-
-    public void setCurrentFrame(short currentFrame) {
-        this.currentFrame = currentFrame;
-    }
-
-    public int getCurrentFrame() {
-        return currentFrame;
-    }
-
-    public int getFramesCount() {
-        return DynamicObjectsConst.getConst(id).framesCount;
-    }
-
-    public int getAnimationSpeed() {
-        return DynamicObjectsConst.getConst(id).animSpeed;
-    }
-
-    public void setAnimationSpeed(int speed) {
-        DynamicObjectsConst.getConst(id).animSpeed = speed;
     }
 
     public float getWeight() {
@@ -295,32 +231,12 @@ public class DynamicWorldObjects implements Serializable {
         return DynamicObjectsConst.getConst(id).texture;
     }
 
-    public boolean getIsFlying() {
-        return DynamicObjectsConst.getConst(id).isFlying;
-    }
-
     public float getMotionVectorX() {
         return velocity.x;
     }
 
-    public void incrementMotionVectorX(float vectorX) {
-        this.velocity.x += vectorX;
-    }
-
-    public void setMotionVectorX(float vectorX) {
-        this.velocity.x = vectorX;
-    }
-
     public float getMotionVectorY() {
         return velocity.y;
-    }
-
-    public void incrementMotionVectorY(float vectorY) {
-        this.velocity.y += vectorY;
-    }
-
-    public void setMotionVectorY(float vectorY) {
-        this.velocity.y = vectorY;
     }
 
     // Лучшее решение, которое вообще можно принять.

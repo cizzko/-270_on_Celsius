@@ -55,12 +55,4 @@ public class CreaturesGenerate {
         }
         currentCreaturesCount++;
     }
-
-    private static void generateButterfly() {
-        DynamicObjects.add(DynamicWorldObjects.createDynamic("butterfly", (float) (Math.random() * (world.sizeX * TextureDrawing.blockSize))));
-    }
-
-    private static void generateBird() {
-        DynamicObjects.add(DynamicWorldObjects.createDynamic("bird", 100));
-    }
 }

@@ -1,7 +1,5 @@
 package core.content.creatures;
 
-import core.entity.CreatureEntity;
-
 public class PlayerType extends CreatureType {
 
     public PlayerType(String id) {
@@ -9,7 +7,7 @@ public class PlayerType extends CreatureType {
     }
 
     @Override
-    protected CreatureEntity constructEntity() {
+    protected PlayerEntity constructEntity() {
         return new PlayerEntity(this);
     }
 }

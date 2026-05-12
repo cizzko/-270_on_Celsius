@@ -4,12 +4,12 @@ import core.PlayGameScene;
 import core.Time;
 import core.World.HitboxMap;
 import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.entity.CreatureEntity;
 import core.math.Point2i;
 import core.math.Rectangle;
 import core.math.Vector2f;
 
 import java.util.BitSet;
-import java.util.Locale;
 
 import static core.Global.*;
 import static core.World.Creatures.DynamicWorldObjects.GAP;
@@ -71,7 +71,7 @@ public class Physics {
         return tmp1;
     }
 
-    private static void moveDelta(DynamicWorldObjects entity, float deltaX, float deltaY) {
+    private static void moveDelta(CreatureEntity entity, float deltaX, float deltaY) {
         entity.getHitboxTo(hitbox);
         entity.getHitboxTo(entityHitbox);
         entityHitbox.x += deltaX;
@@ -98,8 +98,9 @@ public class Physics {
             }
         }
 
-        entity.incrementX(entityHitbox.x - hitbox.x);
-        entity.incrementY(entityHitbox.y - hitbox.y);
+        entity.setPosition(
+                entity.getX() + entityHitbox.x - hitbox.x,
+                entity.getY() + entityHitbox.y - hitbox.y);
     }
 
     private static void decrementHp(DynamicWorldObjects entity, float dt) {
@@ -130,7 +131,7 @@ public class Physics {
                     lastDamageTime = System.currentTimeMillis();
                 }
                 if (entity.getCurrentHP() <= 0 && !entity.getTexture().name().toLowerCase().contains("player")) {
-                    DynamicObjects.remove(entity);
+                    // DynamicObjects.remove(entity);
                 }
             }
         }
@@ -139,7 +140,9 @@ public class Physics {
     static final float STEPS = 1f / Time.ONE_SECOND;
 
     private static void update() {
-        DynamicObjects.getFirst().updateInput();
+
+        player.updateInput();
+        entityPool.update();
 
         // Физика не будет оставаться на главном потоке, но пока это прототип.
 
@@ -164,7 +167,7 @@ public class Physics {
     static final float moveThreshold = GAP;
 
     private static void simulate(float dt) {
-        for (DynamicWorldObjects ent : DynamicObjects) {
+        for (var ent : entityPool.entities().values()) {
             if (ent.getX() > (world.sizeX - swap) * blockSize) {
                 ent.setX(swap * blockSize);
                 camera.position.set(ent.getX() + 32, ent.getY() + 200);
@@ -173,21 +176,20 @@ public class Physics {
                 camera.position.set(ent.getX() + 32, ent.getY() + 200);
             }
 
-            if (ent.getTexture().name().toLowerCase(Locale.ROOT).contains("player") && noClip) {
+            if (ent == player && noClip) {
                 continue;
             }
 
-            float y = ent.getY();
             boolean hasFloor = ent.hasFloor();
 
-            Vector2f vel = ent.velocity;
+            Vector2f vel = ent.getVelocity();
 
             if (!hasFloor) {
-                vel.y -= ent.getWeight() * GRAVITY * dt;
+                vel.y -= ent.getCreature().weight * GRAVITY * dt;
             }
 
             float k = calculateFriction(ent);
-            float perSecondRetention = Math.clamp(1.0f - k * ent.getWeight() * FRICTION_FACTOR, 0.0f, 1.0f);
+            float perSecondRetention = Math.clamp(1.0f - k * ent.getCreature().weight * FRICTION_FACTOR, 0.0f, 1.0f);
             float retentionForDt = (float) Math.pow(perSecondRetention, dt);
             vel.x *= retentionForDt;
 
@@ -222,8 +224,8 @@ public class Physics {
     // проблему с округлением координат, что в свою очередь избавляет от возможной "тряски" при движении
     private static final float MOVEMENT_SEGMENT = GAP;
 
-    private static void move(DynamicWorldObjects ent, float dt) {
-        var vel = ent.velocity;
+    private static void move(CreatureEntity ent, float dt) {
+        var vel = ent.getVelocity();
         float deltax = vel.x * dt, deltay = vel.y * dt;
 
         while (abs(deltax) > moveThreshold) {
@@ -252,7 +254,7 @@ public class Physics {
         if (abs(deltay) == 0) vel.y = 0;
     }
 
-    private static float calculateFriction(DynamicWorldObjects ent) {
+    private static float calculateFriction(CreatureEntity ent) {
         ent.getHitboxTo(entityHitbox);
 
         int minX = (int) Math.floor(entityHitbox.x / blockSize);

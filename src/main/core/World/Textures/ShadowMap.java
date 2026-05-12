@@ -9,9 +9,7 @@ import core.util.Color;
 import java.util.Arrays;
 import java.util.HashMap;
 
-import static core.Global.gameState;
-import static core.Global.world;
-import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
+import static core.Global.*;
 
 public class ShadowMap {
     private static int[] shadows;
@@ -87,8 +85,8 @@ public class ShadowMap {
 
     public static void update() {
         if (gameState == GameState.PLAYING) {
-            int xPos = (int) DynamicObjects.getFirst().getX();
-            int yPos = (int) DynamicObjects.getFirst().getY();
+            int xPos = (int) player.getX();
+            int yPos = (int) player.getY();
 
             for (int x = xPos / TextureDrawing.blockSize - 20; x < xPos / TextureDrawing.blockSize + 21; x++) {
                 for (int y = yPos / TextureDrawing.blockSize - 8; y < yPos / TextureDrawing.blockSize + 16; y++) {

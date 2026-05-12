@@ -25,6 +25,8 @@ import static core.World.WorldGenerator.WorldGenerator.*;
 public class TextureDrawing {
     public static final int blockSize = 48;
 
+    public static int toBlock(float worldPos) { return (int) Math.floor(worldPos / blockSize);}
+
     private static final ArrayList<BlockPreview> previewBlocks = new ArrayList<>();
 
     private static final Rectangle viewport = new Rectangle();
@@ -200,13 +202,33 @@ public class TextureDrawing {
     }
 
     private static void drawBlock(int x, int y, StaticObjectsConst obj, int hp) {
-        int xBlock = x * blockSize;
-        int yBlock = y * blockSize;
+        int wx = x * blockSize;
+        int wy = y * blockSize;
 
-        if (world.getData(x, y) instanceof TileData.MultiblockPart) {
-            drawDamage(obj, hp, xBlock, yBlock);
-            return;
+        if (world.getData(x, y) instanceof TileData.MultiblockPart part) {
+            drawDamage(obj, hp, wx, wy);
+            // int rootX = (x - part.rootOffsetX);
+            // int rootY = (y - part.rootOffsetY);
+            // if (isOnCamera(rootX * blockSize, rootY * blockSize, obj.texture)) {
+            //     drawBlock0(rootX, rootY, obj, hp);
+            //
+            //     for (int blockX = 0; blockX < obj.tileCountY; blockX++) {
+            //         for (int blockY = 0; blockY < obj.tileCountY; blockY++) {
+            //             int partX = blockX + rootX;
+            //             int partY = blockY + rootY;
+            //
+            //         }
+            //     }
+            // } else {
+            // }
+        } else {
+            drawBlock0(x, y, obj, hp);
         }
+    }
+
+    private static void drawBlock0(int x, int y, StaticObjectsConst obj, int hp) {
+        int wx = x * blockSize;
+        int wy = y * blockSize;
 
         Color color = ShadowMap.getColorTo(x, y, tmp);
         final int upperLimit = 100;
@@ -223,8 +245,8 @@ public class TextureDrawing {
             color.set(color.r() - a, color.g() - (a / 2), color.b(), color.a());
         }
 
-        batch.draw(obj.texture, color, xBlock, yBlock);
-        drawDamage(obj, hp, xBlock, yBlock);
+        batch.draw(obj.texture, color, wx, wy);
+        drawDamage(obj, hp, wx, wy);
 
         var blockEntity = world.getEntity(x, y);
         if (blockEntity != null) {
@@ -253,10 +275,10 @@ public class TextureDrawing {
     }
 
     public static void drawDynamic() {
-        for (DynamicWorldObjects dynamicObject : DynamicObjects) {
-            if (isOnCamera(dynamicObject.getX(), dynamicObject.getY(), dynamicObject.getTexture())) {
-                // var shadow = ShadowMap.getColorDynamic(dynamicObject);
-                batch.draw(dynamicObject.getTexture()/*, shadow*/, dynamicObject.getX(), dynamicObject.getY());
+        for (var entity : entityPool.entities().values()) {
+            if (isOnCamera(entity.getX(), entity.getY(), entity.getCreature().texture)) {
+                // var shadow = ShadowMap.getColorDynamic(entity);
+                batch.draw(entity.getCreature().texture/*, shadow*/, entity.getX(), entity.getY());
             }
         }
 

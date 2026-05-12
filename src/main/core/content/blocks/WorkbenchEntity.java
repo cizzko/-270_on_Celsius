@@ -3,12 +3,11 @@ package core.content.blocks;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
-import core.World.Textures.TextureDrawing;
 import core.entity.BaseBlockEntity;
 
 import java.io.IOException;
 
-import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
+import static core.Global.player;
 
 public class WorkbenchEntity extends BaseBlockEntity<Workbench> {
 
@@ -18,7 +17,7 @@ public class WorkbenchEntity extends BaseBlockEntity<Workbench> {
 
     @Override
     public void update() {
-        if (Math.abs(DynamicObjects.getFirst().getX() / TextureDrawing.blockSize - x) < 16) {
+        if (Math.abs(player.getBlockX() - getBlockX()) < 16) {
             WorkbenchLogic.nearbyWorkbench.put(block.tier, block);
         }
     }

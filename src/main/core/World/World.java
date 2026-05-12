@@ -10,6 +10,7 @@ import core.Global;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.TileData;
 import core.World.Textures.ShadowMap;
+import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator.Biomes;
 import core.World.WorldGenerator.WorldGenerator;
 import core.entity.BlockEntity;
@@ -78,11 +79,18 @@ public class World {
 
         if (Global.gameState == GameState.PLAYING) {
             if (x < WorldGenerator.copySize) {
-                setImpls(sizeX - WorldGenerator.copySize + x, y, object, followingRules);
+                copyFromTo(x, y, sizeX - WorldGenerator.copySize + x, y, object, followingRules);
             } else if (x > sizeX - WorldGenerator.copySize) {
-                setImpls(x - (sizeX - WorldGenerator.copySize), y, object, followingRules);
+                copyFromTo(x, y, x - (sizeX - WorldGenerator.copySize), y, object, followingRules);
             }
         }
+    }
+
+    private void copyFromTo(int fromX, int fromY, int toX, int toY,
+                            StaticObjectsConst object, boolean followingRules) {
+        setImpls(toX, toY, object, followingRules);
+        setHp(toX, toY, getHp(fromX, fromY));
+        setData(toX, toY, getData(fromX, fromY));
     }
 
     public void setData(int x, int y, TileData data) {
@@ -141,7 +149,7 @@ public class World {
             if (root != null) {
                 var rootBlock = getBlock(root.x, root.y);
 
-                for (int blockX = 0; blockX < rootBlock.tileCountY; blockX++) {
+                for (int blockX = 0; blockX < rootBlock.tileCountX; blockX++) {
                     for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
                         hp[pos2index(x + blockX, y + blockY)] = (byte) newHp;
                     }
@@ -232,7 +240,7 @@ public class World {
         deleteEntity(x, y);
         data.remove(pos2index(x, y));
 
-        for (int blockX = 0; blockX < rootBlock.tileCountY; blockX++) {
+        for (int blockX = 0; blockX < rootBlock.tileCountX; blockX++) {
             for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
                 int idx = pos2index(x + blockX, y + blockY);
                 tiles[idx] = 0;
@@ -261,13 +269,16 @@ public class World {
         if (currentBlock != StaticObjectsConst.AIR) {
             return false;
         }
+
         if (root.isMultiblock()) {
             for (int xBlock = 0; xBlock < root.tileCountX; xBlock++) {
                 var underBlock = getBlock(x + xBlock, y - 1);
 
+                // под нижними блоками есть твёрдые блоки
                 if (underBlock == null || underBlock.type != StaticObjectsConst.Type.SOLID) {
                     return false;
                 }
+                // площадь не занята
                 for (int yBlock = 0; yBlock < root.tileCountY; yBlock++) {
                     var block = getBlock(x + xBlock, y);
                     if (block != StaticObjectsConst.AIR) {
@@ -275,7 +286,26 @@ public class World {
                     }
                 }
             }
+
+            if (root.type == StaticObjectsConst.Type.SOLID) {
+                boolean anyCollision = Global.entityPool.worldIndex().findAnyInRange(
+                        x * TextureDrawing.blockSize, y * TextureDrawing.blockSize,
+                        root.texture.width(), root.texture.height(),
+                        e -> true);
+                return !anyCollision;
+            }
         } else {
+            if (root.type == StaticObjectsConst.Type.SOLID) {
+                boolean anyCollision = Global.entityPool.worldIndex().findAnyInRange(
+                        x * TextureDrawing.blockSize, y * TextureDrawing.blockSize,
+                        root.texture.width(), root.texture.height(),
+                        e -> true);
+                if (anyCollision) {
+                    return false;
+                }
+            }
+
+            // рядышком есть твёрдый блок
             for (Point2i d : MathUtil.CROSS_OFFSETS) {
                 var block = getBlock(x + d.x, y + d.y);
                 if (block == null || block.type == StaticObjectsConst.Type.SOLID) {

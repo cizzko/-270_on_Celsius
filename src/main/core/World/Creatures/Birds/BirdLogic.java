@@ -9,7 +9,6 @@ public class BirdLogic {
 
     public static void create(int x) {
         birds.add(new Bird());
-        DynamicWorldObjects.createDynamic("bird", x);
     }
 
     public static void update() {

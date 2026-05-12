@@ -117,8 +117,8 @@ public class Inventory {
             int blockY = mouseBlockPos.y;
 
             if (underMouseItem == null && !Rectangle.contains(1488, 756, 500, 500, input.mousePos())) {
-                boolean isDeclined = getDistanceToMouse() < 8 && world.checkPlaceRules(blockX, blockY, b.block);
-                TextureDrawing.addBlockPreview(blockX, blockY, (short) content.getBlockIdByType(b.block), (byte) b.block.maxHp, isDeclined);
+                boolean canBuild = getDistanceToMouse() < 8 && world.checkPlaceRules(blockX, blockY, b.block);
+                TextureDrawing.addBlockPreview(blockX, blockY, (short) content.getBlockIdByType(b.block), (byte) b.block.maxHp, canBuild);
                 drawBuildGrid(blockX, blockY);
             }
         }

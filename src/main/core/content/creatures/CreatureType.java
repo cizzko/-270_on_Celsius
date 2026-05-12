@@ -1,5 +1,6 @@
 package core.content.creatures;
 
+import core.Global;
 import core.World.ContentLoader;
 import core.World.ContentType;
 import core.entity.CreatureEntity;
@@ -26,9 +27,14 @@ public abstract class CreatureType implements ContentType {
     }
 
     public CreatureEntity create(float x, float y) {
+        int id = Global.entityPool.acquireId();
+
         var ent = constructEntity();
+        ent.setId(id);
         ent.setPosition(x, y);
         ent.init();
+
+        Global.entityPool.add(ent);
         return ent;
     }
 

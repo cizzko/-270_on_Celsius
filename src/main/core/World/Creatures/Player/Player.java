@@ -15,24 +15,18 @@ import core.g2d.Fill;
 import core.math.Point2i;
 import core.util.Color;
 
-import static core.Global.input;
-import static core.Global.world;
+import static core.Global.*;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
-import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 import static core.World.WorldUtils.getDistanceToMouse;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Player {
     public static boolean noClip = false, placeRules = true;
     private static int transparencyHPline = Config.getBoolean("AlwaysOnPlayerHPLine") ? 220 : 0;
-    public static final int playerSize = 72;
+    public static final int playerSize = 72; // TODO убрать на размер текстуру
     public static int lastDamage = 0;
     public static long lastDamageTime = System.currentTimeMillis();
     private static long lastChangeTransparency = System.currentTimeMillis(), lastChangeLengthDamage = System.currentTimeMillis();
-
-    public static void createPlayer(boolean randomSpawn) {
-        DynamicObjects.addFirst(DynamicWorldObjects.createDynamic("player", randomSpawn ? (int) (Math.random() * (world.sizeX * TextureDrawing.blockSize)) : world.sizeX * 8f));
-    }
 
     public static void updateInventoryInteraction() {
         if (currentObject != null) {
@@ -122,8 +116,8 @@ public class Player {
     }
 
     public static void drawCurrentHP() {
-        int currentHp = (int) DynamicObjects.getFirst().getCurrentHP();
-        int maxHp = (int) DynamicObjects.getFirst().getMaxHp();
+        int currentHp = (int) player.getHp();
+        int maxHp = (int) player.getMaxHp();
 
         long nowTime = System.currentTimeMillis();
         if (currentHp == maxHp && transparencyHPline > 0 && nowTime - lastChangeTransparency >= 10 && !Config.getBoolean("AlwaysOnPlayerHPLine")) {

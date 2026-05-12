@@ -13,6 +13,7 @@ import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.TextureDrawing;
 import core.World.World;
+import core.World.WorldUtils;
 import core.math.Point2i;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,8 +32,6 @@ public class WorldGenerator {
 
     public static float intersDamageMultiplier = 40f, minVectorIntersDamage = 1.8f;
     public static final int copySize = 50;
-
-    public static ArrayDeque<DynamicWorldObjects> DynamicObjects = new ArrayDeque<>();
 
     //для рисования
     public static int findX(int x, int y) {
@@ -93,7 +92,7 @@ public class WorldGenerator {
 
         step(() -> {
             log.debug("generating player {}ms", System.currentTimeMillis() - startTime);
-            Player.createPlayer(randomSpawn);
+            Global.player = WorldUtils.spawn(content.creatureById("player"));
         });
 
         step(() -> {
@@ -120,11 +119,11 @@ public class WorldGenerator {
         int height = world.sizeY;
         int width = world.sizeX;
 
-        // for (int x = 0; x < copySize; x++) {
-        //     for (int y = 0; y < height; y++) {
-        //         world.set(width - copySize + x, y, world.getBlock(x, y), false);
-        //     }
-        // }
+        for (int x = 0; x < copySize; x++) {
+            for (int y = 0; y < height; y++) {
+                world.set(width - copySize + x, y, world.getBlock(x, y), false);
+            }
+        }
     }
 
     private static void generateRelief(World world) {
@@ -546,13 +545,7 @@ public class WorldGenerator {
 //
 //        Inventory.create();
 
-        EventHandler.setDebugValue(() -> {
-            if (DynamicObjects.isEmpty()) {
-                return null;
-            }
-            var player = DynamicObjects.getFirst();
-            return "[Player] x: " + player.getX() + ", y: " + player.getY();
-        });
+        EventHandler.setDebugValue(() -> "[Player] x: " + player.getX() + ", y: " + player.getY());
 
         gameScene.onPreloadCompletion(() -> {
             UIMenus.createPlanet().hide();

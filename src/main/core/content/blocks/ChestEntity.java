@@ -56,7 +56,7 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
                 }
             }
 
-            if (!WorldGenerator.DynamicObjects.getFirst().within(bx, by, blockSize*3)) {
+            if (!player.within(bx, by, 3)) {
                 isClicked = false;
             }
         }
@@ -69,6 +69,7 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
             if (item != null) {
                 // TODO: ЗДЕСЬ НИКАКОГО РЕНДЕРА !!!! ДОЛЖЕН БЫТЬ СЛОТ "РУК" У ИГРОКА
                 //поч
+                // Потому что порядок обновления блоков в мире не определен и кто знает что ещё будет рендерить в этом апдейте
                 batch.pushState(() -> {
                     Point2i mousePos = input.mousePos();
                     batch.scale(item.getItem().getUiScale());
@@ -105,8 +106,8 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
             return;
         }
 
-        float xPos = x * blockSize - 61;
-        float yPos = y * blockSize + 56;
+        float xPos = x - 61;
+        float yPos = y + 56;
 
         batch.draw(atlas.byPath("UI/GUI/inventory/chestInventory.png"), xPos, yPos);
 
@@ -125,7 +126,7 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
     private Point2i getItemUnderMouse() {
         Vector2f worldPos = input.mouseWorldPos();
         return new Point2i(
-                (int) ((worldPos.x - (x * blockSize - 61)) / 54),
-                (int) ((worldPos.y - (y * blockSize + 56)) / 54));
+                (int) ((worldPos.x - (x - 61)) / 54),
+                (int) ((worldPos.y - (y + 56)) / 54));
     }
 }

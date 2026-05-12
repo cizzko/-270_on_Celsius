@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 
 import static core.Global.*;
-import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Bullets {
@@ -40,7 +39,7 @@ public class Bullets {
 
             if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && nowTime - data.lastShootTime >= w.fireRate) {
                 data.lastShootTime = nowTime;
-                Bullets.createBullet(DynamicObjects.getFirst().getX(), DynamicObjects.getFirst().getY(),
+                Bullets.createBullet(player.getX(), player.getY(),
                         w.ammoSpeed, w.damage, Math.abs((float) Math.toDegrees(Math.atan2(input.mousePos().y - 540, input.mousePos().x - 960)) - 180));
                 Sound.playSound(w.sound, Sound.types.EFFECT, false);
             }
@@ -64,20 +63,20 @@ public class Bullets {
 
                 if (staticPos != null) {
                     var staticObject = world.getBlock(staticPos.x, staticPos.y);
-                    DynamicWorldObjects dynamicObject = HitboxMap.checkIntersectionsDynamic(x, y, 8, 8);
+                    var dynamicObject = HitboxMap.checkIntersectionsDynamic(x, y, 8, 8);
 
                     if (staticObject != null) {
                         float hp = world.getHp(staticPos.x, staticPos.y);
                         world.damage(staticPos.x, staticPos.y, (int) bullet.damage);
                         bulletsIter.next().damage -= hp;
                     } else if (dynamicObject != null) {
-                        float hp = dynamicObject.getCurrentHP();
-                        dynamicObject.incrementCurrentHP(-bullet.damage);
-                        bullet.damage -= hp;
+                        // float hp = dynamicObject.getCurrentHP();
+                        // dynamicObject.incrementCurrentHP(-bullet.damage);
+                        // bullet.damage -= hp;
 
-                        if (dynamicObject.getCurrentHP() <= 0) {
-                            DynamicObjects.remove(dynamicObject);
-                        }
+                        // if (dynamicObject.getCurrentHP() <= 0) {
+                            // player.remove(dynamicObject);
+                        // }
                     }
                 }
                 if (bullet.damage <= 0 || bullet.x < 0 || bullet.y < 0 || bullet.x / TextureDrawing.blockSize > world.sizeX || bullet.y / TextureDrawing.blockSize > world.sizeY) {
@@ -95,9 +94,9 @@ public class Bullets {
         Atlas.Region bulletRegion = atlas.byPath("textures/items/someBullet.png");
         for (Bullets bullet : bullets) {
             // todo пути для пуль
-            if (bullet != null && !(bullet.x > DynamicObjects.getFirst().getX() + 350 || bullet.x < DynamicObjects.getFirst().getX() - 350)) {
-                batch.draw(bulletRegion, bullet.x, bullet.y);
-            }
+            // if (bullet != null && !(bullet.x > DynamicObjects.getFirst().getX() + 350 || bullet.x < DynamicObjects.getFirst().getX() - 350)) {
+            //     batch.draw(bulletRegion, bullet.x, bullet.y);
+            // }
         }
     }
 }

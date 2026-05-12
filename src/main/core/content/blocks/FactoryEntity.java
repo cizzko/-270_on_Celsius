@@ -105,8 +105,8 @@ public class FactoryEntity extends BaseBlockEntity<Factory> {
         if (isSelected) {
             float addedX = block.texture.width();
             float addedY = block.texture.height();
-            float x = this.x * blockSize + addedX - (blockSize / 2f);
-            float y = this.y * blockSize + addedY - (blockSize / 2f);
+            float x = this.x + addedX - (blockSize / 2f);
+            float y = this.y + addedY - (blockSize / 2f);
 
             Color color = Color.fromRgba8888(0, 0, 0, 170);
             if (!input.isEmpty()) {

@@ -2,6 +2,7 @@ package core;
 
 import com.sun.management.OperatingSystemMXBean;
 import core.EventHandling.Config;
+import core.content.EntityPool;
 import core.g2d.Atlas;
 import core.g2d.Font;
 import core.g2d.SortingBatch;
@@ -46,9 +47,6 @@ public final class Window extends Application {
         // Хмм, надо бы где-то тут создавать сцену
         assets.load(Font.class, "arial.ttf");
         assets.load(Atlas.class, "sprites");
-
-        //todo
-        //content.loadAll();
 
         Config.checkConfig();
         if (debugLevel >= 2) {
@@ -167,6 +165,8 @@ public final class Window extends Application {
 
         lang = new LangTranslation();
         lang.load(); // TODO придумать как загружать и перезагружать
+
+        entityPool = new EntityPool(4);
 
         setGameScene(new MenuScene());
     }
