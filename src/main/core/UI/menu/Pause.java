@@ -48,6 +48,6 @@ public class Pause extends Dialog {
     }
 
     private void saveButton() {
-        // TODO реализовать
+        Global.app.save();
     }
 }

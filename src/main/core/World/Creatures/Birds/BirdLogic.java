@@ -1,7 +1,5 @@
 package core.World.Creatures.Birds;
 
-import core.World.Creatures.DynamicWorldObjects;
-
 import java.util.ArrayList;
 
 public class BirdLogic {
@@ -9,7 +7,6 @@ public class BirdLogic {
 
     public static void create(int x) {
         birds.add(new Bird());
-        DynamicWorldObjects.createDynamic("bird", x);
     }
 
     public static void update() {

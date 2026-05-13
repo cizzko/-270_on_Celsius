@@ -1,0 +1,10 @@
+{
+  "Id": "foliage",
+  "ClassType": "block",
+  "Resistance": 5,
+  "Texture": "textures/blocks/foliage",
+  "Type": "SOLID",
+  "MaxHp": 100,
+  "Density": 1,
+  "LightTransmission": 100
+}

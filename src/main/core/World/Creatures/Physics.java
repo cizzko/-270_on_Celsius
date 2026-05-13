@@ -4,18 +4,20 @@ import core.PlayGameScene;
 import core.Time;
 import core.World.HitboxMap;
 import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.entity.CreatureEntity;
 import core.math.Point2i;
 import core.math.Rectangle;
 import core.math.Vector2f;
 
 import java.util.BitSet;
-import java.util.Locale;
 
 import static core.Global.*;
 import static core.World.Creatures.DynamicWorldObjects.GAP;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.Textures.TextureDrawing.blockSize;
-import static core.World.WorldGenerator.WorldGenerator.*;
+import static core.World.WorldGenerator.WorldGenerator.intersDamageMultiplier;
+import static core.World.WorldGenerator.WorldGenerator.minVectorIntersDamage;
+import static java.lang.Math.abs;
 
 public class Physics {
     private static final float ANSWER = 42; // хихи, хаха
@@ -42,15 +44,15 @@ public class Physics {
         float nx = ax - bx;
         float aex = a.width / 2, bex = b.width / 2;
 
-        float xoverlap = aex + bex - Math.abs(nx);
-        if (Math.abs(xoverlap) > 0) {
+        float xoverlap = aex + bex - abs(nx);
+        if (abs(xoverlap) > 0) {
             float aey = a.height / 2, bey = b.height / 2;
 
             float ay = a.y + a.height / 2, by = b.y + b.height / 2;
             float ny = ay - by;
-            float yoverlap = aey + bey - Math.abs(ny);
-            if (Math.abs(yoverlap) > 0) {
-                if (Math.abs(xoverlap) < Math.abs(yoverlap)) {
+            float yoverlap = aey + bey - abs(ny);
+            if (abs(yoverlap) > 0) {
+                if (abs(xoverlap) < abs(yoverlap)) {
                     tmp1.x = nx < 0 ? 1 : -1;
                     tmp1.y = 0;
                     penetration = xoverlap;
@@ -70,7 +72,7 @@ public class Physics {
         return tmp1;
     }
 
-    private static void moveDelta(DynamicWorldObjects entity, float deltaX, float deltaY) {
+    private static void moveDelta(CreatureEntity entity, float deltaX, float deltaY) {
         entity.getHitboxTo(hitbox);
         entity.getHitboxTo(entityHitbox);
         entityHitbox.x += deltaX;
@@ -97,8 +99,7 @@ public class Physics {
             }
         }
 
-        entity.incrementX(entityHitbox.x - hitbox.x);
-        entity.incrementY(entityHitbox.y - hitbox.y);
+        entity.setPosition(entity.getX() + entityHitbox.x - hitbox.x, entity.getY() + entityHitbox.y - hitbox.y);
     }
 
     private static void decrementHp(DynamicWorldObjects entity, float dt) {
@@ -114,7 +115,7 @@ public class Physics {
                 for (Point2i point : staticObjectPoint) {
                     var block = world.getBlock(point.x, point.y);
                     float currentDamage = ((((block.resistance / 100) * block.density)
-                            + (entity.getWeight() + (Math.max(Math.abs(vectorY), Math.abs(vectorX)) - minVectorIntersDamage)) * intersDamageMultiplier))
+                            + (entity.getWeight() + (Math.max(abs(vectorY), abs(vectorX)) - minVectorIntersDamage)) * intersDamageMultiplier))
                             / staticObjectPoint.length;
 
                     damage += currentDamage;
@@ -129,7 +130,8 @@ public class Physics {
                     lastDamageTime = System.currentTimeMillis();
                 }
                 if (entity.getCurrentHP() <= 0 && !entity.getTexture().name().toLowerCase().contains("player")) {
-                    DynamicObjects.remove(entity);
+                    // DynamicObjects.remove(entity);
+                //todo
                 }
             }
         }
@@ -138,7 +140,8 @@ public class Physics {
     static final float STEPS = 1f / Time.ONE_SECOND;
 
     private static void update() {
-        DynamicObjects.getFirst().updateInput();
+        player.updateInput();
+        entityPool.update();
 
         // Физика не будет оставаться на главном потоке, но пока это прототип.
 
@@ -163,7 +166,7 @@ public class Physics {
     static final float moveThreshold = GAP;
 
     private static void simulate(float dt) {
-        for (DynamicWorldObjects ent : DynamicObjects) {
+        for (var ent : entityPool.entities().values()) {
             if (ent.getX() > (world.sizeX - swap) * blockSize) {
                 ent.setX(swap * blockSize);
                 camera.position.set(ent.getX() + 32, ent.getY() + 200);
@@ -172,21 +175,20 @@ public class Physics {
                 camera.position.set(ent.getX() + 32, ent.getY() + 200);
             }
 
-            if (ent.getTexture().name().toLowerCase(Locale.ROOT).contains("player") && noClip) {
+            if (ent == player && noClip) {
                 continue;
             }
 
-            float y = ent.getY();
             boolean hasFloor = ent.hasFloor();
 
-            Vector2f vel = ent.velocity;
+            Vector2f vel = ent.getVelocity();
 
             if (!hasFloor) {
-                vel.y -= ent.getWeight() * GRAVITY * dt;
+                vel.y -= ent.getCreature().weight * GRAVITY * dt;
             }
 
             float k = calculateFriction(ent);
-            float perSecondRetention = Math.clamp(1.0f - k * ent.getWeight() * FRICTION_FACTOR, 0.0f, 1.0f);
+            float perSecondRetention = Math.clamp(1.0f - k * ent.getCreature().weight * FRICTION_FACTOR, 0.0f, 1.0f);
             float retentionForDt = (float) Math.pow(perSecondRetention, dt);
             vel.x *= retentionForDt;
 
@@ -197,10 +199,10 @@ public class Physics {
             //      что можно в дальнейшем перевести в hp. Урон блокам, на которые падает игрок, равносилен урону игрока.
             //      По 3 закону Ньютона жеж)
 
-            if (Math.abs(vel.x) >= maxSpeed) {
+            if (abs(vel.x) >= maxSpeed) {
                 vel.x = Math.signum(vel.x) * maxSpeed;
             }
-            if (Math.abs(vel.y) >= maxSpeed) {
+            if (abs(vel.y) >= maxSpeed) {
                 vel.y = Math.signum(vel.y) * maxSpeed;
             }
             move(ent, dt);
@@ -208,7 +210,7 @@ public class Physics {
             if (vel.y < 0 && hasFloor) {
                 vel.y = 0;
             }
-            if (Math.abs(vel.x) < moveThreshold) vel.x = 0;
+            if (abs(vel.x) < moveThreshold) vel.x = 0;
         }
     }
 
@@ -221,34 +223,41 @@ public class Physics {
     // проблему с округлением координат, что в свою очередь избавляет от возможной "тряски" при движении
     private static final float MOVEMENT_SEGMENT = GAP;
 
-    private static void move(DynamicWorldObjects ent, float dt) {
-        var vel = ent.velocity;
+    private static void move(CreatureEntity ent, float dt) {
+        var vel = ent.getVelocity();
         float deltax = vel.x * dt, deltay = vel.y * dt;
 
-        while (Math.abs(deltax) > moveThreshold) {
+        while (abs(deltax) > moveThreshold) {
             float sgn = Math.signum(deltax);
-            moveDelta(ent, Math.min(Math.abs(deltax), MOVEMENT_SEGMENT) * sgn, 0);
+            moveDelta(ent, Math.min(abs(deltax), MOVEMENT_SEGMENT) * sgn, 0);
 
-            if (Math.abs(deltax) >= MOVEMENT_SEGMENT) {
+            if (abs(deltax) >= MOVEMENT_SEGMENT) {
                 deltax -= MOVEMENT_SEGMENT * sgn;
             } else {
                 deltax = 0f;
             }
         }
 
-        while (Math.abs(deltay) > moveThreshold) {
+        while (abs(deltay) > moveThreshold) {
             float sgn = Math.signum(deltay);
-            moveDelta(ent, 0, Math.min(Math.abs(deltay), MOVEMENT_SEGMENT) * sgn);
+            moveDelta(ent, 0, Math.min(abs(deltay), MOVEMENT_SEGMENT) * sgn);
 
-            if (Math.abs(deltay) >= MOVEMENT_SEGMENT) {
+            if (abs(deltay) >= MOVEMENT_SEGMENT) {
                 deltay -= MOVEMENT_SEGMENT * sgn;
             } else {
                 deltay = 0f;
             }
         }
+
+        if (abs(deltax) == 0) {
+            vel.x = 0;
+        }
+        if (abs(deltay) == 0) {
+            vel.y = 0;
+        }
     }
 
-    private static float calculateFriction(DynamicWorldObjects ent) {
+    private static float calculateFriction(CreatureEntity ent) {
         ent.getHitboxTo(entityHitbox);
 
         int minX = (int) Math.floor(entityHitbox.x / blockSize);

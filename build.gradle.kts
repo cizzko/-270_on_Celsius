@@ -98,7 +98,7 @@ allprojects {
     dependencies {
         implementation("com.google.code.gson:gson:2.10.1")
         implementation("com.fasterxml.jackson.core:jackson-databind:2.21.3")
-        compileOnly("com.github.spotbugs:spotbugs-annotations:4.8.6")
+        implementation("org.jetbrains:annotations:26.1.0")
     }
 
     tasks.compileJava {
@@ -108,7 +108,19 @@ allprojects {
 
     java {
         toolchain {
-            languageVersion = JavaLanguageVersion.of(26)
+            val minVersion = 21 // минимальные требования
+            val preferred = 26  // проверено
+
+            val current = JavaLanguageVersion.current().asInt()
+
+            // Суть в том, чтобы версия java была >=21
+            val target = when {
+                current >= preferred -> current
+                current >= minVersion -> current
+                else -> preferred
+            }
+
+            languageVersion = JavaLanguageVersion.of(target)
         }
     }
 }
@@ -119,9 +131,6 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-api:3.0.0-beta2")
     implementation("org.apache.logging.log4j:log4j-core:3.0.0-beta2")
     implementation("org.apache.logging.log4j:log4j-iostreams:3.0.0-beta2")
-
-    implementation("org.jcodec:jcodec:0.2.5")
-    implementation("org.jcodec:jcodec-javase:0.2.5")
 
     implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
     implementation("org.lwjgl", "lwjgl")

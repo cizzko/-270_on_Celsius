@@ -1,18 +1,16 @@
 package core;
 
+import core.EventHandling.Config;
 import core.EventHandling.EventHandler;
-import core.EventHandling.Logging.Config;
 import core.UI.Styles;
-import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.Weapons.Weapons;
+import core.World.Creatures.Player.Inventory.Items.Bullets;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.TileData;
 import core.World.Textures.TextureDrawing;
 import core.World.Weather.Sun;
-import core.World.WorldUtils;
 import core.g2d.Fill;
 import core.graphic.Layer;
 import core.math.Rectangle;
@@ -25,7 +23,6 @@ import static core.EventHandling.EventHandler.updateHotkeys;
 import static core.Global.*;
 import static core.World.Creatures.Player.Player.*;
 import static core.World.Textures.TextureDrawing.blockSize;
-import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 
 public final class PlayGameScene extends GameScene {
     public final Sun sun = new Sun();
@@ -49,17 +46,16 @@ public final class PlayGameScene extends GameScene {
 
     @Override
     public void onInit() {
-        var player = DynamicObjects.getFirst();
         camera.position.set(player.getX(), player.getY());
         EventHandler.setDebugValue(() -> "Camera Pos: " + camera.position);
-        EventHandler.setDebugValue(() -> "Velocity: " + player.velocity);
+        EventHandler.setDebugValue(() -> "Velocity: " + player.getVelocity());
         EventHandler.setDebugValue(() -> {
-            var mouseBlockPos = (WorldUtils.getBlockUnderMousePoint());
+            var mouseBlockPos = (input.mouseBlockPos());
             var mouseBlock = world.getBlock(mouseBlockPos.x, mouseBlockPos.y);
             return "MouseBlock: " + (mouseBlock != null ? mouseBlock.id + " (NID: " + content.getBlockIdByType(mouseBlock) + ")" : "<void>");
         });
         EventHandler.setDebugValue(() -> {
-            var mouseBlockPos = (WorldUtils.getBlockUnderMousePoint());
+            var mouseBlockPos = (input.mouseBlockPos());
             return "BlockHp: " + world.getHp(mouseBlockPos.x, mouseBlockPos.y);
         });
 
@@ -96,7 +92,7 @@ public final class PlayGameScene extends GameScene {
         postEffect.update();
         sun.update();
         updateInventoryInteraction();
-        Weapons.updateAmmo();
+        Bullets.updateBullets();
         world.update();
         Inventory.updateStaticBlocksPreview();
     }
@@ -129,15 +125,11 @@ public final class PlayGameScene extends GameScene {
 
     // Изменения, связанные с координатами игрока
     private void updatePlayerPos() {
-        DynamicWorldObjects player = DynamicObjects.getFirst();
-
-        float playerX = player.getX();
-        float playerY = player.getY();
 
         if (smoothedCamera) {
-            camera.position.lerpDeltaTime(playerX + 32, playerY + 200, 0.05f * Math.max(1, player.velocity.len() / 4f));
+            camera.position.lerpDeltaTime(player.getX() + 32, player.getY() + 200, 0.05f * Math.max(1, player.getVelocity().len() / 4f));
         } else {
-            camera.position.set(playerX + 32, playerY + 200);
+            camera.position.set(player.getX() + 32, player.getY() + 200);
         }
 
         camera.update();
@@ -156,8 +148,7 @@ public final class PlayGameScene extends GameScene {
             return;
         }
         {
-            var player = DynamicObjects.getFirst();
-            var size = player.getTexture();
+            var size = player.creature.texture;
 
             player.getHitboxTo(rect);
             var center = rect.getCenterTo(vec);

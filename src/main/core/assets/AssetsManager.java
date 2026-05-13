@@ -86,11 +86,6 @@ public final class AssetsManager {
         return assetsDir;
     }
 
-    @Deprecated // TODO не использовать
-    public static String normalizePath(String path) {
-        return path == null ? null : path.replace('\\', '/');
-    }
-
     public InputStream resourceStream(String path) throws IOException {
         Path resolve = assetsDir.resolve(path);
         if (Files.isRegularFile(resolve)) {
@@ -112,8 +107,8 @@ public final class AssetsManager {
             return JsonParser.parseReader(reader).getAsJsonObject();
         } catch (IOException e) {
             log.error(e);
+            return null;
         }
-        return null;
     }
 
     public void unload(Class<?> type, String name) {
@@ -160,9 +155,9 @@ public final class AssetsManager {
 
         executor.shutdown();
 
-        for (Map<String, AsyncAssetResolver<?, ?, ?>> tasksMap : loading.values()) {
-            for (AsyncAssetResolver<?, ?, ?> task : tasksMap.values()) {
-                task.cancel(true);
+        for (var tasksMap : loading.values()) {
+            for (var task : tasksMap.values()) {
+                task.cancel(false);
             }
         }
         loading.clear();
@@ -170,6 +165,7 @@ public final class AssetsManager {
         assets.forEach((type, assetsMap) -> {
             for (Object asset : assetsMap.values()) {
                 Asset<?> assetRef = (Asset<?>) asset;
+                // TODO(skat): Меня беспокоит что высвобождение ресурсов происходит не в порядке создания. То есть в _каком-то_ порядке
                 releaseInternal(assetRef.value);
             }
         });
@@ -216,13 +212,10 @@ public final class AssetsManager {
                 refsByAssets.remove(dep.value);
                 assets.get(dep.type).remove(dep.name);
                 releaseInternal(dep.value);
-                log.debug("Released: {}", dep);
             }
             if (visited.add(dep)) {
                 if (dep.dependencies != null) {
-                    for (Asset<?> dependency : dep.dependencies) {
-                        queue.addLast(dependency);
-                    }
+                    queue.addAll(Arrays.asList(dep.dependencies));
                 }
             }
         }
@@ -300,9 +293,13 @@ public final class AssetsManager {
         var type = (Class<T>) asset.getClass();
         AssetHandler<T, ?, ?> handler = getHandler(type);
 
-        handler.release(releaser, asset);
+        try {
+            handler.release(releaser, asset);
+            log.debug("Released: {}", asset);
+        } catch (Exception e) {
+            log.error("Exception while releasing {}", asset, e);
+        }
 
-        log.debug("Released: {}", asset);
     }
 
     private void incrementRefCount(BaseAssetResolver parent, Asset<?> loadedInst) {

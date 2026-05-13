@@ -2,15 +2,16 @@ package core.World;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import core.EventHandling.Logging.Config;
+import core.EventHandling.Config;
 import core.Global;
 import core.World.ContentManager.Type;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.StaticWorldObjects.BlockUnresolved;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.content.ButterflyType;
-import core.content.Factory;
-import core.content.PlayerType;
+import core.content.blocks.Chest;
+import core.content.blocks.Factory;
+import core.content.blocks.Workbench;
+import core.content.creatures.PlayerType;
 import core.g2d.Atlas;
 
 import java.io.IOException;
@@ -31,10 +32,11 @@ public class ContentLoader {
         ctor(Type.ITEM, "block", ItemBlock::new);
 
         ctor(Type.BLOCK, "block", StaticObjectsConst::new);
+        ctor(Type.BLOCK, "workbench", Workbench::new);
+        ctor(Type.BLOCK, "chest", Chest::new);
         ctor(Type.BLOCK, "factory", Factory::new);
 
         ctor(Type.CREATURE, "player", PlayerType::new);
-        ctor(Type.CREATURE, "butterfly", ButterflyType::new);
     }
 
     private static void ctor(Type type, String classType, Function<String, ContentType> constr) {

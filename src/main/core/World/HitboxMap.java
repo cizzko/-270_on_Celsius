@@ -1,15 +1,17 @@
 package core.World;
 
-import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.TextureDrawing;
+import core.entity.CreatureEntity;
 import core.math.Point2i;
 
 import java.util.ArrayList;
 import java.util.Optional;
 
+import static core.Global.entityPool;
 import static core.Global.world;
-import static core.World.WorldGenerator.WorldGenerator.*;
+import static core.World.WorldGenerator.WorldGenerator.findX;
+import static core.World.WorldGenerator.WorldGenerator.findY;
 
 public class HitboxMap {
 
@@ -180,13 +182,11 @@ public class HitboxMap {
                 .orElse(null);
     }
 
-    public static DynamicWorldObjects checkIntersectionsDynamic(float x, float y, int sizeX, int sizeY) {
-        for (DynamicWorldObjects dynamicObject : DynamicObjects) {
-            if (dynamicObject != null) {
-                if ((x + sizeX > dynamicObject.getX() && x < dynamicObject.getX() + dynamicObject.getTexture().width()) ||
-                        (y + sizeY > dynamicObject.getY() && y < dynamicObject.getY() + dynamicObject.getTexture().height())) {
-                    return dynamicObject;
-                }
+    public static CreatureEntity checkIntersectionsDynamic(float x, float y, int sizeX, int sizeY) {
+        for (var entity : entityPool.entities().values()) {
+            if ((x + sizeX > entity.getX() && x < entity.getX() + entity.getCreature().texture.width()) ||
+                    (y + sizeY > entity.getY() && y < entity.getY() + entity.getCreature().texture.height())) {
+                return entity;
             }
         }
         return null;

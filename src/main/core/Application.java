@@ -151,4 +151,13 @@ public class Application {
     public final int getFpsMeasurement() {
         return fpsMeasurement;
     }
+
+    public void save() {
+        for (ApplicationListener listener : listeners) {
+            if (listener instanceof AutoSaveListener a) {
+                a.update();
+                break;
+            }
+        }
+    }
 }

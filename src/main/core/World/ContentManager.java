@@ -1,11 +1,12 @@
 package core.World;
 
 import core.Global;
-import core.World.Creatures.Player.ItemControl;
+import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.content.CreatureType;
+import core.content.Registry;
+import core.content.creatures.CreatureType;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,7 +14,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -21,14 +22,15 @@ import java.util.List;
 public class ContentManager {
     private static final Logger log = LogManager.getLogger();
 
-    private final EnumMap<Type, HashMap<String, ContentType>> contentById = new EnumMap<>(Type.class);
+    public final Registry<Item> itemsRegistry = new Registry<>();
+    public final Registry<StaticObjectsConst> blocksRegistry = new Registry<>();
+    public final Registry<CreatureType> creaturesRegistry = new Registry<>();
 
-    // TODO: отдельный класс (регистр?)
-    private final Object2IntOpenHashMap<StaticObjectsConst> block2Id = new Object2IntOpenHashMap<>();
-    private final Int2ObjectOpenHashMap<StaticObjectsConst> id2Block = new Int2ObjectOpenHashMap<>();
+    private final ArrayList<Item> craftableByPlayer = new ArrayList<>();
+    private final Int2ObjectOpenHashMap<ArrayList<Item>> craftableByWorkbench = new Int2ObjectOpenHashMap<>();
 
     public void loadAll() {
-        var contentDir = Global.assets.assetsDir().resolve("World/ItemsCharacteristics");
+        var contentDir = Global.assets.assetsDir().resolve("content");
         // чтение конфига структуры. Можно будет так сделать моды)
         // var structureJsonFile = contentDir.resolve("structure.json");
 
@@ -42,22 +44,18 @@ public class ContentManager {
                 // | creatures    | creatures
                 //   | ...          | ...
 
-                new ContentSource(Type.ITEM, contentDir.resolve("Details")),
-                new ContentSource(Type.ITEM, contentDir.resolve("Tools")),
-
-                new ContentSource(Type.BLOCK, contentDir.resolve("Factories")),
-                new ContentSource(Type.BLOCK, contentDir.resolve("Blocks"))
-
-
+                new ContentSource(Type.ITEM, contentDir.resolve("items")),
+                new ContentSource(Type.BLOCK, contentDir.resolve("blocks")),
+                new ContentSource(Type.CREATURE, contentDir.resolve("creatures"))
         );
 
+        final EnumMap<Type, HashMap<String, ContentType>> contentMap = new EnumMap<>(Type.class);
         var loader = new ContentLoader();
 
         for (ContentSource source : sources) {
-            // TODO Можно читать index.json если есть. Если нет - автоматически
             try (var dirstr = Files.newDirectoryStream(source.dir, file -> file.getFileName().toString().endsWith(".json"))) {
+                var index = contentMap.computeIfAbsent(source.type, k -> new HashMap<>());
 
-                var index = contentById.computeIfAbsent(source.type, k -> new HashMap<>());
                 for (Path file : dirstr) {
                     loader.init(source.type, file);
                     var cont = loader.readContent();
@@ -68,19 +66,40 @@ public class ContentManager {
                 throw new UncheckedIOException(e);
             } catch (Exception e) {
                 log.error("Failed to read directory: '{}'", source.dir, e);
+                Global.app.quit();
             }
         }
 
-        generateBlockItems();
-        resolveAll();
-        generateIds();
-
-        ItemControl.create();
+        generateBlockItems(contentMap);
+        resolveAll(contentMap);
+        loadCrafts(contentMap);
+        generateIds(contentMap);
     }
 
-    private void generateBlockItems() {
-        var itemIndex = contentById.computeIfAbsent(Type.ITEM, k -> new HashMap<>());
-        for (ContentType type : contentById.get(Type.BLOCK).values()) {
+    private void loadCrafts(EnumMap<Type, HashMap<String, ContentType>> contentMap) {
+        for (var value : contentMap.get(Type.ITEM).values()) {
+            if (!(value instanceof Item item)) {
+                throw new IllegalStateException(); // ???
+            }
+            if (item.requirements == ItemStack.EMPTY_ARRAY) {
+                continue;
+            }
+            if (item.createWith == null) {
+                // Крафт из рук
+                craftableByPlayer.add(item);
+            } else {
+                int blockId = blocksRegistry.idByType(item.createWith);
+                craftableByWorkbench.computeIfAbsent(blockId, k -> new ArrayList<>()).add(item);
+            }
+        }
+
+        craftableByPlayer.trimToSize();
+        craftableByWorkbench.values().forEach(ArrayList::trimToSize);
+    }
+
+    private void generateBlockItems(EnumMap<Type, HashMap<String, ContentType>> contentMap) {
+        var itemIndex = contentMap.computeIfAbsent(Type.ITEM, k -> new HashMap<>());
+        for (ContentType type : contentMap.get(Type.BLOCK).values()) {
             if (!(type instanceof StaticObjectsConst s)) {
                 throw new IllegalStateException(); // ??
             }
@@ -89,15 +108,14 @@ public class ContentManager {
             itemBlock.texture = s.texture;
             itemBlock.requirements = s.requirements;
             itemBlock.createWith = s.createWith;
+
             itemIndex.put(itemBlock.id(), itemBlock);
         }
     }
 
-    private void resolveAll() {
-        var res = new ContentResolver();
-        for (var e : contentById.entrySet()) {
-            Type type = e.getKey();
-            var index = e.getValue();
+    private void resolveAll(EnumMap<Type, HashMap<String, ContentType>> contentMap) {
+        var res = new ContentResolver(contentMap);
+        contentMap.forEach((type, index) -> {
             for (ContentType cont : index.values()) {
                 try {
                     cont.resolve(res);
@@ -105,46 +123,78 @@ public class ContentManager {
                     log.error("[{}: '{}'] Failed to resolve", type, cont.id(), ex);
                 }
             }
-        }
+        });
     }
 
-    private void generateIds() {
-        // TODO: У воздуха хочется ID всегда равный 0
-        int id = 0;
+    private void generateIds(EnumMap<Type, HashMap<String, ContentType>> contentMap) {
+        for (ContentType value : contentMap.get(Type.ITEM).values()) {
+            if (!(value instanceof Item item)) {
+                throw new IllegalStateException(); // ??
+            }
+            itemsRegistry.put1(item);
+            itemsRegistry.put2(item);
+        }
+
+        for (ContentType value : contentMap.get(Type.ITEM).values()) {
+            if (!(value instanceof Item item)) {
+                throw new IllegalStateException(); // ??
+            }
+            itemsRegistry.put1(item);
+        }
+
+        for (ContentType value : contentMap.get(Type.BLOCK).values()) {
+            if (!(value instanceof StaticObjectsConst block)) {
+                throw new IllegalStateException(); // ??
+            }
+            blocksRegistry.put1(block);
+        }
 
         {
             var air = getConstById("air");
             StaticObjectsConst.AIR = air;
-            block2Id.put(air, id);
-            id2Block.put(id, air);
-            id++;
+            blocksRegistry.put2(air);
         }
 
-        for (ContentType value : contentById.get(Type.BLOCK).values()) {
+        for (ContentType value : contentMap.get(Type.BLOCK).values()) {
             if (!(value instanceof StaticObjectsConst block)) {
                 throw new IllegalStateException(); // ??
             }
             if (block.id.equals("air")) {
                 continue;
             }
-            int blockId = id++;
-            block2Id.put(block, blockId);
-            id2Block.put(blockId, block);
+            blocksRegistry.put2(block);
         }
+
+
+        for (ContentType value : contentMap.get(Type.CREATURE).values()) {
+            if (!(value instanceof CreatureType creature)) {
+                throw new IllegalStateException(); // ??
+            }
+            creaturesRegistry.put1(creature);
+            creaturesRegistry.put2(creature);
+        }
+
+        itemsRegistry.trim();
+        blocksRegistry.trim();
+        creaturesRegistry.trim();
     }
 
-    public Collection<Item> items() {
-        @SuppressWarnings("unchecked")
-        var collection = (Collection<Item>) (Collection<?>) contentById.get(Type.ITEM).values();
-        return collection;
+    public List<Item> getCraftsFor(StaticObjectsConst createWith) {
+        return createWith == null
+                ? craftableByPlayer
+                : craftableByWorkbench.get(blocksRegistry.idByType(createWith));
+    }
+
+    public ObjectSet<Item> items() {
+        return itemsRegistry.values();
     }
 
     public int getBlockIdByType(StaticObjectsConst block) {
-        return block2Id.getOrDefault(block, -1);
+        return blocksRegistry.idByType(block);
     }
 
     public StaticObjectsConst getConstByBlockId(int blockId) {
-        return id2Block.get(blockId);
+        return blocksRegistry.typeById(blockId);
     }
 
     public Item itemById(StaticObjectsConst block) {
@@ -152,10 +202,7 @@ public class ContentManager {
     }
 
     public Item itemById(String id) {
-        @SuppressWarnings("unchecked")
-        var map = (HashMap<String, Item>) (HashMap<?, ?>) contentById.get(Type.ITEM);
-
-        var cont = map.get(id);
+        var cont = itemsRegistry.typeByName(id);
         if (cont == null) {
             throw new IllegalStateException("Unknown item '" + id + "'");
         }
@@ -163,10 +210,7 @@ public class ContentManager {
     }
 
     public StaticObjectsConst getConstById(String id) {
-        @SuppressWarnings("unchecked")
-        var map = (HashMap<String, StaticObjectsConst>) (HashMap<?, ?>) contentById.get(Type.BLOCK);
-
-        var cont = map.get(id);
+        var cont = blocksRegistry.typeByName(id);
         if (cont == null) {
             throw new IllegalStateException("Unknown block '" + id + "'");
         }
@@ -174,10 +218,7 @@ public class ContentManager {
     }
 
     public CreatureType creatureById(String id) {
-        @SuppressWarnings("unchecked")
-        var map = (HashMap<String, CreatureType>) (HashMap<?, ?>) contentById.get(Type.CREATURE);
-
-        var cont = map.get(id);
+        var cont = creaturesRegistry.typeByName(id);
         if (cont == null) {
             throw new IllegalStateException("Unknown creature '" + id + "'");
         }

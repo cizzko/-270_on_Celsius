@@ -1,27 +1,31 @@
 package core.World.Creatures.Player.WorkbenchMenu;
 
 import core.EventHandling.EventHandler;
-import core.Global;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.World.Item;
 import core.World.ItemBlock;
-import core.World.StaticWorldObjects.TileData;
 import core.World.Textures.TextureDrawing;
-import core.content.Factory;
+import core.content.blocks.Factory;
+import core.content.blocks.Workbench;
 import core.g2d.Fill;
 import core.math.Point2i;
 import core.util.Color;
 
+import java.util.EnumMap;
+import java.util.List;
+
 import static core.Global.*;
 import static core.World.Creatures.Player.Inventory.Inventory.inventoryObjects;
-import static core.World.Creatures.Player.ItemControl.*;
 import static core.World.Textures.TextureDrawing.drawObjects;
-import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_B;
 
 public class WorkbenchLogic {
-    private static boolean isOpen, smallNearby, mediumNearby, largeNearby;
+    public static EnumMap<Workbench.Tier, Workbench> nearbyWorkbench = new EnumMap<>(Workbench.Tier.class);
+
+    private static boolean isOpen;
     private static Point2i currentObject;
+    private static int currentObjectIdx = -1;
+
     private static float scroll = -276;
     private static final Color fogging = new Color(0, 0, 0, 117);
     //todo не помешает перевести меню в гуи
@@ -29,69 +33,21 @@ public class WorkbenchLogic {
 
     public static void updateInput() {
         updateBenchButton();
-        updateNearby();
         updateOpen();
         updateScroll();
         updateBuildButton();
     }
 
     private static void updateBenchButton() {
-        if (EventHandler.getRectangleClick(menuXPos + 8, 580, menuXPos + 54, 626)) {
-            //todo некрасиво
-            currentObject = null;
-            current = 0;
-        }
-        if (EventHandler.getRectangleClick(menuXPos + 8, 634, menuXPos + 54, 682) && largeNearby) {
-            currentObject = null;
-            current = 1;
-        }
-        if (EventHandler.getRectangleClick(menuXPos + 8, 688, menuXPos + 54, 734) && mediumNearby) {
-            currentObject = null;
-            current = 2;
-        }
-        if (EventHandler.getRectangleClick(menuXPos + 8, 742, menuXPos + 54, 788) && smallNearby) {
-            currentObject = null;
-            current = 3;
-        }
-    }
-
-    private static void updateNearby() {
-        world.data.int2ObjectEntrySet().forEach(e -> {
-            int idx = e.getIntKey();
-            int x = idx % world.sizeX;
-            int y = idx / world.sizeX;
-            if (e.getValue() instanceof TileData.Workbench w) {
-                //todo что то придумать, проверять по имени файла это кпец
-                //проверка что до ближайшего не больше 16
-                if (Math.abs(DynamicObjects.getFirst().getX() / TextureDrawing.blockSize -x) < 16) {
-                    String name = world.getBlock(x, y).id.toLowerCase();
-
-                    if (name.contains("small")) {
-                        smallNearby = true;
-                    }
-                    if (name.contains("medium")) {
-                        mediumNearby = true;
-                    }
-                    if (name.contains("large")) {
-                        largeNearby = true;
-                    }
-                } else {
-                    smallNearby = false;
-                    mediumNearby = false;
-                    largeNearby = false;
-                    current = 0;
-                }
-            }
-        });
+        nearbyWorkbench.clear();
     }
 
     private static void updateOpen() {
-        Point2i blockUMB = Global.input.mouseBlockPos();
-
-        //todo сделать проверку на нахождение мыши на элте интерфейса
-//        if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && getFileName(world.get(blockUMB.x, blockUMB.y)) != null && getFileName(world.get(blockUMB.x, blockUMB.y)).toLowerCase().contains("workbench")) {
-//            isOpen = true;
-//        }
+        // Point2i blockUMB = Global.input.mouseBlockPos();
+        // todo сделать проверку на нахождение мыши на элте интерфейса
+        // if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && getFileName(world.get(blockUMB.x, blockUMB.y)) != null && getFileName(world.get(blockUMB.x, blockUMB.y)).toLowerCase().contains("workbench")) {
+        //     isOpen = true;
+        // }
         if (EventHandler.getRectangleClick(1768, 0, 1810, 42) || input.justPressed(GLFW_KEY_B)) {
             isOpen = !isOpen;
         }
@@ -107,45 +63,72 @@ public class WorkbenchLogic {
     }
 
     public static void draw() {
+
+        if (EventHandler.getRectangleClick(menuXPos + 8, 580, menuXPos + 54, 626)) {
+            //todo некрасиво
+            currentObject = null;
+            current = 0;
+        }
+        if (!nearbyWorkbench.isEmpty()) {
+            if (EventHandler.getRectangleClick(menuXPos + 8, 634, menuXPos + 54, 682) &&
+                nearbyWorkbench.containsKey(Workbench.Tier.LARGE)) {
+                currentObject = null;
+                current = 1;
+            }
+            if (EventHandler.getRectangleClick(menuXPos + 8, 688, menuXPos + 54, 734) &&
+                nearbyWorkbench.containsKey(Workbench.Tier.MEDIUM)) {
+                currentObject = null;
+                current = 2;
+            }
+            if (EventHandler.getRectangleClick(menuXPos + 8, 742, menuXPos + 54, 788) &&
+                nearbyWorkbench.containsKey(Workbench.Tier.SMALL)) {
+                currentObject = null;
+                current = 3;
+            }
+        }
+
         batch.draw(atlas.byPath("UI/GUI/buildMenu/menuClosed"), 1650, 0);
 
         if (isOpen) {
             batch.draw(atlas.byPath("UI/GUI/workbenchMenu/menu" + (currentObject == null ? "Small" : "Full")), menuXPos, 400);
             Fill.rect(menuXPos + 3, 587 + (54 * current), 3, 32, Color.fromRgba8888(255, 80, 0, 200));
 
-            if (!smallNearby) {
+            if (!nearbyWorkbench.containsKey(Workbench.Tier.SMALL)) {
                 Fill.rect(menuXPos + 8, 742, 46, 46, fogging);
             }
-            if (!mediumNearby) {
+            if (!nearbyWorkbench.containsKey(Workbench.Tier.MEDIUM)) {
                 Fill.rect(menuXPos + 8, 688, 46, 46, fogging);
             }
-            if (!largeNearby) {
+            if (!nearbyWorkbench.containsKey(Workbench.Tier.LARGE)) {
                 Fill.rect(menuXPos + 8, 634, 46, 46, fogging);
             }
 
-            ItemStack[][] currentWorkbench = getCurrentItems();
+            final int IN_ROW = 9;
 
-            for (int x = 0; x < currentWorkbench.length; x++) {
-                for (int y = 0; y < currentWorkbench[x].length; y++) {
-                    if (currentWorkbench[x][y] != null) {
-                        float xCoord = menuXPos + 70 + x * 54;
-                        //float yCoord = 57 + scroll + (smallWorkbenchItems[x][y].type.ordinal() * 20) + y * 54f;
-                        float yCoord = 1000 + scroll + (y * 54f);
+            var currentWorkbench = getCurrentItems();
+            for (int i = 0, y = 0; i < currentWorkbench.size(); i++) {
+                int x = i % IN_ROW;
 
-                        if (yCoord < 755) {
-                            Inventory.drawItem(xCoord, yCoord, currentWorkbench[x][y].getItem());
+                float xCoord = menuXPos + 70 + x * 54;
+                //float yCoord = 57 + scroll + (smallWorkbenchItems[x][y].type.ordinal() * 20) + y * 54f;
+                float yCoord = 1000 + scroll + (y * 54f);
 
-                            if (EventHandler.getRectangleClick((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
-                                currentObject = new Point2i(x, y);
-                            }
-                        }
+                if (yCoord < 755) {
+                    Inventory.drawItem(xCoord, yCoord, currentWorkbench.get(i));
+
+                    if (EventHandler.getRectangleClick((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
+                        currentObject = new Point2i(x, y);
+                        currentObjectIdx = i;
                     }
+                }
+                if (x == 0) {
+                    y++;
                 }
             }
 
             //todo описания
-            if (currentObject != null && currentWorkbench[currentObject.x][currentObject.y] != null) {
-                TextureDrawing.drawText(menuXPos + 585, 703, currentWorkbench[currentObject.x][currentObject.y].getItem().getName());
+            if (currentObjectIdx != -1) {
+                TextureDrawing.drawText(menuXPos + 585, 703, currentWorkbench.get(currentObjectIdx).getName());
                 drawRequirements(menuXPos + 590,  648);
                 batch.draw(atlas.byPath("UI/GUI/inventory/inventoryCurrent.png"), menuXPos + 62 + currentObject.x * 54,  986 + scroll + (currentObject.y * 54));
             }
@@ -156,14 +139,13 @@ public class WorkbenchLogic {
         }
     }
 
-    //текущая вкладка
-    private static ItemStack[][] getCurrentItems() {
+    private static List<Item> getCurrentItems() {
         return switch (current) {
-            //todo звездочки
-            case 1 -> largeWorkbenchItems;
-            case 2 -> mediumWorkbenchItems;
-            case 3 -> smallWorkbenchItems;
-            default -> buildMenuItems;
+            case 0 -> content.getCraftsFor(null);
+            case 1 -> content.getCraftsFor(nearbyWorkbench.get(Workbench.Tier.LARGE));
+            case 2 -> content.getCraftsFor(nearbyWorkbench.get(Workbench.Tier.MEDIUM));
+            case 3 -> content.getCraftsFor(nearbyWorkbench.get(Workbench.Tier.SMALL));
+            default -> throw new IllegalArgumentException();
         };
     }
 
@@ -175,17 +157,12 @@ public class WorkbenchLogic {
         if (required == null) {
             return;
         }
-        ItemStack[][] currentItems = getCurrentItems();
-        var currentItem = currentItems[currentObject.x][currentObject.y];
-        boolean success = Inventory.addItem(currentItem.getItem());
-
-        if (!success) {
-            return;
-        }
-
-        for (var obj : required) {
-            if (obj != null) {
-                Inventory.decrementItem(obj.x, obj.y, obj.count);
+        var currentItems = getCurrentItems();
+        if (Inventory.addItem(currentItems.get(currentObjectIdx))) {
+            for (var obj : required) {
+                if (obj != null) {
+                    Inventory.decrementItem(obj.x, obj.y, obj.count);
+                }
             }
         }
     }
@@ -193,11 +170,16 @@ public class WorkbenchLogic {
     record ItemCraftTransaction(int x, int y, int count) {}
 
     private static ItemCraftTransaction[] hasRequiredItems() {
-        Point2i menuCurrent = currentObject;
+        if (currentObjectIdx == -1) {
+            return null;
+        }
+
+
         var currentItems = getCurrentItems();
 
-        if (menuCurrent != null && currentItems[menuCurrent.x][menuCurrent.y].getItem().requirements != null) {
-            var required = currentItems[menuCurrent.x][menuCurrent.y].getItem().requirements;
+        Item item = currentItems.get(currentObjectIdx);
+        if (item.requirements != null) {
+            var required = item.requirements;
             ItemCraftTransaction[] hasNeededObject = new ItemCraftTransaction[required.length];
             int neededCounter = 0;
 
@@ -217,16 +199,15 @@ public class WorkbenchLogic {
     }
 
     private static void drawRequirements(float x, float y) {
-        var currentItems = getCurrentItems();
-
-        if (currentObject == null || currentItems[currentObject.x][currentObject.y] == null) {
+        if (currentObjectIdx == -1) {
             return;
         }
-        var stack = currentItems[currentObject.x][currentObject.y];
-        if (stack.getItem() instanceof ItemBlock itemBlock && itemBlock.block instanceof Factory factory) {
+        var currentItems = getCurrentItems();
+        var stack = currentItems.get(currentObjectIdx);
+        if (stack instanceof ItemBlock itemBlock && itemBlock.block instanceof Factory factory) {
             drawObjects(x, y - 41, factory.input, atlas.byPath("UI/GUI/buildMenu/factoryIn.png"));
             drawObjects(x, y - 82, factory.output, atlas.byPath("UI/GUI/buildMenu/factoryOut.png"));
         }
-        drawObjects(x, y, stack.getItem().requirements, atlas.byPath("UI/GUI/buildMenu/build.png"));
+        drawObjects(x, y, stack.requirements, atlas.byPath("UI/GUI/buildMenu/build.png"));
     }
 }

@@ -2,7 +2,7 @@ package core;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import core.EventHandling.Logging.Config;
+import core.EventHandling.Config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

@@ -1,7 +1,8 @@
 package core.World.Creatures.Player.Inventory;
 
+import core.EventHandling.Config;
 import core.EventHandling.EventHandler;
-import core.EventHandling.Logging.Config;
+import core.Global;
 import core.UI.Styles;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.Item;
@@ -11,11 +12,11 @@ import core.World.WorldGenerator.WorldGenerator;
 import core.math.Point2i;
 import core.math.Rectangle;
 import core.util.Color;
+import org.jetbrains.annotations.Nullable;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Inventory.Items.ItemGrid.findItemOrFree;
 import static core.World.Textures.TextureDrawing.drawText;
-import static core.World.WorldUtils.getBlockUnderMousePoint;
 import static core.World.WorldUtils.getDistanceToMouse;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
@@ -25,10 +26,10 @@ public class Inventory {
     public static Point2i currentObject, underMouseItem;
     private static final boolean buildGrid = Config.getBoolean("BuildGrid");
 
-    public static ItemStack getCurrent() {
+    public static @Nullable ItemStack getCurrent() {
         Point2i current = currentObject;
 
-        if (currentObject != null) {
+        if (current != null) {
             return inventoryObjects[current.x][current.y];
         }
         return null;
@@ -99,17 +100,6 @@ public class Inventory {
         });
     }
 
-    public static void deleteCurrentItem() {
-        Point2i current = currentObject;
-        inventoryObjects[current.x][current.y] = null;
-        currentObject = null;
-    }
-
-    public static void decrementCurrentItem() {
-        Point2i current = currentObject;
-        decrementItem(current.x, current.y);
-    }
-
     public static void decrementItem(int x, int y) { decrementItem(x, y, 1); }
 
     public static void decrementItem(int x, int y, int count) {
@@ -127,8 +117,8 @@ public class Inventory {
             int blockY = mouseBlockPos.y;
 
             if (underMouseItem == null && !Rectangle.contains(1488, 756, 500, 500, input.mousePos())) {
-                boolean isDeclined = getDistanceToMouse() < 8 && world.checkPlaceRules(blockX, blockY, b.block);
-                TextureDrawing.addBlockPreview(blockX, blockY, (short) content.getBlockIdByType(b.block), (byte) b.block.maxHp, isDeclined);
+                boolean canBuild = getDistanceToMouse() < 8 && world.checkPlaceRules(blockX, blockY, b.block);
+                TextureDrawing.addBlockPreview(blockX, blockY, (short) content.getBlockIdByType(b.block), (byte) b.block.maxHp, canBuild);
                 drawBuildGrid(blockX, blockY);
             }
         }
@@ -184,14 +174,21 @@ public class Inventory {
                 moveItems(hasItemsMouse, underMouseItem);
                 currentObject = hasItemsMouse;
             } else {
-                Point2i mousePos = getBlockUnderMousePoint();
+                Point2i mousePos = Global.input.mouseBlockPos();
 
                 var blockEntity = world.getEntity(mousePos.x, mousePos.y);
                 var currentInMouse = inventoryObjects[underMouseItem.x][underMouseItem.y];
-                if (blockEntity != null && blockEntity.insertItem(currentInMouse)) {
-                    if (currentInMouse.isEmpty()) {
-                        inventoryObjects[underMouseItem.x][underMouseItem.y] = null;
+                if (blockEntity != null) {
+                    switch (blockEntity.insertItem(currentInMouse)) {
+                        case MOVE -> inventoryObjects[underMouseItem.x][underMouseItem.y] = null;
+                        case PARTIAL_MOVE -> {
+                            if (currentInMouse.isEmpty()) {
+                                inventoryObjects[underMouseItem.x][underMouseItem.y] = null;
+                            }
+                        }
+                        case FAILED -> {}
                     }
+                    currentObject = null;
                 }
             }
             underMouseItem = null;
@@ -213,6 +210,24 @@ public class Inventory {
         } else {
             stack = new ItemStack(item);
             inventoryObjects[freeCell.x][freeCell.y] = stack;
+        }
+        return true;
+    }
+
+    public static boolean addItemStack(ItemStack item) {
+        Point2i freeCell = findItemOrFree(inventoryObjects, new Point2i(7, 5), item.getItem());
+
+        //нету места -> добавление неудачно
+        if (freeCell == null) {
+            return false;
+        }
+
+        ItemStack stack;
+        if (inventoryObjects[freeCell.x][freeCell.y] != null) {
+            stack = inventoryObjects[freeCell.x][freeCell.y];
+            stack.increment();
+        } else {
+            inventoryObjects[freeCell.x][freeCell.y] = item;
         }
         return true;
     }

@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import static core.Window.glfwWindow;
+import static core.util.FixedBitset.createBitSet;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class InputHandler {
@@ -206,10 +207,6 @@ public class InputHandler {
     }
 
     // endregion
-
-    private static long[] createBitSet(int n) {
-        return new long[((n - 1) >> 6) + 1];
-    }
 
     private static void setBit(long[] bits, int i) {
         int idx = i >> 6;

@@ -9,10 +9,9 @@ import core.g2d.Texture;
 import core.graphic.Layer;
 import core.util.Color;
 
-import static core.EventHandling.Logging.Config.getBoolean;
+import static core.EventHandling.Config.getBoolean;
 import static core.Global.*;
 import static core.World.Textures.TextureDrawing.blockSize;
-import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 
 public class Sun extends GameObject {
     private final Color skyColor = new Color();
@@ -44,7 +43,7 @@ public class Sun extends GameObject {
     //todo решить что делать с солнцем (!)
     //todo обновление: все плохо я не знаю как это делать без z координаты
     public void update() {
-        Biomes currentBiome = world.getBiomes((int) DynamicObjects.getFirst().getX() / blockSize);
+        Biomes currentBiome = world.getBiomes(player.getBlockX());
 
         if (currentBiome != lastBiome) {
             lastBiome = currentBiome;
@@ -61,7 +60,7 @@ public class Sun extends GameObject {
         }
 
         float parallax = world.sizeX / 1200f;
-        int x = (int) ((worldX - DynamicObjects.getFirst().getX() * parallax + 1200) * parallax);
+        int x = (int) ((worldX - player.getX() * parallax + 1200) * parallax);
 
         double a = -0.0003;
         double b = 0.9;
@@ -120,9 +119,9 @@ public class Sun extends GameObject {
         batch.z(Layer.BACKGROUND);
         batch.pushState(() -> {
             batch.scale(scaleX * 2, scaleY * 2);
-            batch.draw(atlas.byPath(lastBiome.getBackdrop()),((lastX - (DynamicObjects.getFirst().getX() / blockSize)) * 2) - 1500, 0);
+            batch.draw(atlas.byPath(lastBiome.getBackdrop()),((lastX - (player.getX() / blockSize)) * 2) - 1500, 0);
             batch.scale(scaleX, scaleY);
-            batch.draw(atlas.byPath(lastBiome.getBackdrop()),((lastX - (DynamicObjects.getFirst().getX() / blockSize)) * 3) - 1500, 0);
+            batch.draw(atlas.byPath(lastBiome.getBackdrop()),((lastX - (player.getX() / blockSize)) * 3) - 1500, 0);
         });
         batch.z(-2);
         batch.draw(sunTex, sunColor, x, y);

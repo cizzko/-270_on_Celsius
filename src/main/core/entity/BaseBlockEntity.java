@@ -44,6 +44,5 @@ public abstract class BaseBlockEntity<B extends StaticObjectsConst> implements B
 
     @Override
     public void draw() {
-        // TODO
     }
 }

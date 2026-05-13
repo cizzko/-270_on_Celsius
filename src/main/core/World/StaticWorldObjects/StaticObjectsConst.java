@@ -5,9 +5,10 @@ import core.World.ContentResolver;
 import core.World.ContentType;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.Textures.TextureDrawing;
-import core.content.block.ChestEntity;
 import core.entity.BlockEntity;
 import core.g2d.Atlas;
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
@@ -21,10 +22,9 @@ public class StaticObjectsConst implements ContentType {
     public int maxHp;
     public float density, resistance;
     public int lightTransmission;
-    public boolean hasMotherBlock;
     public Atlas.Region texture;
     public ItemStack[] requirements;
-    public /* @Nullable */ StaticObjectsConst createWith;
+    public @Nullable StaticObjectsConst createWith;
     public Type type;
 
     public StaticObjectsConst(String id) {
@@ -32,6 +32,7 @@ public class StaticObjectsConst implements ContentType {
     }
 
     @Override
+    @MustBeInvokedByOverriders
     public void load(ContentLoader cnt) {
         this.maxHp = cnt.node().path("MaxHp").asInt(100);
         this.texture = cnt.readTexture("Texture");
@@ -43,7 +44,6 @@ public class StaticObjectsConst implements ContentType {
         String createWithId = cnt.node().path("CreateWith").asText(null);
         this.createWith = (createWithId == null || createWithId.equals("player")) ? null : cnt.readBlockUnresolved("CreateWith");
 
-        this.hasMotherBlock = (cnt.node().path("HasMotherBlock").asBoolean(false));
         this.density = (float) cnt.node().path("Density").asDouble(1);
         this.resistance = (float) cnt.node().path("Resistance").asDouble(90);
         this.lightTransmission = cnt.node().path("LightTransmission").asInt(100);
@@ -51,6 +51,7 @@ public class StaticObjectsConst implements ContentType {
     }
 
     @Override
+    @MustBeInvokedByOverriders
     public void resolve(ContentResolver res) {
         this.requirements = res.resolveItemStacks(requirements);
         if (createWith != null) {
@@ -65,26 +66,19 @@ public class StaticObjectsConst implements ContentType {
 
     public boolean isMultiblock() { return tileCountX > 1 || tileCountY > 1; }
 
-    public TileData createData() {
-        return switch (id) {
-            case "workbenchSmall" -> new TileData.Workbench(TileData.Workbench.Type.SMALL);
-            default -> null;
-        };
-    }
-
-    public /* @Nullable */ BlockEntity createEntity(int x, int y) {
+    public @Nullable BlockEntity createEntity(int x, int y) {
         var ent = constructEntity();
         if (ent != null) {
-            ent.setPosition(x, y);
+            ent.setPosition(x*TextureDrawing.blockSize, y*TextureDrawing.blockSize);
             ent.init();
         }
         return ent;
     }
 
-    protected /* @Nullable */ BlockEntity constructEntity() { return null; }
+    protected @Nullable BlockEntity constructEntity() { return null; }
 
     @Override
-    public boolean equals(Object o) {
+    public final boolean equals(Object o) {
         if (this == o) {
             return true;
         }
@@ -95,7 +89,7 @@ public class StaticObjectsConst implements ContentType {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return id.hashCode();
     }
 
@@ -107,7 +101,7 @@ public class StaticObjectsConst implements ContentType {
     public enum Type {
         GAS,
         LIQUID,
-        SOLID,
+        SOLID,    // Твёрдая поверхность на которой можно стоять и строить
         PLASMA,
         WALKABLE  // Листва, паутина и остальные блоки, через которые можно проходить (падать)
     }

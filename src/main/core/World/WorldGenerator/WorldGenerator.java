@@ -3,8 +3,6 @@ package core.World.WorldGenerator;
 import core.EventHandling.EventHandler;
 import core.*;
 import core.UI.menu.CreatePlanet;
-import core.World.Creatures.DynamicWorldObjects;
-import core.World.Creatures.Player.Player;
 import core.World.PerlinNoiseGenerator;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticObjectsConst.Type;
@@ -13,6 +11,7 @@ import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.TextureDrawing;
 import core.World.World;
+import core.World.WorldUtils;
 import core.math.Point2i;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,7 +21,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 import static core.Global.*;
 
@@ -31,28 +33,6 @@ public class WorldGenerator {
 
     public static float intersDamageMultiplier = 40f, minVectorIntersDamage = 1.8f;
     public static final int copySize = 50;
-
-    public static ArrayDeque<DynamicWorldObjects> DynamicObjects = new ArrayDeque<>();
-
-    public static HashMap<String, Object> getWorldData() {
-        HashMap<String, Object> objects = TemperatureMap.getTemperatures();
-
-        // objects.put("StaticWorldObjects", convertNames(world.tiles));
-        // objects.put("DynamicWorldObjects", DynamicObjects);
-        // objects.put("ShadowsData", ShadowMap.getShadowData());
-        // objects.put("Inventory", Inventory.inventoryObjects);
-
-        // objects.put("WorldSizeX", SizeX);
-        // objects.put("WorldSizeY", SizeY);
-        // objects.put("WorldIntersDamageMultiplier", intersDamageMultiplier);
-        // objects.put("WorldMinVectorIntersDamage", minVectorIntersDamage);
-        // objects.put("WorldDayCount", dayCount);
-        // objects.put("WorldCurrentTime", Sun.currentTime);
-        // TODO Это не должно читаться с кнопки. Нужно переместить во внутреннее состояние объекта
-        // objects.put("WorldGenerateCreatures", buttons.get(Json.getName("GenerateCreatures")).isClicked);
-
-        return objects;
-    }
 
     //для рисования
     public static int findX(int x, int y) {
@@ -113,7 +93,7 @@ public class WorldGenerator {
 
         step(() -> {
             log.debug("generating player {}ms", System.currentTimeMillis() - startTime);
-            Player.createPlayer(randomSpawn);
+            Global.player = WorldUtils.spawn(content.creatureById("player"));
         });
 
         step(() -> {
@@ -566,13 +546,7 @@ public class WorldGenerator {
 //
 //        Inventory.create();
 
-        EventHandler.setDebugValue(() -> {
-            if (DynamicObjects.isEmpty()) {
-                return null;
-            }
-            var player = DynamicObjects.getFirst();
-            return "[Player] x: " + player.getX() + ", y: " + player.getY();
-        });
+        EventHandler.setDebugValue(() -> "[Player] x: " + player.getX() + ", y: " + player.getY());
 
         gameScene.onPreloadCompletion(() -> {
             UIMenus.createPlanet().hide();

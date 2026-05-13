@@ -1,8 +1,7 @@
 package core.World.Creatures.Player;
 
-import core.EventHandling.Logging.Config;
+import core.EventHandling.Config;
 import core.Global;
-import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.ItemData;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
@@ -15,25 +14,18 @@ import core.g2d.Fill;
 import core.math.Point2i;
 import core.util.Color;
 
-import static core.Global.input;
-import static core.Global.world;
+import static core.Global.*;
 import static core.World.Creatures.Player.Inventory.Inventory.*;
-import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 import static core.World.WorldUtils.getDistanceToMouse;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Player {
-    public static Thread currentInteraction;
     public static boolean noClip = false, placeRules = true;
     private static int transparencyHPline = Config.getBoolean("AlwaysOnPlayerHPLine") ? 220 : 0;
-    public static final int playerSize = 72;
+    public static final int playerSize = 72; // TODO убрать на размер текстуру
     public static int lastDamage = 0;
     public static long lastDamageTime = System.currentTimeMillis();
     private static long lastChangeTransparency = System.currentTimeMillis(), lastChangeLengthDamage = System.currentTimeMillis();
-
-    public static void createPlayer(boolean randomSpawn) {
-        DynamicObjects.addFirst(DynamicWorldObjects.createDynamic("player", randomSpawn ? (int) (Math.random() * (world.sizeX * TextureDrawing.blockSize)) : world.sizeX * 8f));
-    }
 
     public static void updateInventoryInteraction() {
         if (currentObject != null) {
@@ -52,11 +44,10 @@ public class Player {
                     return;
                 }
             }
-            Point2i blockUMB = Global.input.mouseBlockPos();
-
-            var block = world.getBlock(blockUMB.x, blockUMB.y);
+            Point2i pointedBlock = Global.input.mouseBlockPos();
+            var block = world.getBlock(pointedBlock.x, pointedBlock.y);
             if (block != null && block.type == StaticObjectsConst.Type.GAS && getDistanceToMouse() <= 9) {
-                updatePlaceableBlock(itemBlock.block, blockUMB.x, blockUMB.y);
+                updatePlaceableBlock(itemBlock.block, pointedBlock.x, pointedBlock.y);
             }
         }
     }
@@ -84,15 +75,14 @@ public class Player {
             }
 
             if (object.isMultiblock()) {
-                updateStructure(blockX, blockY, object, tool, data);
+                updateMultiblockByTool(blockX, blockY, object, tool, data);
             } else {
-                updateNonStructure(blockX, blockY, object, tool, data);
+                updateBlockByTool(blockX, blockY, object, tool, data);
             }
         }
     }
 
-    //тулы
-    private static void updateNonStructure(int blockX, int blockY, StaticObjectsConst object, ItemTool tool, ItemData.Tool data) {
+    private static void updateBlockByTool(int blockX, int blockY, StaticObjectsConst object, ItemTool tool, ItemData.Tool data) {
         int blockId = world.getBlockId(blockX, blockY);
         int hp = world.getHp(blockX, blockY);
 
@@ -113,7 +103,7 @@ public class Player {
         }
     }
 
-    private static void updateStructure(int blockX, int blockY, StaticObjectsConst object, ItemTool tool, ItemData.Tool data) {
+    private static void updateMultiblockByTool(int blockX, int blockY, StaticObjectsConst object, ItemTool tool, ItemData.Tool data) {
         Point2i root = world.getRootBlockPos(blockX, blockY);
 
         assert root != null;
@@ -121,20 +111,12 @@ public class Player {
         blockX = root.x;
         blockY = root.y;
 
-        updateNonStructure(blockX, blockY, object, tool, data);
-    }
-
-    public static void playerMaxHP() {
-        DynamicObjects.getFirst().setCurrentHp(DynamicObjects.getFirst().getMaxHp());
-    }
-
-    public static void playerKill() {
-        DynamicObjects.getFirst().setCurrentHp(0);
+        updateBlockByTool(blockX, blockY, object, tool, data);
     }
 
     public static void drawCurrentHP() {
-        int currentHp = (int) DynamicObjects.getFirst().getCurrentHP();
-        int maxHp = (int) DynamicObjects.getFirst().getMaxHp();
+        int currentHp = (int) player.getHp();
+        int maxHp = (int) player.getMaxHp();
 
         long nowTime = System.currentTimeMillis();
         if (currentHp == maxHp && transparencyHPline > 0 && nowTime - lastChangeTransparency >= 10 && !Config.getBoolean("AlwaysOnPlayerHPLine")) {

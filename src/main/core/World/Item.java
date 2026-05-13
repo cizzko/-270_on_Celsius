@@ -4,6 +4,7 @@ import core.Global;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.g2d.Atlas;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
@@ -12,7 +13,7 @@ public abstract sealed class Item implements ContentType permits ItemBlock, Item
 
     public Atlas.Region texture;
     public ItemStack[] requirements;
-    public StaticObjectsConst createWith; // null если доступно из кармана игрока
+    public @Nullable StaticObjectsConst createWith; // null если доступно из кармана игрока
 
     public Item(String id) {
         this.id = Objects.requireNonNull(id);

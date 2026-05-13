@@ -22,6 +22,7 @@ public class Styles {
     public static final Color DIRTY_BLACK = Color.fromRgba8888(10, 10, 10, 55);
     public static final Color DIRTY_WHITE = Color.fromRgba8888(230, 230, 230, 55);
     public static final Color DEFAULT_ORANGE = Color.fromRgba8888(255, 80, 0, 55);
+    public static final Color GRAY_BRIGHT = Color.fromRgba8888(150, 150, 150, 255);
 
     public static final Style.ToggleButton DEFAULT_TOGGLE_BUTTON = new Style.ToggleButton() {
         @Override
@@ -83,7 +84,7 @@ public class Styles {
     public static final Style.Text DEBUG_TEXT = new Style.Text() {
         @Override
         public void load() {
-            color = Color.WHITE;
+            color = Styles.GRAY_BRIGHT;
             font = assets.load(Font.class, "arial.ttf").resultNow();
         }
     };

@@ -1,0 +1,6 @@
+{
+  "Id": "player",
+  "ClassType": "player",
+  "Texture": "textures/creatures/playerLeft/player0",
+  "Weight": 80
+}

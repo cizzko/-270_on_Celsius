@@ -1,6 +1,6 @@
 package core.UI.menu;
 
-import core.EventHandling.Logging.Config;
+import core.EventHandling.Config;
 import core.GameState;
 import core.Global;
 import core.Time;
@@ -8,7 +8,7 @@ import core.UI.*;
 import core.UIMenus;
 import core.math.Vector2f;
 
-import static core.EventHandling.Logging.Config.*;
+import static core.EventHandling.Config.*;
 import static core.Global.atlas;
 import static core.Global.scheduler;
 

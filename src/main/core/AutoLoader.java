@@ -174,20 +174,20 @@ public final class AutoLoader {
         return processUpdate(true);
     }
 
-    final boolean[] allLoaded0 = {true}; // :///
+    boolean allLoaded0 = true;
 
     private boolean processUpdate(boolean preload) {
-        var allLoaded = allLoaded0;
-        allLoaded[0] = true;
+        this.allLoaded0 = true;
 
         var deque = dequeFor(preload);
         deque.removeIf(assetState -> {
             boolean loaded = processLoading(assetState);
-            allLoaded[0] &= loaded;
+            this.allLoaded0 &= loaded;
             return loaded;
         });
 
-        if (preload && allLoaded[0]) {
+        boolean allLoaded = this.allLoaded0;
+        if (preload && allLoaded) {
             Runnable act = onPreloadCompletion;
             if (act != null) {
                 onPreloadCompletion = null;
@@ -195,7 +195,7 @@ public final class AutoLoader {
             }
         }
 
-        return allLoaded[0];
+        return allLoaded;
     }
 
     private ArrayDeque<AssetState> dequeFor(boolean preload) {
@@ -269,7 +269,7 @@ public final class AutoLoader {
                 try {
                     l.onLoaded();
                 } catch (Exception e) {
-                    log.error("[{}] Exception while loading {}", name, l);
+                    log.error("[{}] Exception while loading {}", name, l, e);
                 }
             }
 
@@ -322,7 +322,7 @@ public final class AutoLoader {
             try {
                 l.onUnloaded();
             } catch (Exception e) {
-                log.error("[{}] Exception while unloading {}", name, l);
+                log.error("[{}] Exception while unloading {}", name, l, e);
             }
 
             if (log.isDebugEnabled()) {

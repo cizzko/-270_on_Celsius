@@ -7,6 +7,7 @@ import jdk.jshell.execution.LocalExecutionControlProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.nio.file.Path;
 import java.util.Locale;
 import java.util.Map;
 import java.util.StringJoiner;
@@ -20,9 +21,30 @@ public class ImportClassMethod {
             .executionEngine(new LocalExecutionControlProvider(), Map.of())
             .build();
 
+    //некий загадочный флаг
+    private static boolean flag;
     public static final ExecutorService exec = Executors.newVirtualThreadPerTaskExecutor();
 
     public static void execute(String snippet) {
+        if (!flag) {
+            flag = true;
+            var codeSource = ImportClassMethod.class.getProtectionDomain().getCodeSource();
+
+            if (codeSource != null) {
+                try {
+                    var location = codeSource.getLocation().toURI();
+                    String path = Path.of(location).toAbsolutePath().toString();
+                    jshell.addToClasspath(path);
+                } catch (Exception e) {
+                    log.error(e);
+                }
+            }
+
+            jshell.eval("import static core.Global.*;");
+            for (String aPackage : ImportClassMethod.class.getModule().getPackages()) {
+                jshell.eval("import " + aPackage + ".*;");
+            }
+        }
 
         exec.execute(() -> {
             Thread.currentThread().setName("JShell Thread");
@@ -30,12 +52,20 @@ public class ImportClassMethod {
             var out = new StringJoiner("\\n").setEmptyValue("");
 
             for (SnippetEvent snippetEvent : jshell.eval(snippet)) {
+                log.debug(snippetEvent);
                 switch (snippetEvent.status()) {
                     case VALID, OVERWRITTEN -> {
-                        log.info("{} ==> {}", snippetEvent.snippet().id(), snippetEvent.value());
-                        out.add(snippetEvent.snippet().id() + " ==> " + snippetEvent.value());
+                        if (snippetEvent.value() != null && !snippetEvent.value().isEmpty()) {
+                            log.info("{} ==> {}", snippetEvent.snippet().id(), snippetEvent.value());
+                            out.add(snippetEvent.snippet().id() + " ==> " + snippetEvent.value());
+                        } else {
+                            if (snippetEvent.exception() != null) {
+                                log.error(snippetEvent.exception());
+                            }
+                        }
                     }
-                    case RECOVERABLE_DEFINED, DROPPED, RECOVERABLE_NOT_DEFINED, NONEXISTENT -> {}
+                    case RECOVERABLE_DEFINED, DROPPED, RECOVERABLE_NOT_DEFINED, NONEXISTENT -> {
+                    }
                     case REJECTED -> {
                         jshell.diagnostics(snippetEvent.snippet())
                                 .forEach(diag -> {
@@ -52,11 +82,11 @@ public class ImportClassMethod {
                                         String source = snippetEvent.snippet().source();
                                         log.error(source);
                                         out.add(source);
-                                        log.error("{}{}", " ".repeat(Math.toIntExact(start)), "^".repeat(Math.toIntExact(end - pos)));
-                                        out.add(" ".repeat(Math.toIntExact(start)) + "^".repeat(Math.toIntExact(end - pos)));
+                                        String caret = "^".repeat(Math.toIntExact(end - pos));
+                                        log.error("{}{}", " ".repeat(Math.toIntExact(start)), caret);
+                                        out.add(" ".repeat(Math.toIntExact(start)) + caret);
                                     }
                                 });
-
                     }
                 }
             }

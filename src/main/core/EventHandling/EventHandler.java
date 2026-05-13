@@ -1,6 +1,5 @@
 package core.EventHandling;
 
-import core.EventHandling.Logging.Config;
 import core.Global;
 import core.PlayGameScene;
 import core.UI.Dialog;
@@ -23,7 +22,7 @@ import static org.lwjgl.glfw.GLFW.*;
 public class EventHandler {
     private static boolean keyLogging, autopause = Config.getBoolean("Autopause");
     public static final StringBuilder keyLoggingText = new StringBuilder(256);
-    public static int debugLevel = Config.getFromConfigInt("Debug");
+    public static int debugLevel = Config.getInt("Debug");
 
     private static final class DebugBox extends TextArea {
         private final Supplier<String> format;

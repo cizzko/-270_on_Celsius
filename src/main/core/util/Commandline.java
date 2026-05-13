@@ -1,7 +1,7 @@
 package core.util;
 
+import core.EventHandling.Config;
 import core.EventHandling.EventHandler;
-import core.EventHandling.Logging.Config;
 import core.Window;
 import core.g2d.Fill;
 import org.apache.logging.log4j.LogManager;

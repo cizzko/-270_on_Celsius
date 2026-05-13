@@ -2,9 +2,8 @@ package core.World.Textures;
 
 import core.UI.Styles;
 import core.Window;
-import core.World.Creatures.DynamicWorldObjects;
+import core.World.Creatures.Player.Inventory.Items.Bullets;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
-import core.World.Creatures.Player.Inventory.Items.Weapons.Ammo.Bullets;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.StaticWorldObjects.TileData;
@@ -15,17 +14,17 @@ import core.math.Point2i;
 import core.math.Rectangle;
 import core.util.Color;
 
-import java.util.ArrayDeque;
+import java.util.ArrayList;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Player.playerSize;
-import static core.World.WorldGenerator.WorldGenerator.*;
 
 public class TextureDrawing {
-    //todo разобраться с размерами
     public static final int blockSize = 48;
 
-    private static final ArrayDeque<BlockPreview> previewBlocks = new ArrayDeque<>();
+    public static int toBlock(float worldPos) { return (int) Math.floor(worldPos / blockSize);}
+
+    private static final ArrayList<BlockPreview> previewBlocks = new ArrayList<>();
 
     private static final Rectangle viewport = new Rectangle();
 
@@ -150,22 +149,20 @@ public class TextureDrawing {
 
     public static void drawStatic() {
         camera.getBoundsTo(viewport);
-        int minX = (int) Math.floor(viewport.x / blockSize);
-        int maxX = (int) Math.floor((viewport.x + viewport.width) / blockSize);
-        int minY = (int) Math.floor(viewport.y / blockSize);
-        int maxY = (int) Math.floor((viewport.y + viewport.height) / blockSize);
+        int minX = (int) Math.floor((viewport.x - blockSize) / blockSize);
+        int maxX = (int) Math.floor((viewport.x + viewport.width + blockSize) / blockSize);
+        int minY = (int) Math.floor((viewport.y - blockSize) / blockSize);
+        int maxY = (int) Math.floor((viewport.y + viewport.height + blockSize) / blockSize);
 
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
                 if (!world.inBounds(x, y)) {
                     continue;
                 }
+                int blockId = world.getBlockId(x, y);
+                if (blockId <= 0) continue;
                 var obj = world.getBlock(x, y);
-                if (obj == null || obj == StaticObjectsConst.AIR || obj.texture == atlas.getErrorRegion()) {
-                    continue;
-                }
                 int hp = world.getHp(x, y);
-                // todo расширить проверку для структур, слева пропадают раньше чем должны
                 drawBlock(x, y, obj, hp);
             }
         }
@@ -179,10 +176,10 @@ public class TextureDrawing {
     private static final Color tmp = new Color();
 
     private static void drawQueuedBlock(int x, int y, short blockId, byte hp, boolean breakable) {
-        var block = content.getConstByBlockId(blockId);
-        if (block == null || block.texture == atlas.getErrorRegion()) {
+        if (blockId <= 0) {
             return;
         }
+        var block = content.getConstByBlockId(blockId);
 
         int wx = x * blockSize;
         int wy = y * blockSize;
@@ -202,18 +199,38 @@ public class TextureDrawing {
     }
 
     private static void drawBlock(int x, int y, StaticObjectsConst obj, int hp) {
-        int xBlock = findX(x, y);
-        int yBlock = findY(x, y);
+        int wx = x * blockSize;
+        int wy = y * blockSize;
 
-        if (world.getData(x, y) instanceof TileData.MultiblockPart) {
-            drawDamage(obj, hp, xBlock, yBlock);
-            return;
+        if (world.getData(x, y) instanceof TileData.MultiblockPart part) {
+            drawDamage(obj, hp, wx, wy);
+            // int rootX = (x - part.rootOffsetX);
+            // int rootY = (y - part.rootOffsetY);
+            // if (isOnCamera(rootX * blockSize, rootY * blockSize, obj.texture)) {
+            //     drawBlock0(rootX, rootY, obj, hp);
+            //
+            //     for (int blockX = 0; blockX < obj.tileCountY; blockX++) {
+            //         for (int blockY = 0; blockY < obj.tileCountY; blockY++) {
+            //             int partX = blockX + rootX;
+            //             int partY = blockY + rootY;
+            //
+            //         }
+            //     }
+            // } else {
+            // }
+        } else {
+            drawBlock0(x, y, obj, hp);
         }
+    }
+
+    private static void drawBlock0(int x, int y, StaticObjectsConst obj, int hp) {
+        int wx = x * blockSize;
+        int wy = y * blockSize;
 
         Color color = ShadowMap.getColorTo(x, y, tmp);
-        int upperLimit = 100;
-        int lowestLimit = -20;
-        int maxColor = 65;
+        final int upperLimit = 100;
+        final int lowestLimit = -20;
+        final int maxColor = 65;
         float temp = TemperatureMap.getTemp(x, y);
 
         int a;
@@ -225,8 +242,8 @@ public class TextureDrawing {
             color.set(color.r() - a, color.g() - (a / 2), color.b(), color.a());
         }
 
-        batch.draw(obj.texture, color, xBlock, yBlock);
-        drawDamage(obj, hp, xBlock, yBlock);
+        batch.draw(obj.texture, color, wx, wy);
+        drawDamage(obj, hp, wx, wy);
 
         var blockEntity = world.getEntity(x, y);
         if (blockEntity != null) {
@@ -238,9 +255,9 @@ public class TextureDrawing {
         if (hp > obj.maxHp / 1.5f) {
             // ???
         } else if (hp < obj.maxHp / 3) {
-            batch.draw(atlas.byPath("World/Blocks/damaged1"), xBlock, yBlock);
+            batch.draw(atlas.byPath("textures/blocks/damaged1"), xBlock, yBlock);
         } else {
-            batch.draw(atlas.byPath("World/Blocks/damaged0"), xBlock, yBlock);
+            batch.draw(atlas.byPath("textures/blocks/damaged0"), xBlock, yBlock);
         }
     }
 
@@ -255,19 +272,10 @@ public class TextureDrawing {
     }
 
     public static void drawDynamic() {
-        for (DynamicWorldObjects dynamicObject : DynamicObjects) {
-            if (dynamicObject != null) {
-                dynamicObject.incrementCurrentFrame();
-
-                if (isOnCamera(dynamicObject.getX(), dynamicObject.getY(), dynamicObject.getTexture())) {
-                    if (dynamicObject.getFramesCount() == 0) {
-                        var shadow = ShadowMap.getColorDynamic(dynamicObject);
-                        batch.draw(dynamicObject.getTexture()/*, shadow*/, dynamicObject.getX(), dynamicObject.getY());
-                    } else {
-                        // todo дописать
-                        // drawTexture(dynamicObject.getPath() + dynamicObject.getCurrentFrame() + ".png", dynamicObject.getX(), dynamicObject.getY(), ShadowMap.getColorDynamic(), false, false);
-                    }
-                }
+        for (var entity : entityPool.entities().values()) {
+            if (isOnCamera(entity.getX(), entity.getY(), entity.getCreature().texture)) {
+                // var shadow = ShadowMap.getColorDynamic(entity);
+                batch.draw(entity.getCreature().texture/*, shadow*/, entity.getX(), entity.getY());
             }
         }
 

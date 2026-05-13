@@ -1,6 +1,7 @@
 package core.util;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 public class FutureScope implements AutoCloseable {
@@ -9,24 +10,21 @@ public class FutureScope implements AutoCloseable {
     public <T> T join(Future<? extends T> fut) {
         try {
             return fut.get();
-        } catch (Throwable t) {
-            excs.add(t); return null;
+        } catch (ExecutionException e) {
+            excs.add(e.getCause());
+        } catch (Exception e) {
+            excs.add(e);
         }
-    }
-
-    public void close() {
-        checkIfFailed();
+        return null;
     }
 
     public void checkIfFailed() {
-
-
         switch (excs.size()) {
             case 0 -> {}
             case 1 ->  {
                 var t = excs.getFirst();
                 excs.clear();
-                FutureExc.sneakyThrow(t);
+                FutureUtil.sneakyThrow(t);
             }
             default -> {
                 var t = excs.getFirst();
@@ -35,8 +33,13 @@ public class FutureScope implements AutoCloseable {
                 }
 
                 excs.clear();
-                FutureExc.sneakyThrow(t);
+                FutureUtil.sneakyThrow(t);
             }
         }
+    }
+
+    @Override
+    public void close() {
+        checkIfFailed();
     }
 }

@@ -3,6 +3,8 @@ package core;
 import core.World.ContentManager;
 import core.World.World;
 import core.assets.AssetsManager;
+import core.content.EntityPool;
+import core.content.creatures.PlayerEntity;
 import core.g2d.Atlas;
 import core.g2d.Camera2;
 import core.g2d.SortingBatch;
@@ -19,6 +21,8 @@ public final class Global {
     public static AssetsManager assets;
     public static UIScene uiScene;
     public static LangTranslation lang;
+    public static EntityPool entityPool;
+    public static PlayerEntity player;
     public static final Camera2 camera = new Camera2();
 
     public static World world;

@@ -1,11 +1,8 @@
 package core.World.Creatures;
 
 import core.Application;
-import core.World.Textures.TextureDrawing;
 
-import static core.Global.world;
 import static core.Window.glfwWindow;
-import static core.World.WorldGenerator.WorldGenerator.DynamicObjects;
 import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
 
 public class CreaturesGenerate {
@@ -54,13 +51,5 @@ public class CreaturesGenerate {
             // case 1 -> generateButterfly();
         }
         currentCreaturesCount++;
-    }
-
-    private static void generateButterfly() {
-        DynamicObjects.add(DynamicWorldObjects.createDynamic("butterfly", (float) (Math.random() * (world.sizeX * TextureDrawing.blockSize))));
-    }
-
-    private static void generateBird() {
-        DynamicObjects.add(DynamicWorldObjects.createDynamic("bird", 100));
     }
 }

@@ -1,0 +1,10 @@
+{
+  "Id": "electricPole",
+  "ClassType": "block",
+  "Resistance": 0,
+  "Texture": "textures/blocks/electricPole",
+  "Type": "SOLID",
+  "MaxHp": 70,
+  "Density": 1,
+  "LightTransmission": 100
+}
