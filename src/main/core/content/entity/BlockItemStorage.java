@@ -1,5 +1,7 @@
-package core.entity;
+package core.content.entity;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
@@ -7,13 +9,25 @@ import core.content.serialize.SerializableContent;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Objects;
 
-public class BlockItemStorage implements SerializableContent {
+public final class BlockItemStorage implements SerializableContent {
     public final ItemStack[] items;
     public final int[] sizes;
     public final int maxCapacity;
 
     private int total;
+
+    @JsonCreator
+    public BlockItemStorage(@JsonProperty("items") ItemStack[] items,
+                            @JsonProperty("sizes") int[] sizes,
+                            @JsonProperty("maxCapacity") int maxCapacity,
+                            @JsonProperty("total") int total) {
+        this.items = Objects.requireNonNull(items);
+        this.sizes = Objects.requireNonNull(sizes);
+        this.maxCapacity = maxCapacity;
+        this.total = total;
+    }
 
     public BlockItemStorage(ItemStack[] items, int maxCapacity) {
         this.items = new ItemStack[items.length];

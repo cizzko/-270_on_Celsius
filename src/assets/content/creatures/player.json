@@ -2,5 +2,6 @@
   "Id": "player",
   "ClassType": "player",
   "Texture": "textures/creatures/playerLeft/player0",
-  "Weight": 80
+  "Weight": 80,
+  "MaxHp": 100
 }

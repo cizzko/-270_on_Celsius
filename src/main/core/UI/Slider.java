@@ -65,7 +65,7 @@ public class Slider extends BaseElement<Slider> {
             rectBrightness = 120;
         }
 
-        Atlas.Region triangle = atlas.byPath("UI/GUI/numberBoardTriangle.png");
+        Atlas.Region triangle = atlas.get("UI/GUI/numberBoardTriangle");
 
         // todo 7 это высота текстуры треугольника
 

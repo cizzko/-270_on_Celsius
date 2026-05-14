@@ -45,7 +45,7 @@ public class ToggleButton extends BaseButton<ToggleButton> {
             c = style.backgroundColor;
         }
 
-        Fill.rectangleBorder(x - offset, y - offset, width, height, offset, c);
+        Fill.rectangleBorder(x - offset, y - offset, width, height, offset, c.rgba8888());
 
         Drawable tex = isClicked ? style.checkUp : style.checkDown;
         batch.draw(tex, x, y);

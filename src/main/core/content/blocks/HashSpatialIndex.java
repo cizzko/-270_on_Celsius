@@ -1,21 +1,23 @@
 package core.content.blocks;
 
-import core.entity.CreatureEntity;
+import core.content.entity.HitboxComponent;
 import core.math.Rectangle;
+import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-public final class HashSpatialIndex<E extends CreatureEntity> {
+public final class HashSpatialIndex<E extends HitboxComponent> {
 
-    private final Long2ObjectOpenHashMap<ObjectArrayList<E>> hash = new Long2ObjectOpenHashMap<>();
-    private final float resolution;
+    public final Long2ObjectOpenHashMap<ObjectArrayList<E>> hash = new Long2ObjectOpenHashMap<>();
+    public final float resolution;
 
     private final Rectangle tmp0 = new Rectangle(), tmp1 = new Rectangle();
 
     private static long combine(long x, long y) {
-        return (x << 32) | (y & 0xffffffffL);
+        return HashCommon.mix((x << 32) | (y & 0xffffffffL));
     }
 
     public HashSpatialIndex(float resolution) {
@@ -25,15 +27,6 @@ public final class HashSpatialIndex<E extends CreatureEntity> {
     public void insert(E entry) {
         long key = combine((long) Math.floor(entry.getX() / resolution), (long) Math.floor(entry.getY() / resolution));
         hash.computeIfAbsent(key, k -> new ObjectArrayList<>()).add(entry);
-    }
-
-
-    public void clear() {
-        hash.clear();
-    }
-
-    public void trim() {
-        hash.trim();
     }
 
     public long size() {
@@ -74,6 +67,37 @@ public final class HashSpatialIndex<E extends CreatureEntity> {
             }
         }
         return false;
+    }
+
+    public void findIntersections(E ent, Consumer<? super E> consumer) {
+        if (hash.isEmpty()) {
+            return;
+        }
+
+        ent.getHitboxTo(tmp0);
+        int dx = (int) ((tmp0.width / resolution) + 1);
+        int dy = (int) ((tmp0.height / resolution) + 1);
+
+        int px = (int) (tmp0.x / resolution);
+        int py = (int) (tmp0.y / resolution);
+
+        for (int sx = -dx; sx <= dx; sx++) {
+            for (int sy = -dy; sy <= dy; sy++) {
+                int rx = px + sx;
+                int ry = py + sy;
+
+                var array = hash.get(combine(rx, ry));
+                if (array != null) {
+                    for (E e : array) {
+                        if (e == ent) continue;
+                        e.getHitboxTo(tmp1);
+                        if (tmp0.overlaps(tmp1)) {
+                            consumer.accept(e);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override

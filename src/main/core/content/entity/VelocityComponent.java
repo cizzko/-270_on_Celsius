@@ -1,4 +1,4 @@
-package core.entity;
+package core.content.entity;
 
 import core.math.Vector2f;
 

@@ -1,6 +1,5 @@
 package core.content;
 
-import core.World.ContentType;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
@@ -25,11 +24,11 @@ public final class Registry<T extends ContentType> {
         return id2Type.get(id);
     }
 
-    public void put1(T type) {
+    void put1(T type) {
         name2Type.put(type.id(), type);
     }
 
-    public void put2(T type) {
+    void put2(T type) {
         type2Id.put(type, id);
         id2Type.put(id, type);
         id++;

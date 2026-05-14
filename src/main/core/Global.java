@@ -1,7 +1,6 @@
 package core;
 
-import core.World.ContentManager;
-import core.World.Creatures.Player.Player;
+import core.content.ContentManager;
 import core.World.World;
 import core.assets.AssetsManager;
 import core.content.EntityPool;

@@ -28,8 +28,8 @@ public class Styles {
         @Override
         public void load() {
             font = assets.load(Font.class, "arial.ttf").resultNow();
-            checkUp = Global.atlas.byPath("UI/GUI/checkMarkTrue");
-            checkDown = Global.atlas.byPath("UI/GUI/checkMarkFalse");
+            checkUp = Global.atlas.get("UI/GUI/checkMarkTrue");
+            checkDown = Global.atlas.get("UI/GUI/checkMarkFalse");
             width = height = 44;
             backgroundColor = DIRTY_WHITE;
             borderOffset = 6;

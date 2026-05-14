@@ -1,7 +1,6 @@
 package core.World.Creatures.Player.Inventory.Items;
 
 import core.UI.Sounds.Sound;
-import core.World.Creatures.DynamicWorldObjects;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.HitboxMap;
 import core.World.ItemWeapon;
@@ -91,7 +90,7 @@ public class Bullets {
             return;
         }
 
-        Atlas.Region bulletRegion = atlas.byPath("textures/items/someBullet.png");
+        Atlas.Region bulletRegion = atlas.get("textures/items/someBullet");
         for (Bullets bullet : bullets) {
             // todo пути для пуль
             // if (bullet != null && !(bullet.x > DynamicObjects.getFirst().getX() + 350 || bullet.x < DynamicObjects.getFirst().getX() - 350)) {

@@ -4,12 +4,6 @@ import core.EventHandling.EventHandler;
 import core.EventHandling.Config;
 import core.Window;
 import core.g2d.Fill;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.util.Arrays;
 
 import static core.EventHandling.EventHandler.keyLoggingText;
 import static core.Global.input;
@@ -17,125 +11,11 @@ import static core.World.Textures.TextureDrawing.drawRectangleText;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Commandline {
-    private static final Logger log = LogManager.getLogger();
-
     private static final String prefix = Config.getFromFC("Prefix");
     public static boolean created = false;
 
     private static void startReflection(String target) {
-        if (target.equalsIgnoreCase("help")) {
-            EventHandler.setKeyLoggingText("Prefix: " + prefix + ", write '" + prefix + " help'");
-            return;
-        }
-        if (target.startsWith(prefix) && target.trim().length() > prefix.length()) {
-            target = Config.getFromFC(target.substring(prefix.length() + 1));
-
-            if (target == null || target.equals("null") || target.contains("sendStateMessage")) {
-                EventHandler.setKeyLoggingText("No access or target is null");
-                return;
-            }
-            if (target.startsWith("output:")) {
-                EventHandler.setKeyLoggingText(target.substring(7));
-            }
-        } else {
-            EventHandler.setKeyLoggingText("Command not found");
-        }
-
-        switch (target.trim().split("\\s+")[0]) {
-            case "modify" -> modifyField(target.substring(7));
-            case "start" -> startMethod(target.substring(6));
-            case "eval" -> {
-                String[] snippet = target.split(" ", 2);
-                if (snippet.length == 1) {
-                    return;
-                }
-                ImportClassMethod.execute(snippet[1]);
-            }
-        }
-    }
-
-    private static void modifyField(String target) {
-        try {
-            String[] parts = target.split("\\s+");
-            target = parts[0];
-
-            String[] strings = target.split("\\.");
-            String className = String.join(".", Arrays.copyOfRange(strings, 0, strings.length - 1));
-            String fieldName = strings[strings.length - 1];
-
-            Class<?> clazz = Class.forName(className);
-            Field field = clazz.getDeclaredField(fieldName);
-            field.set(null, convertToType(parts[parts.length - 1]));
-
-            EventHandler.setKeyLoggingText(fieldName + " modified to " + convertToType(parts[parts.length - 1]));
-        } catch (Exception e) {
-            EventHandler.setKeyLoggingText(e.getMessage());
-        }
-    }
-
-    private static void startMethod(String target) {
-        String[] parts = target.split("\\s+");
-        target = parts[0];
-
-        Object[] args;
-        if (parts.length > 1) {
-            String[] argStrings = Arrays.copyOfRange(parts, 1, parts.length);
-            args = Arrays.stream(argStrings).map(s -> (Object) s).toArray();
-        } else {
-            args = null;
-        }
-
-        try {
-            String[] strings = target.split("\\.");
-            String className = String.join(".", Arrays.copyOfRange(strings, 0, strings.length - 1));
-            String methodName = strings[strings.length - 1];
-
-            Object[] convertedArgs = new Object[args == null ? 0 : args.length];
-            if (args != null) {
-                for (int i = 0; i < args.length; i++) {
-                    convertedArgs[i] = convertToType((String) args[i]);
-                }
-            }
-            Class<?> targetClass = Class.forName(className);
-
-            Method[] methods = targetClass.getMethods();
-            Method method = null;
-            for (Method m : methods) {
-                if (m.getName().equals(methodName)) {
-                    method = m;
-                    break;
-                }
-            }
-
-            if (method == null) {
-                log.error("Method with name {}.{}(...) not found", target, methodName);
-                EventHandler.setKeyLoggingText("Unknown method");
-            } else {
-                Object result = method.invoke(null, convertedArgs);
-                EventHandler.setKeyLoggingText(result != null ? "Returned: " + result : "Successfully");
-            }
-
-        } catch (Exception e) {
-            EventHandler.setKeyLoggingText(e.getMessage());
-        }
-    }
-
-    private static Object convertToType(String arg) {
-        arg = arg.trim();
-
-        if (Character.isDigit(arg.charAt(arg.length() - 2))) {
-            char type = arg.charAt(arg.length() - 1);
-            arg = arg.substring(0, arg.length() - 1);
-
-            switch (type) {
-                case 'l' -> { return Long.parseLong(arg);     }
-                case 'd' -> { return Double.parseDouble(arg); }
-                case 'f' -> { return Float.parseFloat(arg);   }
-                case 'i' -> { return Integer.parseInt(arg);   }
-            }
-        }
-
-        return (arg.equals("true") || arg.equals("false")) ? Boolean.parseBoolean(arg) : arg;
+        JavaInterpreter.execute(target);
     }
 
     public static void createLine() {

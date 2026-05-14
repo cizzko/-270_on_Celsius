@@ -1,8 +1,15 @@
 package core.World;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import core.Application;
 import core.GameState;
@@ -13,13 +20,14 @@ import core.World.Textures.ShadowMap;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator.Biomes;
 import core.World.WorldGenerator.WorldGenerator;
-import core.entity.BlockEntity;
+import core.content.entity.BlockEntity;
 import core.math.MathUtil;
 import core.math.Point2i;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Objects;
 
 @JsonSerialize(using = World.WorldSerializer.class)
 public class World {
@@ -30,10 +38,47 @@ public class World {
     // Будущее к которому стремимся:
     // public final byte[] temperature;
     // public final byte[] light;
-    public final Int2ObjectOpenHashMap<TileData> data = new Int2ObjectOpenHashMap<>();
-    public final Int2ObjectOpenHashMap<BlockEntity> entity = new Int2ObjectOpenHashMap<>();
+    @JsonDeserialize(using = DataDeserializer.class)
+    public final Int2ObjectOpenHashMap<TileData> data;
+    @JsonDeserialize(using = EntityDeserializer.class)
+    public final Int2ObjectOpenHashMap<BlockEntity> entity;
 
+    @JsonIgnore
     public final Biomes[] biomes;
+
+    public static class Tmp {
+
+        public int sizeX, sizeY;
+        public /* unsigned */ short[] tiles;
+        public /* unsigned */ byte[] hp;
+
+        // Будущее к которому стремимся:
+        // public final byte[] temperature;
+        // public final byte[] light;
+        @JsonDeserialize(using = DataDeserializer.class)
+        public Int2ObjectOpenHashMap<TileData> data;
+        @JsonDeserialize(using = EntityDeserializer.class)
+        public Int2ObjectOpenHashMap<BlockEntity> entity;
+
+        @JsonIgnore
+        public Biomes[] biomes;
+
+
+        private int pos2index(int x, int y) { return x + sizeX * y; }
+        private int index2x(int index)      { return index % sizeX; }
+        private int index2y(int index)      { return index / sizeX; }
+    }
+
+    @JsonCreator
+    public World(World.Tmp tmp) {
+        this.sizeX = tmp.sizeX;
+        this.sizeY = tmp.sizeY;
+        this.tiles = tmp.tiles;
+        this.hp = tmp.hp;
+        this.data = tmp.data;
+        this.entity = tmp.entity;
+        this.biomes = new Biomes[sizeX];
+    }
 
     public World(int sizeX, int sizeY) {
         // assert sizeX > 0 && sizeY > 0;
@@ -42,6 +87,8 @@ public class World {
         this.tiles = new short[sizeX * sizeY];
         this.hp = new byte[sizeX * sizeY];
         this.biomes = new Biomes[sizeX];
+        this.data = new Int2ObjectOpenHashMap<>();
+        this.entity = new  Int2ObjectOpenHashMap<>();
     }
 
     public void update() {
@@ -86,14 +133,18 @@ public class World {
         }
     }
 
-    private void copyFromTo(int fromX, int fromY, int toX, int toY,
+    public void copyFromTo(int fromX, int fromY, int toX, int toY,
                             StaticObjectsConst object, boolean followingRules) {
         setImpls(toX, toY, object, followingRules);
         setHp(toX, toY, getHp(fromX, fromY));
-        setData(toX, toY, getData(fromX, fromY));
+        var fromData = getData(fromX, fromY);
+        if (fromData != null) {
+            setData(toX, toY, fromData);
+        }
     }
 
     public void setData(int x, int y, TileData data) {
+        Objects.requireNonNull(data);
         this.data.put(pos2index(x, y), data);
     }
 
@@ -128,7 +179,7 @@ public class World {
             return null;
         }
         int blockId = Short.toUnsignedInt(tiles[pos2index(x, y)]);
-        return Global.content.getConstByBlockId(blockId);
+        return Global.content.blocksRegistry.typeById(blockId);
     }
 
     /// @return {@code -1} в случае выхода за границу. В остальных случаях здоровье в отрезке `[0, 255]`
@@ -168,9 +219,9 @@ public class World {
 
     // region Приватные методы
 
-    private int pos2index(int x, int y) {
-        return x + sizeX * y;
-    }
+    private int pos2index(int x, int y) { return x + sizeX * y; }
+    private int index2x(int index)      { return index % sizeX; }
+    private int index2y(int index)      { return index / sizeX; }
 
     private void setImpls(int x, int y, StaticObjectsConst object, boolean followingRules) {
         destroyBlock(x, y);
@@ -223,7 +274,7 @@ public class World {
 
     private void setImpl(int x, int y, StaticObjectsConst block, boolean followingRules) {
         if (!followingRules || checkPlaceRules(x, y, block)) {
-            tiles[pos2index(x, y)] = (short) Global.content.getBlockIdByType(block);
+            tiles[pos2index(x, y)] = (short) Global.content.blocksRegistry.idByType(block);
         }
     }
 
@@ -318,6 +369,87 @@ public class World {
     }
 
     // endregion
+
+    public static class EntityDeserializer extends StdDeserializer<Int2ObjectOpenHashMap<BlockEntity>> {
+        public EntityDeserializer() {
+            super((Class<?>) null);
+        }
+
+        @Override
+        public Int2ObjectOpenHashMap<BlockEntity> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+            if (!(p.getParsingContext().getParent().getCurrentValue() instanceof World.Tmp worl)) {
+                throw new IllegalStateException("WORL!!!");
+            }
+            if (!p.isExpectedStartObjectToken()) {
+                ctxt.reportWrongTokenException(this, JsonToken.START_OBJECT, "OBJECT!!!");
+            }
+
+            var entity = new Int2ObjectOpenHashMap<BlockEntity>();
+
+            JsonToken t;
+            while ((t = p.nextToken()) != null) {
+                if (t == JsonToken.END_OBJECT) break;
+                if (t == JsonToken.FIELD_NAME) {
+                    int pos = Integer.parseInt(p.currentName());
+                    short blockId = worl.tiles[pos];
+                    if (blockId >= 0) {
+                        var block = Global.content.blocksRegistry.typeById(blockId);
+                        if (block != null) {
+                            var ent = block.createEntity(worl.index2x(pos), worl.index2y(pos));
+                            if (ent != null) {
+                                p.nextToken(); // START_OBJECT
+                                ent.deserialize(p, ctxt);
+                                entity.put(pos, ent);
+                            }
+                        }
+                    }
+                }
+            }
+            assert t == JsonToken.END_OBJECT;
+            return entity;
+        }
+
+    }
+
+    public static class DataDeserializer extends StdDeserializer<Int2ObjectOpenHashMap<TileData>> {
+
+        public DataDeserializer() {
+            super(Int2ObjectOpenHashMap.class);
+        }
+
+        @Override
+        public Int2ObjectOpenHashMap<TileData> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+            if (!(p.getParsingContext().getParent().getCurrentValue() instanceof World.Tmp worl)) {
+                throw new IllegalStateException("" + p.getParsingContext().getParent().getCurrentValue());
+            }
+            if (!p.isExpectedStartObjectToken()) {
+                ctxt.reportWrongTokenException(this, JsonToken.START_OBJECT, "");
+            }
+            var data = new Int2ObjectOpenHashMap<TileData>();
+            p.assignCurrentValue(data);
+
+            JsonToken t;
+            while ((t = p.nextToken()) != null) {
+                if (t == JsonToken.END_OBJECT) break;
+                if (t == JsonToken.FIELD_NAME) {
+                    int pos = Integer.parseInt(p.currentName());
+                    short blockId = worl.tiles[pos];
+                    if (blockId >= 0) {
+                        var block = Global.content.blocksRegistry.typeById(blockId);
+                        if (block != null) {
+                            if (block.isMultiblock()) {
+                                p.nextToken(); // START_OBJECT
+                                var md = ctxt.readValue(p, TileData.MultiblockPart.class);
+                                data.put(pos, md);
+                            }
+                        }
+                    }
+                }
+            }
+            assert t == JsonToken.END_OBJECT;
+            return data;
+        }
+    }
 
     public static class WorldSerializer extends StdSerializer<World> {
 

@@ -8,6 +8,7 @@ log.txt
 *.MF
 *.atlas
 *.atlas.meta
+*.atlas.hash
 
 logs
 config.properties

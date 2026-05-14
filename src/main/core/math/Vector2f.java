@@ -88,6 +88,20 @@ public final class Vector2f {
         return this;
     }
 
+    public Vector2f lerp(float tx, float ty, float alpha) {
+        alpha = Math.clamp(alpha, 0, 1);
+        float inv = 1.0f - alpha;
+        this.x = (x * inv) + (tx * alpha);
+        this.y = (y * inv) + (ty * alpha);
+        return this;
+    }
+
+    public float hypot() { return (float) Math.hypot(x, y); }
+
+    public float projectTo(float velX, float velY) {
+        return velX * x + velY * y;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

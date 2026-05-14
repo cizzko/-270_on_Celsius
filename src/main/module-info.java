@@ -10,13 +10,13 @@ open module core.main {
     requires org.apache.logging.log4j.iostreams;
     requires org.apache.logging.log4j.core;
 
-    requires com.google.gson;
     requires com.fasterxml.jackson.databind;
     requires it.unimi.dsi.fastutil;
     requires org.jetbrains.annotations;
 
     exports core.World to com.fasterxml.jackson.databind;
     exports core.World.Creatures.Player.Inventory.Items to com.fasterxml.jackson.databind;
+    exports core.content to com.fasterxml.jackson.databind;
 
     requires java.desktop;
     requires jdk.management;
@@ -29,4 +29,5 @@ open module core.main {
     requires transitive org.lwjgl.glfw.natives;
     requires transitive org.lwjgl.opengl.natives;
     requires transitive org.lwjgl.jemalloc.natives;
+    requires java.naming;
 }

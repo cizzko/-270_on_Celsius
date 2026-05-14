@@ -1,8 +1,8 @@
 package core.content.blocks;
 
-import core.World.ContentLoader;
+import core.content.ContentLoader;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.entity.BlockEntity;
+import core.content.entity.BlockEntity;
 
 public class Chest extends StaticObjectsConst {
     public int width, height;

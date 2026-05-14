@@ -6,6 +6,5 @@
   "Type": "SOLID",
   "MaxHp": 100,
   "Density": 1,
-  "LightTransmission": 120,
-  "Name": "dirtStone"
+  "LightTransmission": 120
 }

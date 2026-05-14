@@ -2,19 +2,48 @@ package core.World;
 
 import core.Application;
 import core.Global;
+import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator.WorldGenerator;
 import core.content.creatures.CreatureType;
-import core.entity.CreatureEntity;
+import core.content.creatures.ItemEntity;
+import core.content.entity.CreatureEntity;
 import core.math.Point2i;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import static core.Global.player;
-import static core.Global.world;
+import static core.Global.*;
 import static core.World.Textures.TextureDrawing.blockSize;
+import static core.World.WorldGenerator.WorldGenerator.copySize;
 
 public class WorldUtils {
+
+    public static int mirrorPos(int x) {
+        int rightBorder = (world.sizeX - copySize);
+        int leftBorder = copySize;
+        int dx = rightBorder - leftBorder;
+
+        if (x > rightBorder) {
+            // |xxx|
+            // ^ (world.sizeX - swap)*blockSize
+            //     ^ world.sizeX*blockSize
+
+            // |0..25|26..50|51..76|
+            //       ^      ^
+            // 25 = 51 - dx ; dx = 51 - 25
+            // x -= dx
+
+            return x - dx;
+        } else if (x < leftBorder) {
+            // |0..25|26..50|51..76|
+            //       ^      ^
+            // 51 = 25 + dx ; dx = 51 - 25
+            // x += dx
+
+            return x + dx;
+        }
+        return x;
+    }
 
     public static int getDistanceToMouse() {
         return (int) Math.abs(
@@ -26,9 +55,33 @@ public class WorldUtils {
         return Math.abs(mainPoint.x - secondPoint.x) + Math.abs(mainPoint.y - secondPoint.y);
     }
 
-    public static <E extends CreatureEntity> E spawn(CreatureType entity) {
-        int bx = ThreadLocalRandom.current().nextInt(0, world.sizeX);
+    /// @param spawnRules предохраняет от спавна в потенциально опасном для логики отрезке copySize*2
+    public static <E extends CreatureEntity> E spawn(CreatureType entity, boolean spawnRules) {
+        int bx;
+        if (!spawnRules) {
+            bx = ThreadLocalRandom.current().nextInt(0, world.sizeX);
+        } else {
+            bx = Math.clamp(ThreadLocalRandom.current().nextInt(0, world.sizeX), copySize * 2, world.sizeX - copySize * 2);
+        }
         return spawn0(entity, bx);
+    }
+
+    public static void dropItem(ItemStack itemStack, float x, float y) {
+        spawnItemEntity(itemStack, x, y);
+    }
+
+    private static ItemEntity spawnItemEntity(ItemStack itemStack, float x, float y) {
+        int id = Global.entityPool.acquireId();
+        var ent = new ItemEntity(itemStack);
+
+        ent.setId(id);
+        float rx = x + ThreadLocalRandom.current().nextFloat(0, blockSize/3f);
+        float ry = y + ThreadLocalRandom.current().nextFloat(0, blockSize/3f);
+        ent.setPosition(rx, ry);
+        ent.init();
+
+        Global.entityPool.add(ent);
+        return ent;
     }
 
     private static <E extends CreatureEntity> E spawn0(CreatureType entity, int bx) {

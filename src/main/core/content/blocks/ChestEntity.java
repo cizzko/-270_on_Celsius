@@ -1,12 +1,14 @@
 package core.content.blocks;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.ItemGrid;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
-import core.World.WorldGenerator.WorldGenerator;
-import core.entity.BaseBlockEntity;
+import core.content.entity.BaseBlockEntity;
 import core.math.Point2i;
 import core.math.Vector2f;
 
@@ -46,17 +48,15 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
     public void update() {
         if (isClicked) {
             Vector2f worldPos = input.mouseWorldPos();
-            int bx = (int)x * blockSize;
-            int by = (int)y * blockSize;
 
-            if (worldPos.x > bx - 61 && worldPos.x < bx + 109 && worldPos.y > by + 56 && worldPos.y < by + 218) {
+            if (worldPos.x > x - 61 && worldPos.x < x + 109 && worldPos.y > y + 56 && worldPos.y < y + 218) {
                 Point2i underMouse = getItemUnderMouse();
                 if (inBounds(underMouse.x, underMouse.y) && getStorage()[underMouse.x][underMouse.y] != null) {
                     draggedCell = underMouse;
                 }
             }
 
-            if (!player.within(bx, by, 3)) {
+            if (!player.within(x, y, 3*blockSize)) {
                 isClicked = false;
             }
         }
@@ -101,6 +101,23 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
     }
 
     @Override
+    public void deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+        assert p.currentToken() == JsonToken.START_OBJECT;
+
+        JsonToken t;
+        while ((t = p.nextToken()) != null) {
+            if (t == JsonToken.END_OBJECT)
+                break;
+            if (t == JsonToken.FIELD_NAME && "storage".equals(p.currentName())) {
+                p.nextToken();
+                storage = ctxt.readValue(p, ItemStack[][].class);
+            }
+        }
+
+        assert p.currentToken() == JsonToken.END_OBJECT;
+    }
+
+    @Override
     public void draw() {
         if (!isClicked) {
             return;
@@ -109,7 +126,7 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
         float xPos = x - 61;
         float yPos = y + 56;
 
-        batch.draw(atlas.byPath("UI/GUI/inventory/chestInventory.png"), xPos, yPos);
+        batch.draw(atlas.get("UI/GUI/inventory/chestInventory"), xPos, yPos);
 
         var storage = getStorage();
         for (int x = 0; x < storage.length; x++) {

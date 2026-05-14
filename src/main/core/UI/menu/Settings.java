@@ -105,7 +105,7 @@ public class Settings extends Dialog {
                     .setName(Global.lang.get(DETECT_LANGUAGE_KEY))
                     .setPrompt(Global.lang.get("DetectLanguagePrompt"))
                     .setClicked(getBoolean(DETECT_LANGUAGE_KEY));
-            addImage(745, 965, atlas.byPath("UI/GUI/languageIcon.png"));
+            addImage(745, 965, atlas.get("UI/GUI/languageIcon"));
         }});
         mainPanel.add(new OtterBox(this));
     }
@@ -155,7 +155,7 @@ public class Settings extends Dialog {
                 @Override public void draw() {}
             })
             .set(1800, 0, 120, 120);
-            otterImage = addImage(2160, -480, atlas.byPath("UI/comeOutOtter.png"));
+            otterImage = addImage(2160, -480, atlas.get("UI/comeOutOtter"));
             otterImage.setVisible(false);
         }
 

@@ -1,13 +1,24 @@
-package core.entity;
+package core.content.entity;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 
 import java.io.IOException;
 
-public interface BlockEntity extends Entity, DrawComponent {
+public interface BlockEntity extends DrawComponent, PositionComponent {
+
+    /** Вызывается при создании сущности на координатах */
+    default void init() {}
+    /** Вызывается при обновлении мира */
+    default void update() {}
+    /** Вызывается при уничтожении сущности */
+    default void remove() {}
+
+    default <E extends Entity> E asIf(Class<? extends E> type) { return type.isInstance(this) ? type.cast(this) : null; }
 
     StaticObjectsConst getBlock();
 
@@ -26,4 +37,5 @@ public interface BlockEntity extends Entity, DrawComponent {
     default void onMouseHover() {}
 
     void serialize(JsonGenerator gen, SerializerProvider provider) throws IOException;
+    void deserialize(JsonParser p, DeserializationContext ctxt) throws IOException;
 }

@@ -1,0 +1,9 @@
+{
+  "Id": "blockDeleter",
+  "ClassType": "tool",
+  "Texture": "textures/items/stick",
+  "MaxHp": 100,
+  "MaxInteractionRange": 100,
+  "Damage": 9999,
+  "SecBetweenHits": 50
+}

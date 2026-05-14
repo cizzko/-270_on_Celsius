@@ -1,19 +1,18 @@
 package core.assets;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import core.Global;
 import core.g2d.AtlasHandler;
 import core.g2d.FontHandler;
 import core.g2d.ShaderHandler;
 import core.g2d.TextureHandler;
+import core.util.JavaInterpreter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.system.Platform;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -67,6 +66,30 @@ public final class AssetsManager {
         register(new FontHandler());
         register(new TextureHandler());
         register(new AtlasHandler());
+
+        JavaInterpreter.init();
+        try (var dirstr = Files.newDirectoryStream(assetsDir.resolve("scripts"), "*.java")) {
+            StringBuilder sb = new StringBuilder();
+            for (Path jscript : dirstr) {
+                try (var reader = Files.newBufferedReader(jscript)) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line);
+                        String str = sb.toString();
+                        var status = JavaInterpreter.jshell.sourceCodeAnalysis().analyzeCompletion(str);
+                        // var complete = status.source();
+                        // var remaining = status.remaining();
+                        var comp = status.completeness();
+                        // System.out.println((complete == null || complete.isBlank() ? "" : "complete = " + complete) + (remaining.isBlank() ? "" : " remaining = " + remaining) + " comp = " + comp);
+
+                        if (comp.isComplete()) {
+                            JavaInterpreter.execute0(str, null);
+                            sb.setLength(0);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public void register(AssetHandler<?, ?, ?> loader) {
@@ -94,21 +117,12 @@ public final class AssetsManager {
         return null;
     }
 
-    public Reader resourceReader(String path) throws IOException {
+    public BufferedReader resourceReader(String path) throws IOException {
         Path resolve = assetsDir.resolve(path);
         if (Files.isRegularFile(resolve)) {
             return Files.newBufferedReader(resolve, StandardCharsets.UTF_8);
         }
         return null;
-    }
-
-    public JsonObject jsonReader(String path) {
-        try (var reader = resourceReader(path)) {
-            return JsonParser.parseReader(reader).getAsJsonObject();
-        } catch (IOException e) {
-            log.error(e);
-            return null;
-        }
     }
 
     public void unload(Class<?> type, String name) {

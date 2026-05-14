@@ -1,6 +1,8 @@
 package core.World;
 
 import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.content.ContentLoader;
+import core.content.ContentResolver;
 
 public non-sealed class ItemBlock extends Item {
     // То, что можно поставить

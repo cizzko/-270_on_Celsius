@@ -17,7 +17,7 @@ public class MainMenu extends Dialog {
         addPanel(Styles.SIMPLE_PANEL, 0, 965, input.getWidth(), 115);
         addImageButton(this::discordBtn)
                 .setPosition(1830, 990)
-                .setImage(atlas.byPath("UI/discordIcon.png"));
+                .setImage(atlas.get("UI/discordIcon"));
         addButton(Styles.TEXT_BUTTON, this::exitBtn)
                 .set(822, 990, 240, 65)
                 .setName(lang.get("Exit"))

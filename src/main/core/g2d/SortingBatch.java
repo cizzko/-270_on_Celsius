@@ -62,13 +62,13 @@ public class SortingBatch extends Batch<SortingBatch.SortingState> {
 
     @Override
     protected void drawTexture(Drawable drawable,
-                               int colorRgba,
+                               int rgba8888,
                                float x, float y,
                                float x2, float y2,
                                float x3, float y3,
                                float x4, float y4) {
         RequestTexture request = textureRequestsPool.obtain();
-        request.set(state.z, drawable, x, y, x2, y2, x3, y3, x4, y4, colorRgba, state.blending);
+        request.set(state.z, drawable, x, y, x2, y2, x3, y3, x4, y4, rgba8888, state.blending);
         draw(request);
     }
 

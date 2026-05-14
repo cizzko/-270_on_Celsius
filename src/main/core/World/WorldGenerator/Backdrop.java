@@ -24,9 +24,9 @@ public class Backdrop {
         batch.z(Layer.BACKGROUND);
         batch.pushState(() -> {
             batch.scale(scaleX * 2, scaleY * 2);
-            batch.draw(atlas.byPath(currentBiome.getBackdrop()),((lastX - (player.getX() / blockSize)) * 2) - 1500, 0);
+            batch.draw(atlas.get(currentBiome.getBackdrop()),((lastX - (player.getX() / blockSize)) * 2) - 1500, 0);
             batch.scale(scaleX, scaleY);
-            batch.draw(atlas.byPath(currentBiome.getBackdrop()),((lastX - (player.getX() / blockSize)) * 3) - 1500, 0);
+            batch.draw(atlas.get(currentBiome.getBackdrop()),((lastX - (player.getX() / blockSize)) * 3) - 1500, 0);
         });
     }
 }

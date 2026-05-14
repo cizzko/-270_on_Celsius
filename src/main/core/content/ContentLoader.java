@@ -1,10 +1,11 @@
-package core.World;
+package core.content;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import core.EventHandling.Config;
 import core.Global;
-import core.World.ContentManager.Type;
+import core.World.*;
+import core.content.ContentManager.Type;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.StaticWorldObjects.BlockUnresolved;
 import core.World.StaticWorldObjects.StaticObjectsConst;
@@ -26,7 +27,7 @@ import static core.Global.assets;
 public class ContentLoader {
     private static final EnumMap<Type, HashMap<String, Function<String, ContentType>>> constructors = new EnumMap<>(Type.class);
     static {
-        ctor(Type.ITEM, "detail", ItemDetail::new);
+        ctor(Type.ITEM, "item", Item::new);
         ctor(Type.ITEM, "weapon", ItemWeapon::new);
         ctor(Type.ITEM, "tool", ItemTool::new);
         ctor(Type.ITEM, "block", ItemBlock::new);
@@ -128,7 +129,7 @@ public class ContentLoader {
     }
 
     public Atlas.Region readTexture(String propName) {
-        return Global.atlas.byPath(node.path(propName).asText(null));
+        return Global.atlas.get(node.path(propName).asText(null));
     }
 
     public StaticObjectsConst readBlockUnresolved(String propName) {

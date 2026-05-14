@@ -221,10 +221,10 @@ public class Batch<S extends Batch.State> implements Disposable {
         draw(drawable, state.colorRgba, x, y);
     }
 
-    public final void draw(Drawable drawable, int colorRgba, float x, float y, float width, float height) {
+    public final void draw(Drawable drawable, int rgba8888, float x, float y, float width, float height) {
         float x2 = x + width;
         float y2 = y + height;
-        drawTexture(drawable, colorRgba, x, y, x, y2, x2, y2, x2, y); // index!!!
+        drawTexture(drawable, rgba8888, x, y, x, y2, x2, y2, x2, y);
     }
 
     public final void draw(Drawable drawable, float x, float y, float width, float height) {
@@ -241,7 +241,7 @@ public class Batch<S extends Batch.State> implements Disposable {
     }
 
     protected void drawTexture(Drawable drawable,
-                               int color,
+                               int rgba8888,
                                float x, float y,
                                float x2, float y2,
                                float x3, float y3,
@@ -251,7 +251,7 @@ public class Batch<S extends Batch.State> implements Disposable {
         rectInternal(x, y, x2, y2, x3, y3, x4, y4,
                 drawable.u(), drawable.v(),
                 drawable.u2(), drawable.v2(),
-                Color.toGLBits(color));
+                Color.toGLBits(rgba8888));
     }
 
     protected final Texture textureOf(Drawable drawable) {

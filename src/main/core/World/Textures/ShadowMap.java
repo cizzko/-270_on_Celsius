@@ -2,18 +2,19 @@ package core.World.Textures;
 
 import core.GameState;
 import core.UI.Styles;
-import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticObjectsConst.Type;
+import core.content.entity.CreatureEntity;
 import core.util.Color;
 
 import java.util.Arrays;
 import java.util.HashMap;
 
 import static core.Global.*;
+import static core.World.Textures.TextureDrawing.*;
 
 public class ShadowMap {
     private static int[] shadows;
-    private static HashMap<DynamicWorldObjects, Color> shadowsDynamic = new HashMap<>();
+    private static HashMap<CreatureEntity, Color> shadowsDynamic = new HashMap<>();
     private static Color deletedColor = Color.CLEAR, deletedColorDynamic = Color.CLEAR, addedColor = Color.CLEAR, addedColorDynamic = Color.CLEAR;
 
     private static final Color tmp = new Color();
@@ -85,11 +86,20 @@ public class ShadowMap {
 
     public static void update() {
         if (gameState == GameState.PLAYING) {
-            int xPos = (int) player.getX();
-            int yPos = (int) player.getY();
+            updateShadows();
+        }
+    }
 
-            for (int x = xPos / TextureDrawing.blockSize - 20; x < xPos / TextureDrawing.blockSize + 21; x++) {
-                for (int y = yPos / TextureDrawing.blockSize - 8; y < yPos / TextureDrawing.blockSize + 16; y++) {
+    private static void updateShadows() {
+        camera.getBoundsTo(viewport);
+        int minX = (int) Math.floor((viewport.x - blockSize) / blockSize);
+        int maxX = (int) Math.floor((viewport.x + viewport.width + blockSize) / blockSize);
+        int minY = (int) Math.floor((viewport.y - blockSize) / blockSize);
+        int maxY = (int) Math.floor((viewport.y + viewport.height + blockSize) / blockSize);
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                if (world.inBounds(x, y)) {
                     if (checkHasGasAround(x, y, 1)) {
                         setShadow(x, y, Color.rgba8888(165, 165, 165, 255));
                     } else {
@@ -97,18 +107,18 @@ public class ShadowMap {
                     }
                 }
             }
-            for (int x = xPos / TextureDrawing.blockSize - 20; x < xPos / TextureDrawing.blockSize + 21; x++) {
-                for (int y = yPos / TextureDrawing.blockSize - 8; y < yPos / TextureDrawing.blockSize + 16; y++) {
-                    if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
-                        setShadow(x, y, Color.rgba8888(85, 85, 85, 255));
-                    }
+        }
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                if (world.inBounds(x, y) && checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
+                    setShadow(x, y, Color.rgba8888(85, 85, 85, 255));
                 }
             }
-            for (int x = xPos / TextureDrawing.blockSize - 20; x < xPos / TextureDrawing.blockSize + 21; x++) {
-                for (int y = yPos / TextureDrawing.blockSize - 8; y < yPos / TextureDrawing.blockSize + 16; y++) {
-                    if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
-                        setShadow(x, y, Styles.DIRTY_BRIGHT_BLACK);
-                    }
+        }
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                if (world.inBounds(x, y) && checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
+                    setShadow(x, y, Styles.DIRTY_BRIGHT_BLACK);
                 }
             }
         }
@@ -121,7 +131,7 @@ public class ShadowMap {
         return out;
     }
 
-    public static Color getColorDynamic(DynamicWorldObjects object) {
+    public static Color getColorDynamic(CreatureEntity object) {
         Color color = new Color(shadowsDynamic.computeIfAbsent(object, k -> new Color(Color.WHITE)));
         color.add(addedColorDynamic);
         color.sub(deletedColorDynamic);

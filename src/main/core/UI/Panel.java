@@ -29,7 +29,7 @@ public class Panel extends BaseGroup<Panel> {
 
         float borderWidth = style.borderWidth;
         if (borderWidth != 0) {
-            Fill.rectangleBorder(x, y, width, height, borderWidth, backgroundColor);
+            Fill.rectangleBorder(x, y, width, height, borderWidth, backgroundColor.rgba8888());
         }
     }
 

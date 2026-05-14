@@ -7,14 +7,11 @@ import java.util.Map;
 public final class Atlas {
     public static final String ATLAS_EXT = ".atlas";
     public static final String META_EXT = ATLAS_EXT + ".meta";
+    public static final String HASH_EXT = ATLAS_EXT + ".hash";
 
     Texture texture;
     Region errorRegion;
     Map<String, Region> regions;
-
-    public Texture getTexture() {
-        return texture;
-    }
 
     public @Nullable Region find(String regionName) {
         return regions.get(regionName);
@@ -43,11 +40,15 @@ public final class Atlas {
         return errorRegion;
     }
 
+    public Texture getTexture() {
+        return texture;
+    }
+
     public static final class Region implements Drawable {
         private final Atlas atlas;
         private final String name;
         private final int x, y;
-        private final int width, height;
+        private final short width, height;
 
         private float u, v;
         private float u2, v2;
@@ -57,8 +58,8 @@ public final class Atlas {
             this.name = name;
             this.x = x;
             this.y = y;
-            this.width = width;
-            this.height = height;
+            this.width = (short) width;
+            this.height = (short) height;
         }
 
         void computeTextureCoordinates() {

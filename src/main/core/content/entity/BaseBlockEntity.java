@@ -1,4 +1,4 @@
-package core.entity;
+package core.content.entity;
 
 import core.World.StaticWorldObjects.StaticObjectsConst;
 
@@ -14,6 +14,11 @@ public abstract class BaseBlockEntity<B extends StaticObjectsConst> implements B
     @Override
     public final B getBlock() {
         return block;
+    }
+
+    @Override
+    public final boolean hasFloor() {
+        return true;
     }
 
     @Override

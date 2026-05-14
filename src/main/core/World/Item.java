@@ -1,19 +1,29 @@
 package core.World;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import core.Global;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.content.ContentLoader;
+import core.content.ContentResolver;
+import core.content.ContentType;
 import core.g2d.Atlas;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-public abstract sealed class Item implements ContentType permits ItemBlock, ItemDetail, ItemTool, ItemUnresolved, ItemWeapon {
+public sealed class Item implements ContentType permits ItemBlock, ItemTool, ItemUnresolved, ItemWeapon {
     public final String id;
 
+    public float weight;
     public Atlas.Region texture;
     public ItemStack[] requirements;
     public @Nullable StaticObjectsConst createWith; // null если доступно из кармана игрока
+
+    @JsonCreator
+    public static Item deserializer(String id) {
+        return Global.content.itemById(id);
+    }
 
     public Item(String id) {
         this.id = Objects.requireNonNull(id);
@@ -28,6 +38,8 @@ public abstract sealed class Item implements ContentType permits ItemBlock, Item
     public void load(ContentLoader cnt) {
         this.texture = cnt.readTexture("Texture");
         this.requirements = cnt.readItemStacksUnresolved(cnt.node().path("Requirements"));
+        // TODO: не должно быть дефолтного значения
+        this.weight = (float) cnt.node().path("Weight").asDouble(50);
 
         String createWithId = cnt.node().path("CreateWith").asText(null);
         this.createWith = (createWithId == null || createWithId.equals("player")) ? null : cnt.readBlockUnresolved("CreateWith");

@@ -1,7 +1,7 @@
 package core.World.Creatures.Player.Inventory.Items;
 
 import core.World.Item;
-import core.entity.BlockEntity;
+import core.content.entity.BlockEntity;
 import core.math.Point2i;
 
 public class ItemGrid {

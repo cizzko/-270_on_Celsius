@@ -1,8 +1,7 @@
 package core.tool;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.stream.JsonWriter;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import core.g2d.Atlas;
 import core.graphic.RectanglePacker;
 import core.math.MathUtil;
@@ -10,7 +9,6 @@ import core.math.MathUtil;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
@@ -21,6 +19,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.concurrent.Executors;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -34,6 +33,8 @@ public final class AtlasGenerator {
     private static final int PIXEL_GAP = 2;
     // Максимальный размер по одной из осей для текстуры
     public static int MAX_EXTENT = 1024;
+
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     static final class Region {
         final Path path;
@@ -87,7 +88,6 @@ public final class AtlasGenerator {
                                Path sourceDir, Path errorImage,
                                Set<Path> ignore, int min, int max) throws IOException {
         long beginTs = System.currentTimeMillis();
-        Path atlasMetaPath = outputDir.resolve(atlasBaseName + Atlas.META_EXT);
 
         MessageDigest digest;
         try {
@@ -97,18 +97,10 @@ public final class AtlasGenerator {
         }
         HashMap<String, Region> regionMap = new HashMap<>();
 
+        Path atlasHashPath = outputDir.resolve(atlasBaseName + Atlas.HASH_EXT);
         HashMap<Path, byte[]> oldHashes;
-        if (Files.exists(atlasMetaPath)) {
-            oldHashes = new HashMap<>();
-
-            JsonObject meta;
-            try (BufferedReader reader = Files.newBufferedReader(atlasMetaPath, StandardCharsets.UTF_8)) {
-                meta = JsonParser.parseReader(reader)
-                        .getAsJsonObject();
-            }
-            meta.getAsJsonObject("hash").asMap().forEach((relativePath, hexHash) -> {
-                oldHashes.put(Path.of(relativePath), HexFormat.of().parseHex(hexHash.getAsString()));
-            });
+        if (Files.exists(atlasHashPath)) {
+            oldHashes = readHash(atlasHashPath);
         } else {
             oldHashes = null;
         }
@@ -178,9 +170,14 @@ public final class AtlasGenerator {
             }
         }
 
-        for (Region reg : regionMap.values()) {
-            log("Loading image '" + reg.path + "'");
-            reg.regionImage = ImageIO.read(sourceDir.resolve(reg.path).toFile());
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            for (Region reg : regionMap.values()) {
+                executor.submit(() -> {
+                    log("Loading image '" + reg.path + "'");
+                    reg.regionImage = ImageIO.read(sourceDir.resolve(reg.path).toFile());
+                    return null;
+                });
+            }
         }
 
         for (Region reg : regionMap.values()) {
@@ -235,28 +232,43 @@ public final class AtlasGenerator {
         Path atlasPath = outputDir.resolve(atlasBaseName + Atlas.ATLAS_EXT);
         ImageIO.write(atlasImage, "png", atlasPath.toFile());
 
-        try (JsonWriter wr = new JsonWriter(Files.newBufferedWriter(atlasMetaPath, StandardCharsets.UTF_8))) {
-            wr.beginObject();
-            wr.name("error").value(errorRegion.name);
-            wr.name("regions").beginObject();
+        Path atlasMetaPath = outputDir.resolve(atlasBaseName + Atlas.META_EXT);
+        writeMetadata(atlasMetaPath, regions, errorRegion);
 
-            for (Region region : regions) {
-                wr.name(region.name);
-                wr.beginObject();
-                wr.name("x").value(region.rx);
-                wr.name("y").value(region.ry);
-                wr.name("width").value(region.ow());
-                wr.name("height").value(region.oh());
-                wr.endObject();
-            }
-            wr.endObject();
+        writeHash(atlasHashPath, regions);
+    }
 
-            wr.name("hash").beginObject();
+    private static void writeHash(Path file, ArrayList<Region> regions) throws IOException {
+        try (var wr = MAPPER.createGenerator(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
+            wr.writeStartObject();
             for (Region region : regions) {
-                wr.name(region.path.toString()).value(HexFormat.of().formatHex(region.hash));
+                wr.writeStringField(region.path.toString(), HexFormat.of().formatHex(region.hash));
             }
-            wr.endObject();
-            wr.endObject();
+            wr.writeEndObject();
+        }
+    }
+
+    private static void writeMetadata(Path file, ArrayList<Region> regions, Region errorRegion) throws IOException {
+        try (var wr = MAPPER.createGenerator(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
+            wr.writeStartObject();
+
+            wr.writeStringField("error", errorRegion.name);
+            {
+                wr.writeObjectFieldStart("regions");
+                for (Region region : regions) {
+                    wr.writeObjectFieldStart(region.name);
+                    wr.writeNumberField("x", region.rx);
+                    wr.writeNumberField("y", region.ry);
+                    wr.writeNumberField("width", region.ow());
+                    wr.writeNumberField("height", region.oh());
+                    wr.writeEndObject();
+                }
+                wr.writeEndObject();
+            }
+
+            wr.writeEndObject();
+
+            wr.flush();
         }
     }
 
@@ -269,5 +281,31 @@ public final class AtlasGenerator {
 
     private static void log(String str) {
         System.out.println(str);
+    }
+
+    private static HashMap<Path, byte[]> readHash(Path file) throws IOException {
+        /*
+        {
+          "UI/GUI/workbenchMenu/menuFull.png":"9ddd2716ed592afe05bba37343ae5f00da287b70043c6a86c437b61f4b710ff7",
+          ...
+        }
+         */
+        var result = new HashMap<Path, byte[]>();
+        try (var p = MAPPER.getFactory().createParser(file.toFile())) {
+            // Здесь намерено не проверяются START_OBJECT,END_OBJECT и так далее
+            JsonToken t;
+            while ((t = p.nextToken()) != null) {
+                if (t == JsonToken.FIELD_NAME) {
+                    String key = p.currentName();
+                    var valueToken = p.nextToken();
+                    if (valueToken == JsonToken.VALUE_STRING) {
+                        result.put(Path.of(key), HexFormat.of().parseHex(p.getValueAsString()));
+                    } else {
+                        throw new IOException("Unexpected value by key '" + key + "' with type " + valueToken);
+                    }
+                }
+            }
+        }
+        return result;
     }
 }

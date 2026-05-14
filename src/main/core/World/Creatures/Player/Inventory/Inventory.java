@@ -46,7 +46,7 @@ public class Inventory {
 
     public static void draw() {
         String gridTex = "UI/GUI/inventory/inventory" + (inventoryOpen ? "Open" : "Closed");
-        batch.draw(atlas.byPath(gridTex), inventoryOpen ? 1488 : 1866, 756);
+        batch.draw(atlas.get(gridTex), inventoryOpen ? 1488 : 1866, 756);
 
         for (int x = inventoryOpen ? 0 : 7; x < inventoryObjects.length; x++) {
             for (int y = 0; y < inventoryObjects[x].length; y++) {
@@ -69,7 +69,7 @@ public class Inventory {
                 });
             }
             if ((inventoryOpen || current.x > 6)) {
-                batch.draw(atlas.byPath("UI/GUI/inventory/inventoryCurrent.png"), 1488 + current.x * 54, 756 + current.y * 54f);
+                batch.draw(atlas.get("UI/GUI/inventory/inventoryCurrent"), 1488 + current.x * 54, 756 + current.y * 54f);
             }
         }
     }
@@ -118,7 +118,7 @@ public class Inventory {
 
             if (underMouseItem == null && !Rectangle.contains(1488, 756, 500, 500, input.mousePos())) {
                 boolean canBuild = getDistanceToMouse() < 8 && world.checkPlaceRules(blockX, blockY, b.block);
-                TextureDrawing.addBlockPreview(blockX, blockY, (short) content.getBlockIdByType(b.block), (byte) b.block.maxHp, canBuild);
+                TextureDrawing.addBlockPreview(blockX, blockY, (short) Global.content.blocksRegistry.idByType(b.block), (byte) b.block.maxHp, canBuild);
                 drawBuildGrid(blockX, blockY);
             }
         }
@@ -135,7 +135,7 @@ public class Inventory {
             //todo
             batch.matrix(camera.projection);
             if (underMouseItem == null) {
-                batch.draw(atlas.byPath("World/buildGrid.png"), Color.rgba8888(230, 230, 230, 150),
+                batch.draw(atlas.get("World/buildGrid"), Color.rgba8888(230, 230, 230, 150),
                         WorldGenerator.findX(blockX, blockY) - 243f, WorldGenerator.findY(blockX, blockY) - 244f);
             }
         }
@@ -225,7 +225,7 @@ public class Inventory {
         ItemStack stack;
         if (inventoryObjects[freeCell.x][freeCell.y] != null) {
             stack = inventoryObjects[freeCell.x][freeCell.y];
-            stack.increment();
+            stack.add(item.getCount());
         } else {
             inventoryObjects[freeCell.x][freeCell.y] = item;
         }

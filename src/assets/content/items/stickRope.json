@@ -1,6 +1,6 @@
 {
   "Id": "stickRope",
-  "ClassType": "detail",
+  "ClassType": "item",
   "Texture": "textures/items/stickRope",
   "Requirements": {
     "stick": 1,

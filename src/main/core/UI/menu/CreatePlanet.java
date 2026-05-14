@@ -20,10 +20,10 @@ public class CreatePlanet extends Dialog {
         addPanel(Styles.DEFAULT_PANEL, 20, 20, 1880, 200);
         addPanel(Styles.DEFAULT_PANEL, 20, 240, 1400, 820);
         var sizePanel = addPanel(Styles.DEFAULT_PANEL, 1440, 240, 460, 820);
-        sizePanel.addImage(1460, 620, atlas.byPath("World/WorldGenerator/skyBackgroundPlanet.png"));
+        sizePanel.addImage(1460, 620, atlas.get("World/WorldGenerator/skyBackgroundPlanet"));
         // Панель с вкладками
         var upperPanel = addPanel(Styles.SIMPLE_PANEL, 40, 955, 1360, 85);
-        planet = addImage(1510, 670, atlas.byPath("World/WorldGenerator/planetMini.png"));
+        planet = addImage(1510, 670, atlas.get("World/WorldGenerator/planetMini"));
 
         addButton(Styles.SIMPLE_TEXT_BUTTON, b -> {
             hide();
@@ -51,13 +51,13 @@ public class CreatePlanet extends Dialog {
         sizePanel.addSlider(Styles.DEFAULT_SLIDER, Constants.World.MIN_WORLD_SIZE, Constants.World.MAX_WORLD_SIZE, (size, max) -> {
             String pic;
             if (size >= max / 1.5f) {
-                pic = "planetBig.png";
+                pic = "planetBig";
             } else if (size >= max / 3f) {
-                pic = "planetAverage.png";
+                pic = "planetAverage";
             } else {
-                pic = "planetMini.png";
+                pic = "planetMini";
             }
-            planet.setImage(atlas.byPath("World/WorldGenerator/" + pic));
+            planet.setImage(atlas.get("World/WorldGenerator/" + pic));
             parameters.size = size;
         })
                 .set(1460, 340, 420, 20);

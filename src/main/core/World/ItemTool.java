@@ -1,5 +1,7 @@
 package core.World;
 
+import core.content.ContentLoader;
+
 import java.io.Serializable;
 
 public non-sealed class ItemTool extends Item implements Serializable {

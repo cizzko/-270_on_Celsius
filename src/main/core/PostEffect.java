@@ -1,6 +1,5 @@
 package core;
 
-import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.g2d.Texture;
 import core.util.Color;

@@ -1,13 +1,15 @@
 package core.World.Textures;
 
+import core.Global;
 import core.UI.Styles;
 import core.Window;
-import core.World.Creatures.DynamicWorldObjects;
+import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.Creatures.Player.Inventory.Items.Bullets;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.StaticWorldObjects.TileData;
+import core.content.entity.DrawComponent;
 import core.g2d.Atlas;
 import core.g2d.Fill;
 import core.g2d.Font;
@@ -15,21 +17,22 @@ import core.math.Point2i;
 import core.math.Rectangle;
 import core.util.Color;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 
 import static core.Global.*;
-import static core.World.Creatures.Player.Player.playerSize;
-import static core.World.WorldGenerator.WorldGenerator.*;
+import static core.World.Creatures.Physics.swap;
 
 public class TextureDrawing {
     public static final int blockSize = 48;
 
     public static int toBlock(float worldPos) { return (int) Math.floor(worldPos / blockSize);}
 
+    public static float toWorld(int blockPos) { return blockPos * blockSize; }
+
+    public record BlockPreview(int x, int y, short blockId, byte hp, boolean canBreak) {}
     private static final ArrayList<BlockPreview> previewBlocks = new ArrayList<>();
 
-    private static final Rectangle viewport = new Rectangle();
+    public static final Rectangle viewport = new Rectangle(), hitbox = new Rectangle();
 
     //todo переместить
     public static void drawObjects(float x, float y, ItemStack[] items, Atlas.Region iconRegion) {
@@ -40,22 +43,24 @@ public class TextureDrawing {
 
         for (int i = 0; i < items.length; i++) {
             var item = items[i];
-            float scale = item.getItem().getUiScale();
 
+            int playerSize = Math.max(player.creature.texture.width(), player.creature.texture.height());
             drawText((x + (i * 54)) + playerSize + 28, y + 3,
                     item.getCount() > 9 ? "9+" : String.valueOf(item.getCount()), Styles.DIRTY_BRIGHT_BLACK);
 
             int finalI = i;
             batch.pushState(() -> {
-                batch.scale(scale);
+                batch.scale(item.getItem().getUiScale());
                 batch.draw(item.getItem().texture, ((x + (finalI * 54)) + playerSize + 5), (y + 15));
             });
         }
     }
 
-    public record BlockPreview(int x, int y, short blockId, byte hp, boolean breakable) {}
-
     public static void drawText(float x, float y, String text, Color color) {
+        drawText(x, y, text, color.rgba8888());
+    }
+
+    public static void drawText(float x, float y, String text, int rgba8888) {
         float startX = x;
 
         for (int i = 0; i < text.length(); i++) {
@@ -71,7 +76,7 @@ public class TextureDrawing {
                 continue;
             }
             Font.Glyph glyph = Window.defaultFont.getGlyph(ch);
-            batch.draw(glyph, color, x, y);
+            batch.draw(glyph, rgba8888, x, y);
             x += glyph.width();
         }
     }
@@ -171,26 +176,26 @@ public class TextureDrawing {
         }
 
         for (BlockPreview q : previewBlocks) {
-            drawQueuedBlock(q.x, q.y, q.blockId, q.hp, q.breakable);
+            drawQueuedBlock(q.x, q.y, q.blockId, q.hp, q.canBreak);
         }
         previewBlocks.clear();
     }
 
     private static final Color tmp = new Color();
 
-    private static void drawQueuedBlock(int x, int y, short blockId, byte hp, boolean breakable) {
+    private static void drawQueuedBlock(int x, int y, short blockId, byte hp, boolean canBreak) {
         if (blockId <= 0) {
             return;
         }
-        var block = content.getConstByBlockId(blockId);
+        var block = Global.content.blocksRegistry.typeById(blockId);
 
         int wx = x * blockSize;
         int wy = y * blockSize;
 
-        if (isOnCamera(wx, wy, block.texture)) {
+        if (viewport.contains(wx, wy, block.texture.width(), block.texture.height())) {
             Color color = ShadowMap.getColorTo(x, y, tmp);
             int a = (color.r() + color.g() + color.b()) / 3;
-            if (breakable) {
+            if (canBreak) {
                 color.set(Math.max(0, a - 150), Math.max(0, a - 150), a, 255);
             } else {
                 color.set(a, Math.max(0, a - 150), Math.max(0, a - 150), 255);
@@ -258,9 +263,9 @@ public class TextureDrawing {
         if (hp > obj.maxHp / 1.5f) {
             // ???
         } else if (hp < obj.maxHp / 3) {
-            batch.draw(atlas.byPath("textures/blocks/damaged1"), xBlock, yBlock);
+            batch.draw(atlas.get("textures/blocks/damaged1"), xBlock, yBlock);
         } else {
-            batch.draw(atlas.byPath("textures/blocks/damaged0"), xBlock, yBlock);
+            batch.draw(atlas.get("textures/blocks/damaged0"), xBlock, yBlock);
         }
     }
 
@@ -268,18 +273,39 @@ public class TextureDrawing {
         previewBlocks.add(new BlockPreview(blockX, blockY, blockId, hp, breakable));
     }
 
-    public static boolean isOnCamera(float x, float y, Atlas.Region texture) {
-        camera.getBoundsTo(viewport);
+    public static void drawEntities() {
+        for (var ent : entityPool.entities().values()) {
+            if (ent instanceof DrawComponent d) {
+                ent.getHitboxTo(hitbox);
 
-        return viewport.contains(x, y, texture.width(), texture.height());
-    }
 
-    public static void drawDynamic() {
-        for (var entity : entityPool.entities().values()) {
-            if (isOnCamera(entity.getX(), entity.getY(), entity.getCreature().texture)) {
-                // var shadow = ShadowMap.getColorDynamic(entity);
-                batch.draw(entity.getCreature().texture/*, shadow*/, entity.getX(), entity.getY());
-            }
+                if (ent == player) {
+                    d.draw();
+                } else {
+                    float rightBorder = (world.sizeX - swap) * blockSize;
+                    float leftBorder = swap * blockSize;
+                    float dx = rightBorder - leftBorder;
+
+
+                    float drawX = ent.getX();
+                    // |swap|swap|
+                    //      ^ rightBorder
+                    //           ^  rightBorder + swap*blockSize
+                    // ^ rightBorder - swap*blockSize
+
+                    float rightmostX = ent.getX() + hitbox.width;
+                    if (rightmostX >= (rightBorder - Physics.swap * blockSize) && rightmostX <= (rightBorder + Physics.swap * blockSize) &&
+                                !viewport.contains(ent.getX(), ent.getY(), hitbox.width, hitbox.height)) {
+                        drawX -= dx;
+                    } else if (ent.getX() >= (leftBorder - Physics.swap * blockSize) && ent.getX() <= (leftBorder + Physics.swap * blockSize) &&
+                               !viewport.contains(ent.getX(), ent.getY(), hitbox.width, hitbox.height)) {
+                        drawX += dx;
+                    }
+                    if (viewport.contains(drawX, ent.getY(), hitbox.width, hitbox.height)) {
+                        d.draw(drawX);
+                    }
+                }
+                            }
         }
 
         //todo а может сделать пули как сущности? чтоб ничего не считать отдельно

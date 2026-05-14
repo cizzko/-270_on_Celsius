@@ -3,8 +3,6 @@ package core.World.WorldGenerator;
 import core.EventHandling.EventHandler;
 import core.*;
 import core.UI.menu.CreatePlanet;
-import core.World.Creatures.DynamicWorldObjects;
-import core.World.Creatures.Player.Player;
 import core.World.PerlinNoiseGenerator;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticObjectsConst.Type;
@@ -24,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 import static core.Global.*;
 
@@ -92,7 +91,7 @@ public class WorldGenerator {
 
         step(() -> {
             log.debug("generating player {}ms", System.currentTimeMillis() - startTime);
-            Global.player = WorldUtils.spawn(content.creatureById("player"));
+            Global.player = WorldUtils.spawn(content.creatureById("player"), true);
         });
 
         step(() -> {
@@ -115,13 +114,17 @@ public class WorldGenerator {
         // scheduler.post(() -> texts.get("WorldGeneratorState").text += text, 0.5f * Time.ONE_SECOND);
     }
 
+    //todo можно ускорить
     private static void copy() {
         int height = world.sizeY;
         int width = world.sizeX;
 
         for (int x = 0; x < copySize; x++) {
             for (int y = 0; y < height; y++) {
-                world.set(width - copySize + x, y, world.getBlock(x, y), false);
+                var obj = world.getBlock(x, y);
+                if (obj != null) {
+                    world.copyFromTo(x, y, width - copySize + x, y, obj, false);
+                }
             }
         }
     }
@@ -172,11 +175,11 @@ public class WorldGenerator {
 
                     if (lastSwapBiomes < 20 && Math.random() * lastSwapBiomes < 5) {
                         for (int y = 0; y < lastY; y++) {
-                            world.set((int) lastX, y, Global.content.getConstByBlockId(lastBiomes.getBlocks()[(int) Math.min(lastBiomes.getBlocks().length - 1, lastY - y)]), false);
+                            world.set((int) lastX, y, Global.content.blocksRegistry.typeById(lastBiomes.getBlocks()[(int) Math.min(lastBiomes.getBlocks().length - 1, lastY - y)]), false);
                         }
                     } else {
                         for (int y = 0; y < lastY; y++) {
-                            world.set((int) lastX, y, Global.content.getConstByBlockId(availableBlocks[(int) Math.min(availableBlocks.length - 1, lastY - y)]), false);
+                            world.set((int) lastX, y, Global.content.blocksRegistry.typeById(availableBlocks[(int) Math.min(availableBlocks.length - 1, lastY - y)]), false);
                         }
                     }
                 } else {
@@ -211,7 +214,7 @@ public class WorldGenerator {
                 if (lastX < world.sizeX && lastY > 0) {
                     for (int y = 0; y < lastY; y++) {
                         int blockId = currentBiome.getBlocks()[(int) Math.min(currentBiome.getBlocks().length - 1, lastY - y)];
-                        world.set((int) lastX, y, Global.content.getConstByBlockId(blockId), true);
+                        world.set((int) lastX, y, Global.content.blocksRegistry.typeById(blockId), true);
                     }
                 } else {
                     break;
@@ -239,10 +242,10 @@ public class WorldGenerator {
             if (isUpper) {
                 upper++;
                 iters += generateCave(upperX, findTopmostSolidBlock(upperX, 5), startRadius, minRadius, maxRadius - 2, 100, 260, (int) ((Math.random() * 130) + 40), 40, 200);
-                upperX += (int) ((Math.random() * (world.sizeX / (caves / 2f))) + (world.sizeX / (caves / 4f)));
+                upperX += (int) (((Math.random() * (world.sizeX / (caves / 2f))) + (world.sizeX / (caves / 4f))) + Math.random() * 150);
             } else {
                 iters += generateCave(downedX, (int) (findTopmostSolidBlock(downedX, 3) - Math.random() * (world.sizeY / 2.4f)), startRadius, minRadius, maxRadius, 80, 280, (int) (Math.random() * 360), 40, 240);
-                downedX += (int) ((Math.random() * (world.sizeX / (caves / 2f))) + (world.sizeX / (caves / 4f)));
+                downedX += (int) (((Math.random() * (world.sizeX / (caves / 2f))) + (world.sizeX / (caves / 4f))) + Math.random() * 150);
             }
 
             //магическое число после которого пещеры постепенно превращаются в кашу
@@ -556,11 +559,12 @@ public class WorldGenerator {
     }
 
     private static Point2i randAtGround() {
-        int randX = (int) (Math.random() * world.sizeX);
+        var rnd = ThreadLocalRandom.current();
+        int randX = rnd.nextInt(0, world.sizeX);
 
         for (int i = world.sizeY; i > 0; i--) {
             if (world.getBlock(randX, i).type == Type.SOLID) {
-                return new Point2i(randX, (int) (Math.random() * world.sizeY - i) + i);
+                return new Point2i(randX, rnd.nextInt(i, world.sizeY));
             }
         }
         return null;

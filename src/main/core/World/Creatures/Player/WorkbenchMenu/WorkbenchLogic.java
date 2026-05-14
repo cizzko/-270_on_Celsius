@@ -88,10 +88,10 @@ public class WorkbenchLogic {
             }
         }
 
-        batch.draw(atlas.byPath("UI/GUI/buildMenu/menuClosed"), 1650, 0);
+        batch.draw(atlas.get("UI/GUI/buildMenu/menuClosed"), 1650, 0);
 
         if (isOpen) {
-            batch.draw(atlas.byPath("UI/GUI/workbenchMenu/menu" + (currentObject == null ? "Small" : "Full")), menuXPos, 400);
+            batch.draw(atlas.get("UI/GUI/workbenchMenu/menu" + (currentObject == null ? "Small" : "Full")), menuXPos, 400);
             Fill.rect(menuXPos + 3, 587 + (54 * current), 3, 32, Color.fromRgba8888(255, 80, 0, 200));
 
             if (!nearbyWorkbench.containsKey(Workbench.Tier.SMALL)) {
@@ -131,7 +131,7 @@ public class WorkbenchLogic {
             if (currentObjectIdx != -1) {
                 TextureDrawing.drawText(menuXPos + 585, 703, currentWorkbench.get(currentObjectIdx).getName());
                 drawRequirements(menuXPos + 590,  648);
-                batch.draw(atlas.byPath("UI/GUI/inventory/inventoryCurrent.png"), menuXPos + 62 + currentObject.x * 54,  986 + scroll + (currentObject.y * 54));
+                batch.draw(atlas.get("UI/GUI/inventory/inventoryCurrent"), menuXPos + 62 + currentObject.x * 54,  986 + scroll + (currentObject.y * 54));
             }
 
             // scrollbar
@@ -206,9 +206,9 @@ public class WorkbenchLogic {
         var currentItems = getCurrentItems();
         var stack = currentItems.get(currentObjectIdx);
         if (stack instanceof ItemBlock itemBlock && itemBlock.block instanceof Factory factory) {
-            drawObjects(x, y - 41, factory.input, atlas.byPath("UI/GUI/buildMenu/factoryIn.png"));
-            drawObjects(x, y - 82, factory.output, atlas.byPath("UI/GUI/buildMenu/factoryOut.png"));
+            drawObjects(x, y - 41, factory.input, atlas.get("UI/GUI/buildMenu/factoryIn"));
+            drawObjects(x, y - 82, factory.output, atlas.get("UI/GUI/buildMenu/factoryOut"));
         }
-        drawObjects(x, y, stack.requirements, atlas.byPath("UI/GUI/buildMenu/build.png"));
+        drawObjects(x, y, stack.requirements, atlas.get("UI/GUI/buildMenu/build"));
     }
 }

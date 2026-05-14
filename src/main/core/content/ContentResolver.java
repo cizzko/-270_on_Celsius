@@ -1,6 +1,8 @@
-package core.World;
+package core.content;
 
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.World.Item;
+import core.World.ItemUnresolved;
 import core.World.StaticWorldObjects.BlockUnresolved;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 

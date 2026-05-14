@@ -1,23 +1,34 @@
 package core.World.Creatures.Player.Inventory.Items;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import core.World.Item;
-import core.content.serialize.SerializableContent;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.util.Objects;
 import java.util.function.Supplier;
 
-@JsonSerialize(using = ItemStack.ItemStackSerializer.class)
+@JsonSerialize(using = ItemStack.Serializer.class)
 public final class ItemStack {
     public static final ItemStack[] EMPTY_ARRAY = {};
 
     private Item item;
     private int count;
-    private ItemData data;
+    private @Nullable ItemData data;
+
+    @JsonCreator
+    public ItemStack(@JsonProperty("item") Item item,
+                     @JsonProperty("count") int count,
+                     @JsonProperty("data") @Nullable ItemData data) {
+        this.item = Objects.requireNonNull(item);
+        this.count = requireNonNegativeCount(count);
+        this.data = data;
+    }
 
     public ItemStack(Item item) {
         this(item, 1);
@@ -53,7 +64,7 @@ public final class ItemStack {
         return count;
     }
 
-    public ItemData getData() {
+    public @Nullable ItemData getData() {
         return data;
     }
 
@@ -74,7 +85,7 @@ public final class ItemStack {
         this.count = requireNonNegativeCount(count);
     }
 
-    public void setData(ItemData data) {
+    public void setData(@Nullable ItemData data) {
         this.data = data;
     }
 
@@ -130,6 +141,10 @@ public final class ItemStack {
         return h;
     }
 
+    public void merge(ItemStack itemStack) {
+        add(itemStack.getCount());
+    }
+
     public static class ItemStackGridSerializer extends StdSerializer<ItemStack[][]> {
 
         public ItemStackGridSerializer() {
@@ -157,9 +172,9 @@ public final class ItemStack {
         }
     }
 
-    public static class ItemStackSerializer extends StdSerializer<ItemStack> {
+    public static class Serializer extends StdSerializer<ItemStack> {
 
-        public ItemStackSerializer() {
+        public Serializer() {
             super(ItemStack.class);
         }
 
@@ -170,10 +185,10 @@ public final class ItemStack {
             if (value.count != 1) {
                 gen.writeNumberField("count", value.count);
             }
-            if (value.data instanceof SerializableContent ser) {
-                gen.writeFieldName("data");
-                ser.serialize(gen, provider);
-            }
+            // if (value.data instanceof SerializableContent ser) {
+            //     gen.writeFieldName("data");
+            //     ser.serialize(gen, provider);
+            // }
             gen.writeEndObject();
         }
     }

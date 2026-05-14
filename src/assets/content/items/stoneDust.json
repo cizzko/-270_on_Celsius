@@ -1,5 +1,5 @@
 {
   "Id": "stoneDust",
-  "ClassType": "detail",
+  "ClassType": "item",
   "Texture": "textures/items/stoneDust"
 }

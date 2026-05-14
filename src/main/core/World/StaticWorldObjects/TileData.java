@@ -1,5 +1,6 @@
 package core.World.StaticWorldObjects;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.content.serialize.SerializableContent;
@@ -22,10 +23,11 @@ public abstract class TileData implements SerializableContent {
         public byte rootOffsetX, rootOffsetY;
 
         static boolean isByte(int v) {
-            return v >= -128 && v <= 127;
+            return v >= Byte.MIN_VALUE && v <= Byte.MAX_VALUE;
         }
 
-        public MultiblockPart(int rootOffsetX, int rootOffsetY) {
+        public MultiblockPart(@JsonProperty("rootOffsetX") int rootOffsetX,
+                              @JsonProperty("rootOffsetY") int rootOffsetY) {
             if (!(isByte(rootOffsetX) && isByte(rootOffsetY))) {
                 throw new IllegalArgumentException();
             }

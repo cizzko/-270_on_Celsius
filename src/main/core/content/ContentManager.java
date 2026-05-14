@@ -1,12 +1,12 @@
-package core.World;
+package core.content;
 
 import core.Global;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.World.Item;
+import core.World.ItemBlock;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.content.creatures.CreatureType;
-import core.content.Registry;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -101,6 +101,7 @@ public class ContentManager {
             }
             var itemBlock = new ItemBlock(s.id);
             itemBlock.block = s;
+            itemBlock.weight = 50;
             itemBlock.texture = s.texture;
             itemBlock.requirements = s.requirements;
             itemBlock.createWith = s.createWith;
@@ -179,18 +180,6 @@ public class ContentManager {
         return createWith == null
                 ? craftableByPlayer
                 : craftableByWorkbench.get(blocksRegistry.idByType(createWith));
-    }
-
-    public ObjectSet<Item> items() {
-        return itemsRegistry.values();
-    }
-
-    public int getBlockIdByType(StaticObjectsConst block) {
-        return blocksRegistry.idByType(block);
-    }
-
-    public StaticObjectsConst getConstByBlockId(int blockId) {
-        return blocksRegistry.typeById(blockId);
     }
 
     public Item itemById(StaticObjectsConst block) {

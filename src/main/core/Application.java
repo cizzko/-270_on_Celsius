@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 import static core.EventHandling.EventHandler.setDebugValue;
-import static core.util.ImportClassMethod.exec;
-import static core.util.ImportClassMethod.jshell;
+import static core.util.JavaInterpreter.exec;
+import static core.util.JavaInterpreter.jshell;
 
 public class Application {
     public static final Logger log = LogManager.getLogger("Game");

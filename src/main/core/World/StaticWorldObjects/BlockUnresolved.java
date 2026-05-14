@@ -1,7 +1,7 @@
 package core.World.StaticWorldObjects;
 
-import core.World.ContentLoader;
-import core.World.ContentResolver;
+import core.content.ContentLoader;
+import core.content.ContentResolver;
 
 /**
  * Блок-заглушка, который используется во время первой фазы загрузки контента (чтения).

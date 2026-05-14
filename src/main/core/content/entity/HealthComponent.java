@@ -1,4 +1,4 @@
-package core.entity;
+package core.content.entity;
 
 public interface HealthComponent {
     float getMaxHp();
@@ -9,6 +9,9 @@ public interface HealthComponent {
     boolean isUnbreakable();
     boolean isDead();
     void setHp(float hp);
-    void damage(float d);
+    default void damage(float d) { damage(d, DamageSource.UNKNOWN); }
+    void damage(float d, DamageSource source);
     void setUnbreakable(boolean unbreakable);
+
+    enum DamageSource { UNKNOWN, FALL }
 }

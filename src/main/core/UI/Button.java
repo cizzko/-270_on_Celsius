@@ -44,7 +44,7 @@ public class Button extends BaseButton<Button> {
         if (borderWidth == 0) {
             Fill.rect(x, y, width, height, backgroundColor);
         } else {
-            Fill.rectangleBorder(x, y, width, height, borderWidth, backgroundColor);
+            Fill.rectangleBorder(x, y, width, height, borderWidth, backgroundColor.rgba8888());
         }
 
         var disabledColor = style.disabledColor;

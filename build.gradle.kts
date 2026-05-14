@@ -4,6 +4,9 @@ plugins {
     id("com.github.ben-manes.versions") version "0.54.0"
 }
 
+val MAIN_CLASS  = "core.Main"
+val MAIN_MODULE = "core.main"
+
 sourceSets {
     create("tools") {
         java {
@@ -21,6 +24,12 @@ sourceSets {
 }
 
 tasks.withType<JavaExec> {
+    if (name.startsWith(MAIN_CLASS)) {
+        // core.Main.main()
+        jvmArguments.add("--enable-native-access=org.lwjgl")
+        jvmArguments.add("--enable-native-access=org.lwjgl.opengl")
+    }
+    
     doFirst {
         if (System.getProperty("os.name")?.contains("Linux") == true) {
             val gpuInfo = providers.exec {
@@ -46,17 +55,7 @@ val genatlas = tasks.register<JavaExec>("genatlas") {
             sourceSets["main"].output
 
     workingDir = rootDir
-    mainClass.set("core.tool.AtlasGenerator")
-}
-
-tasks.register<JavaExec>("gentypes") {
-    mustRunAfter(tasks.classes)
-    classpath = sourceSets["tools"].runtimeClasspath +
-            sourceSets["main"].runtimeClasspath +
-            sourceSets["main"].output
-
-    workingDir = rootDir
-    mainClass.set("core.tool.ConvertTypesToJson")
+    mainClass = "core.tool.AtlasGenerator"
 }
 
 tasks.classes {
@@ -96,12 +95,12 @@ allprojects {
     apply(plugin = "java")
 
     dependencies {
-        implementation("com.google.code.gson:gson:2.10.1")
         implementation("com.fasterxml.jackson.core:jackson-databind:2.21.3")
         implementation("org.jetbrains:annotations:26.1.0")
     }
 
     tasks.compileJava {
+        options.compilerArgs.add("-parameters")
         options.encoding = "UTF-8"
         options.release = 21
     }
@@ -126,7 +125,6 @@ allprojects {
 }
 
 dependencies {
-    implementation("com.google.code.gson:gson:2.10.1")
     implementation("it.unimi.dsi:fastutil:8.5.18")
     implementation("org.apache.logging.log4j:log4j-api:3.0.0-beta2")
     implementation("org.apache.logging.log4j:log4j-core:3.0.0-beta2")
@@ -145,12 +143,12 @@ dependencies {
 }
 
 application {
-    mainClass = "core.Main"
-    mainModule = "core.main"
+    mainClass  = MAIN_CLASS
+    mainModule = MAIN_MODULE
 }
 
 jlink {
-    mainClass.set("core.Main")
+    mainClass = MAIN_CLASS
 
     mergedModule {
         requires("java.desktop")
@@ -165,9 +163,11 @@ jlink {
         options.add("exclude-debuginfo-files");
     }
     if (System.getProperty("os.name")!!.startsWith("Darwin") || System.getProperty("os.name")!!.startsWith("Mac OS X")) {
-        options.addAll(listOf(
-            "-XstartOnFirstThread"
-        ))
+        options.add("-XstartOnFirstThread")
+    }
+    if (JavaLanguageVersion.current().canCompileOrRun(22)) {
+        options.add("--enable-native-access=org.lwjgl.opengl")
+        options.add("--enable-native-access=org.lwjgl")
     }
 
     launcher {

@@ -49,7 +49,7 @@ public final class Window extends Application {
         assets.load(Atlas.class, "sprites");
 
         Config.checkConfig();
-        if (debugLevel >= 2) {
+        if (debugLevel >= 4) {
             Configuration.DEBUG.set(true);
             Configuration.DEBUG_STREAM.set(IoBuilder.forLogger(lwjglLogger)
                     .setLevel(Level.DEBUG)
@@ -133,9 +133,10 @@ public final class Window extends Application {
 
         GL.createCapabilities();
 
-         if (debugLevel >= 3) {
+         if (debugLevel >= 5) {
              glEnable(GL_DEBUG_OUTPUT);
              keep(GLUtil.setupDebugMessageCallback());
+             keep(() -> glDisable(GL_DEBUG_OUTPUT));
          }
 
         uiScene = new UIScene(defaultWidth, defaultHeight);
@@ -166,7 +167,7 @@ public final class Window extends Application {
         lang = new LangTranslation();
         lang.load(); // TODO придумать как загружать и перезагружать
 
-        entityPool = new EntityPool(4);
+        entityPool = new EntityPool(Short.MAX_VALUE);
 
         setGameScene(new MenuScene());
     }
