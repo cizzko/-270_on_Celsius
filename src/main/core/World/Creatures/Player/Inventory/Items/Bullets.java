@@ -1,7 +1,7 @@
 package core.World.Creatures.Player.Inventory.Items;
 
+import core.Global;
 import core.UI.Sounds.Sound;
-import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.HitboxMap;
 import core.World.ItemWeapon;
 import core.World.Textures.TextureDrawing;
@@ -31,8 +31,8 @@ public class Bullets {
     }
 
     public static void updateBullets() {
-        var curr = Inventory.getCurrent();
-        if (curr != null && curr.getItem() instanceof ItemWeapon w) {
+        var curr = Global.player.getItemInHand();
+        if (curr != null && curr.item() instanceof ItemWeapon w) {
             long nowTime = System.currentTimeMillis();
             var data = curr.getOrCreateData(ItemData.Weapon::new);
 

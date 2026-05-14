@@ -69,7 +69,7 @@ public class ItemEntity implements LivingEntity {
             remove();
         } else if (them instanceof ItemEntity other &&
                    other.itemStack.isSame(itemStack)) {
-            if (itemStack.getCount() > other.itemStack.getCount()) {
+            if (itemStack.count() > other.itemStack.count()) {
                 itemStack.merge(other.itemStack);
                 other.remove();
             } else {
@@ -114,11 +114,11 @@ public class ItemEntity implements LivingEntity {
         float tSeconds = phase / Time.ONE_SECOND;
         float yOffset = amplitude * 0.5f * (1f - (float)Math.cos(2f * Math.PI * frequency * tSeconds));
         // System.out.println("phase = " + phase + " | " + phase + " | " + tSeconds + " | " + yOffset);
-        Atlas.Region tex = itemStack.getItem().texture;
+        Atlas.Region tex = itemStack.item().texture;
         batch.draw(tex, drawX, y + yOffset, ITEM_DROPPED_SIZE, ITEM_DROPPED_SIZE);
         Fill.rectangleBorder(drawX, y + yOffset, ITEM_DROPPED_SIZE, ITEM_DROPPED_SIZE, Color.WHITE);
-        if (itemStack.getCount() > 1) {
-            TextureDrawing.drawText(drawX, y+yOffset, String.valueOf(itemStack.getCount()), Color.WHITE);
+        if (itemStack.count() > 1) {
+            TextureDrawing.drawText(drawX, y+yOffset, String.valueOf(itemStack.count()), Color.WHITE);
         }
     }
 
@@ -130,8 +130,12 @@ public class ItemEntity implements LivingEntity {
 
         for (int x = minX; x <= maxX; x++) {
             int blockId = world.getBlockId(x, minY);
-            if (blockId <= 0)
+            if (blockId < 0) {
+                return true;
+            }
+            if (blockId == 0) {
                 continue;
+            }
             var block = content.blocksRegistry.typeById(blockId);
             if (block.type == StaticObjectsConst.Type.SOLID) {
                 return true;
@@ -194,7 +198,7 @@ public class ItemEntity implements LivingEntity {
 
     @Override
     public float getWeight() {
-        return itemStack.getItem().weight;
+        return itemStack.item().weight;
     }
 
     @Override

@@ -56,15 +56,15 @@ public final class ItemStack {
 
     public ItemStack clone() { return copy(); }
 
-    public Item getItem() {
+    public Item item() {
         return item;
     }
 
-    public int getCount() {
+    public int count() {
         return count;
     }
 
-    public @Nullable ItemData getData() {
+    public @Nullable ItemData data() {
         return data;
     }
 
@@ -127,7 +127,9 @@ public final class ItemStack {
         if (!(o instanceof ItemStack itemStack)) {
             return false;
         }
-        return count == itemStack.count && item.equals(itemStack.item) && data.equals(itemStack.data);
+        return count == itemStack.count &&
+               item.equals(itemStack.item) &&
+               Objects.equals(data, itemStack.data);
     }
 
     @Override
@@ -142,7 +144,7 @@ public final class ItemStack {
     }
 
     public void merge(ItemStack itemStack) {
-        add(itemStack.getCount());
+        add(itemStack.count());
     }
 
     public static class ItemStackGridSerializer extends StdSerializer<ItemStack[][]> {

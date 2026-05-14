@@ -33,8 +33,8 @@ public final class BlockItemStorage implements SerializableContent {
         this.items = new ItemStack[items.length];
         this.sizes = new int[items.length];
         for (int i = 0; i < items.length; i++) {
-            this.items[i] = new ItemStack(items[i].getItem(), 0);
-            this.sizes[i] = items[i].getCount();
+            this.items[i] = new ItemStack(items[i].item(), 0);
+            this.sizes[i] = items[i].count();
         }
         this.maxCapacity = maxCapacity;
     }
@@ -51,7 +51,7 @@ public final class BlockItemStorage implements SerializableContent {
 
     public boolean hasRequired() {
         for (int i = 0; i < items.length; i++) {
-            if (items[i].getCount() < sizes[i]) {
+            if (items[i].count() < sizes[i]) {
                 return false;
             }
         }
@@ -63,7 +63,7 @@ public final class BlockItemStorage implements SerializableContent {
             ItemStack allowedStack = items[i];
             int maxSize = sizes[i];
 
-            if (allowedStack.getCount() >= maxSize) {
+            if (allowedStack.count() >= maxSize) {
                 allowedStack.decrement(maxSize);
                 total -= maxSize;
                 return true;
@@ -75,7 +75,7 @@ public final class BlockItemStorage implements SerializableContent {
     public int add(ItemStack stack) {
         for (ItemStack allowedStack : items) {
             if (allowedStack.isSame(stack)) {
-                int toAdd = maxCapacity - allowedStack.getCount();
+                int toAdd = maxCapacity - allowedStack.count();
                 if (toAdd >= 0) {
                     allowedStack.add(toAdd);
                     total += toAdd;

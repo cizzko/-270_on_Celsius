@@ -22,7 +22,16 @@ public interface BlockEntity extends DrawComponent, PositionComponent {
 
     StaticObjectsConst getBlock();
 
-    enum TransitionResult { MOVE, PARTIAL_MOVE, FAILED }
+    enum TransitionResult {
+        /// Полное перемещение предмета с переходом владения объектом
+        MOVE,
+        /// Предмет частично или полностью был взят (изменилось количество)
+        /// Вызывается если в свободном слоте уже есть стек такого же типа
+        /// Если [ItemStack#isEmpty()] возвращает `true`, то этот стек считается пустым и должен быть уничтожен
+        PARTIAL_MOVE,
+        /// Не нашлось свободного слота для предмета
+        FAILED
+    }
 
     /**
      * Проба добавления предмета в блок.

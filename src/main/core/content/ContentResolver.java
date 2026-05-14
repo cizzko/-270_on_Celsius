@@ -24,7 +24,7 @@ public class ContentResolver {
             if (itemStack == null) {
                 continue;
             }
-            if (itemStack.getItem() instanceof ItemUnresolved r) {
+            if (itemStack.item() instanceof ItemUnresolved r) {
                 itemStack.setItem((Item) contentMap.get(ContentManager.Type.ITEM).get(r.id()));
             }
         }

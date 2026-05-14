@@ -23,15 +23,18 @@ import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Player {
     public static boolean noClip = false, placeRules = true, breakRules = false;
+
     private static int transparencyHPline = Config.getBoolean("AlwaysOnPlayerHPLine") ? 220 : 0;
 
     public static float lastDamage = 0;
     public static long lastDamageTime = System.currentTimeMillis();
-    private static long lastChangeTransparency = System.currentTimeMillis(), lastChangeLengthDamage = System.currentTimeMillis(),
+    private static long
+            lastChangeTransparency = System.currentTimeMillis(),
+            lastChangeLengthDamage = System.currentTimeMillis(),
             timeFromZero = System.currentTimeMillis();
 
     public static void updateInventoryInteraction() {
-        if (currentObject != null) {
+        if (player.hasItemInHand()) {
             updatePlaceableInteraction();
         }
     }
@@ -39,9 +42,9 @@ public class Player {
     // todo это наверное все же инвентарь, нежели игрок?
     //todo хотелось бы иметь рисование и взаимодействие поближе
     private static void updatePlaceableInteraction() {
-        ItemStack item = Inventory.getCurrent();
+        ItemStack item = Global.player.getItemInHand();
 
-        if (input.clicked(GLFW_MOUSE_BUTTON_LEFT) && underMouseItem == null && item != null && item.getItem() instanceof ItemBlock itemBlock) {
+        if (input.clicked(GLFW_MOUSE_BUTTON_LEFT) && item != null && item.item() instanceof ItemBlock itemBlock) {
             if (input.mousePos().x > (Inventory.inventoryOpen ? 1487 : 1866)) {
                 if (input.mousePos().y > 756) {
                     return;
@@ -57,7 +60,7 @@ public class Player {
 
     private static void updatePlaceableBlock(StaticObjectsConst placeable, int blockX, int blockY) {
         if (!placeRules || world.checkPlaceRules(blockX, blockY, placeable)) {
-            decrementItem(currentObject.x, currentObject.y);
+            player.takeItemFromHand(1);
             world.set(blockX, blockY, placeable, false);
             ShadowMap.update();
         }
@@ -68,22 +71,19 @@ public class Player {
             return;
         }
 
-        ItemStack item = Inventory.getCurrent();
-        if (item != null && item.getItem() instanceof ItemTool tool) {
-            var data = item.getOrCreateData(ItemData.Tool::new);
-
-            Point2i blockUMB = Global.input.mouseBlockPos();
-            int blockX = blockUMB.x;
-            int blockY = blockUMB.y;
-            var object = world.getBlock(blockX, blockY);
-            if (object == null || object == StaticObjectsConst.AIR) {
+        ItemStack item = Global.player.getItemInHand();
+        if (item != null && item.item() instanceof ItemTool tool) {
+            Point2i blockPos = Global.input.mouseBlockPos();
+            var block = world.getBlock(blockPos.x, blockPos.y);
+            if (block == null || block == StaticObjectsConst.AIR) {
                 return;
             }
 
-            if (object.isMultiblock()) {
-                updateMultiblockByTool(blockX, blockY, object, tool, data);
+            var data = item.getOrCreateData(ItemData.Tool::new);
+            if (block.isMultiblock()) {
+                updateMultiblockByTool(blockPos.x, blockPos.y, block, tool, data);
             } else {
-                updateBlockByTool(blockX, blockY, object, tool, data);
+                updateBlockByTool(blockPos.x, blockPos.y, block, tool, data);
             }
         }
     }
@@ -154,18 +154,18 @@ public class Player {
 
         if (transparencyHPline > 0) {
             //бордер
-            Fill.rectangleBorder(30, 30, 200, 35, Color.fromRgba8888(10, 10, 10, transparencyHPline));
+            Fill.rectangleBorder(30, 30, 200, 35, Color.rgba8888(10, 10, 10, transparencyHPline));
 
             if (currentHp * 2 - 2 > 0) {
                 //серая полоска (кончилось)
-                Fill.rect(31 + Math.max(0, currentHp * 2 - 2), 31, (maxHp - currentHp) * 2, 33, Color.fromRgba8888(150, 150, 150, Math.max(0, transparencyHPline - 150)));
+                Fill.rect(31 + Math.max(0, currentHp * 2 - 2), 31, (maxHp - currentHp) * 2, 33, Color.rgba8888(150, 150, 150, Math.max(0, transparencyHPline - 150)));
                 //красная полоска хп
-                Fill.rect(31, 31, Math.max(0, currentHp * 2 - 2), 33, Color.fromRgba8888(150, 0, 20, transparencyHPline));
+                Fill.rect(31, 31, Math.max(0, currentHp * 2 - 2), 33, Color.rgba8888(150, 0, 20, transparencyHPline));
             }
 
             if (lastDamage > 0) {
                 //желтая полоска дамага
-                Fill.rect(31 + currentHp * 2 - 2, 31, Math.clamp(lastDamage * 2, 0, 200), 33, Color.fromRgba8888(252, 161, 3, transparencyHPline));
+                Fill.rect(31 + currentHp * 2 - 2, 31, Math.clamp(lastDamage * 2, 0, 200), 33, Color.rgba8888(252, 161, 3, transparencyHPline));
             }
         }
     }

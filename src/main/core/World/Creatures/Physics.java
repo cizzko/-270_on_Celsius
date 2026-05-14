@@ -7,10 +7,9 @@ import core.World.Textures.ShadowMap;
 import core.content.entity.*;
 import core.math.Rectangle;
 import core.math.Vector2f;
+import core.util.FixedBitset;
 import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-
-import java.util.BitSet;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Player.*;
@@ -207,8 +206,6 @@ public class Physics {
             }
         }
 
-
-
         entity.setPosition(
                 entity.getX() + entityHitbox.x - hitbox.x,
                 entity.getY() + entityHitbox.y - hitbox.y);
@@ -221,7 +218,7 @@ public class Physics {
 
         for (int x = minX; x <= maxX; x++) {
             int blockId = world.getBlockId(x, minY);
-            if (blockId > 0 && content.blocksRegistry.typeById(blockId).type == StaticObjectsConst.Type.SOLID) {
+            if (blockId < 0 || blockId > 0 && content.blocksRegistry.typeById(blockId).type == StaticObjectsConst.Type.SOLID) {
                 return true;
             }
         }
@@ -349,14 +346,14 @@ public class Physics {
     private static float calculateFriction(LivingEntity ent) {
         ent.getHitboxTo(entityHitbox);
 
-        int minX = (int) Math.round(entityHitbox.x / blockSize);
+        int minX = (int) Math.floor(entityHitbox.x / blockSize);
         int minY = (int) Math.floor((entityHitbox.y - GAP) / blockSize);
 
         int maxX = (int) Math.floor((entityHitbox.x + entityHitbox.width) / blockSize);
         int maxY = (int) Math.floor((entityHitbox.y + entityHitbox.height) / blockSize);
 
         float resistance = 100;
-        BitSet appliedResistances = new BitSet();
+        var appliedResistances = FixedBitset.createBitSet(content.blocksRegistry.getMaxId());
 
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
@@ -366,8 +363,8 @@ public class Physics {
 
                     if (blockHitbox.overlaps(entityHitbox)) {
                         int blockId = content.blocksRegistry.idByType(block);
-                        if (!appliedResistances.get(blockId)) {
-                            appliedResistances.set(blockId);
+                        if (!FixedBitset.isSet(appliedResistances, blockId)) {
+                            FixedBitset.setBit(appliedResistances, blockId);
 
                             resistance = Math.min(resistance, block.resistance);
                         }

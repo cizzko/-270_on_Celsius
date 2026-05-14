@@ -8,7 +8,9 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.ItemGrid;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.World.Textures.TextureDrawing;
 import core.content.entity.BaseBlockEntity;
+import core.g2d.Atlas;
 import core.math.Point2i;
 import core.math.Vector2f;
 
@@ -70,16 +72,15 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
                 // TODO: ЗДЕСЬ НИКАКОГО РЕНДЕРА !!!! ДОЛЖЕН БЫТЬ СЛОТ "РУК" У ИГРОКА
                 //поч
                 // Потому что порядок обновления блоков в мире не определен и кто знает что ещё будет рендерить в этом апдейте
-                batch.pushState(() -> {
-                    Point2i mousePos = input.mousePos();
-                    batch.scale(item.getItem().getUiScale());
-                    batch.draw(item.getItem().texture, mousePos.x - 15, mousePos.y - 15);
-                });
+                Point2i mousePos = input.mousePos();
+                float uiScale = item.item().getUiScale();
+                Atlas.Region tex = item.item().texture;
+                batch.draw(tex, mousePos.x - 15, mousePos.y - 15, tex.width() * uiScale, tex.height() * uiScale);
             }
         } else {
-            Point2i inventoryUMB = Inventory.getObjectUnderMouse();
-            if (inventoryUMB != null && Inventory.inventoryObjects[inventoryUMB.x][inventoryUMB.y] == null) {
-                ItemGrid.moveTo(getStorage(), Inventory.inventoryObjects, draggedCell, inventoryUMB);
+            Point2i inventoryUMB = Inventory.getFocusedItemIdx();
+            if (inventoryUMB != null && player.getItem(inventoryUMB) == null) {
+                ItemGrid.moveTo(getStorage(), player.items(), draggedCell, inventoryUMB);
             }
             draggedCell = null;
         }
@@ -134,7 +135,7 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
             for (int y = 0; y < line.length; y++) {
                 var itemStack = line[y];
                 if (itemStack != null) {
-                    Inventory.drawItemStack(10 + xPos + x * 54, 10 + yPos + y * 54f, itemStack);
+                    TextureDrawing.drawItemStack(10 + xPos + x * 54, 10 + yPos + y * 54f, itemStack);
                 }
             }
         }

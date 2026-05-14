@@ -62,14 +62,14 @@ public class EventHandler {
     }
 
     public static boolean isMousePressed(Element element) {
-        return getRectangleClick(element.x(), element.y(), element.x() + element.width(), element.y() + element.height());
+        return isMouseClickedIn(element.x(), element.y(), element.x() + element.width(), element.y() + element.height());
     }
 
-    public static boolean getRectangleClick(float x, float y, float x1, float y1) {
+    public static boolean isMouseClickedIn(float minX, float minY, float maxX, float maxY) {
         Point2i mousePos = input.mousePos();
 
-        return mousePos.x >= x && mousePos.x <= x1 &&
-                mousePos.y >= y && mousePos.y <= y1 &&
+        return mousePos.x >= minX && mousePos.x <= maxX &&
+                mousePos.y >= minY && mousePos.y <= maxY &&
                 input.justClicked(GLFW_MOUSE_BUTTON_LEFT);
     }
 

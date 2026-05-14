@@ -1,13 +1,12 @@
 package core.content.entity;
 
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.List;
 
 public interface InventoryComponent  {
 
-    List<List<@Nullable ItemStack>> items();
+    ObjectArrayList<ObjectArrayList<@Nullable ItemStack>> items();
 
     enum TransitionResult { MOVE, PARTIAL_MOVE, FAILED }
 

@@ -4,8 +4,9 @@ import core.Global;
 import core.UI.Styles;
 import core.Window;
 import core.World.Creatures.Physics;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.Creatures.Player.Inventory.Items.Bullets;
+import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.World.Item;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.StaticWorldObjects.TileData;
@@ -25,14 +26,24 @@ import static core.World.Creatures.Physics.swap;
 public class TextureDrawing {
     public static final int blockSize = 48;
 
-    public static int toBlock(float worldPos) { return (int) Math.floor(worldPos / blockSize);}
+    public static int toBlock(float worldPos) {
+        return (int) Math.floor(worldPos / blockSize);
+    }
 
-    public static float toWorld(int blockPos) { return blockPos * blockSize; }
+    public static float toWorld(int blockPos) {
+        return blockPos * blockSize;
+    }
 
-    public record BlockPreview(int x, int y, short blockId, byte hp, boolean canBreak) {}
+    private record BlockPreview(int x, int y, short blockId, byte hp, boolean canBreak) {
+    }
+
     private static final ArrayList<BlockPreview> previewBlocks = new ArrayList<>();
 
-    public static final Rectangle viewport = new Rectangle(), hitbox = new Rectangle();
+    public static final Rectangle viewport = new Rectangle(); // TODO убрать в Camera2
+
+    private static final Rectangle hitbox = new Rectangle();
+    private static final Point2i textSize = new Point2i();
+    private static final Color tmp = new Color();
 
     //todo переместить
     public static void drawObjects(float x, float y, ItemStack[] items, Atlas.Region iconRegion) {
@@ -46,13 +57,13 @@ public class TextureDrawing {
 
             int playerSize = Math.max(player.creature.texture.width(), player.creature.texture.height());
             drawText((x + (i * 54)) + playerSize + 28, y + 3,
-                    item.getCount() > 9 ? "9+" : String.valueOf(item.getCount()), Styles.DIRTY_BRIGHT_BLACK);
+                    item.count() > 9 ? "9+" : String.valueOf(item.count()), Styles.DIRTY_BRIGHT_BLACK);
 
-            int finalI = i;
-            batch.pushState(() -> {
-                batch.scale(item.getItem().getUiScale());
-                batch.draw(item.getItem().texture, ((x + (finalI * 54)) + playerSize + 5), (y + 15));
-            });
+            float uiScale = item.item().getUiScale();
+            var tex = item.item().texture;
+            batch.scale(uiScale);
+            batch.draw(tex, (x + (i * 54)) + playerSize + 5, y + 15,
+                    tex.width() * uiScale, tex.height() * uiScale);
         }
     }
 
@@ -128,8 +139,6 @@ public class TextureDrawing {
         drawText(x + 36, y + height - 32 - height / 2f, text);
     }
 
-    private static final Point2i textSize = new Point2i();
-
     public static Point2i getTextSize(String text) {
         String longestLine = "";
         int width = 12;
@@ -155,7 +164,7 @@ public class TextureDrawing {
         return textSize.set(width, linesCount * 28 + 16);
     }
 
-    public static void drawStatic() {
+    public static void drawBlocks() {
         camera.getBoundsTo(viewport);
         int minX = (int) Math.floor((viewport.x - blockSize) / blockSize);
         int maxX = (int) Math.floor((viewport.x + viewport.width + blockSize) / blockSize);
@@ -176,14 +185,12 @@ public class TextureDrawing {
         }
 
         for (BlockPreview q : previewBlocks) {
-            drawQueuedBlock(q.x, q.y, q.blockId, q.hp, q.canBreak);
+            drawPreviewBlocks(q.x, q.y, q.blockId, q.hp, q.canBreak);
         }
         previewBlocks.clear();
     }
 
-    private static final Color tmp = new Color();
-
-    private static void drawQueuedBlock(int x, int y, short blockId, byte hp, boolean canBreak) {
+    private static void drawPreviewBlocks(int x, int y, short blockId, byte hp, boolean canBreak) {
         if (blockId <= 0) {
             return;
         }
@@ -259,16 +266,6 @@ public class TextureDrawing {
         }
     }
 
-    private static void drawDamage(StaticObjectsConst obj, int hp, int xBlock, int yBlock) {
-        if (hp > obj.maxHp / 1.5f) {
-            // ???
-        } else if (hp < obj.maxHp / 3) {
-            batch.draw(atlas.get("textures/blocks/damaged1"), xBlock, yBlock);
-        } else {
-            batch.draw(atlas.get("textures/blocks/damaged0"), xBlock, yBlock);
-        }
-    }
-
     public static void addBlockPreview(int blockX, int blockY, short blockId, byte hp, boolean breakable) {
         previewBlocks.add(new BlockPreview(blockX, blockY, blockId, hp, breakable));
     }
@@ -295,7 +292,7 @@ public class TextureDrawing {
 
                     float rightmostX = ent.getX() + hitbox.width;
                     if (rightmostX >= (rightBorder - Physics.swap * blockSize) && rightmostX <= (rightBorder + Physics.swap * blockSize) &&
-                                !viewport.contains(ent.getX(), ent.getY(), hitbox.width, hitbox.height)) {
+                        !viewport.contains(ent.getX(), ent.getY(), hitbox.width, hitbox.height)) {
                         drawX -= dx;
                     } else if (ent.getX() >= (leftBorder - Physics.swap * blockSize) && ent.getX() <= (leftBorder + Physics.swap * blockSize) &&
                                !viewport.contains(ent.getX(), ent.getY(), hitbox.width, hitbox.height)) {
@@ -305,10 +302,31 @@ public class TextureDrawing {
                         d.draw(drawX);
                     }
                 }
-                            }
+            }
         }
 
         //todo а может сделать пули как сущности? чтоб ничего не считать отдельно
         Bullets.drawBullets();
+    }
+
+    public static void drawItemStack(float x, float y, ItemStack item) {
+        drawItem(x, y, item.item());
+        drawText(x + 28, y - 7, item.count() > 9 ? "9+" : String.valueOf(item.count()), Styles.DIRTY_BRIGHT_BLACK);
+    }
+
+    public static void drawItem(float x, float y, Item item) {
+        float uiScale = item.getUiScale();
+        Atlas.Region tex = item.texture;
+        batch.draw(tex, x + 5, y + 5, tex.width() * uiScale, tex.width() * uiScale);
+    }
+
+    private static void drawDamage(StaticObjectsConst obj, int hp, int xBlock, int yBlock) {
+        if (hp > obj.maxHp / 1.5f) {
+            // ???
+        } else if (hp < obj.maxHp / 3) {
+            batch.draw(atlas.get("textures/blocks/damaged1"), xBlock, yBlock);
+        } else {
+            batch.draw(atlas.get("textures/blocks/damaged0"), xBlock, yBlock);
+        }
     }
 }

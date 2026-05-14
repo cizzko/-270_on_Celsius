@@ -24,6 +24,7 @@ import core.content.entity.BlockEntity;
 import core.math.MathUtil;
 import core.math.Point2i;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -118,7 +119,7 @@ public class World {
         set(x, y, null, false);
     }
 
-    public void set(int x, int y, StaticObjectsConst object, boolean followingRules) {
+    public void set(int x, int y, @Nullable StaticObjectsConst object, boolean followingRules) {
         if (object == null)
             object = StaticObjectsConst.AIR;
 
@@ -148,11 +149,12 @@ public class World {
         this.data.put(pos2index(x, y), data);
     }
 
-    public TileData getData(int x, int y) {
+    public @Nullable TileData getData(int x, int y) {
         return data.get(pos2index(x, y));
     }
 
-    public BlockEntity getEntity(int x, int y) {
+    public @Nullable BlockEntity getEntity(Point2i pos)  { return getEntity(pos.x, pos.y); }
+    public @Nullable BlockEntity getEntity(int x, int y) {
         var rootPos = getRootBlockPos(x, y);
         if (rootPos != null) {
             return entity.get(pos2index(rootPos.x, rootPos.y));

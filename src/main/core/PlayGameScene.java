@@ -106,11 +106,11 @@ public final class PlayGameScene extends GameScene {
     protected void draw() {
 
         batch.z(Layer.BACKGROUND);
-        // sun.draw();
+        sun.draw();
         postEffect.draw();
         batch.z(Layer.STATIC_OBJECTS);
         batch.matrix(camera.projection); // Центрируем камеру на позицию игрока
-        TextureDrawing.drawStatic();
+        TextureDrawing.drawBlocks();
         batch.z(Layer.DYNAMIC_OBJECTS);
         TextureDrawing.drawEntities();
 
@@ -169,8 +169,8 @@ public final class PlayGameScene extends GameScene {
         entityPool.entities().values().forEach(e -> {
             e.getHitboxTo(rect);
             Fill.rectangleBorder(rect.x, rect.y, rect.width, rect.height, red);
-            // TextureDrawing.drawText(rect.x, rect.y,
-            //         "HasFloor: " + e.hasFloor(), black);
+            TextureDrawing.drawText(rect.x, rect.y,
+                    "HasFloor: " + e.hasFloor(), black);
         });
 
         if (debugLevel >= 3) {

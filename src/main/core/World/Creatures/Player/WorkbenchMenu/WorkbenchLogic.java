@@ -15,13 +15,12 @@ import java.util.EnumMap;
 import java.util.List;
 
 import static core.Global.*;
-import static core.World.Creatures.Player.Inventory.Inventory.inventoryObjects;
+import static core.World.Textures.TextureDrawing.drawItem;
 import static core.World.Textures.TextureDrawing.drawObjects;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_B;
 
 public class WorkbenchLogic {
-    public static EnumMap<Workbench.Tier, Workbench> nearbyWorkbench
-            = new EnumMap<>(Workbench.Tier.class);
+    public static EnumMap<Workbench.Tier, Workbench> nearbyWorkbench = new EnumMap<>(Workbench.Tier.class);
 
     private static boolean isOpen;
     private static Point2i currentObject;
@@ -49,7 +48,7 @@ public class WorkbenchLogic {
         // if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && getFileName(world.get(blockUMB.x, blockUMB.y)) != null && getFileName(world.get(blockUMB.x, blockUMB.y)).toLowerCase().contains("workbench")) {
         //     isOpen = true;
         // }
-        if (EventHandler.getRectangleClick(1768, 0, 1810, 42) || input.justPressed(GLFW_KEY_B)) {
+        if (EventHandler.isMouseClickedIn(1768, 0, 1810, 42) || input.justPressed(GLFW_KEY_B)) {
             isOpen = !isOpen;
         }
     }
@@ -65,23 +64,23 @@ public class WorkbenchLogic {
 
     public static void draw() {
 
-        if (EventHandler.getRectangleClick(menuXPos + 8, 580, menuXPos + 54, 626)) {
+        if (EventHandler.isMouseClickedIn(menuXPos + 8, 580, menuXPos + 54, 626)) {
             //todo некрасиво
             currentObject = null;
             current = 0;
         }
         if (!nearbyWorkbench.isEmpty()) {
-            if (EventHandler.getRectangleClick(menuXPos + 8, 634, menuXPos + 54, 682) &&
+            if (EventHandler.isMouseClickedIn(menuXPos + 8, 634, menuXPos + 54, 682) &&
                 nearbyWorkbench.containsKey(Workbench.Tier.LARGE)) {
                 currentObject = null;
                 current = 1;
             }
-            if (EventHandler.getRectangleClick(menuXPos + 8, 688, menuXPos + 54, 734) &&
+            if (EventHandler.isMouseClickedIn(menuXPos + 8, 688, menuXPos + 54, 734) &&
                 nearbyWorkbench.containsKey(Workbench.Tier.MEDIUM)) {
                 currentObject = null;
                 current = 2;
             }
-            if (EventHandler.getRectangleClick(menuXPos + 8, 742, menuXPos + 54, 788) &&
+            if (EventHandler.isMouseClickedIn(menuXPos + 8, 742, menuXPos + 54, 788) &&
                 nearbyWorkbench.containsKey(Workbench.Tier.SMALL)) {
                 currentObject = null;
                 current = 3;
@@ -115,9 +114,9 @@ public class WorkbenchLogic {
                 float yCoord = 1000 + scroll + (y * 54f);
 
                 if (yCoord < 755) {
-                    Inventory.drawItem(xCoord, yCoord, currentWorkbench.get(i));
+                    drawItem(xCoord, yCoord, currentWorkbench.get(i));
 
-                    if (EventHandler.getRectangleClick((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
+                    if (EventHandler.isMouseClickedIn((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
                         currentObject = new Point2i(x, y);
                         currentObjectIdx = i;
                     }
@@ -151,7 +150,7 @@ public class WorkbenchLogic {
     }
 
     private static void updateBuildButton() {
-        if (!isOpen || !EventHandler.getRectangleClick(menuXPos + 580, 742, menuXPos + 625, 788)) {
+        if (!isOpen || !EventHandler.isMouseClickedIn(menuXPos + 580, 742, menuXPos + 625, 788)) {
             return;
         }
         var required = hasRequiredItems();
@@ -162,7 +161,7 @@ public class WorkbenchLogic {
         if (Inventory.addItem(currentItems.get(currentObjectIdx))) {
             for (var obj : required) {
                 if (obj != null) {
-                    Inventory.decrementItem(obj.x, obj.y, obj.count);
+                    player.takeItem(obj.x, obj.y, obj.count);
                 }
             }
         }
@@ -185,10 +184,13 @@ public class WorkbenchLogic {
             int neededCounter = 0;
 
             for (int i = 0; i < required.length; i++) {
-                for (int x = 0; x < inventoryObjects.length; x++) {
-                    for (int y = 0; y < inventoryObjects[x].length; y++) {
-                        if (inventoryObjects[x][y] != null && inventoryObjects[x][y].getItem() == required[i].getItem()) {
-                            hasNeededObject[i] = new ItemCraftTransaction(x, y, required[i].getCount());
+                var items = player.items();
+                for (int x = 0; x < items.size(); x++) {
+                    var line = items.get(x);
+                    for (int y = 0; y < line.size(); y++) {
+                        var itemStack = line.get(y);
+                        if (itemStack != null && itemStack.isSame(required[i])) {
+                            hasNeededObject[i] = new ItemCraftTransaction(x, y, required[i].count());
                             neededCounter++;
                         }
                     }

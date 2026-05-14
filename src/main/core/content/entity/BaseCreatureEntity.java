@@ -4,6 +4,8 @@ import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.content.creatures.CreatureType;
 import core.math.Rectangle;
 import core.math.Vector2f;
+import it.unimi.dsi.fastutil.HashCommon;
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
 import static core.Global.*;
 import static core.World.Textures.TextureDrawing.blockSize;
@@ -32,6 +34,7 @@ public abstract class BaseCreatureEntity<C extends CreatureType> implements Crea
     }
 
     @Override
+    @MustBeInvokedByOverriders
     public void init() {
         this.hp = getMaxHp();
         this.hasGravity = creature.hasGravity;
@@ -156,5 +159,17 @@ public abstract class BaseCreatureEntity<C extends CreatureType> implements Crea
             }
         }
         return false;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof BaseCreatureEntity that)) return false;
+        return id == that.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCommon.murmurHash3(id);
     }
 }

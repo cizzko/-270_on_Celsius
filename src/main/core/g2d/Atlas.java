@@ -17,6 +17,9 @@ public final class Atlas {
         return regions.get(regionName);
     }
 
+    /// @deprecated рабочий, но делает много лишней работы.
+    /// Лучше если все текстуры буду корректно заданы изначально
+    @Deprecated
     public Region byPath(String regionName) {
         if (regionName == null) {
             return errorRegion;
