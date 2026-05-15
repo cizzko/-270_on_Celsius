@@ -194,7 +194,9 @@ public class Batch<S extends Batch.State> implements Disposable {
         shader.setUniformTransforming("u_proj", matrix);
 
         vertices.flip();
-        mesh.draw(GL_TRIANGLES, vertices, vertexCount * VERTEX_PER_TRIANGLE);
+
+        //кто бы мог подумать, что баг будет жить несколько лет, потому что в нвидии есть защита от дурака в дровах
+        mesh.draw(GL_TRIANGLES, vertices, (vertexCount / VERTEX_PER_SPRITE) * VERTEX_PER_TRIANGLE);
 
         vertices.clear();
         vertexCount = 0;
