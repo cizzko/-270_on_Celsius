@@ -41,7 +41,6 @@ public class Application {
         try {
             Thread.currentThread().setName("UpdateThread");
             init();
-            setDebugValue(() -> "deltaTime: " + Time.delta);
 
             while (running) {
                 update();

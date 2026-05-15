@@ -30,7 +30,7 @@ public class ImageButton extends BaseElement<ImageButton> {
     }
 
     @Override
-    public void updateThis() {
+    public void updateThis(float dt) {
         if (!isClickable) {
             return;
         }

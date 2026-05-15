@@ -22,5 +22,6 @@
             <AppenderRef ref="Console"/>
             <AppenderRef ref="File"/>
         </Root>
+        <Logger name="core.UIScene" level="OFF"></Logger>
     </Loggers>
 </Configuration>

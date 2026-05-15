@@ -27,13 +27,11 @@ public class Config {
     private static boolean configCheckMark = false;
 
     private static final HashMap<String, String> config = new HashMap<>();
-    private static final HashMap<String, String> fastCommands = new HashMap<>();
 
     // checks if the startup configuration contains any parameters
     public static void checkConfig() {
         if (!configCheckMark) {
             copyFromResource(config, "configDefault.properties", "config.properties");
-            copyFromResource(fastCommands, "fastCommands.properties", "fastCommands.properties");
             configCheckMark = true;
         }
     }
@@ -119,11 +117,6 @@ public class Config {
 
     public static int getInt(String key) {
         return getInt(key, 0);
-    }
-
-    // fast commands
-    public static String getFromFC(String key) {
-        return fastCommands.get(key);
     }
 
     public static void updateConfig(String key, String value) {

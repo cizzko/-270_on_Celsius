@@ -67,9 +67,7 @@ public class Slider extends BaseElement<Slider> {
 
         Atlas.Region triangle = atlas.get("UI/GUI/numberBoardTriangle");
 
-        // todo 7 это высота текстуры треугольника
-
-        batch.draw(triangle, sliderPos - (triangle.width() / 2f), y + rectY - 7);
+        batch.draw(triangle, sliderPos - (triangle.width() / 2f), y + rectY - triangle.height());
 
         String sliderValue = Integer.toString(getSliderValue());
         int numbersWidth = getTextSize(sliderValue).x;
@@ -81,10 +79,6 @@ public class Slider extends BaseElement<Slider> {
         float x = sliderPos - (numbersWidth / 2f) + 5;
         for (int i = 0; i < sliderValue.length(); i++) {
             char ch = sliderValue.charAt(i);
-            if (ch == ' ') {
-                x += style.font.getGlyph('A').width();
-                continue;
-            }
             Font.Glyph glyph = style.font.getGlyph(ch);
             batch.draw(glyph, Styles.DIRTY_WHITE, x, y + rectY);
             x += glyph.width();
@@ -101,7 +95,7 @@ public class Slider extends BaseElement<Slider> {
     }
 
     @Override
-    public void updateThis() {
+    public void updateThis(float dt) {
         boolean hit = hit(input.mousePos()) == this;
         if (hit) {
             if (input.justClicked(GLFW_MOUSE_BUTTON_1)) {

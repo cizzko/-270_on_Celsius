@@ -98,11 +98,17 @@ public abstract class BaseCreatureEntity<C extends CreatureType> implements Crea
     protected void onDamage(float d) {
     }
 
+    protected void onDead() {
+
+    }
+
     @Override
     public void remove() {
         CreatureEntity.super.remove();
-
         dead = true;
+
+        onDead();
+
         hp = 0;
         velocity.set(0, 0);
     }

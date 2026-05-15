@@ -3,6 +3,7 @@ package core.UI;
 import core.EventHandling.EventHandler;
 import core.World.Textures.TextureDrawing;
 import core.g2d.Font;
+import core.input.InputListener;
 import core.util.Color;
 
 import java.util.function.Consumer;
@@ -17,8 +18,17 @@ public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B>
     public Consumer<? super B> clickAction;
     private static boolean showPrompts = getBoolean("ShowPrompts");
 
+    protected boolean isUnderMouse;
+
     protected BaseButton(Group panel) {
         super(panel);
+        addListener(new InputListener() {
+            @Override
+            public void onMouseEnter(float x, float y) { isUnderMouse = true; }
+
+            @Override
+            public void onMouseExit(float x, float y)  { isUnderMouse = false; }
+        });
     }
 
     public B setClicked(boolean clicked) {

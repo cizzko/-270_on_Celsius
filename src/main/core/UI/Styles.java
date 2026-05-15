@@ -98,6 +98,15 @@ public class Styles {
         }
     };
 
+    public static final Style.TextField DEFAULT_TEXT_FIELD = new Style.TextField() {
+        @Override
+        public void load() {
+            background = null;
+            font = assets.load(Font.class, "arial.ttf").resultNow();
+            textColor = TEXT_COLOR;
+        }
+    };
+
     public static void loadAll() {
         // TODO пока не вижу в этом проблемы. Пусть побудет в статическом контексте
         DEFAULT_TOGGLE_BUTTON.load();
@@ -108,5 +117,6 @@ public class Styles {
         DEFAULT_TEXT.load();
         DEBUG_TEXT.load();
         DEFAULT_SLIDER.load();
+        DEFAULT_TEXT_FIELD.load();
     }
 }

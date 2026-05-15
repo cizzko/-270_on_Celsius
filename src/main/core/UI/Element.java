@@ -1,10 +1,14 @@
 package core.UI;
 
+import core.input.InputListener;
 import core.math.Point2i;
+import core.util.Color;
 import core.util.Sized;
 import org.jetbrains.annotations.Nullable;
 
-public interface Element {
+import java.util.function.Predicate;
+
+public interface Element extends InputListener {
     String id();
 
     // null если это корневой элемент интерфейса, т.е. специальная затычка
@@ -22,7 +26,8 @@ public interface Element {
 
     void draw();
 
-    void update();
+    void update(float dt);
+    boolean remove();
 
     Element setId(String id);
 
@@ -40,9 +45,24 @@ public interface Element {
 
     Element toggleVisibility();
 
-    Element hit(float x, float y);
-
-    default Element hit(Point2i point) {
+    @Nullable Element hit(float x, float y);
+    default @Nullable Element hit(Point2i point) {
         return hit(point.x, point.y);
+    }
+
+    default boolean isDescendantOf(Predicate<Element> pred) {
+        Element parent = this;
+        while (parent != null) {
+            if (pred.test(parent)) {
+                return true;
+            }
+            parent = parent.parent();
+        }
+        return false;
+    }
+
+    default Color color() {
+        // TODO плохой дизайн интерфейса
+        return null;
     }
 }

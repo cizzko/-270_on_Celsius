@@ -13,8 +13,7 @@ import org.lwjgl.glfw.GLFWCharCallback;
 
 import java.util.function.Supplier;
 
-import static core.Global.batch;
-import static core.Global.input;
+import static core.Global.*;
 import static core.Window.glfwWindow;
 import static core.Window.windowFocused;
 import static org.lwjgl.glfw.GLFW.*;
@@ -33,7 +32,7 @@ public class EventHandler {
         }
 
         @Override
-        public void updateThis() {
+        public void updateThis(float dt) {
             setText(format.get());
         }
 
@@ -93,6 +92,7 @@ public class EventHandler {
         }
     }
 
+    ///фактически можно вызывать откуда угодно, но рекомендуется ставить в DebugTools.initDebugValuesGame() или DebugTools.initDebugValuesMenu()
     public static void setDebugValue(Supplier<String> format) {
         if (debugLevel > 0) {
             var elem = new DebugBox(format);
@@ -105,17 +105,6 @@ public class EventHandler {
 
     public static void init() {
         debugDialog.show();
-
-        glfwSetCharCallback(glfwWindow, Global.app.keep(new GLFWCharCallback() {
-            @Override
-            public void invoke(long window, int codepoint) {
-                if (keyLogging) {
-                    keyLoggingText.appendCodePoint(codepoint);
-                }
-            }
-        }));
-
-        setDebugValue(() -> "[Render] fps: " + Global.app.getFps());
     }
 
     public static boolean isKeylogging() {

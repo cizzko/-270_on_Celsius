@@ -2,30 +2,46 @@ package core.util;
 
 import core.Application;
 import core.EventHandling.Config;
+import core.EventHandling.EventHandler;
+import core.GameState;
 import core.Global;
-import core.World.StaticWorldObjects.Structures.Structures;
-import core.World.Textures.ShadowMap;
+import core.Time;
+import core.World.Creatures.Player.Inventory.Inventory;
+import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.World.StaticWorldObjects.TileData;
+import core.World.Textures.TextureDrawing;
 import core.World.World;
+import core.g2d.Fill;
 import core.math.Point2i;
+import core.math.Rectangle;
+import it.unimi.dsi.fastutil.HashCommon;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 
+import static core.Application.*;
 import static core.EventHandling.Config.json;
-import static core.Global.assets;
-import static core.Global.world;
-import static core.Window.glfwWindow;
-import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
-import static org.lwjgl.glfw.GLFW.glfwWindowShouldClose;
+import static core.EventHandling.EventHandler.debugLevel;
+import static core.EventHandling.EventHandler.setDebugValue;
+import static core.Global.*;
+import static core.World.Creatures.Physics.swap;
+import static core.World.Textures.TextureDrawing.blockSize;
+import static core.content.entity.DrawComponent.GAP;
+import static core.util.Color.BLACK;
+import static core.util.Color.rgba8888;
+import static org.lwjgl.glfw.GLFW.*;
 
 public class DebugTools {
     public static final DecimalFormat FLOATS = new DecimalFormat("#.#", new DecimalFormatSymbols(Locale.ROOT));
-
-    public static boolean selectionBlocksCopy = false, selectionBlocksDelete = false, mousePressed = false;
-    private static Point2i lastMousePosBlocks = new Point2i(0, 0), lastMousePos = new Point2i(0, 0);
 
     @SuppressWarnings("unchecked")
     public static <T extends Throwable> void rethrow(Throwable t) throws T {
@@ -42,14 +58,14 @@ public class DebugTools {
 
             var refTree = json.readTree(reader);
             if (!tree.equals(refTree)) {
-                Application.log.info("РАЗНЫЕ !!!");
+                log.info("РАЗНЫЕ !!!");
             }
 
         } catch (Exception e) {
-            Application.log.error(e);
+            log.error(e);
             e.printStackTrace();
         }
-        Application.log.info("Time took: {}ms", (System.currentTimeMillis() - t));
+        log.info("Time took: {}ms", (System.currentTimeMillis() - t));
     }
 
     public static void serializeTargetBlock() {
@@ -64,11 +80,11 @@ public class DebugTools {
                 try (var out = json.createGenerator(str)) {
                     blockEntity.serialize(out, json.getSerializerProvider());
                 } catch (Exception e) {
-                    Application.log.error(e);
+                    log.error(e);
                 }
                 System.out.println(str);
 
-                Application.log.info("Time took: {}ms", (System.currentTimeMillis() - t));
+                log.info("Time took: {}ms", (System.currentTimeMillis() - t));
             }
         }
     }
@@ -78,65 +94,215 @@ public class DebugTools {
         try {
             Files.writeString(assets.workingDir().resolve("open worl.json"), Config.json.writeValueAsString(world));
         } catch (Exception e) {
-            Application.log.error(e);
+            log.error(e);
         }
-        Application.log.info("Time took: {}ms", (System.currentTimeMillis() - t));
+        log.info("Time took: {}ms", (System.currentTimeMillis() - t));
     }
 
-    public static void startUpdate() {
+    public static void initDebugValuesMenu() {
+        if (debugLevel < 1) {
+            return;
+        }
+        setDebugValue(() -> "RenderFPS: " + Global.app.getFps());
 
-        new Thread(() -> {
-            while (!glfwWindowShouldClose(glfwWindow)) {
-                if (selectionBlocksCopy || selectionBlocksDelete) {
-                    if (Global.input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
-                        Point2i mousePos = Global.input.mousePos();
+        if (debugLevel < 2) {
+            return;
+        }
 
-                        if (!mousePressed) {
-                            mousePressed = true;
-                            lastMousePosBlocks = Global.input.mouseBlockPos().copy();
-                            lastMousePos.set(mousePos.x, mousePos.y);
-                        }
+        setDebugValue(() -> "DeltaTime: " + Time.delta);
+    }
+
+    public static void initDebugValuesGame() {
+        if (debugLevel < 2) {
+            return;
+        }
+        // TODO: Дефолтные предметы в отдельном json
+        DebugTools.giveItems();
+
+        setDebugValue(() -> "[Player] x: " + player.getX() + ", y: " + player.getY());
+        setDebugValue(() -> "Camera Pos: " + camera.position);
+        setDebugValue(() -> "Velocity: " + player.getVelocity());
+        setDebugValue(() -> "PlayerHp: " + player.getHp());
+
+        setDebugValue(() -> {
+            var mouseBlockPos = (input.mouseBlockPos());
+            var mouseBlock = world.getBlock(mouseBlockPos.x, mouseBlockPos.y);
+            return "MouseBlock: " + mouseBlockPos + " " + (mouseBlock != null ? mouseBlock.id + " (NID: " + Global.content.blocksRegistry.idByType(mouseBlock) + ")" : "<void>");
+        });
+        setDebugValue(() -> {
+            var mouseBlockPos = (input.mouseBlockPos());
+            return "BlockHp: " + world.getHp(mouseBlockPos.x, mouseBlockPos.y);
+        });
+        //setDebugValue(() -> "Current time: " + sun.currentTime);
+    }
+
+    static final Rectangle rect = new Rectangle();
+    static final int red = rgba8888(255, 0, 0, 255);
+    static final int blue = rgba8888(0, 0, 255, 255);
+    static final int white = rgba8888(255, 255, 255, 255);
+    static final int acid = 0x8ffe09ff;
+    static final int black = rgba8888(0, 0, 0, 255);
+
+    public static int leftInt(long field) { return (int)(field >> 32); }
+    public static int rightInt(long field) { return (int)(field); }
+
+    public static void drawDebugBorders() {
+        if (debugLevel < 2) {
+            return;
+        }
+
+        entityPool.entities().values().forEach(e -> {
+            e.getHitboxTo(rect);
+            Fill.rectangleBorder(rect.x, rect.y, rect.width, rect.height, red);
+            // TextureDrawing.drawText(rect.x, rect.y,
+            //         "HasFloor: " + e.hasFloor(), black);
+        });
+
+        if (debugLevel >= 3) {
+            var r = entityPool.worldIndex().resolution;
+            var hashIndex = entityPool.worldIndex().hash;
+            hashIndex.keySet().forEach(hash -> {
+                long key = HashCommon.invMix(hash);
+                float x = leftInt(key) * r;
+                float y = rightInt(key) * r;
+
+                Fill.rectangleBorder(x, y, r, r, acid);
+                var group = hashIndex.get(hash);
+                TextureDrawing.drawText(x, y, "GroupSize: " + group.size());
+            });
+        }
+
+        camera.getBoundsTo(rect);
+        // правая граница
+        Fill.line(
+                (world.sizeX) * blockSize, rect.y,
+                (world.sizeX) * blockSize, rect.y + rect.height,
+                4,
+                red);
+        Fill.line(
+                (world.sizeX - swap) * blockSize, rect.y,
+                (world.sizeX - swap) * blockSize, rect.y + rect.height,
+                4,
+                black);
+        // левая граница
+        Fill.line(
+                0, rect.y,
+                0, rect.y + rect.height,
+                4,
+                blue);
+        Fill.line(
+                swap * blockSize, rect.y,
+                swap * blockSize, rect.y + rect.height,
+                4,
+                black);
+
+        if (!player.isDead()) {
+            player.getHitboxTo(rect);
+            { // Блоки интегрированной модели
+                int minX = (int) Math.floor(rect.x / blockSize);
+                int minY = (int) Math.floor(rect.y / blockSize);
+                int maxX = (int) Math.floor((rect.x + rect.width) / blockSize);
+                int maxY = (int) Math.floor((rect.y + rect.height) / blockSize);
+                for (int x = minX; x <= maxX; x++) {
+                    for (int y = minY; y <= maxY; y++) {
+                        Fill.rectangleBorder(x * blockSize, y * blockSize, blockSize, blockSize, white);
                     }
-                    if (mousePressed && !Global.input.clicked(GLFW_MOUSE_BUTTON_LEFT)) {
-                        mousePressed = false;
+                }
+            }
 
-                        if (selectionBlocksCopy) {
-                            copy();
-                        } else if (selectionBlocksDelete) {
-                            delete();
+            { // Блоки которые считаются за пол. Черная обводка
+                int minX = (int) Math.floor(player.getX() / blockSize);
+                int maxX = (int) Math.floor((player.getX() + player.creature.texture.width() - GAP) / blockSize);
+                int minY = (int) Math.floor((player.getY() - GAP) / blockSize);
+
+                for (int x = minX; x <= maxX; x++) {
+                    var block = world.getBlock(x, minY);
+                    if (block == null || block.type == StaticObjectsConst.Type.SOLID) {
+                        Fill.rectangleBorder(x*blockSize,minY*blockSize, blockSize, blockSize, BLACK);
+                    }
+                }
+            }
+        }
+
+        { // Корень красный, дочерние синие
+            camera.getBoundsTo(rect);
+            int minX = (int) Math.floor(rect.x / blockSize);
+            int maxX = (int) Math.floor((rect.x + rect.width) / blockSize);
+            int minY = (int) Math.floor(rect.y / blockSize);
+            int maxY = (int) Math.floor((rect.y + rect.height) / blockSize);
+
+            for (int x = minX; x <= maxX; x++) {
+                for (int y = minY; y <= maxY; y++) {
+                    if (!world.inBounds(x, y)) {
+                        continue;
+                    }
+
+                    var obj = world.getBlock(x, y);
+                    if (obj == null || obj == StaticObjectsConst.AIR) {
+                        continue;
+                    }
+
+                    var data = world.getData(x, y);
+                    if (data instanceof TileData.MultiblockPart) {
+                        Fill.rectangleBorder(x * blockSize, y * blockSize, blockSize, blockSize, blue);
+                    } else {
+                        var rootPos = world.getRootBlockPos(x, y);
+                        if (rootPos != null && rootPos.x == x && rootPos.y == y) {
+                            Fill.rectangleBorder(x * blockSize, y * blockSize, blockSize, blockSize, red);
                         }
                     }
                 }
             }
-        }).start();
+        }
     }
 
-    private static void copy() {
-        int startX = lastMousePosBlocks.x;
-        int startY = lastMousePosBlocks.y;
-        int targetX = Global.input.mouseBlockPos().x;
-        int targetY = Global.input.mouseBlockPos().y;
+    public static void giveItems() {
+        final int n = 10;
 
-        short[][] objects = new short[targetX - startX][targetY - startY];
+        Inventory.addItem(content.itemById("blockDeleter"));
+        Inventory.addItemStack(new ItemStack(content.itemById("aluminum"), n));
+        Inventory.addItemStack(new ItemStack(content.itemById("chest"), n));
+        Inventory.addItemStack(new ItemStack(content.itemById("stick"), n));
+        Inventory.addItemStack(new ItemStack(content.itemById("redHammer"), n));
+        Inventory.addItemStack(new ItemStack(content.itemById("grass"), n));
+        Inventory.addItemStack(new ItemStack(content.itemById("workbenchSmall"), n));
+        Inventory.addItemStack(new ItemStack(content.itemById("smallStone"), n));
+        Inventory.addItemStack(new ItemStack(content.itemById("stoneOven"), n));
+    }
 
-        for (int x = startX; x < targetX; x++) {
-            for (int y = startY; y < targetY; y++) {
-                if (x < Global.world.sizeX && y < Global.world.sizeY && x > 0 && y > 0 && world.getBlockId(x, y) > 0) {
-                    ShadowMap.setShadow(x, y, Color.fromRgba8888(0, 0, 255, 255));
-                    objects[x - startX][y - startY] = (short) world.getBlockId(x, y);
+    public static void saveWorldImage() {
+        if (EventHandler.debugLevel < 2) {
+            return;
+        }
+        Thread.startVirtualThread(() -> {
+            BufferedImage image = new BufferedImage(world.sizeX, world.sizeY, BufferedImage.TYPE_INT_RGB);
+            Path path = assets.workingDir().resolve("worldImage.png");
+            for (int y = 0; y < world.sizeY; y++) {
+                for (int x = 0; x < world.sizeX; x++) {
+                    int block = world.getBlockId(x, y);
+                    if (block != 0) {
+                        image.setRGB(x, (world.sizeY - 1) - y, 0xFFFFFF);
+                    } else {
+                        image.setRGB(x, (world.sizeY - 1) - y, 0x000000);
+                    }
                 }
             }
-        }
-        Structures.createStructure(String.valueOf(System.currentTimeMillis()), objects);
+            try {
+                ImageIO.write(image, "png", path.toFile());
+            } catch (IOException e) {
+                log.error(e.getMessage());
+            }
+        });
     }
 
-    private static void delete() {
-        Point2i block = Global.input.mouseBlockPos();
+    public static void debugHotKeys() {
 
-        for (int x = lastMousePosBlocks.x; x < block.x; x++) {
-            for (int y = lastMousePosBlocks.y; y < block.y; y++) {
-                world.set(x, y, null, false);
-            }
+        if (EventHandler.debugLevel >= 2) {
+            if (input.justPressed(GLFW_KEY_F1)) app.setFramerate(60);
+            if (input.justPressed(GLFW_KEY_F2)) app.setFramerate(1000);
+            if (input.justPressed(GLFW_KEY_F3)) serializeWorld();
+            if (input.justPressed(GLFW_KEY_F4)) deserializeWorld();
+            if (input.justClicked(GLFW_MOUSE_BUTTON_RIGHT)) serializeTargetBlock();
         }
     }
 }

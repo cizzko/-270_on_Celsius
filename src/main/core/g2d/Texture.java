@@ -2,7 +2,7 @@ package core.g2d;
 
 import java.awt.image.BufferedImage;
 
-import static core.assets.TextureLoader.decodeImage;
+import static core.graphic.TextureLoader.decodeImage;
 import static org.lwjgl.opengl.GL46.*;
 
 public final class Texture implements Drawable {

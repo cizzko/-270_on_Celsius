@@ -25,8 +25,8 @@ public abstract class BaseGroup<G extends BaseElement<G> & Group> extends BaseEl
     }
 
     @Override
-    public void remove(Element element) {
-        children.remove(element);
+    public boolean remove(Element element) {
+        return children.remove(element);
     }
 
     protected void drawThis() {}
@@ -45,17 +45,17 @@ public abstract class BaseGroup<G extends BaseElement<G> & Group> extends BaseEl
     }
 
     @Override
-    public void update() {
+    public void update(float dt) {
         if (!visible()) {
             return;
         }
-        super.update();
+        super.update(dt);
         var elem = children.begin();
         for (int i = 0, n = children.size(); i < n; i++) {
             Element child = elem[i];
             if (child.visible()) {
                 try {
-                    child.update();
+                    child.update(dt);
                 } catch (Exception e) {
                     UIScene.log.error("Exception while updating element {} in {}", child, this, e);
                 }

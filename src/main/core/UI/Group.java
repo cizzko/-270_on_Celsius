@@ -5,13 +5,18 @@ import core.util.Sized;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public interface Group extends Element {
     List<Element> children();
 
     <E extends Element> E add(E element);
+    default <E extends Element> E append(Function<Group, ? extends E> supp) {
+        return add(supp.apply(this));
+    }
 
-    void remove(Element element);
+    boolean remove(Element element);
 
     // region ковариантное переопределение
 

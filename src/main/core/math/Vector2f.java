@@ -48,6 +48,12 @@ public final class Vector2f {
         return this;
     }
 
+    public Vector2f sub(float x, float y) {
+        this.x -= x;
+        this.y -= y;
+        return this;
+    }
+
     public Vector2f scale(float scalar) {
         x *= scalar;
         y *= scalar;

@@ -5,11 +5,13 @@ import core.Global;
 import core.Time;
 import core.World.Creatures.Player.Inventory.Items.ItemGrid;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.World.WorldUtils;
 import core.content.entity.BaseCreatureEntity;
 import core.content.entity.HitboxComponent;
 import core.content.entity.InventoryComponent;
 import core.math.Point2i;
 import core.math.Vector2f;
+import core.util.DebugTools;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 
@@ -57,19 +59,23 @@ public class PlayerEntity
         lastDamageTime = System.currentTimeMillis();
     }
 
+    @Override
+    protected void onDead() {
+        scheduler.post(() -> {
+            Global.player = WorldUtils.spawn(creature, true);
+        }, Time.ONE_SECOND * 5);
+    }
+
     public void updateInput() {
         // todo тут надо проверять элемент UI на фокусировку, т.е. на порядок отображения (фокусирован = самый последний элемент)
         if (EventHandler.isKeylogging() || isDead()) {
             return;
         }
 
-        if (EventHandler.debugLevel >= 2) {
-            if (input.justPressed(GLFW_KEY_F1)) app.setFramerate(60);
-            if (input.justPressed(GLFW_KEY_F2)) app.setFramerate(1000);
-            if (input.justPressed(GLFW_KEY_F3)) serializeWorld();
-            if (input.justPressed(GLFW_KEY_F4)) deserializeWorld();
-            if (input.justClicked(GLFW_MOUSE_BUTTON_RIGHT)) serializeTargetBlock();
-        }
+        DebugTools.debugHotKeys();
+
+        if (input.justPressed(GLFW_KEY_Q))
+            player.resetItemInHand();
 
         //todo было 9
         float speed = noClip ? 2f : 9f * ThreadLocalRandom.current().nextFloat(1, 1.15f);

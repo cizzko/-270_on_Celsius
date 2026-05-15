@@ -1,3 +1,5 @@
+import groovy.json.JsonSlurper
+
 plugins {
     java
     id("org.beryx.jlink") version "4.0.0"
@@ -18,7 +20,7 @@ sourceSets {
             srcDir("src/main")
         }
         resources {
-            srcDirs("src/assets", "src/assets-gen")
+            srcDir("src/assets")
         }
     }
 }
@@ -28,8 +30,9 @@ tasks.withType<JavaExec> {
         // core.Main.main()
         jvmArguments.add("--enable-native-access=org.lwjgl")
         jvmArguments.add("--enable-native-access=org.lwjgl.opengl")
+        jvmArguments.add("-XX:-OmitStackTraceInFastThrow")
     }
-    
+
     doFirst {
         if (System.getProperty("os.name")?.contains("Linux") == true) {
             val gpuInfo = providers.exec {
@@ -162,20 +165,33 @@ jlink {
         options.add("--strip-native-debug-symbols")
         options.add("exclude-debuginfo-files");
     }
-    if (System.getProperty("os.name")!!.startsWith("Darwin") || System.getProperty("os.name")!!.startsWith("Mac OS X")) {
-        options.add("-XstartOnFirstThread")
-    }
-    if (JavaLanguageVersion.current().canCompileOrRun(22)) {
-        options.add("--enable-native-access=org.lwjgl.opengl")
-        options.add("--enable-native-access=org.lwjgl")
-    }
 
     launcher {
         name = "celsius"
         args = listOf("--packaged")
+
+        jvmArgs = arrayListOf()
+        if (System.getProperty("os.name")!!.startsWith("Darwin") || System.getProperty("os.name")!!.startsWith("Mac OS X")) {
+            jvmArgs.add("-XstartOnFirstThread")
+        }
+        if (JavaLanguageVersion.current().canCompileOrRun(22)) {
+            jvmArgs.add("--enable-native-access=org.lwjgl.opengl")
+            jvmArgs.add("--enable-native-access=org.lwjgl")
+        }
     }
 }
 
-tasks.named("jpackageImage") {
+tasks.jar {
+    exclude("sprites.atlas.hash")
+    includeEmptyDirs = false
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    isReproducibleFileOrder = true
+
+    @Suppress("UNCHECKED_CAST")
+    val json = JsonSlurper().parse(layout.projectDirectory.file("src/assets/sprites.atlas.hash").asFile) as Map<String, String>
+    excludes.addAll(json.keys)
+}
+
+tasks.jpackageImage {
     dependsOn(tasks.createDelegatingModules)
 }

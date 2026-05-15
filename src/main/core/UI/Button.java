@@ -1,6 +1,7 @@
 package core.UI;
 
 import core.g2d.Fill;
+import core.util.Color;
 
 import static core.Global.input;
 import static core.World.Textures.TextureDrawing.drawText;
@@ -15,7 +16,7 @@ public class Button extends BaseButton<Button> {
     }
 
     @Override
-    public void updateThis() {
+    public void updateThis(float dt) {
         if (!visible()) {
             return;
         }
@@ -56,6 +57,11 @@ public class Button extends BaseButton<Button> {
         if (name != null) {
             drawText(x + 20, y + height / 2.8f, name);
         }
+
+        if (isUnderMouse) Fill.rect(
+                x + borderWidth, y + borderWidth,
+                width - 2*borderWidth, height - 2*borderWidth, Color.rgba8888(34,34, 34, 120));
+
         drawPrompt(this, style.font);
     }
 }

@@ -14,19 +14,19 @@ import static core.Global.*;
 
 public class MainMenu extends Dialog {
     public MainMenu() {
-        addPanel(Styles.SIMPLE_PANEL, 0, 965, input.getWidth(), 115);
-        addImageButton(this::discordBtn)
+        var panel = addPanel(Styles.SIMPLE_PANEL, 0, 965, input.getWidth(), 115);
+        panel.addImageButton(this::discordBtn)
                 .setPosition(1830, 990)
                 .setImage(atlas.get("UI/discordIcon"));
-        addButton(Styles.TEXT_BUTTON, this::exitBtn)
+        panel.addButton(Styles.TEXT_BUTTON, this::exitBtn)
                 .set(822, 990, 240, 65)
                 .setName(lang.get("Exit"))
                 .setColor(Styles.DIRTY_WHITE);
-        addButton(Styles.TEXT_BUTTON, this::settingsBtn)
+        panel.addButton(Styles.TEXT_BUTTON, this::settingsBtn)
                 .set(548, 990, 240, 65)
                 .setName(lang.get("Settings"))
                 .setColor(Styles.DIRTY_WHITE);
-        addButton(Styles.TEXT_BUTTON, this::playButton)
+        panel.addButton(Styles.TEXT_BUTTON, this::playButton)
                 .set(46, 990, 240, 65)
                 .setName(lang.get("Play"));
     }

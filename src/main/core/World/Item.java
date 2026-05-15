@@ -15,6 +15,8 @@ import java.util.Objects;
 public sealed class Item implements ContentType permits ItemBlock, ItemTool, ItemUnresolved, ItemWeapon {
     public final String id;
 
+    // TODO: maxStackSize
+
     public float weight;
     public Atlas.Region texture;
     public ItemStack[] requirements;
@@ -61,7 +63,7 @@ public sealed class Item implements ContentType permits ItemBlock, ItemTool, Ite
         return Global.lang.get("item." + id + ".description");
     }
 
-    public float getUiScale() {
+    public float uiScale() {
         // 32 - target structure size
         return 32f / Math.max(texture.width(), texture.height());
     }

@@ -3,7 +3,7 @@ package core.g2d;
 import core.assets.AssetHandler;
 import core.assets.AssetReleaser;
 import core.assets.AssetResolver;
-import core.assets.TextureLoader;
+import core.graphic.TextureLoader;
 
 import javax.imageio.ImageIO;
 import java.nio.file.Files;

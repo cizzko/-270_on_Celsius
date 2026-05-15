@@ -2,10 +2,12 @@ package core.World.Creatures.Player.Inventory;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Config;
+import core.Global;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.Item;
 import core.World.ItemBlock;
 import core.World.WorldGenerator.WorldGenerator;
+import core.World.WorldUtils;
 import core.content.entity.InventoryComponent;
 import core.math.Point2i;
 import core.math.Rectangle;
@@ -13,9 +15,7 @@ import org.jetbrains.annotations.Nullable;
 
 import static core.Global.*;
 import static core.Global.player;
-import static core.World.Creatures.Player.Inventory.Items.ItemGrid.findItemOrFree;
 import static core.World.Textures.TextureDrawing.*;
-import static core.World.Textures.TextureDrawing.drawText;
 import static core.World.WorldUtils.getDistanceToMouse;
 import static core.util.Color.*;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
@@ -49,12 +49,11 @@ public class Inventory {
         }
 
         if (player.hasItemInHand()) {
-
             ItemStack focusedItem = player.getDraggingItem();
             if (focusedItem != null) {
                 var mousePos = input.mousePos();
                 var tex = focusedItem.item().texture;
-                float uiScale = focusedItem.item().getUiScale();
+                float uiScale = focusedItem.item().uiScale();
                 batch.draw(tex, mousePos.x - 15, mousePos.y - 15,
                         tex.width() * uiScale, tex.height() * uiScale);
             }
@@ -116,15 +115,15 @@ public class Inventory {
 
         if (underMouse != null && EventHandler.isMouseClickedIn(1488, 756, 1919, 1079) && !player.hasDraggingItem()) {
             boolean hasUnderMouseItem = player.getItem(underMouse.x, underMouse.y) != null;
-
-            if (!player.itemInHandIdx.equals(underMouse) && hasUnderMouseItem) {
-                player.itemInHandIdx.set(underMouse);
-
-                if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
-                    player.draggingItemIdx.set(underMouse);
+            if (hasUnderMouseItem) {
+                if (player.itemInHandIdx.equals(underMouse)) {
+                    player.resetItemInHand();
+                } else {
+                    player.itemInHandIdx.set(underMouse);
+                    if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+                        player.draggingItemIdx.set(underMouse);
+                    }
                 }
-            } else if (!hasUnderMouseItem) {
-                player.resetItemInHand();
             }
         }
     }
@@ -138,15 +137,23 @@ public class Inventory {
     private static void updateDropItem() {
         if (!input.clicked(GLFW_MOUSE_BUTTON_LEFT) && player.hasDraggingItem()) {
             Point2i focusedItemIdx = getFocusedItemIdx();
+
             if (focusedItemIdx != null) {
-                swapItems(focusedItemIdx, player.draggingItemIdx);
-                player.itemInHandIdx.set(focusedItemIdx);
+                if (!focusedItemIdx.equals(player.draggingItemIdx)) {
+                    swapItems(focusedItemIdx, player.draggingItemIdx);
+                    player.resetItemInHand();
+                }
             } else {
+                var currentInMouse = player.getDraggingItem();
+                if (currentInMouse == null) {
+                    return;
+                }
+
                 Point2i mousePos = input.mouseBlockPos();
                 var blockEntity = world.getEntity(mousePos);
 
-                var currentInMouse = player.getDraggingItem();
-                if (blockEntity != null && currentInMouse != null) {
+
+                if (blockEntity != null) {
                     switch (blockEntity.insertItem(currentInMouse)) {
                         case MOVE -> player.setItem(player.draggingItemIdx, null);
                         case PARTIAL_MOVE -> {
@@ -156,8 +163,20 @@ public class Inventory {
                         }
                         case FAILED -> {}
                     }
-                    player.resetItemInHand();
+                } else {
+                    var worldMousePos = input.mouseWorldPos();
+                    var dst = WorldUtils.getDistanceToMouse();
+                    if (dst > 5) {
+                        worldMousePos.sub(player.getX(), player.getY()).nor().scale(dst);
+                        worldMousePos.add(player.getX(), player.getY());
+                    }
+                    int blockId = world.getBlockId(toBlock(worldMousePos.x), toBlock(worldMousePos.y));
+                    if (blockId == 0) {
+                        WorldUtils.dropItem(currentInMouse, worldMousePos.x, worldMousePos.y);
+                        player.setItem(player.draggingItemIdx, null);
+                    }
                 }
+                player.resetItemInHand();
             }
             player.resetDraggingItem();
         }

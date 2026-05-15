@@ -1,8 +1,14 @@
 package core.UI;
 
+import core.Application;
+import core.Global;
+import core.input.InputListener;
 import core.math.Rectangle;
 import core.util.DebugTools;
 import core.util.Sized;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
 
 public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     protected static final int FLAG_X_CHANGED   = 1 << 0;
@@ -35,9 +41,19 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     protected float x, y;
     protected float width, height;
     protected int flags = FLAG_VISIBLE;
+    protected ArrayList<InputListener> inputListeners = new ArrayList<>();
 
     protected BaseElement(Group parent) {
         this.parent = parent;
+    }
+
+    public void addListener(InputListener listener) {
+        this.inputListeners.add(listener);
+    }
+
+    @Override
+    public final boolean remove() {
+        return parent != null && parent.remove(this);
     }
 
     @SuppressWarnings("unchecked")
@@ -87,13 +103,13 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     }
 
     protected void resize() {}
-    protected void updateThis() {}
+    protected void updateThis(float dt) {}
 
     @Override
-    public void update() {
+    public void update(float dt) {
         resize();
         flags &= ~(FLAG_X_CHANGED | FLAG_Y_CHANGED | FLAG_W_CHANGED | FLAG_H_CHANGED);
-        updateThis();
+        updateThis(dt);
     }
 
     // region Size setters
@@ -175,9 +191,75 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     }
 
     @Override
-    public Element hit(float hx, float hy) {
+    public @Nullable Element hit(float hx, float hy) {
         return Rectangle.contains(x, y, width, height, hx, hy) ? this : null;
     }
+
+
+
+    // region InputListener
+    @Override
+    public final boolean onTouchDown(float x, float y, int button) {
+        boolean anyHandled = false;
+        for (InputListener listener : inputListeners) {
+            if (listener.onTouchDown(x, y, button)) {
+                Global.uiScene.setTouchFocus(this);
+                anyHandled = true;
+            }
+        }
+        return anyHandled;
+    }
+
+    @Override
+    public final void onTouchUp(float x, float y, int button) {
+        inputListeners.forEach(listener -> listener.onTouchUp(x, y, button));
+    }
+
+    @Override
+    public final void onScroll(float xOffset, float yOffset) {
+        inputListeners.forEach(listener -> listener.onScroll(xOffset, yOffset));
+    }
+
+    @Override
+    public final void onMouseMove(float x, float y) {
+        inputListeners.forEach(listener -> listener.onMouseMove(x, y));
+    }
+
+    @Override
+    public final void onMouseDragged(float x, float y) {
+        inputListeners.forEach(listener -> listener.onMouseDragged(x, y));
+    }
+
+    @Override
+    public final void onKeyUp(int key, int scancode) {
+        inputListeners.forEach(listener -> listener.onKeyUp(key, scancode));
+    }
+
+    @Override
+    public final void onKeyDown(int key, int scancode) {
+        inputListeners.forEach(listener -> listener.onKeyDown(key, scancode));
+    }
+
+    @Override
+    public final void onKeyRepeat(int key, int scancode) {
+        inputListeners.forEach(listener -> listener.onKeyRepeat(key, scancode));
+    }
+
+    @Override
+    public final void onCodepoint(int codepoint) {
+        inputListeners.forEach(listener -> listener.onCodepoint(codepoint));
+    }
+
+    @Override
+    public final void onMouseEnter(float x, float y) {
+        inputListeners.forEach(listener -> listener.onMouseEnter(x, y));
+    }
+
+    @Override
+    public final void onMouseExit(float x, float y) {
+        inputListeners.forEach(listener -> listener.onMouseExit(x, y));
+    }
+    // endregion
 
     @Override
     public final String toString() {

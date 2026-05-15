@@ -24,7 +24,7 @@ public class Settings extends Dialog {
                 .set(40, 900, 240, 65)
                 .setName(Global.lang.get("Return"));
 
-        categories.oneOf(
+        Panel.oneOf(
                 categories.addButton(Styles.SIMPLE_TEXT_BUTTON, this::basicBtn)
                         .set(40, 200, 240, 65)
                         .setName(Global.lang.get("SettingsBasic"))
@@ -37,6 +37,8 @@ public class Settings extends Dialog {
                         .set(40, 300, 240, 65)
                         .setName(Global.lang.get("SettingsGraphics"))
                         .setColor(Styles.DIRTY_BLACK)
+                        .setClickable(false)
+                        .setClicked(true)
         );
 
         save = categories.addButton(Styles.TEXT_BUTTON, this::saveBtn)
@@ -83,6 +85,7 @@ public class Settings extends Dialog {
                     String lang = langs.get(i);
                     addButton(Styles.TEXT_BUTTON, () -> {
                         newLang = lang;
+                        Global.lang.setLanguage(lang);
                         dropDown.toggleVisibility();
                     })
                             .set(ox, oy - (h * (i + 1)) + (i * 6) + 6, w, h)
@@ -167,7 +170,7 @@ public class Settings extends Dialog {
         }
 
         @Override
-        public void updateThis() {
+        public void updateThis(float dt) {
             if (otterClicks >= 5) {
                 otterClicks = 0;
                 otterImage.setVisible(true);

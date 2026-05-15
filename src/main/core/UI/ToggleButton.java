@@ -19,7 +19,7 @@ public class ToggleButton extends BaseButton<ToggleButton> {
     }
 
     @Override
-    public void updateThis() {
+    public void updateThis(float dt) {
         if (!visible()) {
             return;
         }

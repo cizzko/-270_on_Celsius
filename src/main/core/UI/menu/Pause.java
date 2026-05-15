@@ -10,20 +10,20 @@ import static core.Global.input;
 
 public class Pause extends Dialog {
     public Pause() {
-        addPanel(Styles.SIMPLE_PANEL, 0, 0, input.getWidth(), input.getHeight());
-        addButton(Styles.TEXT_BUTTON, this::continueBtn)
+        var background = addPanel(Styles.SIMPLE_PANEL, 0, 0, input.getWidth(), input.getHeight());
+        background.addButton(Styles.TEXT_BUTTON, this::continueBtn)
                 .set(840, 650, 240, 65)
                 .setName(Global.lang.get("Continue"))
                 .setColor(Styles.DEFAULT_ORANGE);
-        addButton(Styles.TEXT_BUTTON, this::saveButton)
+        background.addButton(Styles.TEXT_BUTTON, this::saveButton)
                 .set(840, 550, 240, 65)
                 .setName(Global.lang.get("SaveWorld"))
                 .setColor(Styles.DEFAULT_ORANGE);
-        addButton(Styles.TEXT_BUTTON, this::exitBtn)
+        background.addButton(Styles.TEXT_BUTTON, this::exitBtn)
                 .set(840, 300, 240, 65)
                 .setName(Global.lang.get("Exit"))
                 .setColor(Styles.DIRTY_WHITE);
-        addButton(Styles.TEXT_BUTTON, this::settingsBtn)
+        background.addButton(Styles.TEXT_BUTTON, this::settingsBtn)
                 .set(840, 400, 240, 65)
                 .setName(Global.lang.get("Settings"))
                 .setColor(Styles.DIRTY_WHITE);

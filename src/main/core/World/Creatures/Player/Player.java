@@ -16,7 +16,6 @@ import core.math.Point2i;
 import core.util.Color;
 
 import static core.Global.*;
-import static core.World.Creatures.Player.Inventory.Inventory.*;
 import static core.World.Textures.TextureDrawing.toWorld;
 import static core.World.WorldUtils.getDistanceToMouse;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
@@ -34,15 +33,19 @@ public class Player {
             timeFromZero = System.currentTimeMillis();
 
     public static void updateInventoryInteraction() {
-        if (player.hasItemInHand()) {
-            updatePlaceableInteraction();
-        }
+        updatePlaceableInteraction();
     }
 
     // todo это наверное все же инвентарь, нежели игрок?
     //todo хотелось бы иметь рисование и взаимодействие поближе
     private static void updatePlaceableInteraction() {
-        ItemStack item = Global.player.getItemInHand();
+        if (player.hasDraggingItem()) {
+            return;
+        }
+        ItemStack item = player.getItemInHand();
+        if (item == null) {
+            return;
+        }
 
         if (input.clicked(GLFW_MOUSE_BUTTON_LEFT) && item != null && item.item() instanceof ItemBlock itemBlock) {
             if (input.mousePos().x > (Inventory.inventoryOpen ? 1487 : 1866)) {
@@ -50,7 +53,7 @@ public class Player {
                     return;
                 }
             }
-            Point2i pointedBlock = Global.input.mouseBlockPos();
+            Point2i pointedBlock = input.mouseBlockPos();
             var block = world.getBlock(pointedBlock.x, pointedBlock.y);
             if (block != null && block.type == StaticObjectsConst.Type.GAS && getDistanceToMouse() <= 9) {
                 updatePlaceableBlock(itemBlock.block, pointedBlock.x, pointedBlock.y);
@@ -67,13 +70,16 @@ public class Player {
     }
 
     public static void updateToolInteraction() {
-        if (Global.player.isDead()) {
+        if (player.isDead()) {
+            return;
+        }
+        if (player.hasDraggingItem()) {
             return;
         }
 
-        ItemStack item = Global.player.getItemInHand();
+        ItemStack item = player.getItemInHand();
         if (item != null && item.item() instanceof ItemTool tool) {
-            Point2i blockPos = Global.input.mouseBlockPos();
+            Point2i blockPos = input.mouseBlockPos();
             var block = world.getBlock(blockPos.x, blockPos.y);
             if (block == null || block == StaticObjectsConst.AIR) {
                 return;
@@ -99,14 +105,14 @@ public class Player {
             if (input.clicked(GLFW_MOUSE_BUTTON_LEFT) && nowTime - data.lastHitTime >= tool.secBetweenHits) {
                 data.lastHitTime = nowTime;
 
-                if (Global.world.damage(blockX, blockY, tool.damage)) {
-                    WorldUtils.dropItem(new ItemStack(Global.content.itemById(object)), toWorld(blockX), toWorld(blockY));
+                if (world.damage(blockX, blockY, tool.damage)) {
+                    WorldUtils.dropItem(new ItemStack(content.itemById(object)), toWorld(blockX), toWorld(blockY));
 
                     // трава, камешки
                     // Триггерит физ взаимодействие
                     var block = world.getBlock(blockX, blockY + 1);
-                    if (block != null && block != StaticObjectsConst.AIR && block.maxHp <= 1 && Global.world.damage(blockX, blockY + 1, 1)) {
-                        WorldUtils.dropItem(new ItemStack(Global.content.itemById(block)), toWorld(blockX), toWorld(blockY + 1));
+                    if (block != null && block != StaticObjectsConst.AIR && block.maxHp <= 1 && world.damage(blockX, blockY + 1, 1)) {
+                        WorldUtils.dropItem(new ItemStack(content.itemById(block)), toWorld(blockX), toWorld(blockY + 1));
                     }
                 }
             }

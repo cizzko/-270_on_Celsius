@@ -36,13 +36,14 @@ public class Panel extends BaseGroup<Panel> {
     // Метод для настройки вкладок. То есть это некоторый список действий (у нас за это кнопки отвечают),
     // в котором при на выполнении одного действия, нужно потом выполнить другое, чтобы разблокировать вновь это действие
     // Мне это нужно для красивого оформления, которое даёт setClickable(false)
-    public void oneOf(Button... buttons) {
+    public static void oneOf(Button... buttons) {
         for (Button button : buttons) {
             var oldAction = button.clickAction;
             button.onClick(b -> {
                 b.setClickable(false);
                 for (Button other : buttons) {
                     if (other != b) {
+                        other.setClicked(false);
                         other.setClickable(true);
                     }
                 }

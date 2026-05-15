@@ -1,6 +1,5 @@
 package core.World.WorldGenerator;
 
-import core.EventHandling.EventHandler;
 import core.*;
 import core.UI.menu.CreatePlanet;
 import core.World.PerlinNoiseGenerator;
@@ -13,21 +12,17 @@ import core.World.Textures.TextureDrawing;
 import core.World.World;
 import core.World.WorldUtils;
 import core.math.Point2i;
+import core.util.DebugTools;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static core.Global.*;
 
 public class WorldGenerator {
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LogManager.getLogger("WorldGen");
 
     public static float intersDamageMultiplier = 40f, minVectorIntersDamage = 1.8f;
     public static final int copySize = 50;
@@ -52,69 +47,56 @@ public class WorldGenerator {
         boolean randomSpawn = params.randomSpawn;
         boolean creatures = params.creatures;
 
-        log.debug("version: 2.2");
-        log.debug("World generator: starting generating world with size: {}x{}", world.sizeX, world.sizeY);
+        log("version: 2.2");
+        log("World generator: starting generating world with size: " + world.sizeX + "x" + world.sizeY);
 
         var playGameScene = new PlayGameScene();
 
         gameScene.addPreload(playGameScene);
 
-        step(() -> {
-            log.debug("generating relief {}ms", System.currentTimeMillis() - startTime);
-            generateRelief(world);
-        });
-
-        step(() -> {
-            log.debug("generating environment {}ms", System.currentTimeMillis() - startTime);
-            generateEnvironments(world);
-        });
-
-        step(() -> {
-            log.debug("generating caves {}ms", System.currentTimeMillis() - startTime);
-            generateCaves();
-        });
-
-        step(() -> {
-            log.debug("generating: copy {}ms", System.currentTimeMillis() - startTime);
-            copy();
-        });
-
-        step(() -> {
-            log.debug("regenerating shadow map {}ms", System.currentTimeMillis() - startTime);
-            ShadowMap.generate();
-        });
-
-        step(() -> {
-            log.debug("generating temperature map {}ms", System.currentTimeMillis() - startTime);
-            TemperatureMap.create();
-        });
-
-        step(() -> {
-            log.debug("generating player {}ms", System.currentTimeMillis() - startTime);
-            Global.player = WorldUtils.spawn(content.creatureById("player"), true);
-        });
-
-        step(() -> {
-            log.debug("generating done! {}ms", System.currentTimeMillis() - startTime);
-            scheduler.post(() -> startGame(playGameScene), Time.ONE_SECOND);
-            saveWorldImage(world.tiles, world.sizeX, world.sizeY);
-        });
-    }
-
-    private static void step(Runnable step) {
-        scheduler.post(step)
-                .whenComplete((v, e) -> {
+        log("generating relief " + (System.currentTimeMillis() - startTime) + "ms");
+        CompletableFuture.runAsync(() -> generateRelief(world))
+                .thenCompose(__ -> {
+                    log("generating environment " + (System.currentTimeMillis() - startTime) + "ms");
+                    return generateEnvironments(world);
+                })
+                .thenCompose(__ -> {
+                    log("generating caves " + (System.currentTimeMillis() - startTime) + "ms");
+                    return generateCaves();
+                })
+                .thenRun(() -> {
+                    log("generating: copy " + (System.currentTimeMillis() - startTime) + "ms");
+                    copy();
+                })
+                .thenRun(() -> {
+                    log("regenerating shadow map " + (System.currentTimeMillis() - startTime) + "ms");
+                    ShadowMap.generate();
+                })
+                .thenRun(() -> {
+                    log("generating temperature map " + (System.currentTimeMillis() - startTime) + "ms");
+                    TemperatureMap.create();
+                })
+                .thenRun(() -> {
+                    log("generating player " + (System.currentTimeMillis() - startTime) + "ms");
+                    Global.player = WorldUtils.spawn(content.creatureById("player"), true);
+                })
+                .thenRun(() -> {
+                    log("generating done! " + (System.currentTimeMillis() - startTime) + "ms");
+                    DebugTools.saveWorldImage();
+                    scheduler.post(() -> startGame(playGameScene), Time.ONE_SECOND);
+                })
+                .whenComplete((__, e) -> {
                     if (e != null) {
-                        e.printStackTrace();
+                        log.error("Failed to generate world", e);
                     }
                 });
     }
 
     private static void log(String text) {
-        // scheduler.post(() -> texts.get("WorldGeneratorState").text += text, 0.5f * Time.ONE_SECOND);
+        log.info(text);
+        scheduler.post(() -> UIMenus.createPlanet().appendText(text), 0.5f * Time.ONE_SECOND);
     }
 
-    //todo можно ускорить
     private static void copy() {
         int height = world.sizeY;
         int width = world.sizeX;
@@ -175,11 +157,11 @@ public class WorldGenerator {
 
                     if (lastSwapBiomes < 20 && Math.random() * lastSwapBiomes < 5) {
                         for (int y = 0; y < lastY; y++) {
-                            world.set((int) lastX, y, Global.content.blocksRegistry.typeById(lastBiomes.getBlocks()[(int) Math.min(lastBiomes.getBlocks().length - 1, lastY - y)]), false);
+                            world.set((int) lastX, y, content.blocksRegistry.typeById(lastBiomes.getBlocks()[(int) Math.min(lastBiomes.getBlocks().length - 1, lastY - y)]), false);
                         }
                     } else {
                         for (int y = 0; y < lastY; y++) {
-                            world.set((int) lastX, y, Global.content.blocksRegistry.typeById(availableBlocks[(int) Math.min(availableBlocks.length - 1, lastY - y)]), false);
+                            world.set((int) lastX, y, content.blocksRegistry.typeById(availableBlocks[(int) Math.min(availableBlocks.length - 1, lastY - y)]), false);
                         }
                     }
                 } else {
@@ -223,10 +205,9 @@ public class WorldGenerator {
         } while (!(lastX + copySize > world.sizeX));
     }
 
-    private static void generateCaves() {
+    private static CompletableFuture<Void> generateCaves() {
         int upper = 0;
         int iters = 0;
-
         int upperX = 100;
         int downedX = 100;
 
@@ -255,7 +236,9 @@ public class WorldGenerator {
         }
         log.debug("spawned {} caves with {} iters", caves, iters);
 
-        clearFloatingIslands(world.tiles, world.sizeX, world.sizeY, 50);
+        clearFloatingIslands(world.tiles, world.sizeX, world.sizeY, 30);
+
+        return CompletableFuture.completedFuture(null);
     }
 
     private static int generateCave(float x, float y, float radius, int minRadius, int maxRadius, int minAngle, int maxAngle, int startAngle, int maxAngleChange, int shotChance) {
@@ -327,20 +310,75 @@ public class WorldGenerator {
 
     //возможно плохо работает
     public static void clearFloatingIslands(short[] tiles, int sizeX, int sizeY, int minSize) {
-        boolean[] visited = new boolean[tiles.length];
+        int length = tiles.length;
+        boolean[] visited = new boolean[length];
+        int[] islandBuffer = new int[minSize + 1];
+        int[] stack = new int[length];
+        int[][] directions = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
 
         for (int y = 0; y < sizeY; y++) {
             for (int x = 0; x < sizeX; x++) {
                 int index = x + sizeX * y;
 
                 if (tiles[index] != 0 && !visited[index]) {
-                    List<Integer> islandIndices = new ArrayList<>();
-                    findIsland(tiles, x, y, sizeX, sizeY, visited, islandIndices);
+                    boolean hasNeighbors = false;
 
-                    if (islandIndices.size() < minSize) {
-                        for (int idx : islandIndices) {
+                    for (int[] dir : directions) {
+                        int nx = x + dir[0];
+                        int ny = y + dir[1];
+                        if (nx >= 0 && nx < sizeX && ny >= 0 && ny < sizeY) {
+                            if (tiles[nx + sizeX * ny] != 0) {
+                                hasNeighbors = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (!hasNeighbors) {
+                        tiles[index] = 0;
+                        world.destroy(x, y);
+                        visited[index] = true;
+                        continue;
+                    }
+
+                    int islandSize = 0;
+                    int stackPointer = 0;
+
+                    stack[stackPointer++] = index;
+                    visited[index] = true;
+
+                    while (stackPointer > 0) {
+                        int currentIdx = stack[--stackPointer];
+                        if (islandSize < minSize) {
+                            islandBuffer[islandSize] = currentIdx;
+                        }
+                        islandSize++;
+
+                        int cx = currentIdx % sizeX;
+                        int cy = currentIdx / sizeX;
+                        for (int[] dir : directions) {
+                            int nx = cx + dir[0];
+                            int ny = cy + dir[1];
+
+                            if (nx >= 0 && nx < sizeX && ny >= 0 && ny < sizeY) {
+                                int nextIdx = nx + sizeX * ny;
+                                if (tiles[nextIdx] != 0 && !visited[nextIdx]) {
+                                    visited[nextIdx] = true;
+                                    if (stackPointer < stack.length) {
+                                        stack[stackPointer++] = nextIdx;
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (islandSize < minSize) {
+                        for (int i = 0; i < islandSize; i++) {
+                            int idx = islandBuffer[i];
                             int px = idx % sizeX;
                             int py = idx / sizeX;
+
+                            tiles[idx] = 0;
                             world.destroy(px, py);
                         }
                     }
@@ -349,44 +387,14 @@ public class WorldGenerator {
         }
     }
 
-    private static void findIsland(short[] tiles, int startX, int startY, int sizeX, int sizeY, boolean[] visited, List<Integer> islandIndices) {
-        Queue<Integer> queue = new LinkedList<>();
 
-        int startIdx = startX + sizeX * startY;
-        queue.add(startIdx);
-        visited[startIdx] = true;
-
-        int[][] directions = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
-
-        while (!queue.isEmpty()) {
-            int currentIdx = queue.poll();
-            islandIndices.add(currentIdx);
-
-            int cx = currentIdx % sizeX;
-            int cy = currentIdx / sizeX;
-
-            for (int[] dir : directions) {
-                int nx = cx + dir[0];
-                int ny = cy + dir[1];
-
-                if (nx >= 0 && nx < sizeX && ny >= 0 && ny < sizeY) {
-                    int nextIdx = nx + sizeX * ny;
-
-                    if (tiles[nextIdx] != 0 && !visited[nextIdx]) {
-                        visited[nextIdx] = true;
-                        queue.add(nextIdx);
-                    }
-                }
-            }
-        }
-    }
-
-
-    private static void generateEnvironments(World world) {
-        generateTrees(world);
-        generateDecorStones(world);
-        generateHerb(world);
-        Structures.clearStructuresMap();
+    private static CompletableFuture<Void> generateEnvironments(World world) {
+        return CompletableFuture.runAsync(() -> {
+            generateTrees(world);
+            generateDecorStones(world);
+            generateHerb(world);
+            Structures.clearStructuresMap();
+        });
     }
 
     private static void generateTrees(World world) {
@@ -538,17 +546,6 @@ public class WorldGenerator {
     }
 
     private static void startGame(PlayGameScene playGameScene) {
-        //todo а починить
-//        world.registerListener(new WorkbenchLogic());
-//        world.registerListener(new Factories());
-//        world.registerListener(new Chests());
-//        Inventory.registerListener(new ElectricCables());
-//        Inventory.registerListener(new Factories());
-//        Inventory.registerListener(new Chests());
-//
-//        Inventory.create();
-
-        EventHandler.setDebugValue(() -> "[Player] x: " + player.getX() + ", y: " + player.getY());
 
         gameScene.onPreloadCompletion(() -> {
             UIMenus.createPlanet().hide();
@@ -568,34 +565,5 @@ public class WorldGenerator {
             }
         }
         return null;
-    }
-
-    public static void saveWorldImage(short[] tiles, int sizeX, int sizeY) {
-        if (EventHandler.debugLevel >= 2) {
-            BufferedImage image = new BufferedImage(sizeX, sizeY, BufferedImage.TYPE_INT_RGB);
-            Path path = assets.assetsDir().resolve("worldImage.png");
-
-            for (int y = 0; y < sizeY; y++) {
-                for (int x = 0; x < sizeX; x++) {
-                    short block = tiles[x + sizeX * y];
-
-                    if (block != 0) {
-                        image.setRGB(x, (sizeY - 1) - y, 0xFFFFFF);
-                    } else {
-                        image.setRGB(x, (sizeY - 1) - y, 0x000000);
-                    }
-                }
-            }
-
-            try {
-                File outputFile = new File(path.toUri());
-                if (outputFile.getParentFile() != null) {
-                    outputFile.getParentFile().mkdirs();
-                }
-                ImageIO.write(image, "png", outputFile);
-            } catch (IOException e) {
-                log.error(e.getMessage());
-            }
-        }
     }
 }

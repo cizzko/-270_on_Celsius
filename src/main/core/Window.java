@@ -8,20 +8,14 @@ import core.g2d.Font;
 import core.g2d.SortingBatch;
 import core.input.InputHandler;
 import core.util.DebugTools;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.io.IoBuilder;
-import org.lwjgl.glfw.GLFWImage;
-import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.glfw.GLFWWindowCloseCallback;
-import org.lwjgl.glfw.GLFWWindowFocusCallback;
+import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLUtil;
-import org.lwjgl.system.Configuration;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.system.Platform;
+import org.lwjgl.system.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -30,7 +24,7 @@ import java.nio.file.Files;
 
 import static core.EventHandling.EventHandler.debugLevel;
 import static core.Global.*;
-import static core.assets.TextureLoader.decodeImage;
+import static core.graphic.TextureLoader.decodeImage;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;
 
@@ -41,6 +35,14 @@ public final class Window extends Application {
     public static boolean windowFocused = true;
     public static long glfwWindow;
     public static Font defaultFont;
+
+    public static void setClipboardText(@Nullable CharSequence text) {
+        glfwSetClipboardString(glfwWindow, text);
+    }
+
+    public static @Nullable String getClipboardText() {
+        return glfwGetClipboardString(glfwWindow);
+    }
 
     @Override
     protected void init() throws Throwable {
@@ -58,26 +60,26 @@ public final class Window extends Application {
             Configuration.DEBUG_STACK.set(true);
         }
 
-//        glfwSetErrorCallback(Global.app.keep(new GLFWErrorCallback() {
-//            private final Marker GLFW = MarkerManager.getMarker("GLFW");
-//            private final Int2ObjectOpenHashMap<String> ERROR_CODES;
-//            {
-//                ERROR_CODES = new Int2ObjectOpenHashMap<>(APIUtil.apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, org.lwjgl.glfw.GLFW.class));
-//                ERROR_CODES.trim();
-//            }
-//
-//            @Override
-//            public void invoke(int error, long description) {
-//                String errorStr = ERROR_CODES.get(error);
-//                String msg = getDescription(description);
-//                lwjglLogger.error(GLFW, "error code: {}, description: {}", errorStr, msg);
-//
-//                StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-//                for (int i = 4; i < stack.length; i++) {
-//                    lwjglLogger.error(GLFW,"\tat {}", stack[i]);
-//                }
-//            }
-//        }));
+       glfwSetErrorCallback(Global.app.keep(new GLFWErrorCallback() {
+           private final Marker GLFW = MarkerManager.getMarker("GLFW");
+           private final Int2ObjectOpenHashMap<String> ERROR_CODES;
+           {
+               ERROR_CODES = new Int2ObjectOpenHashMap<>(APIUtil.apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, org.lwjgl.glfw.GLFW.class));
+               ERROR_CODES.trim();
+           }
+
+           @Override
+           public void invoke(int error, long description) {
+               String errorStr = ERROR_CODES.get(error);
+               String msg = getDescription(description);
+               lwjglLogger.error(GLFW, "error code: {}, description: {}", errorStr, msg);
+
+               StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+               for (int i = 4; i < stack.length; i++) {
+                   lwjglLogger.error(GLFW,"\tat {}", stack[i]);
+               }
+           }
+       }));
 
         switch (System.getenv("XDG_SESSION_TYPE")) {
             case "wayland" -> {

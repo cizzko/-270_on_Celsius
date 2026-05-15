@@ -35,6 +35,12 @@ public abstract class Style {
         public Font font;
     }
 
+    public static abstract class TextField extends Style {
+        public Font font;
+        public Drawable background;
+        public Color textColor;
+    }
+
     public static abstract class Slider extends Style {
         public Color sliderColor, dotColor;
         public Font font;

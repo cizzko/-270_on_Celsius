@@ -3,7 +3,7 @@ package core.g2d;
 import java.util.Map;
 
 public final class Font {
-    static final int fontSize = 18;
+    public static final int fontSize = 18;
 
     // см. AtlasGenerator
     static final int PIXEL_GAP = 1;

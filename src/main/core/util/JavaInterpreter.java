@@ -1,6 +1,7 @@
 package core.util;
 
 import core.EventHandling.EventHandler;
+import core.Global;
 import jdk.jshell.JShell;
 import jdk.jshell.SnippetEvent;
 import jdk.jshell.execution.LocalExecutionControlProvider;
@@ -9,9 +10,11 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.management.ManagementFactory;
+import java.lang.module.ModuleDescriptor;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 
 public class JavaInterpreter {
     private static final Logger log = LogManager.getLogger();
@@ -22,7 +25,7 @@ public class JavaInterpreter {
 
     public static final ExecutorService exec = Executors.newVirtualThreadPerTaskExecutor();
 
-    public static void init() {
+    public static void init(boolean exploded) {
         var runtimeMxBean = ManagementFactory.getRuntimeMXBean();
         var jvmArgs = runtimeMxBean.getInputArguments();
         for (String jvmArg : jvmArgs) {
@@ -31,22 +34,15 @@ public class JavaInterpreter {
                 jshell.addToClasspath(list);
             }
         }
+        if (!exploded) {
+            jshell.addToClasspath(System.getProperty("sun.boot.library.path"));
+        }
 
         execute0("import static core.Global.*;", null);
         execute0("import static core.Application.*;", null);
-        var packages = new TreeSet<>(JavaInterpreter.class.getModule().getPackages());
-        for (String excluded : List.of(
-                "content",
-                "fonts",
-                "langs",
-                "scripts",
-                "shaders",
-                "textures",
-                "UI",
-                "World"
-        )) {
-            packages.removeIf(s -> s.startsWith(excluded));
-        }
+        var packages = JavaInterpreter.class.getModule().getDescriptor().exports().stream()
+                .map(ModuleDescriptor.Exports::source)
+                .collect(Collectors.toCollection(TreeSet::new));
         for (String aPackage : packages) {
             execute0("import " + aPackage + ".*;", null);
         }

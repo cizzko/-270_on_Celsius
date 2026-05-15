@@ -6,8 +6,11 @@ import core.assets.AssetsManager;
 import core.g2d.Atlas;
 import core.g2d.Font;
 import core.g2d.Texture;
+import core.util.Commandline;
+import core.util.DebugTools;
 
 import static core.Global.*;
+import static org.lwjgl.glfw.GLFW.*;
 
 public final class MenuScene extends GameScene {
 
@@ -20,6 +23,7 @@ public final class MenuScene extends GameScene {
 
     @Override
     public void onInit() {
+        DebugTools.initDebugValuesMenu();
         camera.setToOrthographic(input.getWidth(), input.getHeight());
         batch.matrix(camera.projection);
     }
@@ -38,7 +42,12 @@ public final class MenuScene extends GameScene {
 
     @Override
     protected void inputUpdate() {
-
+        if (EventHandler.debugLevel >= 2) {
+            if (input.justPressed(GLFW_KEY_F1)) {
+                uiScene.debug();
+            }
+        }
+        Commandline.inputUpdate();
     }
 
     @Override

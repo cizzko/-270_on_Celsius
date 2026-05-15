@@ -14,7 +14,7 @@ public final class Rectangle {
         return vector;
     }
 
-    public boolean contains(float rx, float ry, float rwidth, float rheight) {
+    public boolean overlaps(float rx, float ry, float rwidth, float rheight) {
         return x <= rx + rwidth && x + width >= rx && y <= ry + rheight && y + height >= ry;
     }
 

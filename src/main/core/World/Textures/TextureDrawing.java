@@ -59,7 +59,7 @@ public class TextureDrawing {
             drawText((x + (i * 54)) + playerSize + 28, y + 3,
                     item.count() > 9 ? "9+" : String.valueOf(item.count()), Styles.DIRTY_BRIGHT_BLACK);
 
-            float uiScale = item.item().getUiScale();
+            float uiScale = item.item().uiScale();
             var tex = item.item().texture;
             batch.scale(uiScale);
             batch.draw(tex, (x + (i * 54)) + playerSize + 5, y + 15,
@@ -67,20 +67,17 @@ public class TextureDrawing {
         }
     }
 
-    public static void drawText(float x, float y, String text, Color color) {
+    public static void drawText(float x, float y, CharSequence text, Color color) {
         drawText(x, y, text, color.rgba8888());
     }
 
-    public static void drawText(float x, float y, String text, int rgba8888) {
+    public static void drawText(float x, float y, CharSequence text, int rgba8888) {
         float startX = x;
 
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
 
-            if (ch == ' ') {
-                x += Window.defaultFont.getGlyph('A').width();
-                continue;
-            } else if (ch == '\\' && i + 1 < text.length() && text.charAt(i + 1) == 'n') {
+            if (ch == '\\' && i + 1 < text.length() && text.charAt(i + 1) == 'n') {
                 y -= 30;
                 i++;
                 x = startX;
@@ -92,7 +89,7 @@ public class TextureDrawing {
         }
     }
 
-    public static void drawText(float x, float y, String text) {
+    public static void drawText(float x, float y, CharSequence text) {
         drawText(x, y, text, Styles.TEXT_COLOR);
     }
 
@@ -118,11 +115,7 @@ public class TextureDrawing {
         for (int i = 0; i < text.length(); i++) {
             char c = text.charAt(i);
 
-            if (c == ' ') {
-                currentWidth += font.getGlyph('A').width();
-            } else {
-                currentWidth += font.getGlyph(c).width();
-            }
+            currentWidth += font.getGlyph(c).width();
             if (currentWidth > maxWidth) {
                 modifiedText.append("\\n");
                 currentWidth = 0;
@@ -154,11 +147,6 @@ public class TextureDrawing {
 
         for (int i = 0; i < longestLine.length(); i++) {
             char c = longestLine.charAt(i);
-
-            if (c == ' ') {
-                width += Window.defaultFont.getGlyph('A').width();
-                continue;
-            }
             width += Window.defaultFont.getGlyph(c).width();
         }
         return textSize.set(width, linesCount * 28 + 16);
@@ -199,7 +187,7 @@ public class TextureDrawing {
         int wx = x * blockSize;
         int wy = y * blockSize;
 
-        if (viewport.contains(wx, wy, block.texture.width(), block.texture.height())) {
+        if (viewport.overlaps(wx, wy, block.texture.width(), block.texture.height())) {
             Color color = ShadowMap.getColorTo(x, y, tmp);
             int a = (color.r() + color.g() + color.b()) / 3;
             if (canBreak) {
@@ -292,13 +280,13 @@ public class TextureDrawing {
 
                     float rightmostX = ent.getX() + hitbox.width;
                     if (rightmostX >= (rightBorder - Physics.swap * blockSize) && rightmostX <= (rightBorder + Physics.swap * blockSize) &&
-                        !viewport.contains(ent.getX(), ent.getY(), hitbox.width, hitbox.height)) {
+                        !viewport.overlaps(ent.getX(), ent.getY(), hitbox.width, hitbox.height)) {
                         drawX -= dx;
                     } else if (ent.getX() >= (leftBorder - Physics.swap * blockSize) && ent.getX() <= (leftBorder + Physics.swap * blockSize) &&
-                               !viewport.contains(ent.getX(), ent.getY(), hitbox.width, hitbox.height)) {
+                               !viewport.overlaps(ent.getX(), ent.getY(), hitbox.width, hitbox.height)) {
                         drawX += dx;
                     }
-                    if (viewport.contains(drawX, ent.getY(), hitbox.width, hitbox.height)) {
+                    if (viewport.overlaps(drawX, ent.getY(), hitbox.width, hitbox.height)) {
                         d.draw(drawX);
                     }
                 }
@@ -315,7 +303,7 @@ public class TextureDrawing {
     }
 
     public static void drawItem(float x, float y, Item item) {
-        float uiScale = item.getUiScale();
+        float uiScale = item.uiScale();
         Atlas.Region tex = item.texture;
         batch.draw(tex, x + 5, y + 5, tex.width() * uiScale, tex.width() * uiScale);
     }

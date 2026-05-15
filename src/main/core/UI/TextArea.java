@@ -4,6 +4,8 @@ import core.Global;
 
 import java.util.Objects;
 
+import static core.Global.*;
+
 public class TextArea extends BaseElement<TextArea> {
     private final GlyphCache cache = new GlyphCache();
 
@@ -40,7 +42,7 @@ public class TextArea extends BaseElement<TextArea> {
         int count = cache.getCount();
         for (int i = 0; i < count; i++) {
             GlyphCache.GlyphData pos = glyphs.get(i);
-            Global.batch.draw(pos.glyph, pos.colorRgba, pos.x, pos.y);
+            batch.draw(pos.glyph, pos.rgba8888, pos.x, pos.y);
         }
     }
 }

@@ -24,27 +24,14 @@ public class WorldUtils {
         int dx = rightBorder - leftBorder;
 
         if (x > rightBorder) {
-            // |xxx|
-            // ^ (world.sizeX - swap)*blockSize
-            //     ^ world.sizeX*blockSize
-
-            // |0..25|26..50|51..76|
-            //       ^      ^
-            // 25 = 51 - dx ; dx = 51 - 25
-            // x -= dx
-
             return x - dx;
         } else if (x < leftBorder) {
-            // |0..25|26..50|51..76|
-            //       ^      ^
-            // 51 = 25 + dx ; dx = 51 - 25
-            // x += dx
-
             return x + dx;
         }
         return x;
     }
 
+    /// @return абсолютное значение в блоках от игрока до мыши
     public static int getDistanceToMouse() {
         return (int) Math.abs(
                 (player.getX() / TextureDrawing.blockSize - Global.input.mouseBlockPos().x) +

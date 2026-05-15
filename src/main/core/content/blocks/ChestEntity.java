@@ -73,7 +73,7 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
                 //поч
                 // Потому что порядок обновления блоков в мире не определен и кто знает что ещё будет рендерить в этом апдейте
                 Point2i mousePos = input.mousePos();
-                float uiScale = item.item().getUiScale();
+                float uiScale = item.item().uiScale();
                 Atlas.Region tex = item.item().texture;
                 batch.draw(tex, mousePos.x - 15, mousePos.y - 15, tex.width() * uiScale, tex.height() * uiScale);
             }

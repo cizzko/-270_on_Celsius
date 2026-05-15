@@ -2,10 +2,7 @@ package core.UI.menu;
 
 import core.Constants;
 import core.Global;
-import core.UI.Button;
-import core.UI.Dialog;
-import core.UI.ImageElement;
-import core.UI.Styles;
+import core.UI.*;
 import core.UIMenus;
 import core.World.WorldGenerator.WorldGenerator;
 
@@ -15,24 +12,28 @@ public class CreatePlanet extends Dialog {
     private final ImageElement planet;
     private final GenerationParameters parameters = new GenerationParameters();
     private final Dialog basicParameters, generationParameters;
+    private final TextArea consoleBox;
 
     public CreatePlanet() {
-        addPanel(Styles.DEFAULT_PANEL, 20, 20, 1880, 200);
-        addPanel(Styles.DEFAULT_PANEL, 20, 240, 1400, 820);
+        var console = addPanel(Styles.DEFAULT_PANEL, 20, 20, 1880, 200);
+        consoleBox = console.append(gr -> new TextArea(gr, Styles.DEFAULT_TEXT))
+                .set(40, 220, 1860, 200);
+
+        var background = addPanel(Styles.DEFAULT_PANEL, 20, 240, 1400, 820);
         var sizePanel = addPanel(Styles.DEFAULT_PANEL, 1440, 240, 460, 820);
         sizePanel.addImage(1460, 620, atlas.get("World/WorldGenerator/skyBackgroundPlanet"));
+        planet = sizePanel.addImage(1510, 670, atlas.get("World/WorldGenerator/planetMini"));
         // Панель с вкладками
-        var upperPanel = addPanel(Styles.SIMPLE_PANEL, 40, 955, 1360, 85);
-        planet = addImage(1510, 670, atlas.get("World/WorldGenerator/planetMini"));
+        var upperPanel = background.addPanel(Styles.SIMPLE_PANEL, 40, 955, 1360, 85);
 
-        addButton(Styles.SIMPLE_TEXT_BUTTON, b -> {
+        upperPanel.addButton(Styles.SIMPLE_TEXT_BUTTON, b -> {
             hide();
             UIMenus.mainMenu().show();
         })
         .set(40, 975, 240, 65)
         .setName(Global.lang.get("Return"));
 
-        upperPanel.oneOf(
+        Panel.oneOf(
             // Поскольку сделать что-то с ресивером нельзя, то приходится страдать и тут указывать `upperPanel.`
             upperPanel.addButton(Styles.SIMPLE_TEXT_BUTTON, this::basicBtn)
                     .set(640, 975, 240, 65)
@@ -40,7 +41,7 @@ public class CreatePlanet extends Dialog {
             upperPanel.addButton(Styles.SIMPLE_TEXT_BUTTON, this::generationBtn)
                     .set(900, 975, 240, 65)
                     .setName(Global.lang.get("Generation")),
-            upperPanel.addButton(Styles.SIMPLE_TEXT_BUTTON, () -> {})
+            upperPanel.addButton(Styles.SIMPLE_TEXT_BUTTON, this::physicsBtn)
                     .set(1160, 975, 240, 65)
                     .setName(Global.lang.get("Physics"))
         );
@@ -78,6 +79,11 @@ public class CreatePlanet extends Dialog {
         }});
     }
 
+    private void physicsBtn() {
+        generationParameters.setVisible(false);
+        basicParameters.setVisible(false);
+    }
+
     private void basicBtn(Button b) {
         generationParameters.setVisible(false);
         basicParameters.setVisible(true);
@@ -86,6 +92,11 @@ public class CreatePlanet extends Dialog {
     private void generationBtn(Button b) {
         basicParameters.setVisible(false);
         generationParameters.setVisible(true);
+    }
+
+    public void appendText(String text) {
+        String prev = consoleBox.text == null ? "" : consoleBox.text;
+        consoleBox.setText(prev + '\n' + text);
     }
 
     public static class GenerationParameters {

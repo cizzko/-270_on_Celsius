@@ -15,6 +15,7 @@ import java.util.Arrays;
 import static core.Window.glfwWindow;
 import static core.util.FixedBitset.createBitSet;
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL46.*;
 
 public class InputHandler {
     private static final Logger log = LogManager.getLogger();
@@ -32,6 +33,7 @@ public class InputHandler {
     private long lastMouseMoveTimestamp;
     private float scrollOffset = 1, scrollChange = 0;
     private int width, height;
+    private boolean anyMouseClick;
 
     public InputHandler(int width, int height) {
         this.width = width;
@@ -46,11 +48,20 @@ public class InputHandler {
     }
 
     public void init() {
+
         glfwSetCursorPosCallback(glfwWindow, Global.app.keep(new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double xpos, double ypos) {
+                int y = (int) (height - ypos);
+                int x = (int) xpos;
                 lastMouseMoveTimestamp = System.currentTimeMillis();
                 mousePos.set((int) xpos, (int) (height - ypos));
+                mousePos.set(x, y);
+                if (anyMouseClick) {
+                    onMouseDragged(x, y);
+                } else {
+                    onMouseMove(x, y);
+                }
             }
         }));
         glfwSetKeyCallback(glfwWindow, Global.app.keep(new GLFWKeyCallback() {
@@ -64,13 +75,21 @@ public class InputHandler {
                     case GLFW_PRESS -> {
                         setBit(pressed, key);
                         setBit(justPressed, key);
+
+                        onKeyDown(key, scancode);
                     }
                     case GLFW_RELEASE -> {
                         unsetBit(pressed, key);
                         unsetBit(repeated, key);
                         setBit(justPressed, key);
+
+                        onKeyUp(key, scancode);
                     }
-                    case GLFW_REPEAT -> setBit(repeated, key);
+                    case GLFW_REPEAT -> {
+                        setBit(repeated, key);
+
+                        onKeyRepeat(key, scancode);
+                    }
                 }
             }
         }));
@@ -81,10 +100,16 @@ public class InputHandler {
                     case GLFW_PRESS -> {
                         setBit(clicked, button);
                         setBit(justClicked, button);
+
+                        anyMouseClick = true;
+                        onTouchDown(mousePos.x, mousePos.y, button);
                     }
                     case GLFW_RELEASE -> {
                         unsetBit(clicked, button);
                         setBit(justClicked, button);
+
+                        anyMouseClick = false;
+                        onTouchUp(mousePos.x, mousePos.y, button);
                     }
                 }
             }
@@ -94,6 +119,7 @@ public class InputHandler {
             public void invoke(long window, double xoffset, double yoffset) {
                 scrollOffset = Math.clamp((float)yoffset + scrollOffset, 0, 50);
                 scrollChange = (float) yoffset;
+                onScroll((float) xoffset, (float) yoffset);
             }
         }));
         glfwSetWindowSizeCallback(glfwWindow, Global.app.keep(new GLFWWindowSizeCallback() {
@@ -101,8 +127,15 @@ public class InputHandler {
             public void invoke(long window, int w, int h) {
                 width = w;
                 height = h;
-                GL46.glViewport(0, 0, w, h);
+                glViewport(0, 0, w, h);
                 onResize(w, h);
+            }
+        }));
+        glfwSetCharCallback(glfwWindow, Global.app.keep(new GLFWCharCallback() {
+            @Override
+            public void invoke(long window, int codepoint) {
+                var c = Character.toChars(codepoint);
+                onCodepoint(codepoint);
             }
         }));
     }
@@ -233,5 +266,42 @@ public class InputHandler {
         }
         log.error("Unexpected button: {}", i);
         return false;
+    }
+
+
+    private void onKeyRepeat(int key, int scancode) {
+        listeners.forEach(listener -> listener.onKeyRepeat(key, scancode));
+    }
+
+    private void onCodepoint(int codepoint) {
+        listeners.forEach(listener -> listener.onCodepoint(codepoint));
+    }
+
+    private void onTouchDown(int x, int y, int button) {
+        listeners.forEach(listener -> listener.onTouchDown(x, y, button));
+    }
+
+    private void onTouchUp(int x, int y, int button) {
+        listeners.forEach(listener -> listener.onTouchUp(x, y, button));
+    }
+
+    private void onScroll(float xOffset, float yOffset) {
+        listeners.forEach(listener -> listener.onScroll(xOffset, yOffset));
+    }
+
+    private void onMouseMove(int x, int y) {
+        listeners.forEach(listener -> listener.onMouseMove(x, y));
+    }
+
+    private void onMouseDragged(int x, int y) {
+        listeners.forEach(listener -> listener.onMouseDragged(x, y));
+    }
+
+    private void onKeyUp(int key, int scancode) {
+        listeners.forEach(listener -> listener.onKeyUp(key, scancode));
+    }
+
+    private void onKeyDown(int key, int scancode) {
+        listeners.forEach(listener -> listener.onKeyDown(key, scancode));
     }
 }

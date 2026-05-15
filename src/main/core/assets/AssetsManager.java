@@ -25,6 +25,8 @@ import java.util.function.Consumer;
 public final class AssetsManager {
     static final Logger log = LogManager.getLogger("AssetsManager");
 
+    final boolean exploded;
+
     // TODO а точно нужна карта? Может хочется сделать полиморфные загрузчики
     //  Вообще, тут возможно состояние гонки, т.к. к этим объектам идёт доступ из других потоков в load()
     final Map<Class<?>, AssetHandler<?, ?, ?>> handlers = new IdentityHashMap<>();
@@ -37,6 +39,7 @@ public final class AssetsManager {
     final AssetReleaser releaser = this::releaseInternal;
 
     public AssetsManager(boolean exploded, String appName) throws IOException {
+        this.exploded = exploded;
         this.workingDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
         this.dataDir = switch (Platform.get()) {
             case WINDOWS -> Path.of(System.getenv("AppData"), appName).toAbsolutePath();
@@ -67,7 +70,7 @@ public final class AssetsManager {
         register(new TextureHandler());
         register(new AtlasHandler());
 
-        JavaInterpreter.init();
+        JavaInterpreter.init(exploded);
         try (var dirstr = Files.newDirectoryStream(assetsDir.resolve("scripts"), "*.java")) {
             StringBuilder sb = new StringBuilder();
             for (Path jscript : dirstr) {
@@ -92,19 +95,24 @@ public final class AssetsManager {
         }
     }
 
+    public boolean isExploded() { return exploded; }
+
     public void register(AssetHandler<?, ?, ?> loader) {
         loader.setDir(assetsDir.resolve(loader.dirName));
         handlers.put(loader.type(), loader);
     }
 
+    /// Текущая директория откуда запустили игру
     public Path workingDir() {
         return workingDir;
     }
 
+    /// %AppData% и аналоги. Сюда сохраняем настройки и всё важное
     public Path dataDir() {
         return dataDir;
     }
 
+    /// Данная директория только для чтения, поскольку может содержать внутреннее пути архива
     public Path assetsDir() {
         return assetsDir;
     }
