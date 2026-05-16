@@ -1,5 +1,7 @@
 package core;
 
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
+
 import static core.Global.scheduler;
 import static core.Global.uiScene;
 import static core.util.DebugTools.rethrow;
@@ -65,13 +67,17 @@ public abstract class GameScene implements AssetLifecycle {
                 }
             }
             case LOADED -> readyLoop();
+            case UNLOADED -> {}
         }
     }
 
     private void readyLoop() {
         scheduler.executeAll();
+        if (state == State.UNLOADED) return;
         objectLoader.updatePreload();
+        if (state == State.UNLOADED) return;
         uiScene.update(Time.delta);
+        if (state == State.UNLOADED) return;
         inputUpdate();
         update();
         draw();
@@ -79,8 +85,13 @@ public abstract class GameScene implements AssetLifecycle {
 
     @Override
     public void onLoaded() {}
+
+
     @Override
-    public void onUnloaded() {}
+    @MustBeInvokedByOverriders
+    public void onUnloaded() {
+        state = State.UNLOADED;
+    }
 
     protected abstract void inputUpdate();
     protected abstract void update();
@@ -101,6 +112,7 @@ public abstract class GameScene implements AssetLifecycle {
     protected enum State {
         LOADING,
         FAILED,
-        LOADED
+        LOADED,
+        UNLOADED
     }
 }

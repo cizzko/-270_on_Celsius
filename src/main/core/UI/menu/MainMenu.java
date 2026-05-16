@@ -14,6 +14,8 @@ import static core.Global.*;
 
 public class MainMenu extends Dialog {
     public MainMenu() {
+        setMaximized(true);
+
         var panel = addPanel(Styles.SIMPLE_PANEL, 0, 965, input.getWidth(), 115);
         panel.addImageButton(this::discordBtn)
                 .setPosition(1830, 990)
@@ -29,10 +31,18 @@ public class MainMenu extends Dialog {
         panel.addButton(Styles.TEXT_BUTTON, this::playButton)
                 .set(46, 990, 240, 65)
                 .setName(lang.get("Play"));
+        // panel.addButton(Styles.TEXT_BUTTON, this::loadSave)
+        //         .set(46 + 240 + 20, 990, 240, 65)
+        //         .setName(lang.get("LoadSave"));
+    }
+
+    private void loadSave() {
+        hide();
+        UIMenus.loadSave().show();
     }
 
     private void discordBtn() {
-        try {
+        try { // TODO НЕ ИСПОЛЬЗОВАТЬ АПИ ЖАВЫ
             Desktop desktop = Desktop.getDesktop();
             desktop.browse(new URI("https://discord.gg/gUS9X6exAQ"));
         } catch (Exception e) {

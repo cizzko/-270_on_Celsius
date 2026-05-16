@@ -37,11 +37,12 @@ public final class Global {
         }
         try {
             newGameScene.init();
+            gameScene = newGameScene;
         } catch (Exception e) {
             newGameScene.unload();
+            gameScene = null;
             rethrow(e);
         }
-        gameScene = newGameScene;
     }
 
     public static final ContentManager content = new ContentManager();

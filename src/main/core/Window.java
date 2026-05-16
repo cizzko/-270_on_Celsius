@@ -124,13 +124,17 @@ public final class Window extends Application {
         printComputerInfo();
 
         if (Config.getBoolean("VerticalSync")) {
-            log.info("Framerate: Vertical Sync");
+            log.info("Target Framerate: Vertical Sync");
             glfwSwapInterval(1);
         } else {
             glfwSwapInterval(0);
-            int targetFPS = Config.getInt("TargetFPS", 60);
-            log.info("Framerate: {} fps", targetFPS);
-            setFramerate(targetFPS);
+            int targetFPS = Config.getInt("TargetFPS", -1);
+            if (targetFPS != -1) {
+                log.info("Target Framerate: {} FPS", targetFPS);
+                setFramerate(targetFPS);
+            } else {
+                log.info("Target Framerate: Uncapped");
+            }
         }
 
         GL.createCapabilities();
@@ -161,8 +165,6 @@ public final class Window extends Application {
 
         batch = new SortingBatch(4 * 1024 * 1024, 1024 * 8, 1024 * 8);
 
-        addListener(new AutoSaveListener());
-
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
         glfwShowWindow(glfwWindow);
 
@@ -170,6 +172,8 @@ public final class Window extends Application {
         lang.load(); // TODO придумать как загружать и перезагружать
 
         entityPool = new EntityPool(Short.MAX_VALUE);
+
+        DebugTools.initDebugValuesMenu();
 
         setGameScene(new MenuScene());
     }
@@ -219,10 +223,6 @@ public final class Window extends Application {
         //   с которым динамические сущности взаимодействуют, то разве не должен быть обратным порядок?
         // 6) Отрисовка мира в порядке отображения
         updateTime();
-
-        for (ApplicationListener listener : listeners) {
-            listener.update();
-        }
 
         input.update();
         gameScene.loop();

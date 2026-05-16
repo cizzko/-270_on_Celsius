@@ -1,19 +1,19 @@
-package core.UI;
+package core.UI.animation;
 
 import core.pool.Poolable;
 
-public abstract class Action implements Poolable {
-    protected Element actor;
+public abstract class Action<A> implements Poolable {
+    protected A actor;
 
     public abstract boolean act(float delta);
 
     public void restart() {}
 
-    public Element getActor() {
+    public A actor() {
         return actor;
     }
 
-    public void setActor(Element actor) {
+    public void setActor(A actor) {
         this.actor = actor;
     }
 

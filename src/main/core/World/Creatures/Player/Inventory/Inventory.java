@@ -2,7 +2,6 @@ package core.World.Creatures.Player.Inventory;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Config;
-import core.Global;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.Item;
 import core.World.ItemBlock;
@@ -17,6 +16,7 @@ import static core.Global.*;
 import static core.Global.player;
 import static core.World.Textures.TextureDrawing.*;
 import static core.World.WorldUtils.getDistanceToMouse;
+import static core.content.creatures.ItemEntity.ITEM_DROPPED_SIZE;
 import static core.util.Color.*;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
@@ -165,14 +165,17 @@ public class Inventory {
                     }
                 } else {
                     var worldMousePos = input.mouseWorldPos();
+
                     var dst = WorldUtils.getDistanceToMouse();
                     if (dst > 5) {
                         worldMousePos.sub(player.getX(), player.getY()).nor().scale(dst);
                         worldMousePos.add(player.getX(), player.getY());
                     }
+                    worldMousePos.sub(ITEM_DROPPED_SIZE/2f, ITEM_DROPPED_SIZE/2f);
+
                     int blockId = world.getBlockId(toBlock(worldMousePos.x), toBlock(worldMousePos.y));
                     if (blockId == 0) {
-                        WorldUtils.dropItem(currentInMouse, worldMousePos.x, worldMousePos.y);
+                        WorldUtils.spawnItemEntity(currentInMouse, worldMousePos.x, worldMousePos.y);
                         player.setItem(player.draggingItemIdx, null);
                     }
                 }

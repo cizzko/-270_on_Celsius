@@ -80,12 +80,13 @@ public class Player {
         ItemStack item = player.getItemInHand();
         if (item != null && item.item() instanceof ItemTool tool) {
             Point2i blockPos = input.mouseBlockPos();
-            var block = world.getBlock(blockPos.x, blockPos.y);
-            if (block == null || block == StaticObjectsConst.AIR) {
+            int blockId = world.getBlockId(blockPos.x, blockPos.y);
+            if (blockId <= 0) {
                 return;
             }
 
             var data = item.getOrCreateData(ItemData.Tool::new);
+            var block = world.getBlock(blockPos.x, blockPos.y);
             if (block.isMultiblock()) {
                 updateMultiblockByTool(blockPos.x, blockPos.y, block, tool, data);
             } else {

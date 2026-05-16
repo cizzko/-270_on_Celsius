@@ -1,7 +1,5 @@
 package core.UI;
 
-import core.Global;
-
 import java.util.Objects;
 
 import static core.Global.*;

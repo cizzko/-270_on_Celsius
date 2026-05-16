@@ -33,24 +33,12 @@ public class WorkbenchLogic {
 
     public static void updateInput() {
         updateBenchButton();
-        updateOpen();
         updateScroll();
         updateBuildButton();
     }
 
     private static void updateBenchButton() {
         nearbyWorkbench.clear();
-    }
-
-    private static void updateOpen() {
-        // Point2i blockUMB = Global.input.mouseBlockPos();
-        // todo сделать проверку на нахождение мыши на элте интерфейса
-        // if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && getFileName(world.get(blockUMB.x, blockUMB.y)) != null && getFileName(world.get(blockUMB.x, blockUMB.y)).toLowerCase().contains("workbench")) {
-        //     isOpen = true;
-        // }
-        if (EventHandler.isMouseClickedIn(1768, 0, 1810, 42) || input.justPressed(GLFW_KEY_B)) {
-            isOpen = !isOpen;
-        }
     }
 
     private static void updateScroll() {
@@ -86,57 +74,6 @@ public class WorkbenchLogic {
                 current = 3;
             }
         }
-
-        batch.draw(atlas.get("UI/GUI/buildMenu/menuClosed"), 1650, 0);
-
-        if (isOpen) {
-            batch.draw(atlas.get("UI/GUI/workbenchMenu/menu" + (currentObject == null ? "Small" : "Full")), menuXPos, 400);
-            Fill.rect(menuXPos + 3, 587 + (54 * current), 3, 32, Color.fromRgba8888(255, 80, 0, 200));
-
-            if (!nearbyWorkbench.containsKey(Workbench.Tier.SMALL)) {
-                Fill.rect(menuXPos + 8, 742, 46, 46, fogging);
-            }
-            if (!nearbyWorkbench.containsKey(Workbench.Tier.MEDIUM)) {
-                Fill.rect(menuXPos + 8, 688, 46, 46, fogging);
-            }
-            if (!nearbyWorkbench.containsKey(Workbench.Tier.LARGE)) {
-                Fill.rect(menuXPos + 8, 634, 46, 46, fogging);
-            }
-
-            final int IN_ROW = 9;
-
-            var currentWorkbench = getCurrentItems();
-            for (int i = 0, y = 0; i < currentWorkbench.size(); i++) {
-                int x = i % IN_ROW;
-
-                float xCoord = menuXPos + 70 + x * 54;
-                //float yCoord = 57 + scroll + (smallWorkbenchItems[x][y].type.ordinal() * 20) + y * 54f;
-                float yCoord = 1000 + scroll + (y * 54f);
-
-                if (yCoord < 755) {
-                    drawItem(xCoord, yCoord, currentWorkbench.get(i));
-
-                    if (EventHandler.isMouseClickedIn((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
-                        currentObject = new Point2i(x, y);
-                        currentObjectIdx = i;
-                    }
-                }
-                if (x == 0) {
-                    y++;
-                }
-            }
-
-            //todo описания
-            if (currentObjectIdx != -1) {
-                TextureDrawing.drawText(menuXPos + 585, 703, currentWorkbench.get(currentObjectIdx).getName());
-                drawRequirements(menuXPos + 590,  648);
-                batch.draw(atlas.get("UI/GUI/inventory/inventoryCurrent"), menuXPos + 62 + currentObject.x * 54,  986 + scroll + (currentObject.y * 54));
-            }
-
-            // scrollbar
-            //Color color = Color.fromRgba8888(0, 0, 0, 200);
-            //Fill.rect(1915, (int) Math.abs(scroll / 2f) - 5, 4, 20, color);
-        }
     }
 
     private static List<Item> getCurrentItems() {
@@ -165,6 +102,10 @@ public class WorkbenchLogic {
                 }
             }
         }
+    }
+
+    public static void toggleBuildMenu() {
+        isOpen = !isOpen;
     }
 
     record ItemCraftTransaction(int x, int y, int count) {}

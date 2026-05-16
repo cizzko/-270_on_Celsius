@@ -181,7 +181,7 @@ public class Settings extends Dialog {
             }
         }
 
-        final Vector2f speed = new Vector2f(5f, 5f);
+        static final Vector2f speed = new Vector2f(8f, 8f);
 
         private void runOtter() {
             float x = otterImage.x();

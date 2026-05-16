@@ -2,6 +2,7 @@ package core;
 
 import core.EventHandling.EventHandler;
 import core.UI.Styles;
+import core.UI.menu.CreatePlanet;
 import core.assets.AssetsManager;
 import core.g2d.Atlas;
 import core.g2d.Font;
@@ -23,7 +24,8 @@ public final class MenuScene extends GameScene {
 
     @Override
     public void onInit() {
-        DebugTools.initDebugValuesMenu();
+        DebugTools.initMenu();
+
         camera.setToOrthographic(input.getWidth(), input.getHeight());
         batch.matrix(camera.projection);
     }
@@ -42,11 +44,7 @@ public final class MenuScene extends GameScene {
 
     @Override
     protected void inputUpdate() {
-        if (EventHandler.debugLevel >= 2) {
-            if (input.justPressed(GLFW_KEY_F1)) {
-                uiScene.debug();
-            }
-        }
+        DebugTools.menuHotKeys();
         Commandline.inputUpdate();
     }
 
@@ -59,6 +57,12 @@ public final class MenuScene extends GameScene {
     protected void draw() {
         drawLoading();
         uiScene.draw();
+    }
+
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        UIMenus.createPlanet().reset();
     }
 
     @Override

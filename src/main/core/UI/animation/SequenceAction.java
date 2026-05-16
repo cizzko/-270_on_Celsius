@@ -1,6 +1,6 @@
-package core.UI;
+package core.UI.animation;
 
-public class SequenceAction extends ParallelAction {
+public class SequenceAction<A> extends ParallelAction<A> {
     private int index;
 
     @Override

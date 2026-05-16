@@ -6,6 +6,7 @@ import core.g2d.FontHandler;
 import core.g2d.ShaderHandler;
 import core.g2d.TextureHandler;
 import core.util.JavaInterpreter;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.system.Platform;
@@ -308,7 +309,14 @@ public final class AssetsManager {
         }
     }
 
+    private final ReferenceOpenHashSet<Object> set = new ReferenceOpenHashSet<>();
+
     <T> void releaseInternal(T asset) {
+        if (set.contains(asset)) {
+            log.warn("Double release: {}", asset);
+            return;
+        }
+
         // TODO что насчёт полиморфизма?
         //  Подумаю, нужно ли переусложнять. Указывать везде тип, который обрабатывает AssetHandler немного неудобно
         @SuppressWarnings("unchecked")
@@ -317,6 +325,7 @@ public final class AssetsManager {
 
         try {
             handler.release(releaser, asset);
+            set.add(asset);
             log.debug("Released: {}", asset);
         } catch (Exception e) {
             log.error("Exception while releasing {}", asset, e);

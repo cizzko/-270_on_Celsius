@@ -1,6 +1,5 @@
 package core.util;
 
-import core.EventHandling.Config;
 import core.Global;
 import core.UI.Styles;
 import core.UI.TextField;

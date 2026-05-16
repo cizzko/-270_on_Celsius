@@ -2,7 +2,9 @@
   "en": {
     "Language": "Language",
     "Play": "Play",
+    "LoadSave": "Load save",
     "Settings": "Settings",
+    "Menu": "Main menu",
     "Exit": "Exit",
     "Continue": "Continue",
     "Return": "Return",
@@ -41,16 +43,16 @@
 
     "SettingsOther": "Other",
     "Autopause": "Autopause",
-    "AutopausePrompt": "If lose focus (minimize) the game window - the pause will automatically open",
-
-    "StoneAxe": "Stone axe"
+    "AutopausePrompt": "If lose focus (minimize) the game window - the pause will automatically open"
   },
 
   "ru": {
     "Language": "Язык",
     "Play": "Начать",
+    "LoadSave": "Загрузить сохранение",
     "Settings": "Настройки",
     "Exit": "Выход",
+    "Menu": "Главное меню",
     "Continue": "Продолжить",
     "Return": "Вернуться",
 
@@ -133,8 +135,6 @@
 
     "SettingsOther": "Друге",
     "Autopause": "Автопауза",
-    "AutopausePrompt": "При потере фокуса (сворачивании) окна игры - автоматически откроется пауза",
-
-    "StoneAxe": "Каменный топор"
+    "AutopausePrompt": "При потере фокуса (сворачивании) окна игры - автоматически откроется пауза"
   }
 }

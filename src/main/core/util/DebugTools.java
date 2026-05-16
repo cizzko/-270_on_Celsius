@@ -1,9 +1,7 @@
 package core.util;
 
-import core.Application;
 import core.EventHandling.Config;
 import core.EventHandling.EventHandler;
-import core.GameState;
 import core.Global;
 import core.Time;
 import core.World.Creatures.Player.Inventory.Inventory;
@@ -13,13 +11,13 @@ import core.World.StaticWorldObjects.TileData;
 import core.World.Textures.TextureDrawing;
 import core.World.World;
 import core.g2d.Fill;
+import core.g2d.Shader;
 import core.math.Point2i;
 import core.math.Rectangle;
 import it.unimi.dsi.fastutil.HashCommon;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
 import java.nio.file.Files;
@@ -36,12 +34,16 @@ import static core.Global.*;
 import static core.World.Creatures.Physics.swap;
 import static core.World.Textures.TextureDrawing.blockSize;
 import static core.content.entity.DrawComponent.GAP;
-import static core.util.Color.BLACK;
-import static core.util.Color.rgba8888;
+import static core.util.Color.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class DebugTools {
     public static final DecimalFormat FLOATS = new DecimalFormat("#.#", new DecimalFormatSymbols(Locale.ROOT));
+
+    static final Rectangle rect = new Rectangle();
+    static final int acid = 0x8ffe09ff;
+
+    static Shader inverseColorShader;
 
     @SuppressWarnings("unchecked")
     public static <T extends Throwable> void rethrow(Throwable t) throws T {
@@ -99,6 +101,25 @@ public class DebugTools {
         log.info("Time took: {}ms", (System.currentTimeMillis() - t));
     }
 
+    // region GameState.MENU
+    public static void initMenu() {
+        if (debugLevel < 2) {
+            return;
+        }
+
+    }
+
+    // endregion
+    // region GameState.PLAYING
+    public static void initPlaying() {
+        // TODO: Дефолтные предметы в отдельном json
+        giveItems();
+        initDebugValuesGame();
+    }
+
+    // endregion
+
+
     public static void initDebugValuesMenu() {
         if (debugLevel < 1) {
             return;
@@ -112,36 +133,41 @@ public class DebugTools {
         setDebugValue(() -> "DeltaTime: " + Time.delta);
     }
 
+    private static boolean once;
+
     public static void initDebugValuesGame() {
-        if (debugLevel < 2) {
+        if (debugLevel < 2 || once) {
             return;
         }
-        // TODO: Дефолтные предметы в отдельном json
-        DebugTools.giveItems();
-
-        setDebugValue(() -> "[Player] x: " + player.getX() + ", y: " + player.getY());
-        setDebugValue(() -> "Camera Pos: " + camera.position);
-        setDebugValue(() -> "Velocity: " + player.getVelocity());
-        setDebugValue(() -> "PlayerHp: " + player.getHp());
+        once = true;
 
         setDebugValue(() -> {
+            if (world == null) return null;
+            return "[Player] x: " + player.getX() + ", y: " + player.getY();
+        });
+        setDebugValue(() -> "Camera Pos: " + camera.position);
+        setDebugValue(() ->{
+            if (world == null) return null;
+            return "Velocity: " + player.getVelocity();
+        });
+        setDebugValue(() -> {
+            if (world == null) return null;
+            return "PlayerHp: " + player.getHp();
+        });
+
+        setDebugValue(() -> {
+            if (world == null) return null;
             var mouseBlockPos = (input.mouseBlockPos());
             var mouseBlock = world.getBlock(mouseBlockPos.x, mouseBlockPos.y);
             return "MouseBlock: " + mouseBlockPos + " " + (mouseBlock != null ? mouseBlock.id + " (NID: " + Global.content.blocksRegistry.idByType(mouseBlock) + ")" : "<void>");
         });
         setDebugValue(() -> {
+            if (world == null) return null;
             var mouseBlockPos = (input.mouseBlockPos());
             return "BlockHp: " + world.getHp(mouseBlockPos.x, mouseBlockPos.y);
         });
         //setDebugValue(() -> "Current time: " + sun.currentTime);
     }
-
-    static final Rectangle rect = new Rectangle();
-    static final int red = rgba8888(255, 0, 0, 255);
-    static final int blue = rgba8888(0, 0, 255, 255);
-    static final int white = rgba8888(255, 255, 255, 255);
-    static final int acid = 0x8ffe09ff;
-    static final int black = rgba8888(0, 0, 0, 255);
 
     public static int leftInt(long field) { return (int)(field >> 32); }
     public static int rightInt(long field) { return (int)(field); }
@@ -296,13 +322,27 @@ public class DebugTools {
     }
 
     public static void debugHotKeys() {
-
-        if (EventHandler.debugLevel >= 2) {
-            if (input.justPressed(GLFW_KEY_F1)) app.setFramerate(60);
-            if (input.justPressed(GLFW_KEY_F2)) app.setFramerate(1000);
-            if (input.justPressed(GLFW_KEY_F3)) serializeWorld();
-            if (input.justPressed(GLFW_KEY_F4)) deserializeWorld();
-            if (input.justClicked(GLFW_MOUSE_BUTTON_RIGHT)) serializeTargetBlock();
+        if (EventHandler.debugLevel < 2) {
+            return;
         }
+
+        if (input.justPressed(GLFW_KEY_F1)) app.setFramerate(60);
+        if (input.justPressed(GLFW_KEY_F2)) app.setFramerate(1000);
+        if (input.justPressed(GLFW_KEY_F3)) serializeWorld();
+        if (input.justPressed(GLFW_KEY_F4)) deserializeWorld();
+        if (input.justClicked(GLFW_MOUSE_BUTTON_RIGHT)) serializeTargetBlock();
+        debugUIHotkeys();
+    }
+
+    public static void menuHotKeys() {
+        if (EventHandler.debugLevel < 2) {
+            return;
+        }
+        debugUIHotkeys();
+    }
+
+    private static void debugUIHotkeys() {
+        if (input.justPressed(GLFW_KEY_F9)) uiScene.toggleDebug();
+        if (input.justPressed(GLFW_KEY_F10)) uiScene.debug();
     }
 }

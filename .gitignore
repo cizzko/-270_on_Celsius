@@ -10,8 +10,12 @@ log.txt
 *.atlas.meta
 *.atlas.hash
 
+*.patch
+*.diff
+
 logs
 config.properties
 fastCommands.properties
-/src/assets/worldImage.png
+worldImage.png
 open_worl*.json
+open_worl.json

@@ -1,9 +1,9 @@
-package core.UI;
+package core.UI.animation;
 
 import core.math.MathUtil;
 import core.util.Color;
 
-public class AlphaAction extends TemporalAction {
+public class AlphaAction<A extends AlphaAction.Colored> extends TemporalAction<A> {
     private float start, end;
     private Color color;
 
@@ -28,5 +28,9 @@ public class AlphaAction extends TemporalAction {
 
     public void setAlpha(float alpha) {
         this.end = alpha;
+    }
+
+    public interface Colored {
+        Color color();
     }
 }

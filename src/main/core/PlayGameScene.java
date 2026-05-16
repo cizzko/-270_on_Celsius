@@ -37,13 +37,18 @@ public final class PlayGameScene extends GameScene {
 
     @Override
     public void onInit() {
-        DebugTools.initDebugValuesGame();
+        DebugTools.initPlaying();
+
         updateCamera();
         smoothedCamera = Config.getBoolean("SmoothedCamera");
+
+        UIMenus.headUpDisplay().show();
     }
 
     @Override
     protected void inputUpdate() {
+        AutoSaveController.update();
+
         updateHotkeys(this);
         WorkbenchLogic.updateInput();
         Commandline.inputUpdate();
@@ -88,6 +93,14 @@ public final class PlayGameScene extends GameScene {
 
     }
 
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        player = null;
+        world = null;
+        entityPool.clear();
+        TextureDrawing.resetState();
+    }
 
     public static void updateCamera() {
         if (player.isDead()) {

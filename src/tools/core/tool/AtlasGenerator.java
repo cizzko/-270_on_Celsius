@@ -129,7 +129,7 @@ public final class AtlasGenerator {
                     }
 
                     if (buf == null) {
-                        buf = new byte[8 * 1024];
+                        buf = new byte[32 * 1024];
                     }
 
                     digest.reset();

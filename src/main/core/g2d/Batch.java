@@ -1,15 +1,21 @@
 package core.g2d;
 
 import core.Global;
+import core.UIScene;
 import core.assets.AssetsManager;
 import core.math.Mat3;
 import core.pool.Pool;
 import core.pool.Poolable;
 import core.util.Color;
+import core.util.DebugTools;
 import core.util.Disposable;
 import core.util.FutureUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.opengl.GL13;
+import org.lwjgl.opengl.GL20;
+import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
@@ -19,6 +25,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import static core.g2d.VertexAttribute.*;
+import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11.glBindTexture;
+import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
+import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL46.GL_DYNAMIC_DRAW;
 import static org.lwjgl.opengl.GL46.GL_TRIANGLES;
 
@@ -42,7 +52,7 @@ public class Batch<S extends Batch.State> implements Disposable {
     protected FloatBuffer vertices;
     protected IntBuffer indexes;
     protected Mesh mesh;
-    protected Shader shader;
+    protected Shader defaultShader;
     protected int vertexCount;
 
     private boolean disposed;
@@ -50,6 +60,7 @@ public class Batch<S extends Batch.State> implements Disposable {
     private final Disposable stackProcessor = this::popState0;
 
     protected static class State implements Poolable {
+        protected Shader shader;
         protected Blending blending;
         protected int colorRgba;
         protected float xScale, yScale;
@@ -59,6 +70,7 @@ public class Batch<S extends Batch.State> implements Disposable {
         }
 
         protected void set(State old) {
+            this.shader = old.shader;
             this.blending = old.blending;
             this.colorRgba = old.colorRgba;
             this.xScale = old.xScale;
@@ -67,6 +79,7 @@ public class Batch<S extends Batch.State> implements Disposable {
 
         @Override
         public void reset() {
+            shader = null;
             blending = Blending.NORMAL;
             colorRgba = Color.WHITE.rgba8888();
             xScale = yScale = 1f;
@@ -135,7 +148,7 @@ public class Batch<S extends Batch.State> implements Disposable {
     public Batch(int bufferSize, Supplier<? extends S> constr, BiConsumer<S, S> extender) {
         this.statePool = new Pool<>(constr, MAX_NESTING);
         this.extender = extender;
-        this.shader = FutureUtil.join(Global.assets.load(Shader.class, "default", AssetsManager.LoadType.SYNC));
+        this.defaultShader = FutureUtil.join(Global.assets.load(Shader.class, "default", AssetsManager.LoadType.SYNC));
 
         int vertexCount = bufferSize * VERTEX_PER_SPRITE;
         vertices = MemoryUtil.memAllocFloat(vertexCount);
@@ -175,6 +188,11 @@ public class Batch<S extends Batch.State> implements Disposable {
         this.matrix.set(matrix);
     }
 
+    public final void shader(Shader shader) {
+        flush();
+        this.state.shader = shader;
+    }
+
     protected final void prepareTexture(Texture tex) {
         if (currentTexture != tex || vertices.remaining() < VERTEX_FORMAT.vertexByteSize()*VERTEX_PER_SPRITE) {
             flush();
@@ -187,11 +205,15 @@ public class Batch<S extends Batch.State> implements Disposable {
             return;
         }
 
+        Shader sh = state.shader;
+        if (sh == null)
+            sh = defaultShader;
+
         state.blending.apply();
 
-        shader.use();
-        shader.setUniform("u_texture", currentTexture);
-        shader.setUniformTransforming("u_proj", matrix);
+        sh.use();
+        sh.setUniform("u_texture", currentTexture);
+        sh.setUniformTransforming("u_proj", matrix);
 
         vertices.flip();
         mesh.draw(GL_TRIANGLES, vertices, vertexCount * VERTEX_PER_TRIANGLE);
@@ -300,6 +322,6 @@ public class Batch<S extends Batch.State> implements Disposable {
         mesh.close();
         MemoryUtil.memFree(vertices);
         MemoryUtil.memFree(indexes);
-        Global.assets.unload(shader);
+        Global.assets.unload(defaultShader);
     }
 }

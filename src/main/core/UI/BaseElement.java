@@ -1,6 +1,5 @@
 package core.UI;
 
-import core.Application;
 import core.Global;
 import core.input.InputListener;
 import core.math.Rectangle;
@@ -16,6 +15,9 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     protected static final int FLAG_W_CHANGED   = 1 << 2;
     protected static final int FLAG_H_CHANGED   = 1 << 3;
     protected static final int FLAG_VISIBLE     = 1 << 4;
+    protected static final int FLAG_TOUCHABLE     = 1 << 5;
+
+    protected static final int ELEMENT_LAST_FLAG = FLAG_TOUCHABLE;
 
     // Допустимая погрешность в координатах интерфейса
     private static final float SIZE_EPSILON = 1e-4f;
@@ -35,12 +37,12 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
         flags ^= flag;
     }
 
-    public final Group parent;
+    public Group parent;
 
-    protected String id;
+    protected @Nullable String id;
     protected float x, y;
     protected float width, height;
-    protected int flags = FLAG_VISIBLE;
+    protected int flags = FLAG_VISIBLE | FLAG_TOUCHABLE;
     protected ArrayList<InputListener> inputListeners = new ArrayList<>();
 
     protected BaseElement(Group parent) {
@@ -56,13 +58,8 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
         return parent != null && parent.remove(this);
     }
 
-    @SuppressWarnings("unchecked")
-    protected E as() {
-        return (E) this;
-    }
-
     @Override
-    public final String id() {
+    public final @Nullable String id() {
         return id;
     }
 
@@ -97,8 +94,14 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     }
 
     @Override
-    public E setId(String id) {
+    public final E setId(@Nullable String id) {
         this.id = id;
+        return as();
+    }
+
+    @Override
+    public final E setParent(@Nullable Group parent) {
+        this.parent = parent;
         return as();
     }
 
@@ -179,25 +182,47 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     // endregion
 
     @Override
-    public E setVisible(boolean visible) {
-        setFlag(FLAG_VISIBLE, visible);
+    public final E setVisible(boolean state) {
+        setFlag(FLAG_VISIBLE, state);
         return as();
     }
 
     @Override
-    public E toggleVisibility() {
+    public final E setTouchable(boolean state) {
+        setFlag(FLAG_TOUCHABLE, state);
+        return as();
+    }
+
+    @Override
+    public final E setHotkey(int key, Runnable action) {
+        addListener(new KeyboardListener(key, action));
+        return as();
+    }
+
+    @Override
+    public final E toggleVisibility() {
         flipFlag(FLAG_VISIBLE);
         return as();
     }
 
     @Override
     public @Nullable Element hit(float hx, float hy) {
-        return Rectangle.contains(x, y, width, height, hx, hy) ? this : null;
+        if ((flags & FLAG_TOUCHABLE) != 0 && Rectangle.contains(x, y, width, height, hx, hy)) {
+            return this;
+        }
+        return null;
     }
 
 
 
     // region InputListener
+
+
+    @Override
+    public void onResize(int width, int height) {
+        inputListeners.forEach(listener -> listener.onResize(width, height));
+    }
+
     @Override
     public final boolean onTouchDown(float x, float y, int button) {
         boolean anyHandled = false;
@@ -272,7 +297,7 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     }
 
     protected String printPosition() {
-        return " (" +
+        return "(" +
                 "x=" + DebugTools.FLOATS.format(x) +
                 ", y=" + DebugTools.FLOATS.format(y) +
                 ", w=" + DebugTools.FLOATS.format(width) +

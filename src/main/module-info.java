@@ -36,7 +36,9 @@ open module core.main {
     exports core.math;
     exports core.pool;
     exports core.UI;
+    exports core.UI.animation;
     exports core.UI.menu;
+    exports core.UI.hud;
     exports core.UI.Sounds;
     exports core.util;
     exports core.World;

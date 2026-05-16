@@ -3,6 +3,13 @@ package core.util;
 import static core.util.Colorf.clamp;
 
 public final class Color {
+    public static final int red = rgba8888(255, 0, 0, 255);
+    public static final int green = rgba8888(0, 255, 0, 255);
+    public static final int blue = rgba8888(0, 0, 255, 255);
+
+    public static final int white = rgba8888(255, 255, 255, 255);
+    public static final int black = rgba8888(0, 0, 0, 255);
+
     public static final Color WHITE = new Color(0xFFFFFFFF);
     public static final Color BLACK = new Color(0x000000FF);
     public static final Color CLEAR = new Color(0x00000000);

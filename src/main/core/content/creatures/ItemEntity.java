@@ -16,8 +16,8 @@ import static core.Global.*;
 import static core.World.Textures.TextureDrawing.blockSize;
 
 public class ItemEntity implements LivingEntity {
-    private static final int ITEM_DROPPED_SIZE = 32;
-    private static final int ITEM_DROPPED_HITBOX = ITEM_DROPPED_SIZE + 2;
+    public static final int ITEM_DROPPED_SIZE = 32;
+    public static final int ITEM_DROPPED_HITBOX = ITEM_DROPPED_SIZE + 2;
 
     protected short id;
     protected float x, y;

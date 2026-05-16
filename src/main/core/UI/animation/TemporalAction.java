@@ -1,8 +1,8 @@
-package core.UI;
+package core.UI.animation;
 
 import core.math.Interpolation;
 
-abstract public class TemporalAction extends Action {
+abstract public class TemporalAction<A> extends Action<A> {
     private float duration, time;
     private Interpolation interpolation;
     private boolean began, complete;
@@ -42,7 +42,7 @@ abstract public class TemporalAction extends Action {
         interpolation = null;
     }
 
-    public float getTime() {
+    public float time() {
         return time;
     }
 
@@ -50,7 +50,7 @@ abstract public class TemporalAction extends Action {
         this.time = time;
     }
 
-    public float getDuration() {
+    public float duration() {
         return duration;
     }
 
@@ -58,7 +58,7 @@ abstract public class TemporalAction extends Action {
         this.duration = duration;
     }
 
-    public Interpolation getInterpolation() {
+    public Interpolation interpolation() {
         return interpolation;
     }
 

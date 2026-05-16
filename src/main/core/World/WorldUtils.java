@@ -15,6 +15,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import static core.Global.*;
 import static core.World.Textures.TextureDrawing.blockSize;
 import static core.World.WorldGenerator.WorldGenerator.copySize;
+import static core.content.creatures.ItemEntity.ITEM_DROPPED_SIZE;
 
 public class WorldUtils {
 
@@ -54,17 +55,17 @@ public class WorldUtils {
     }
 
     public static void dropItem(ItemStack itemStack, float x, float y) {
-        spawnItemEntity(itemStack, x, y);
+        float rx = x + ThreadLocalRandom.current().nextFloat(0, blockSize/3f);
+        float ry = y + ThreadLocalRandom.current().nextFloat(0, blockSize/3f);
+        spawnItemEntity(itemStack, rx, ry);
     }
 
-    private static ItemEntity spawnItemEntity(ItemStack itemStack, float x, float y) {
+    public static ItemEntity spawnItemEntity(ItemStack itemStack, float x, float y) {
         int id = Global.entityPool.acquireId();
         var ent = new ItemEntity(itemStack);
 
         ent.setId(id);
-        float rx = x + ThreadLocalRandom.current().nextFloat(0, blockSize/3f);
-        float ry = y + ThreadLocalRandom.current().nextFloat(0, blockSize/3f);
-        ent.setPosition(rx, ry);
+        ent.setPosition(x, y);
         ent.init();
 
         Global.entityPool.add(ent);

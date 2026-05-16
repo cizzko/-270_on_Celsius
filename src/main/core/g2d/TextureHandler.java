@@ -20,7 +20,6 @@ public final class TextureHandler extends AssetHandler<Texture, Void, TextureHan
     @Override
     public void release(AssetReleaser rel, Texture asset) {
         glDeleteTextures(asset.glHandle);
-        asset.glHandle = 0;
     }
 
     @Override

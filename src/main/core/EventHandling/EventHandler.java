@@ -1,6 +1,5 @@
 package core.EventHandling;
 
-import core.Global;
 import core.PlayGameScene;
 import core.UI.Dialog;
 import core.UI.Element;
@@ -9,12 +8,10 @@ import core.UI.TextArea;
 import core.UIMenus;
 import core.graphic.Layer;
 import core.math.Point2i;
-import org.lwjgl.glfw.GLFWCharCallback;
 
 import java.util.function.Supplier;
 
 import static core.Global.*;
-import static core.Window.glfwWindow;
 import static core.Window.windowFocused;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -29,6 +26,7 @@ public class EventHandler {
         private DebugBox(Supplier<String> format) {
             super(debugDialog, Styles.DEBUG_TEXT);
             this.format = format;
+            setTouchable(false);
         }
 
         @Override
@@ -44,7 +42,11 @@ public class EventHandler {
             batch.draw(Layer.DEBUG, super::draw);
         }
     }
-    private static final Dialog debugDialog = new Dialog();
+    private static final Dialog debugDialog = new Dialog()
+            .setId("DebugView")
+            .setMaximized(true)
+            .setTouchable(false)
+            .setTouchableChildren(false);
 
     public static void setKeyLoggingText(String text) {
         keyLoggingText.setLength(0);

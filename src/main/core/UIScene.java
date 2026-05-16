@@ -1,50 +1,74 @@
 package core;
 
+import core.UI.BaseGroup;
 import core.UI.Dialog;
 import core.UI.Element;
+import core.UI.Group;
+import core.World.Textures.TextureDrawing;
 import core.g2d.Camera2;
+import core.g2d.Fill;
 import core.graphic.Layer;
 import core.input.InputListener;
 import core.math.Vector2f;
+import core.util.DebugTools;
 import core.util.SnapshotArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.function.Predicate;
 
 import static core.Global.batch;
+import static core.util.Color.*;
 
 public final class UIScene implements InputListener {
     public static final Logger log = LogManager.getLogger();
 
     private final Camera2 view = new Camera2();
     private final Vector2f mouse = new Vector2f();
-    private final SnapshotArrayList<Element> elements = new SnapshotArrayList<>(new Element[16], true);
 
     private Element mouseOverElement;
     private Element keyboardFocus, scrollFocus, touchFocus;
 
+    public static boolean debugBorders = false;
+
+    public void toggleDebug() {
+        debugBorders = !debugBorders;
+    }
+
+    static final class RootElement extends BaseGroup<RootElement> {
+        RootElement() {
+            super(null);
+            setTouchable(false);
+        }
+    }
+
+    private final RootElement rootElement =  new RootElement();
+
     public UIScene(int width, int height) {
         view.setToOrthographic(width, height);
+        rootElement.setSize(width, height);
     }
 
-    public void add(Element element) {
+    public Group root() { return rootElement; }
+
+    public <E extends Element> E add(E element) {
+        return rootElement.add(element);
+    }
+
+    public boolean remove(Element element) {
+        return rootElement.remove(element);
+    }
+
+    public void toggle(Element element) {
         if (contains(element)) {
-            return;
+            remove(element);
+        } else {
+            add(element);
         }
-        elements.add(element);
     }
 
-    public void remove(Element element) {
-        elements.remove(element);
-    }
-
-    public void clear() {
-        elements.clear();
-    }
-
-    // Не вызывать ниоткуда!
     public void update(float dt) {
         updateMouseOver();
         if (scrollFocus != null && (!scrollFocus.visible() || !contains(scrollFocus))) scrollFocus = null;
@@ -59,35 +83,54 @@ public final class UIScene implements InputListener {
                 curr = curr.parent();
             }
         }
-        var elem = elements.begin();
-        for (int i = 0, n = elements.size(); i < n; i++) {
-            Element element = elem[i];
-            try {
-                element.update(dt);
-            } catch (Exception e) {
-                log.error("Failed to update '{}'", element, e);
-            }
+
+        rootElement.update(dt);
+    }
+
+    private static String toShortIdentifier(Element element) {
+        String base = element.getClass().getSimpleName();
+        String str = element.id();
+        if (str == null) {
+            return base;
         }
-        elements.end();
+        return base + "<" + str + ">";
     }
 
     public void draw() {
         batch.z(Layer.GUI);
         batch.matrix(view.projection);
+        if (debugBorders) {
+            batch.draw(Layer.DEBUG, () -> {
+                TextureDrawing.drawText(mouse.x, mouse.y - 32, "Pos: " + mouse);
+            });
+        }
 
-        for (Element element : elements) {
-            if (element.visible()) {
-                try {
-                    element.draw();
-                } catch (Exception e) {
-                    log.error("Failed to draw '{}'", element, e);
-                }
+        rootElement.draw();
+
+        if (debugBorders) {
+            Element lookingAt = mouseOverElement;
+            if (lookingAt != null) {
+                Fill.rectangleBorder(
+                        lookingAt.x(), lookingAt.y(),
+                        lookingAt.width(), lookingAt.height(), green);
+                String shortIdentifier = toShortIdentifier(lookingAt);
+                batch.draw(Layer.DEBUG, () -> {
+                    for(int ox=-1; ox<=1; ox++){
+                        for(int oy=-1; oy<=1; oy++){
+                            if (ox==0 && oy==0) continue;
+                            float x = lookingAt.x() + ox;
+                            float y = lookingAt.y() + oy;
+                            TextureDrawing.drawText(x, y, shortIdentifier, black);
+                        }
+                    }
+                    TextureDrawing.drawText(lookingAt.x(), lookingAt.y(), shortIdentifier, white);
+                });
             }
         }
     }
 
     public boolean contains(Element element) {
-        return elements.contains(element);
+        return rootElement.contains(element);
     }
 
     public void debug() {
@@ -96,26 +139,14 @@ public final class UIScene implements InputListener {
         log.debug("keyboardFocus: {}", keyboardFocus);
         log.debug("scrollFocus: {}", scrollFocus);
         log.debug("touchFocus: {}", touchFocus);
-        for (Element element : elements) {
-            for (String s : element.toString().split("\n")) {
-                log.debug(s);
-            }
+        for (String line : rootElement.toString().split("\n")) {
+            log.debug(line);
         }
         log.debug("");
     }
 
     public @Nullable Element hit(float x, float y) {
-        for (int i = elements.size() - 1; i >= 0; i--) {
-            var element = elements.get(i);
-            if (!element.visible()) {
-                continue;
-            }
-            var hit = element.hit(x, y);
-            if (hit != null) {
-                return hit;
-            }
-        }
-        return null;
+        return rootElement.hit(x, y);
     }
 
     private void updateMouseOver() {
@@ -173,11 +204,12 @@ public final class UIScene implements InputListener {
         if (keyboardFocus != null && keyboardFocus.isDescendantOf(Predicate.isEqual(element))) setKeyboardFocus(null);
     }
 
-    // region InputListener
+// region InputListener
 
     @Override
     public void onResize(int width, int height) {
         view.setToOrthographic(width, height);
+        rootElement.onResize(width, height);
     }
 
     @Override
@@ -208,9 +240,6 @@ public final class UIScene implements InputListener {
     @Override
     public void onScroll(float xOffset, float yOffset) {
         Element focus = scrollFocus;
-        if (focus == null && !elements.isEmpty()) {
-            focus = elements.getLast();
-        }
         if (focus != null) {
             log.debug("onScroll({})", focus);
             focus.onScroll(xOffset, yOffset);
@@ -240,9 +269,6 @@ public final class UIScene implements InputListener {
     @Override
     public void onKeyUp(int key, int scancode) {
         Element focus = keyboardFocus;
-        if (focus == null && !elements.isEmpty()) {
-            focus = elements.getLast();
-        }
         if (focus != null) {
             log.debug("onKeyUp({})", focus);
             focus.onKeyUp(key, scancode);
@@ -252,9 +278,6 @@ public final class UIScene implements InputListener {
     @Override
     public void onKeyDown(int key, int scancode) {
         Element focus = keyboardFocus;
-        if (focus == null && !elements.isEmpty()) {
-            focus = elements.getLast();
-        }
         if (focus != null) {
             log.debug("onKeyDown({})", focus);
             focus.onKeyDown(key, scancode);
@@ -264,9 +287,6 @@ public final class UIScene implements InputListener {
     @Override
     public void onKeyRepeat(int key, int scancode) {
         Element focus = keyboardFocus;
-        if (focus == null && !elements.isEmpty()) {
-            focus = elements.getLast();
-        }
         if (focus != null) {
             log.debug("onKeyRepeat({})", focus);
             focus.onKeyRepeat(key, scancode);
@@ -276,9 +296,6 @@ public final class UIScene implements InputListener {
     @Override
     public void onCodepoint(int codepoint) {
         Element focus = keyboardFocus;
-        if (focus == null && !elements.isEmpty()) {
-            focus = elements.getLast();
-        }
         if (focus != null) {
             log.debug("onCodepoint({})", focus);
             focus.onCodepoint(codepoint);

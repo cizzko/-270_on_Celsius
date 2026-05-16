@@ -11,7 +11,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import static core.Global.batch;
 import static core.Global.input;
@@ -328,32 +327,36 @@ public class TextField extends BaseElement<TextField> {
             switch (key) {
                 case GLFW_KEY_HOME -> {
                     if (length == 0) return;
+                    int row = caretRow();
+                    int lineBegin = lines.get(row).begin;
 
                     if (shift()) {
                         int c = caret;
 
-                        setCaret(0);
+                        setCaret(lineBegin);
                         if (!hasSelection) {
                             selection = c;
                             hasSelection = true;
                         }
                     } else {
-                        setCaret(0);
+                        setCaret(lineBegin);
                         resetSelection();
                     }
                 }
                 case GLFW_KEY_END -> {
                     if (length == 0) return;
+                    int row = caretRow();
+                    int lineEnd = lines.get(row).end;
 
                     if (shift()) {
                         int c = caret;
-                        setCaret(length);
+                        setCaret(lineEnd);
                         if (!hasSelection) {
                             selection = c;
                             hasSelection = true;
                         }
                     } else {
-                        setCaret(length);
+                        setCaret(lineEnd);
                         resetSelection();
                     }
                 }

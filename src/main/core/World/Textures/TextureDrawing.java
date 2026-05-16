@@ -34,6 +34,10 @@ public class TextureDrawing {
         return blockPos * blockSize;
     }
 
+    public static void resetState() {
+        previewBlocks.clear();
+    }
+
     private record BlockPreview(int x, int y, short blockId, byte hp, boolean canBreak) {
     }
 

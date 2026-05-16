@@ -1,9 +1,10 @@
-package core.UI;
+package core.UI.animation;
 
 import java.util.ArrayList;
 
-public class ParallelAction extends Action {
-    protected final ArrayList<Action> actions = new ArrayList<>(4);
+public class ParallelAction<A> extends Action<A> {
+    // TODO: Может это COW-список?
+    protected final ArrayList<Action<A>> actions = new ArrayList<>(4);
 
     private boolean complete;
 
@@ -12,10 +13,10 @@ public class ParallelAction extends Action {
         if (complete) return true;
         complete = true;
 
-        ArrayList<Action> actions = this.actions;
+        var actions = this.actions;
         for (int i = 0, n = actions.size(); i < n && actor != null; i++) {
-            Action currentAction = actions.get(i);
-            if (currentAction.getActor() != null && !currentAction.act(delta)) {
+            var currentAction = actions.get(i);
+            if (currentAction.actor() != null && !currentAction.act(delta)) {
                 complete = false;
             }
             if (actor == null) {
@@ -28,7 +29,7 @@ public class ParallelAction extends Action {
     @Override
     public void restart() {
         complete = false;
-        for (Action action : this.actions) {
+        for (var action : this.actions) {
             action.restart();
         }
     }
@@ -39,20 +40,20 @@ public class ParallelAction extends Action {
         actions.clear();
     }
 
-    public void addAction(Action action) {
+    public void addAction(Action<A> action) {
         actions.add(action);
         if (actor != null) action.setActor(actor);
     }
 
     @Override
-    public void setActor(Element actor) {
-        for (Action action : this.actions) {
+    public void setActor(A actor) {
+        for (var action : this.actions) {
             action.setActor(actor);
         }
         super.setActor(actor);
     }
 
-    public ArrayList<Action> getActions() {
+    public ArrayList<Action<A>> actions() {
         return actions;
     }
 }

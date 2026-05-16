@@ -6,7 +6,7 @@ import static core.graphic.TextureLoader.decodeImage;
 import static org.lwjgl.opengl.GL46.*;
 
 public final class Texture implements Drawable {
-    int glHandle;
+    final int glHandle;
 
     private final int width, height;
     private final float u, v, u2, v2;

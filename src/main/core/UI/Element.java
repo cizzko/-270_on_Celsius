@@ -2,24 +2,22 @@ package core.UI;
 
 import core.input.InputListener;
 import core.math.Point2i;
-import core.util.Color;
+import core.math.Vector2f;
 import core.util.Sized;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Predicate;
 
 public interface Element extends InputListener {
-    String id();
+    @Nullable String id();
 
-    // null если это корневой элемент интерфейса, т.е. специальная затычка
+    /// @return `null` если элемент не добавлен в сцену. У всех элементов сцены есть родитель
     @Nullable Group parent();
 
     float x();
-
     float y();
 
     float width();
-
     float height();
 
     boolean visible();
@@ -29,7 +27,8 @@ public interface Element extends InputListener {
     void update(float dt);
     boolean remove();
 
-    Element setId(String id);
+    Element setId(@Nullable String id);
+    Element setParent(@Nullable Group parent);
 
     Element setX(float x);
     Element setY(float y);
@@ -41,14 +40,19 @@ public interface Element extends InputListener {
     Element setSize(float width, float height);
     Element set(float x, float y, float width, float height);
 
-    Element setVisible(boolean visible);
-
+    Element setVisible(boolean state);
     Element toggleVisibility();
 
+    Element setTouchable(boolean state);
+
+    Element setHotkey(int key, Runnable action);
+
     @Nullable Element hit(float x, float y);
-    default @Nullable Element hit(Point2i point) {
-        return hit(point.x, point.y);
-    }
+    default @Nullable Element hit(Point2i point) { return hit(point.x, point.y); }
+    default @Nullable Element hit(Vector2f point) { return hit(point.x, point.y); }
+
+    @SuppressWarnings("unchecked")
+    default <E extends Element> E as() { return (E) this; }
 
     default boolean isDescendantOf(Predicate<Element> pred) {
         Element parent = this;
@@ -59,10 +63,5 @@ public interface Element extends InputListener {
             parent = parent.parent();
         }
         return false;
-    }
-
-    default Color color() {
-        // TODO плохой дизайн интерфейса
-        return null;
     }
 }

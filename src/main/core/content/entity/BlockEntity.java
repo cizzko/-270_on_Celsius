@@ -18,8 +18,6 @@ public interface BlockEntity extends DrawComponent, PositionComponent {
     /** Вызывается при уничтожении сущности */
     default void remove() {}
 
-    default <E extends Entity> E asIf(Class<? extends E> type) { return type.isInstance(this) ? type.cast(this) : null; }
-
     StaticObjectsConst getBlock();
 
     enum TransitionResult {

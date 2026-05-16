@@ -17,7 +17,6 @@ public class Application {
     private final Thread mainThread;
 
     protected final ArrayList<NativeResource> natives = new ArrayList<>();
-    protected final ArrayList<ApplicationListener> listeners = new ArrayList<>();
 
     private boolean running = true;
 
@@ -93,12 +92,6 @@ public class Application {
         }
     }
 
-    public void addListener(ApplicationListener listener) {
-        Objects.requireNonNull(listener);
-        ensureMainThread();
-        listeners.add(listener);
-    }
-
     private int framerate = -1;
     private long prevFrameTime;
     private long prevSwapTime;
@@ -149,14 +142,5 @@ public class Application {
 
     public final int getFpsMeasurement() {
         return fpsMeasurement;
-    }
-
-    public void save() {
-        for (ApplicationListener listener : listeners) {
-            if (listener instanceof AutoSaveListener a) {
-                a.update();
-                break;
-            }
-        }
     }
 }

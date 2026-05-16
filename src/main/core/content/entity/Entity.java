@@ -19,7 +19,5 @@ public interface Entity extends HitboxComponent {
         entityPool.releaseId(this);
     }
 
-    default <E extends Entity> E asIf(Class<? extends E> type) { return type.isInstance(this) ? type.cast(this) : null; }
-
     default boolean isRemoved() { return entityPool.getEntity(getId()) == null; }
 }

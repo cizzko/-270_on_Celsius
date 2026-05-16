@@ -10,6 +10,8 @@ import static core.Global.atlas;
 
 public class CreatePlanet extends Dialog {
     private final ImageElement planet;
+    private final Button generateWorld;
+    private final Panel upperPanel;
     private final GenerationParameters parameters = new GenerationParameters();
     private final Dialog basicParameters, generationParameters;
     private final TextArea consoleBox;
@@ -24,7 +26,7 @@ public class CreatePlanet extends Dialog {
         sizePanel.addImage(1460, 620, atlas.get("World/WorldGenerator/skyBackgroundPlanet"));
         planet = sizePanel.addImage(1510, 670, atlas.get("World/WorldGenerator/planetMini"));
         // Панель с вкладками
-        var upperPanel = background.addPanel(Styles.SIMPLE_PANEL, 40, 955, 1360, 85);
+        upperPanel = background.addPanel(Styles.SIMPLE_PANEL, 40, 955, 1360, 85);
 
         upperPanel.addButton(Styles.SIMPLE_TEXT_BUTTON, b -> {
             hide();
@@ -45,7 +47,7 @@ public class CreatePlanet extends Dialog {
                     .set(1160, 975, 240, 65)
                     .setName(Global.lang.get("Physics"))
         );
-        sizePanel.addButton(Styles.SIMPLE_TEXT_BUTTON, () -> WorldGenerator.generateWorld(parameters))
+        generateWorld = sizePanel.addButton(Styles.SIMPLE_TEXT_BUTTON, () -> WorldGenerator.generateWorld(parameters))
                 .set(1460, 260, 420, 65)
                 .setName(Global.lang.get("GenerateWorld"))
                 .setOneShot(true);
@@ -97,6 +99,17 @@ public class CreatePlanet extends Dialog {
     public void appendText(String text) {
         String prev = consoleBox.text == null ? "" : consoleBox.text;
         consoleBox.setText(prev + '\n' + text);
+    }
+
+    public void reset() {
+        consoleBox.setText("");
+        generateWorld.isClickable = true;
+        for (Element child : upperPanel.children()) {
+            if (child instanceof Button b) {
+                b.isClickable = true;
+                b.isClicked = false;
+            }
+        }
     }
 
     public static class GenerationParameters {

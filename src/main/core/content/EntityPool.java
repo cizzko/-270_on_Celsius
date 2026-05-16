@@ -60,4 +60,12 @@ public class EntityPool {
         entities.remove(creature.getId());
         needIndexRebuild = true;
     }
+
+    public void clear() {
+        entities.clear();
+        worldIndex.hash.clear();
+        freeIds.clear();
+        idCounter = 0;
+        needIndexRebuild = false;
+    }
 }

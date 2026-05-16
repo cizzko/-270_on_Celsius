@@ -1,15 +1,16 @@
 package core;
 
-import core.UI.menu.CreatePlanet;
-import core.UI.menu.MainMenu;
-import core.UI.menu.Pause;
-import core.UI.menu.Settings;
+import core.UI.hud.HeadUpDisplay;
+import core.UI.menu.*;
 
 public final class UIMenus {
     private static MainMenu mainMenu;
     private static CreatePlanet createPlanet;
+    private static LoadSave loadSave;
     private static Pause pause;
     private static Settings settings;
+
+    private static HeadUpDisplay headUpDisplay;
 
     public static MainMenu mainMenu() {
         if (mainMenu == null) {
@@ -37,5 +38,19 @@ public final class UIMenus {
             settings = new Settings();
         }
         return settings;
+    }
+
+    public static LoadSave loadSave() {
+        if (loadSave == null) {
+            loadSave = new LoadSave();
+        }
+        return loadSave;
+    }
+
+    public static HeadUpDisplay headUpDisplay() {
+        if (headUpDisplay == null) {
+            headUpDisplay = new HeadUpDisplay();
+        }
+        return headUpDisplay;
     }
 }
