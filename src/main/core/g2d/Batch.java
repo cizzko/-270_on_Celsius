@@ -1,21 +1,15 @@
 package core.g2d;
 
 import core.Global;
-import core.UIScene;
 import core.assets.AssetsManager;
 import core.math.Mat3;
 import core.pool.Pool;
 import core.pool.Poolable;
 import core.util.Color;
-import core.util.DebugTools;
 import core.util.Disposable;
 import core.util.FutureUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.lwjgl.opengl.GL11;
-import org.lwjgl.opengl.GL13;
-import org.lwjgl.opengl.GL20;
-import org.lwjgl.opengl.GL30;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
@@ -25,10 +19,6 @@ import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
 import static core.g2d.VertexAttribute.*;
-import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11.glBindTexture;
-import static org.lwjgl.opengl.GL13.GL_TEXTURE0;
-import static org.lwjgl.opengl.GL13.glActiveTexture;
 import static org.lwjgl.opengl.GL46.GL_DYNAMIC_DRAW;
 import static org.lwjgl.opengl.GL46.GL_TRIANGLES;
 
@@ -216,7 +206,7 @@ public class Batch<S extends Batch.State> implements Disposable {
         sh.setUniformTransforming("u_proj", matrix);
 
         vertices.flip();
-        mesh.draw(GL_TRIANGLES, vertices, vertexCount * VERTEX_PER_TRIANGLE);
+        mesh.draw(GL_TRIANGLES, vertices, (vertexCount / VERTEX_PER_SPRITE) * VERTEX_PER_TRIANGLE);
 
         vertices.clear();
         vertexCount = 0;

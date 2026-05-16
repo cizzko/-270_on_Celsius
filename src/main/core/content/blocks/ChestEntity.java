@@ -70,8 +70,6 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
             ItemStack item = getStorage()[draggedCell.x][draggedCell.y];
             if (item != null) {
                 // TODO: ЗДЕСЬ НИКАКОГО РЕНДЕРА !!!! ДОЛЖЕН БЫТЬ СЛОТ "РУК" У ИГРОКА
-                //поч
-                // Потому что порядок обновления блоков в мире не определен и кто знает что ещё будет рендерить в этом апдейте
                 Point2i mousePos = input.mousePos();
                 float uiScale = item.item().uiScale();
                 Atlas.Region tex = item.item().texture;

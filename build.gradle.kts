@@ -184,9 +184,11 @@ tasks.jar {
     duplicatesStrategy = DuplicatesStrategy.FAIL
     isReproducibleFileOrder = true
 
-    @Suppress("UNCHECKED_CAST")
-    val json = JsonSlurper().parse(layout.projectDirectory.file("src/assets/sprites.atlas.hash").asFile) as Map<String, String>
-    excludes.addAll(json.keys)
+    doFirst {
+        @Suppress("UNCHECKED_CAST")
+        val json = JsonSlurper().parse(layout.projectDirectory.file("src/assets/sprites.atlas.hash").asFile) as Map<String, String>
+        excludes.addAll(json.keys)
+    }
 }
 
 tasks.jpackageImage {

@@ -7,7 +7,6 @@ import org.lwjgl.system.NativeResource;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import static core.EventHandling.EventHandler.setDebugValue;
 import static core.util.JavaInterpreter.exec;
 import static core.util.JavaInterpreter.jshell;
 
