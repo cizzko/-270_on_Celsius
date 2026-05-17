@@ -1,7 +1,6 @@
 package core.World.Creatures.Player;
 
 import core.EventHandling.Config;
-import core.Global;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.ItemData;
 import core.World.Creatures.Player.Inventory.Items.ItemStack;

@@ -7,7 +7,6 @@ import core.math.Vector2f;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.*;
-import org.lwjgl.opengl.GL46;
 
 import java.util.ArrayList;
 import java.util.Arrays;

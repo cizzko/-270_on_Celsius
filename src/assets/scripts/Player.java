@@ -2,7 +2,7 @@ import core.Global;
 import core.World.Creatures.Player.Player;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldUtils;
-import core.content.*;
+
 import static core.Global.*;
 
 void onNoClip() {
@@ -38,7 +38,7 @@ void spawn(String creatureId) {
         return;
     }
     var spawn = WorldUtils.spawn(creatureType, true);
-    spawn.setPosition(player.getX(), player.getY());
+    spawn.setPosition(player.x(), player.y());
 }
 
 void give(String itemId) {

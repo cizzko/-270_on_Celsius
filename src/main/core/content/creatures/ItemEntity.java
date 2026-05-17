@@ -7,6 +7,7 @@ import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.TextureDrawing;
 import core.content.entity.*;
 import core.g2d.Atlas;
+import core.g2d.StackfulRender;
 import core.g2d.Fill;
 import core.math.Rectangle;
 import core.math.Vector2f;
@@ -21,6 +22,7 @@ public class ItemEntity implements LivingEntity {
 
     protected short id;
     protected float x, y;
+    protected float prevX, prevY;
     protected ItemStack itemStack;
     protected float hp, phase;
     protected boolean isUnbreakable, dead;
@@ -41,10 +43,10 @@ public class ItemEntity implements LivingEntity {
     }
 
     @Override
-    public final float getX() { return x; }
+    public final float x() { return x; }
 
     @Override
-    public final float getY() { return y; }
+    public final float y() { return y; }
 
     @Override
     public final void setX(float x) { this.x = x; }
@@ -56,6 +58,12 @@ public class ItemEntity implements LivingEntity {
 
     @Override
     public final void setPosition(float x, float y) { this.x = x; this.y = y; }
+
+    @Override
+    public final float prevX() { return prevX; }
+
+    @Override
+    public final float prevY() { return prevY; }
 
     @Override
     public void getHitboxTo(Rectangle out) {
@@ -87,8 +95,8 @@ public class ItemEntity implements LivingEntity {
 
         float dstToPlayer = player.dst2(x, y);
         var playerTex = player.creature.texture;
-        float pcx = player.getX() + playerTex.width()/4f;
-        float pcy = player.getY() + playerTex.height()/4f;
+        float pcx = player.x() + playerTex.width() / 4f;
+        float pcy = player.y() + playerTex.height() / 4f;
 
         if (dstToPlayer <= STOP_DST*STOP_DST) {
             // velocity.set(pcx - x, pcy - y);
@@ -115,7 +123,7 @@ public class ItemEntity implements LivingEntity {
         float yOffset = amplitude * 0.5f * (1f - (float)Math.cos(2f * Math.PI * frequency * tSeconds));
         // System.out.println("phase = " + phase + " | " + phase + " | " + tSeconds + " | " + yOffset);
         Atlas.Region tex = itemStack.item().texture;
-        batch.draw(tex, drawX, y + yOffset, ITEM_DROPPED_SIZE, ITEM_DROPPED_SIZE);
+        StackfulRender.draw(tex, drawX, y + yOffset, ITEM_DROPPED_SIZE, ITEM_DROPPED_SIZE);
         Fill.rectangleBorder(drawX, y + yOffset, ITEM_DROPPED_SIZE, ITEM_DROPPED_SIZE, Color.WHITE);
         if (itemStack.count() > 1) {
             TextureDrawing.drawText(drawX, y+yOffset, String.valueOf(itemStack.count()), Color.WHITE);

@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.concurrent.Future;
 
 import static core.g2d.Atlas.*;
+import static core.math.MathUtil.toShortExact;
 
 public final class AtlasHandler extends AssetHandler<Atlas, Void, AtlasHandler.State> {
     public AtlasHandler() {
@@ -39,8 +40,8 @@ public final class AtlasHandler extends AssetHandler<Atlas, Void, AtlasHandler.S
                 var regionObject = (ObjectNode) regMeta;
                 int x = regionObject.required("x").asInt();
                 int y = regionObject.required("y").asInt();
-                int width = regionObject.required("width").asInt();
-                int height = regionObject.required("height").asInt();
+                short width = toShortExact(regionObject.required("width").asInt());
+                short height = toShortExact(regionObject.required("height").asInt());
                 tmpRegions.put(regionName, new Atlas.Region(atlas, regionName, x, y, width, height));
             });
             String errorRegionName = meta.required("error").asText();

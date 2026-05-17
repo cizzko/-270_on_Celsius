@@ -6,7 +6,8 @@ import core.UI.Element;
 import core.UI.Styles;
 import core.UI.TextArea;
 import core.UIMenus;
-import core.graphic.Layer;
+import core.g2d.StackfulRender;
+import core.g2d.Render;
 import core.math.Point2i;
 
 import java.util.function.Supplier;
@@ -39,7 +40,11 @@ public class EventHandler {
             if (!visible()) {
                 return;
             }
-            batch.draw(Layer.DEBUG, super::draw);
+
+            StackfulRender.pushState(() -> {
+               StackfulRender.z(Render.LAYER_DEBUG);
+               super.draw();
+            });
         }
     }
     private static final Dialog debugDialog = new Dialog()

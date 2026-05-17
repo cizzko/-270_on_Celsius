@@ -77,7 +77,7 @@ final class AsyncAssetResolver<T, P, S>
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        if (super.cancel(mayInterruptIfRunning)) {
+        if (super.cancel(mayInterruptIfRunning) && params != null) {
             parent.cancel(false); // AsyncAssetResolver не должен прерываться
             return true;
         }

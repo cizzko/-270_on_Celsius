@@ -3,6 +3,7 @@ package core.g2d;
 import core.assets.AssetHandler;
 import core.assets.AssetReleaser;
 import core.assets.AssetResolver;
+import core.graphic.BitMap;
 import core.graphic.TextureLoader;
 
 import javax.imageio.ImageIO;
@@ -35,7 +36,7 @@ public final class TextureHandler extends AssetHandler<Texture, Void, TextureHan
     @Override
     public Texture loadSync(AssetResolver res, String name, Void params, State state) {
         final int glTarget = GL_TEXTURE_2D;
-        int glHandle = glGenTextures();
+        short glHandle = Texture.genId();
 
         glBindTexture(glTarget, glHandle);
         glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);

@@ -41,6 +41,7 @@ public class WorldGenerator {
         int SizeX = params.size;
         int SizeY = params.size;
         World world = new World(SizeX, SizeY);
+        entityPool.worldIndex().bounds.set(0,0, SizeX*TextureDrawing.blockSize, SizeY*TextureDrawing.blockSize);
         Global.world = world;
 
         boolean simple = params.simple;

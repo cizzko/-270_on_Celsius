@@ -1,7 +1,7 @@
 package core.UI;
 
-import core.Global;
 import core.g2d.Drawable;
+import core.g2d.StackfulRender;
 
 public class ImageElement extends BaseElement<ImageElement> {
     public Drawable image;
@@ -19,7 +19,7 @@ public class ImageElement extends BaseElement<ImageElement> {
     @Override
     public void draw() {
         if (image != null) {
-            Global.batch.draw(image, x, y);
+            StackfulRender.draw(image, x, y);
         }
     }
 }

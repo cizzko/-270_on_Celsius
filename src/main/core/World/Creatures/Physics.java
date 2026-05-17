@@ -42,7 +42,10 @@ public class Physics {
         entityPool.updatePositions();
 
         entityPool.entities().values().forEach(me -> {
-            entityPool.worldIndex().findIntersections(me, them -> {
+            entityPool.worldIndex().intersect(me, them -> {
+                if (me == them)
+                    return;
+
                 var meColId   = combine(me.getId(), them.getId());
                 var themColId = combine(them.getId(), me.getId());
                 if (completedCollisions.contains(meColId) || completedCollisions.contains(themColId)) {
@@ -53,14 +56,6 @@ public class Physics {
                 if (!me.isRemoved()) {
                     them.onCollide(me);
                 }
-                // var collisionResult = meResult.combine(themResult);
-                // if (collisionResult == HitboxComponent.CollisionResult.RESISTANT) {
-                //     var offsetVec = overlap(hitbox, entityHitbox);
-                //     me.setPosition(
-                //             me.getX() + offsetVec.x,
-                //             me.getY() + offsetVec.y);
-                //     me.getHitboxTo(hitbox);
-                // }
 
                 completedCollisions.add(meColId);
                 completedCollisions.add(themColId);
@@ -207,8 +202,8 @@ public class Physics {
         }
 
         entity.setPosition(
-                entity.getX() + entityHitbox.x - hitbox.x,
-                entity.getY() + entityHitbox.y - hitbox.y);
+                entity.x() + entityHitbox.x - hitbox.x,
+                entity.y() + entityHitbox.y - hitbox.y);
     }
 
     private static boolean hasFloor(Rectangle entityHitbox) {
@@ -257,14 +252,14 @@ public class Physics {
 
             // TODO:  при передвижении справа налево движение засчитывается только у ent.getX() (а это левый нижний пиксель)
             //        Логично что касание должно быть от ent.getX()+hitbox.width
-            if (ent.getX() >= rightBorder) {
-                ent.setX(ent.getX() - dx);
+            if (ent.x() >= rightBorder) {
+                ent.setX(ent.x() - dx);
                 if (player == ent) {
                     camera.position.x -= dx;
                     ShadowMap.update();
                 }
-            } else if (ent.getX() <= leftBorder) {
-                ent.setX(ent.getX() + dx);
+            } else if (ent.x() <= leftBorder) {
+                ent.setX(ent.x() + dx);
                 if (player == ent) {
                     camera.position.x += dx;
                     ShadowMap.update();

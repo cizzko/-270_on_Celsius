@@ -20,7 +20,7 @@ public class WorkbenchEntity extends BaseBlockEntity<Workbench> {
 
     @Override
     public void update() {
-        if (Math.abs(player.getBlockX() - getBlockX()) < 16) {
+        if (Math.abs(player.blockX() - blockX()) < 16) {
             WorkbenchLogic.nearbyWorkbench.put(block.tier, block);
         }
     }

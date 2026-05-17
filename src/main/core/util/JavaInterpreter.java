@@ -1,7 +1,6 @@
 package core.util;
 
 import core.EventHandling.EventHandler;
-import core.Global;
 import jdk.jshell.JShell;
 import jdk.jshell.SnippetEvent;
 import jdk.jshell.execution.LocalExecutionControlProvider;

@@ -1,12 +1,13 @@
 package core.UI;
 
 import core.g2d.Atlas;
+import core.g2d.StackfulRender;
 import core.g2d.Fill;
 import core.g2d.Font;
 import core.util.Color;
 
 import static core.Global.*;
-import static core.World.Textures.TextureDrawing.getTextSize;
+import static core.World.Textures.TextureDrawing.calculateTextSize;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 
 public class Slider extends BaseElement<Slider> {
@@ -67,10 +68,10 @@ public class Slider extends BaseElement<Slider> {
 
         Atlas.Region triangle = atlas.get("UI/GUI/numberBoardTriangle");
 
-        batch.draw(triangle, sliderPos - (triangle.width() / 2f), y + rectY - triangle.height());
+        StackfulRender.draw(triangle, sliderPos - (triangle.width() / 2f), y + rectY - triangle.height());
 
         String sliderValue = Integer.toString(getSliderValue());
-        int numbersWidth = getTextSize(sliderValue).x;
+        int numbersWidth = calculateTextSize(sliderValue).x;
 
         Fill.rect(sliderPos - (triangle.width() / 2f) - (numbersWidth / (rectWidth * 2)),
                 y + rectY, 30 + numbersWidth / rectWidth, rectHeight,
@@ -80,7 +81,7 @@ public class Slider extends BaseElement<Slider> {
         for (int i = 0; i < sliderValue.length(); i++) {
             char ch = sliderValue.charAt(i);
             Font.Glyph glyph = style.font.getGlyph(ch);
-            batch.draw(glyph, Styles.DIRTY_WHITE, x, y + rectY);
+            StackfulRender.draw(glyph, Styles.DIRTY_WHITE, x, y + rectY);
             x += glyph.width();
         }
 

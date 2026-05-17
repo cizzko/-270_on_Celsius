@@ -15,7 +15,7 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     protected static final int FLAG_W_CHANGED   = 1 << 2;
     protected static final int FLAG_H_CHANGED   = 1 << 3;
     protected static final int FLAG_VISIBLE     = 1 << 4;
-    protected static final int FLAG_TOUCHABLE     = 1 << 5;
+    protected static final int FLAG_TOUCHABLE   = 1 << 5;
 
     protected static final int ELEMENT_LAST_FLAG = FLAG_TOUCHABLE;
 
@@ -213,8 +213,6 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
         return null;
     }
 
-
-
     // region InputListener
 
 
@@ -224,11 +222,11 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     }
 
     @Override
-    public final boolean onTouchDown(float x, float y, int button) {
+    public boolean onTouchDown(float x, float y, int button) {
         boolean anyHandled = false;
         for (InputListener listener : inputListeners) {
             if (listener.onTouchDown(x, y, button)) {
-                Global.uiScene.setTouchFocus(this);
+                Global.uiScene.setFocus(this);
                 anyHandled = true;
             }
         }
@@ -236,52 +234,52 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     }
 
     @Override
-    public final void onTouchUp(float x, float y, int button) {
+    public void onTouchUp(float x, float y, int button) {
         inputListeners.forEach(listener -> listener.onTouchUp(x, y, button));
     }
 
     @Override
-    public final void onScroll(float xOffset, float yOffset) {
+    public void onScroll(float xOffset, float yOffset) {
         inputListeners.forEach(listener -> listener.onScroll(xOffset, yOffset));
     }
 
     @Override
-    public final void onMouseMove(float x, float y) {
+    public void onMouseMove(float x, float y) {
         inputListeners.forEach(listener -> listener.onMouseMove(x, y));
     }
 
     @Override
-    public final void onMouseDragged(float x, float y) {
+    public void onMouseDragged(float x, float y) {
         inputListeners.forEach(listener -> listener.onMouseDragged(x, y));
     }
 
     @Override
-    public final void onKeyUp(int key, int scancode) {
+    public void onKeyUp(int key, int scancode) {
         inputListeners.forEach(listener -> listener.onKeyUp(key, scancode));
     }
 
     @Override
-    public final void onKeyDown(int key, int scancode) {
+    public void onKeyDown(int key, int scancode) {
         inputListeners.forEach(listener -> listener.onKeyDown(key, scancode));
     }
 
     @Override
-    public final void onKeyRepeat(int key, int scancode) {
+    public void onKeyRepeat(int key, int scancode) {
         inputListeners.forEach(listener -> listener.onKeyRepeat(key, scancode));
     }
 
     @Override
-    public final void onCodepoint(int codepoint) {
+    public void onCodepoint(int codepoint) {
         inputListeners.forEach(listener -> listener.onCodepoint(codepoint));
     }
 
     @Override
-    public final void onMouseEnter(float x, float y) {
+    public void onMouseEnter(float x, float y) {
         inputListeners.forEach(listener -> listener.onMouseEnter(x, y));
     }
 
     @Override
-    public final void onMouseExit(float x, float y) {
+    public void onMouseExit(float x, float y) {
         inputListeners.forEach(listener -> listener.onMouseExit(x, y));
     }
     // endregion

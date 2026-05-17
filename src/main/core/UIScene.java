@@ -5,21 +5,18 @@ import core.UI.Dialog;
 import core.UI.Element;
 import core.UI.Group;
 import core.World.Textures.TextureDrawing;
-import core.g2d.Camera2;
+import core.graphic.Camera2;
+import core.g2d.StackfulRender;
 import core.g2d.Fill;
-import core.graphic.Layer;
+import core.g2d.Render;
 import core.input.InputListener;
 import core.math.Vector2f;
-import core.util.DebugTools;
-import core.util.SnapshotArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Objects;
 import java.util.function.Predicate;
 
-import static core.Global.batch;
 import static core.util.Color.*;
 
 public final class UIScene implements InputListener {
@@ -71,8 +68,8 @@ public final class UIScene implements InputListener {
 
     public void update(float dt) {
         updateMouseOver();
-        if (scrollFocus != null && (!scrollFocus.visible() || !contains(scrollFocus))) scrollFocus = null;
-        if (keyboardFocus != null && (!keyboardFocus.visible() || !contains(keyboardFocus))) keyboardFocus = null;
+        // if (scrollFocus != null && (!scrollFocus.visible() || !contains(scrollFocus))) scrollFocus = null;
+        // if (keyboardFocus != null && (!keyboardFocus.visible() || !contains(keyboardFocus))) keyboardFocus = null;
         Element curr = scrollFocus;
         if (curr != null) {
             while (curr != null && curr.parent() != null) {
@@ -97,10 +94,11 @@ public final class UIScene implements InputListener {
     }
 
     public void draw() {
-        batch.z(Layer.GUI);
-        batch.matrix(view.projection);
+        StackfulRender.z(Render.LAYER_GUI);
+        StackfulRender.matrix(view.projection);
         if (debugBorders) {
-            batch.draw(Layer.DEBUG, () -> {
+            StackfulRender.pushState(() -> {
+                StackfulRender.z(Render.LAYER_DEBUG);
                 TextureDrawing.drawText(mouse.x, mouse.y - 32, "Pos: " + mouse);
             });
         }
@@ -108,25 +106,38 @@ public final class UIScene implements InputListener {
         rootElement.draw();
 
         if (debugBorders) {
-            Element lookingAt = mouseOverElement;
-            if (lookingAt != null) {
-                Fill.rectangleBorder(
-                        lookingAt.x(), lookingAt.y(),
-                        lookingAt.width(), lookingAt.height(), green);
-                String shortIdentifier = toShortIdentifier(lookingAt);
-                batch.draw(Layer.DEBUG, () -> {
-                    for(int ox=-1; ox<=1; ox++){
-                        for(int oy=-1; oy<=1; oy++){
-                            if (ox==0 && oy==0) continue;
-                            float x = lookingAt.x() + ox;
-                            float y = lookingAt.y() + oy;
-                            TextureDrawing.drawText(x, y, shortIdentifier, black);
-                        }
-                    }
-                    TextureDrawing.drawText(lookingAt.x(), lookingAt.y(), shortIdentifier, white);
-                });
-            }
+            debugBorders();
         }
+    }
+
+    private void debugBorders() {
+        var lookingAt = mouseOverElement;
+        var touchAt = touchFocus;
+        if (touchAt != null) {
+            String shortIdentifier = toShortIdentifier(touchAt);
+            var size = TextureDrawing.calculateTextSize(shortIdentifier);
+            Fill.rectangleBorder(touchAt.x(), touchAt.y(), touchAt.width(), touchAt.height(), red);
+
+            float tx = touchAt.x() + touchAt.width()  - size.x;
+            float ty = touchAt.y() + touchAt.height() - size.y;
+
+            drawDebugText(tx, ty, shortIdentifier);
+        }
+
+        if (lookingAt != null && lookingAt != touchAt) {
+            Fill.rectangleBorder(
+                    lookingAt.x(), lookingAt.y(),
+                    lookingAt.width(), lookingAt.height(), green);
+            String shortIdentifier = toShortIdentifier(lookingAt);
+            drawDebugText(lookingAt.x(), lookingAt.y(), shortIdentifier);
+        }
+    }
+
+    private static void drawDebugText(float x, float y, String text) {
+        StackfulRender.pushState(() -> {
+            StackfulRender.z(Render.LAYER_DEBUG);
+            TextureDrawing.drawText(x, y, text, white);
+        });
     }
 
     public boolean contains(Element element) {
@@ -171,6 +182,7 @@ public final class UIScene implements InputListener {
     }
 
     public void setFocus(Element element) {
+        this.touchFocus = element;
         this.scrollFocus = element;
         this.keyboardFocus = element;
     }

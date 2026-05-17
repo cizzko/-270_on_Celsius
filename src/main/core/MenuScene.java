@@ -2,20 +2,17 @@ package core;
 
 import core.EventHandling.EventHandler;
 import core.UI.Styles;
-import core.UI.menu.CreatePlanet;
 import core.assets.AssetsManager;
-import core.g2d.Atlas;
-import core.g2d.Font;
-import core.g2d.Texture;
+import core.g2d.*;
+import core.g2d.Render;
 import core.util.Commandline;
 import core.util.DebugTools;
 
 import static core.Global.*;
-import static org.lwjgl.glfw.GLFW.*;
 
 public final class MenuScene extends GameScene {
 
-    @Load(value = "arial.ttf", owned = false)
+    @Load(value = "arial.ttf", owned = false, load = AssetsManager.LoadType.SYNC)
     private Font font;
     @Load(value = "sprites", owned = false)
     private Atlas sprites;
@@ -27,7 +24,7 @@ public final class MenuScene extends GameScene {
         DebugTools.initMenu();
 
         camera.setToOrthographic(input.getWidth(), input.getHeight());
-        batch.matrix(camera.projection);
+        StackfulRender.matrix(camera.projection);
     }
 
     @Override
@@ -67,6 +64,7 @@ public final class MenuScene extends GameScene {
 
     @Override
     protected void drawLoading() {
-        batch.draw(backgroundTex, 0, 0, input.getWidth(), input.getHeight());
+        StackfulRender.z(Render.LAYER_BACKGROUND);
+        StackfulRender.draw(backgroundTex, 0, 0, input.getWidth(), input.getHeight());
     }
 }

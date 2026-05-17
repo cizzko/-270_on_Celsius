@@ -22,9 +22,8 @@ public final class VertexFormat {
         return new VertexFormat(vertexAttributes);
     }
 
-    public int vertexByteSize() {
-        return vertexByteSize;
-    }
+    public int vertexByteSize() { return vertexByteSize; }
+    public int vertexSizeIn(int unit) { return vertexByteSize / unit; }
 
     public void enableAttributes() {
         for (int i = 0; i < vertexAttributes.length; i++) {

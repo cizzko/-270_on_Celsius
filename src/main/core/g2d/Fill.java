@@ -4,7 +4,6 @@ import core.math.MathUtil;
 import core.util.Color;
 
 import static core.Global.atlas;
-import static core.Global.batch;
 
 public final class Fill {
     private Fill() {
@@ -39,7 +38,11 @@ public final class Fill {
         float kx = dx / len * lineWidth;
         float ky = dy / len * lineWidth;
 
-        batch.rect(atlas.get("World/white"), rgba8888, x - ky, y + kx, x + kx, y - kx, x2 + kx, y2 - kx, x2 - kx, y2 + kx);
+        StackfulRender.rect(atlas.get("World/white"), rgba8888,
+                x - ky, y + kx,
+                x + kx, y - kx,
+                x2 + kx, y2 - kx,
+                x2 - kx, y2 + kx);
     }
 
     public static void rectangleBorder(float x, float y, float width, float height, Color color) {
@@ -66,10 +69,10 @@ public final class Fill {
     }
 
     public static void rect(float x, float y, float width, float height, int rgba8888) {
-        batch.draw(atlas.get("World/white"), rgba8888, x, y, width, height);
+        StackfulRender.draw(atlas.get("World/white"), rgba8888, x, y, width, height);
     }
 
     public static void circle(float x, float y, float radius, Color color) {
-        batch.draw(atlas.get("World/circle"), color.rgba8888(), x, y, radius, radius);
+        StackfulRender.draw(atlas.get("World/circle"), color.rgba8888(), x, y, radius, radius);
     }
 }

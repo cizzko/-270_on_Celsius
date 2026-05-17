@@ -341,18 +341,18 @@ public class World {
             }
 
             if (root.type == StaticObjectsConst.Type.SOLID) {
-                boolean anyCollision = Global.entityPool.worldIndex().findAnyInRange(
+                boolean anyCollision = Global.entityPool.worldIndex().any(
                         x * TextureDrawing.blockSize, y * TextureDrawing.blockSize,
-                        root.texture.width(), root.texture.height(),
-                        e -> true);
+                        root.texture.width(), root.texture.height()
+                );
                 return !anyCollision;
             }
         } else {
             if (root.type == StaticObjectsConst.Type.SOLID) {
-                boolean anyCollision = Global.entityPool.worldIndex().findAnyInRange(
+                boolean anyCollision = Global.entityPool.worldIndex().any(
                         x * TextureDrawing.blockSize, y * TextureDrawing.blockSize,
-                        root.texture.width(), root.texture.height(),
-                        e -> true);
+                        root.texture.width(), root.texture.height()
+                );
                 if (anyCollision) {
                     return false;
                 }

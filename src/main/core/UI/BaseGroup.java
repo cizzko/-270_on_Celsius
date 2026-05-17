@@ -4,7 +4,6 @@ import core.UIScene;
 import core.util.SnapshotArrayList;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.StringJoiner;
 
 public abstract class BaseGroup<G extends BaseElement<G> & Group> extends BaseElement<G> implements Group {
@@ -123,5 +122,23 @@ public abstract class BaseGroup<G extends BaseElement<G> & Group> extends BaseEl
             ch.add(tab + "[" + i + "] " + str);
         }
         return super.toStringImpl(indent) + ch;
+    }
+
+    @Override
+    public void onKeyDown(int key, int scancode) {
+        super.onKeyDown(key, scancode);
+        children.forEach(child -> child.onKeyDown(key, scancode));
+    }
+
+    @Override
+    public void onKeyUp(int key, int scancode) {
+        super.onKeyUp(key, scancode);
+        children.forEach(child -> child.onKeyUp(key, scancode));
+    }
+
+    @Override
+    public void onKeyRepeat(int key, int scancode) {
+        super.onKeyRepeat(key, scancode);
+        children.forEach(child -> child.onKeyRepeat(key, scancode));
     }
 }

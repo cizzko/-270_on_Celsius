@@ -8,12 +8,12 @@ import core.World.ItemBlock;
 import core.World.WorldGenerator.WorldGenerator;
 import core.World.WorldUtils;
 import core.content.entity.InventoryComponent;
+import core.g2d.StackfulRender;
 import core.math.Point2i;
 import core.math.Rectangle;
 import org.jetbrains.annotations.Nullable;
 
 import static core.Global.*;
-import static core.Global.player;
 import static core.World.Textures.TextureDrawing.*;
 import static core.World.WorldUtils.getDistanceToMouse;
 import static core.content.creatures.ItemEntity.ITEM_DROPPED_SIZE;
@@ -35,7 +35,7 @@ public class Inventory {
 
     public static void draw() {
         String gridTex = "UI/GUI/inventory/inventory" + (inventoryOpen ? "Open" : "Closed");
-        batch.draw(atlas.get(gridTex), inventoryOpen ? 1488 : 1866, 756);
+        StackfulRender.draw(atlas.get(gridTex), inventoryOpen ? 1488 : 1866, 756);
 
         var items = player.items();
         for (int x = inventoryOpen ? 0 : 7; x < items.size(); x++) {
@@ -54,12 +54,12 @@ public class Inventory {
                 var mousePos = input.mousePos();
                 var tex = focusedItem.item().texture;
                 float uiScale = focusedItem.item().uiScale();
-                batch.draw(tex, mousePos.x - 15, mousePos.y - 15,
+                StackfulRender.draw(tex, mousePos.x - 15, mousePos.y - 15,
                         tex.width() * uiScale, tex.height() * uiScale);
             }
             var current = player.itemInHandIdx;
             if ((inventoryOpen || current.x > 6)) {
-                batch.draw(atlas.get("UI/GUI/inventory/inventoryCurrent"), 1488 + current.x * 54, 756 + current.y * 54f);
+                StackfulRender.draw(atlas.get("UI/GUI/inventory/inventoryCurrent"), 1488 + current.x * 54, 756 + current.y * 54f);
             }
         }
     }
@@ -101,9 +101,9 @@ public class Inventory {
         if (itemInHand != null && itemInHand.item() instanceof ItemBlock b) {
 
             //todo ?????
-            batch.matrix(camera.projection);
+            StackfulRender.matrix(camera.projection);
             if (!player.hasDraggingItem()) {
-                batch.draw(atlas.get("World/buildGrid"),
+                StackfulRender.draw(atlas.get("World/buildGrid"),
                         rgba8888(230, 230, 230, 150),
                         WorldGenerator.findX(blockX, blockY) - 243f, WorldGenerator.findY(blockX, blockY) - 244f);
             }
@@ -168,8 +168,8 @@ public class Inventory {
 
                     var dst = WorldUtils.getDistanceToMouse();
                     if (dst > 5) {
-                        worldMousePos.sub(player.getX(), player.getY()).nor().scale(dst);
-                        worldMousePos.add(player.getX(), player.getY());
+                        worldMousePos.sub(player.x(), player.y()).nor().scale(dst);
+                        worldMousePos.add(player.x(), player.y());
                     }
                     worldMousePos.sub(ITEM_DROPPED_SIZE/2f, ITEM_DROPPED_SIZE/2f);
 

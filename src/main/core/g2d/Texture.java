@@ -1,17 +1,21 @@
 package core.g2d;
 
+import core.graphic.BitMap;
+
 import java.awt.image.BufferedImage;
 
 import static core.graphic.TextureLoader.decodeImage;
 import static org.lwjgl.opengl.GL46.*;
 
 public final class Texture implements Drawable {
-    final int glHandle;
+    public static final int MAX_ID = 1 << 16; // TODO сделать безнаковым
+
+    final short glHandle;
 
     private final int width, height;
     private final float u, v, u2, v2;
 
-    Texture(int glHandle, int width, int height, float u, float v, float u2, float v2) {
+    Texture(short glHandle, int width, int height, float u, float v, float u2, float v2) {
         this.glHandle = glHandle;
         this.width = width;
         this.height = height;
@@ -26,8 +30,16 @@ public final class Texture implements Drawable {
         return load(image, glTarget, u, v, u2, v2);
     }
 
+    static short genId() {
+        int i = glGenTextures();
+        if (i >= MAX_ID) {
+            throw new IllegalStateException("Limit of textures exceeded");
+        }
+        return (short)i;
+    }
+
     static Texture load(BitMap img, int glTarget, float u, float v, float u2, float v2) {
-        int glHandle = glGenTextures();
+        short glHandle = genId();
 
         glBindTexture(glTarget, glHandle);
         glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -43,6 +55,9 @@ public final class Texture implements Drawable {
         glBindTexture(glTarget, 0);
         return new Texture(glHandle, w, h, u, v, u2, v2);
     }
+
+    @Override
+    public short id() { return glHandle; }
 
     @Override
     public int width() {

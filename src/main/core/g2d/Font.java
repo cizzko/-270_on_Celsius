@@ -25,13 +25,13 @@ public final class Font {
     public static final class Glyph implements Drawable {
         private final Font font;
         private final char ch;
-        private final int width, height;
+        private final byte width, height;
 
         int x, y;
         private float u, v, u2, v2;
 
         public Glyph(Font font, char ch,
-                     int width, int height) {
+                     byte width, byte height) {
             this.font = font;
             this.ch = ch;
             this.width = width;
@@ -45,13 +45,16 @@ public final class Font {
             this.v2 = (y + height) / (float) font.texture.height();
         }
 
+        @Override
+        public short id() { return font.texture.id(); }
+
         public Font font() {
             return font;
         }
 
         public char ch() {
             return ch;
-        }
+        } // TODO должно быть в идеале codepoint
 
         public int x() {
             return x;

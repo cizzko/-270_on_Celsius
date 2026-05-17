@@ -1,8 +1,8 @@
 package core.UI;
 
-import java.util.Objects;
+import core.g2d.StackfulRender;
 
-import static core.Global.*;
+import java.util.Objects;
 
 public class TextArea extends BaseElement<TextArea> {
     private final GlyphCache cache = new GlyphCache();
@@ -13,6 +13,7 @@ public class TextArea extends BaseElement<TextArea> {
     public TextArea(Group parent, Style.Text style) {
         super(parent);
         this.style = style;
+        setTouchable(false);
     }
 
     public TextArea setText(String newText) {
@@ -40,7 +41,7 @@ public class TextArea extends BaseElement<TextArea> {
         int count = cache.getCount();
         for (int i = 0; i < count; i++) {
             GlyphCache.GlyphData pos = glyphs.get(i);
-            batch.draw(pos.glyph, pos.rgba8888, pos.x, pos.y);
+            StackfulRender.draw(pos.glyph, pos.rgba8888, pos.x, pos.y);
         }
     }
 }

@@ -1,10 +1,10 @@
 package core.UI;
 
 import core.g2d.Drawable;
+import core.g2d.StackfulRender;
 import core.g2d.Fill;
 import core.util.Color;
 
-import static core.Global.batch;
 import static core.Global.input;
 import static core.World.Textures.TextureDrawing.drawText;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
@@ -39,16 +39,16 @@ public class ToggleButton extends BaseButton<ToggleButton> {
 
     @Override
     public void draw() {
-        float offset = style.borderOffset;
+        float margin = style.borderOffset;
         Color c = color;
         if (c == null) {
             c = style.backgroundColor;
         }
 
-        Fill.rectangleBorder(x - offset, y - offset, width, height, offset, c.rgba8888());
+        Fill.rectangleBorder(x - margin, y - margin, width + margin*2, height + margin*2, margin, c.rgba8888());
 
         Drawable tex = isClicked ? style.checkUp : style.checkDown;
-        batch.draw(tex, x, y);
+        StackfulRender.draw(tex, x, y, width, height);
         drawText(width + x + style.textOffset, y, name);
 
         drawPrompt(this, style.font);

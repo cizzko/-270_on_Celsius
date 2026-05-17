@@ -1,9 +1,7 @@
 package core.UI;
 
-import core.Window;
 import core.g2d.Font;
 import core.math.Rectangle;
-import core.pool.Pool;
 import core.pool.Poolable;
 import core.util.Color;
 import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;

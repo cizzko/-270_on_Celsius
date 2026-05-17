@@ -2,6 +2,7 @@ package core.content.entity;
 
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.content.creatures.CreatureType;
+import core.g2d.StackfulRender;
 import core.math.Rectangle;
 import core.math.Vector2f;
 import it.unimi.dsi.fastutil.HashCommon;
@@ -15,6 +16,7 @@ public abstract class BaseCreatureEntity<C extends CreatureType> implements Crea
     public final C creature;
 
     protected float x, y;
+    protected float prevX, prevY;
     protected float hp;
     public boolean hasGravity, isUnbreakable, dead;
     protected Vector2f velocity = new Vector2f();
@@ -31,6 +33,17 @@ public abstract class BaseCreatureEntity<C extends CreatureType> implements Crea
     @Override
     public final void setId(int id) {
         this.id = (short) id;
+    }
+
+    @Override
+    public final float prevX() { return prevX; }
+
+    @Override
+    public final float prevY() { return prevY; }
+
+    protected void updateLastPosition() {
+        prevX = x;
+        prevY = y;
     }
 
     @Override
@@ -119,10 +132,10 @@ public abstract class BaseCreatureEntity<C extends CreatureType> implements Crea
     }
 
     @Override
-    public final float getX() { return x; }
+    public final float x() { return x; }
 
     @Override
-    public final float getY() { return y; }
+    public final float y() { return y; }
 
     @Override
     public final void setPosition(float x, float y) { this.x = x; this.y = y; }
@@ -148,8 +161,7 @@ public abstract class BaseCreatureEntity<C extends CreatureType> implements Crea
 
     @Override
     public void draw(float drawX) {
-        // var shadow = ShadowMap.getColorDynamic(entity);
-        batch.draw(creature.texture/*, shadow*/, drawX, y);
+        StackfulRender.draw(creature.texture, drawX, y);
     }
 
     @Override
@@ -168,14 +180,14 @@ public abstract class BaseCreatureEntity<C extends CreatureType> implements Crea
     }
 
     @Override
-    public boolean equals(Object o) {
+    public final boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof BaseCreatureEntity that)) return false;
+        if (!(o instanceof BaseCreatureEntity<?> that)) return false;
         return id == that.id;
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return HashCommon.murmurHash3(id);
     }
 }

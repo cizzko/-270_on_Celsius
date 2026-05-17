@@ -1,87 +1,83 @@
 package core.g2d;
 
 import core.util.Disposable;
-import org.lwjgl.system.MemoryStack;
+import org.jetbrains.annotations.Nullable;
 
 import java.nio.FloatBuffer;
-import java.nio.IntBuffer;
 
+import static org.lwjgl.opengl.GL15C.glBindBuffer;
 import static org.lwjgl.opengl.GL46.*;
+import static org.lwjgl.system.MemoryUtil.memAddress;
 
 public final class Mesh implements Disposable {
 
-    private final int vaoUsage;
-    private final int vao, vbo, ebo;
+    static int lastVbo = -1, lastVao = -1;
 
-    private boolean useIndexes;
-    private boolean disposed;
+    private final int vao, vbo;
 
-    public Mesh(int vaoUsage) {
-        this.vaoUsage = vaoUsage;
-
+    public Mesh() {
         vao = glGenVertexArrays();
         vbo = glGenBuffers();
-        ebo = glGenBuffers();
-    }
-
-    public void updateIndexes(IntBuffer indexes) {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexes, vaoUsage);
-
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
-
-    public void useIndexes(boolean state) {
-        this.useIndexes = state;
     }
 
     public void bindVbo() {
+        if (lastVbo == vbo) return;
+        lastVbo = vbo;
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
     }
 
-    private void bindEbo() {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-    }
-
     public void bindVao() {
+        if (lastVao == vao) return;
+        lastVao = vao;
         glBindVertexArray(vao);
     }
 
-    public void draw(int primitiveType, FloatBuffer vertices, int vertexCount) {
-        glBindVertexArray(vao);
+    public void vboUpload(FloatBuffer buffer) { // не забудь vao
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(GL_ARRAY_BUFFER, buffer, GL_DYNAMIC_DRAW);
+    }
 
-        if (vertexCount > 0) {
-            bindVbo();
-            glBufferData(GL_ARRAY_BUFFER, vertices, vaoUsage);
+    public boolean draw(int primitiveType,
+                        FloatBuffer vertices, int vertexOffset, int vertexCount,
+                        @Nullable ElementBufferObject ebo, int indexOffset, int indexCount,
+                        VertexFormat format) {
+
+        if (vertexCount == 0) {
+            return false;
         }
 
-        if (useIndexes) {
-            bindEbo();
-            glDrawElements(primitiveType, vertexCount, GL_UNSIGNED_INT, 0L);
+        bindVao();
+        bindVbo();
+
+        int stride = format.vertexByteSize();
+        int byteOffset = vertexOffset * stride;
+        int byteSize = vertexCount * stride;
+        int oldPos = vertices.position();
+        int oldLim = vertices.limit();
+
+        vertices.position(byteOffset / Float.BYTES);
+        vertices.limit((byteOffset + byteSize) / Float.BYTES);
+        try {
+            nglBufferSubData(GL_ARRAY_BUFFER, byteOffset, byteSize, memAddress(vertices));
+        } finally {
+            vertices.position(oldPos);
+            vertices.limit(oldLim);
+        }
+
+        if (ebo != null) {
+            ebo.bind();
+            long byteOffsetInEBO = (long) indexOffset * Integer.BYTES;
+            glDrawElements(primitiveType, indexCount, GL_UNSIGNED_INT, byteOffsetInEBO);
         } else {
-            glDrawArrays(primitiveType, 0, vertexCount);
+            glDrawArrays(primitiveType, vertexOffset, vertexCount);
         }
 
-        glBindVertexArray(0);
-    }
-
-    @Override
-    public boolean isDisposed() {
-        return disposed;
+        return true;
     }
 
     @Override
     public void close() {
-        if (disposed) {
-            return;
-        }
-
-        try (var stack = MemoryStack.stackPush()) {
-            var ids = stack.ints(vbo, ebo);
-            glDeleteBuffers(ids);
-        }
+        glDeleteBuffers(vbo);
         glDeleteVertexArrays(vao);
-
-        disposed = true;
     }
 }

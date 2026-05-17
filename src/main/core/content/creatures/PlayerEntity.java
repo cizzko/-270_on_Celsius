@@ -19,7 +19,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Player.*;
-import static core.util.DebugTools.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class PlayerEntity
@@ -94,9 +93,9 @@ public class PlayerEntity
         } else {
             velocity.set(0, 0);
 
-            setX(getX() + speed * xf);
+            setX(x() + speed * xf);
             int yf = input.axis(GLFW_KEY_S, GLFW_KEY_W);
-            setY(getY() + speed * yf);
+            setY(y() + speed * yf);
         }
 
         if (jumpedTicks > 0) {

@@ -16,6 +16,8 @@ public final class Mat3 {
 
     public final float[] val = new float[9];
 
+    public static final int BYTES = Float.BYTES * 9;
+
     public Mat3() {
         identity();
     }
@@ -204,5 +206,9 @@ public final class Mat3 {
         val[M00] *= scale;
         val[M11] *= scale;
         return this;
+    }
+
+    public void to(float[] array) {
+        System.arraycopy(val, 0, array, 0, val.length);
     }
 }

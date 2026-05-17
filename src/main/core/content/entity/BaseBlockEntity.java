@@ -22,12 +22,12 @@ public abstract class BaseBlockEntity<B extends StaticObjectsConst> implements B
     }
 
     @Override
-    public float getX() {
+    public float x() {
         return x;
     }
 
     @Override
-    public float getY() {
+    public float y() {
         return y;
     }
 

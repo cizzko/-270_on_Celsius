@@ -16,6 +16,7 @@ import java.util.concurrent.Future;
 
 import static core.g2d.Font.PIXEL_GAP;
 import static core.g2d.Font.fontSize;
+import static core.math.MathUtil.toByteExact;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 
 public final class FontHandler extends AssetHandler<Font, Void, FontHandler.State> {
@@ -86,8 +87,8 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
                 g2.drawString(Character.toString(c), 0, metrics.getAscent());
                 g2.dispose();
 
-                int width = image.getWidth();
-                int height = image.getHeight();
+                byte width = toByteExact(image.getWidth());
+                byte height = toByteExact(image.getHeight());
                 Font.Glyph ch = new Font.Glyph(fnt, c, width, height);
 
                 glyphs.add(new GlyphAndImage(ch, image));

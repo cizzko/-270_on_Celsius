@@ -11,7 +11,6 @@ import core.World.StaticWorldObjects.TileData;
 import core.World.Textures.TextureDrawing;
 import core.World.World;
 import core.g2d.Fill;
-import core.g2d.Shader;
 import core.math.Point2i;
 import core.math.Rectangle;
 import it.unimi.dsi.fastutil.HashCommon;
@@ -43,8 +42,6 @@ public class DebugTools {
     static final Rectangle rect = new Rectangle();
     static final int acid = 0x8ffe09ff;
 
-    static Shader inverseColorShader;
-
     @SuppressWarnings("unchecked")
     public static <T extends Throwable> void rethrow(Throwable t) throws T {
         throw (T) t;
@@ -64,8 +61,7 @@ public class DebugTools {
             }
 
         } catch (Exception e) {
-            log.error(e);
-            e.printStackTrace();
+            log.error("", e);
         }
         log.info("Time took: {}ms", (System.currentTimeMillis() - t));
     }
@@ -82,7 +78,7 @@ public class DebugTools {
                 try (var out = json.createGenerator(str)) {
                     blockEntity.serialize(out, json.getSerializerProvider());
                 } catch (Exception e) {
-                    log.error(e);
+                    log.error("", e);
                 }
                 System.out.println(str);
 
@@ -143,7 +139,7 @@ public class DebugTools {
 
         setDebugValue(() -> {
             if (world == null) return null;
-            return "[Player] x: " + player.getX() + ", y: " + player.getY();
+            return "[Player] x: " + player.x() + ", y: " + player.y();
         });
         setDebugValue(() -> "Camera Pos: " + camera.position);
         setDebugValue(() ->{
@@ -185,17 +181,23 @@ public class DebugTools {
         });
 
         if (debugLevel >= 3) {
-            var r = entityPool.worldIndex().resolution;
-            var hashIndex = entityPool.worldIndex().hash;
-            hashIndex.keySet().forEach(hash -> {
-                long key = HashCommon.invMix(hash);
-                float x = leftInt(key) * r;
-                float y = rightInt(key) * r;
-
-                Fill.rectangleBorder(x, y, r, r, acid);
-                var group = hashIndex.get(hash);
-                TextureDrawing.drawText(x, y, "GroupSize: " + group.size());
+            entityPool.worldIndex().eachNode(0, 0, camera.width(), camera.height(), e -> {
+                Fill.rectangleBorder(e.bounds.x, e.bounds.y, e.bounds.width, e.bounds.height, acid);
+                TextureDrawing.drawText(e.bounds.x, e.bounds.y, "GroupSize: " + e.objects.size());
             });
+
+
+            // var r = entityPool.worldIndex().resolution;
+            // var hashIndex = entityPool.worldIndex().hash;
+            // hashIndex.keySet().forEach(hash -> {
+            //     long key = HashCommon.invMix(hash);
+            //     float x = leftInt(key) * r;
+            //     float y = rightInt(key) * r;
+            //
+            //     Fill.rectangleBorder(x, y, r, r, acid);
+            //     var group = hashIndex.get(hash);
+            //     TextureDrawing.drawText(x, y, "GroupSize: " + group.size());
+            // });
         }
 
         camera.getBoundsTo(rect);
@@ -237,9 +239,9 @@ public class DebugTools {
             }
 
             { // Блоки которые считаются за пол. Черная обводка
-                int minX = (int) Math.floor(player.getX() / blockSize);
-                int maxX = (int) Math.floor((player.getX() + player.creature.texture.width() - GAP) / blockSize);
-                int minY = (int) Math.floor((player.getY() - GAP) / blockSize);
+                int minX = (int) Math.floor(player.x() / blockSize);
+                int maxX = (int) Math.floor((player.x() + player.creature.texture.width() - GAP) / blockSize);
+                int minY = (int) Math.floor((player.y() - GAP) / blockSize);
 
                 for (int x = minX; x <= maxX; x++) {
                     var block = world.getBlock(x, minY);

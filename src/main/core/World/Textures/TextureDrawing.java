@@ -12,6 +12,7 @@ import core.World.StaticWorldObjects.TemperatureMap;
 import core.World.StaticWorldObjects.TileData;
 import core.content.entity.DrawComponent;
 import core.g2d.Atlas;
+import core.g2d.StackfulRender;
 import core.g2d.Fill;
 import core.g2d.Font;
 import core.math.Point2i;
@@ -54,7 +55,7 @@ public class TextureDrawing {
         if (items.length == 0) {
             return;
         }
-        batch.draw(iconRegion, x, y + 16);
+        StackfulRender.draw(iconRegion, x, y + 16);
 
         for (int i = 0; i < items.length; i++) {
             var item = items[i];
@@ -65,8 +66,8 @@ public class TextureDrawing {
 
             float uiScale = item.item().uiScale();
             var tex = item.item().texture;
-            batch.scale(uiScale);
-            batch.draw(tex, (x + (i * 54)) + playerSize + 5, y + 15,
+            StackfulRender.scale(uiScale);
+            StackfulRender.draw(tex, (x + (i * 54)) + playerSize + 5, y + 15,
                     tex.width() * uiScale, tex.height() * uiScale);
         }
     }
@@ -76,7 +77,7 @@ public class TextureDrawing {
     }
 
     public static void drawText(float x, float y, CharSequence text, int rgba8888) {
-        float startX = x;
+            float startX = x;
 
         for (int i = 0; i < text.length(); i++) {
             char ch = text.charAt(i);
@@ -88,7 +89,7 @@ public class TextureDrawing {
                 continue;
             }
             Font.Glyph glyph = Window.defaultFont.getGlyph(ch);
-            batch.draw(glyph, rgba8888, x, y);
+            StackfulRender.draw(glyph, rgba8888, x, y);
             x += glyph.width();
         }
     }
@@ -111,7 +112,7 @@ public class TextureDrawing {
 
     public static void drawRectangleText(int x, int y, int maxWidth, String text, boolean staticTransfer, Color panColor, Font font) {
         maxWidth = (maxWidth > 0 ? maxWidth : 1920 - x);
-        y = staticTransfer ? y + getTextSize(text).x / maxWidth * blockSize : y;
+        y = staticTransfer ? y + calculateTextSize(text).x / maxWidth * blockSize : y;
 
         StringBuilder modifiedText = new StringBuilder();
         int currentWidth = 0;
@@ -128,7 +129,7 @@ public class TextureDrawing {
         }
         text = modifiedText.toString();
 
-        var textSize = getTextSize(text);
+        var textSize = calculateTextSize(text);
         int width = textSize.x;
         int height = textSize.y;
 
@@ -136,7 +137,7 @@ public class TextureDrawing {
         drawText(x + 36, y + height - 32 - height / 2f, text);
     }
 
-    public static Point2i getTextSize(String text) {
+    public static Point2i calculateTextSize(String text) {
         String longestLine = "";
         int width = 12;
         int linesCount = 0;
@@ -200,7 +201,7 @@ public class TextureDrawing {
                 color.set(a, Math.max(0, a - 150), Math.max(0, a - 150), 255);
             }
 
-            batch.draw(block.texture, color, wx, wy);
+            StackfulRender.draw(block.texture, color, wx, wy);
             drawDamage(block, hp, wx, wy);
         }
     }
@@ -249,7 +250,7 @@ public class TextureDrawing {
             color.set(color.r() - a, color.g() - (a / 2), color.b(), color.a());
         }
 
-        batch.draw(obj.texture, color, wx, wy);
+        StackfulRender.draw(obj.texture, color, wx, wy);
         drawDamage(obj, hp, wx, wy);
 
         var blockEntity = world.getEntity(x, y);
@@ -276,21 +277,21 @@ public class TextureDrawing {
                     float dx = rightBorder - leftBorder;
 
 
-                    float drawX = ent.getX();
+                    float drawX = ent.x();
                     // |swap|swap|
                     //      ^ rightBorder
                     //           ^  rightBorder + swap*blockSize
                     // ^ rightBorder - swap*blockSize
 
-                    float rightmostX = ent.getX() + hitbox.width;
+                    float rightmostX = ent.x() + hitbox.width;
                     if (rightmostX >= (rightBorder - Physics.swap * blockSize) && rightmostX <= (rightBorder + Physics.swap * blockSize) &&
-                        !viewport.overlaps(ent.getX(), ent.getY(), hitbox.width, hitbox.height)) {
+                        !viewport.overlaps(ent.x(), ent.y(), hitbox.width, hitbox.height)) {
                         drawX -= dx;
-                    } else if (ent.getX() >= (leftBorder - Physics.swap * blockSize) && ent.getX() <= (leftBorder + Physics.swap * blockSize) &&
-                               !viewport.overlaps(ent.getX(), ent.getY(), hitbox.width, hitbox.height)) {
+                    } else if (ent.x() >= (leftBorder - Physics.swap * blockSize) && ent.x() <= (leftBorder + Physics.swap * blockSize) &&
+                               !viewport.overlaps(ent.x(), ent.y(), hitbox.width, hitbox.height)) {
                         drawX += dx;
                     }
-                    if (viewport.overlaps(drawX, ent.getY(), hitbox.width, hitbox.height)) {
+                    if (viewport.overlaps(drawX, ent.y(), hitbox.width, hitbox.height)) {
                         d.draw(drawX);
                     }
                 }
@@ -309,16 +310,16 @@ public class TextureDrawing {
     public static void drawItem(float x, float y, Item item) {
         float uiScale = item.uiScale();
         Atlas.Region tex = item.texture;
-        batch.draw(tex, x + 5, y + 5, tex.width() * uiScale, tex.width() * uiScale);
+        StackfulRender.draw(tex, x + 5, y + 5, tex.width() * uiScale, tex.width() * uiScale);
     }
 
     private static void drawDamage(StaticObjectsConst obj, int hp, int xBlock, int yBlock) {
         if (hp > obj.maxHp / 1.5f) {
             // ???
         } else if (hp < obj.maxHp / 3) {
-            batch.draw(atlas.get("textures/blocks/damaged1"), xBlock, yBlock);
+            StackfulRender.draw(atlas.get("textures/blocks/damaged1"), xBlock, yBlock);
         } else {
-            batch.draw(atlas.get("textures/blocks/damaged0"), xBlock, yBlock);
+            StackfulRender.draw(atlas.get("textures/blocks/damaged0"), xBlock, yBlock);
         }
     }
 }

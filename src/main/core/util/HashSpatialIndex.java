@@ -1,4 +1,4 @@
-package core.content.blocks;
+package core.util;
 
 import core.content.entity.HitboxComponent;
 import core.math.Rectangle;
@@ -25,7 +25,7 @@ public final class HashSpatialIndex<E extends HitboxComponent> {
     }
 
     public void insert(E entry) {
-        long key = combine((long) Math.floor(entry.getX() / resolution), (long) Math.floor(entry.getY() / resolution));
+        long key = combine((long) Math.floor(entry.x() / resolution), (long) Math.floor(entry.y() / resolution));
         hash.computeIfAbsent(key, k -> new ObjectArrayList<>()).add(entry);
     }
 

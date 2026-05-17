@@ -1,7 +1,9 @@
 package core.content;
 
-import core.content.blocks.HashSpatialIndex;
+import core.math.Rectangle;
+import core.util.HashSpatialIndex;
 import core.content.entity.Entity;
+import core.util.QuadTree;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;
 import org.jetbrains.annotations.Nullable;
@@ -10,7 +12,8 @@ import static core.World.Textures.TextureDrawing.blockSize;
 
 public class EntityPool {
     private final Int2ObjectAVLTreeMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
-    private final HashSpatialIndex<Entity> worldIndex = new HashSpatialIndex<>(blockSize * 16);
+    // private final HashSpatialIndex<Entity> worldIndex = new HashSpatialIndex<>(blockSize * 16);
+    private final QuadTree<Entity> worldIndex = new QuadTree<>(new Rectangle());
     private final IntArrayFIFOQueue freeIds = new IntArrayFIFOQueue();
     private final int maxCreatureCount;
 
@@ -23,7 +26,7 @@ public class EntityPool {
 
     public void updatePositions() {
         needIndexRebuild = false;
-        worldIndex.hash.clear();
+        worldIndex.clear();
         entities.values().forEach(worldIndex::insert);
     }
 
@@ -48,7 +51,7 @@ public class EntityPool {
         return freeIds.dequeueInt();
     }
 
-    public HashSpatialIndex<Entity> worldIndex() {
+    public QuadTree<Entity> worldIndex() {
         if (needIndexRebuild) {
             updatePositions();
         }
@@ -63,7 +66,7 @@ public class EntityPool {
 
     public void clear() {
         entities.clear();
-        worldIndex.hash.clear();
+        worldIndex.clear();
         freeIds.clear();
         idCounter = 0;
         needIndexRebuild = false;

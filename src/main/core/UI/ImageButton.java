@@ -1,16 +1,9 @@
 package core.UI;
 
-import core.EventHandling.EventHandler;
-import core.Global;
 import core.g2d.Drawable;
-import core.g2d.Fill;
-import core.util.Color;
+import core.g2d.StackfulRender;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
-
-import java.awt.*;
-
-import static core.util.Color.red;
 
 public class ImageButton extends BaseElement<ImageButton> {
     public Runnable clickAction;
@@ -40,8 +33,7 @@ public class ImageButton extends BaseElement<ImageButton> {
 
     @Override
     public void draw() {
-        if (image != null) Global.batch.draw(image, x, y, width, height);
-
+        if (image != null) StackfulRender.draw(image, x, y, width, height);
         // Fill.rectangleBorder(x, y, width, height, red);
     }
 }

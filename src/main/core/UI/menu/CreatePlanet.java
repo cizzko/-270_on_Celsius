@@ -64,36 +64,44 @@ public class CreatePlanet extends Dialog {
             parameters.size = size;
         })
                 .set(1460, 340, 420, 20);
-        basicParameters = add(new Dialog() {{
-            setVisible(true);
+        basicParameters = background.add(new Dialog() {{
+            setId("basicParameters");
+            toggleDialog(this, true);
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> parameters.creatures = !parameters.creatures)
                     .setPosition(70, 890)
                     .setName(Global.lang.get("GenerateCreatures"));
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> parameters.randomSpawn = !parameters.randomSpawn)
                     .setPosition(70, 820)
                     .setName(Global.lang.get("RandomSpawn"));
-        }});
-        generationParameters = add(new Dialog() {{
-            setVisible(false);
+        }}).set(40, 270, 1360, 950 - 270);
+        generationParameters = background.add(new Dialog() {{
+            setId("generationParameters");
+            toggleDialog(this, false);
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> parameters.simple = !parameters.simple)
                     .setPosition(70, 890)
                     .setName(Global.lang.get("GenerateSimpleWorld"));
-        }});
+        }}).set(40, 270, 1360, 950 - 270);;
+    }
+
+    private void toggleDialog(Dialog dialog, boolean state) {
+        dialog.setVisible(state);
+        dialog.setTouchable(state);
+        dialog.setTouchableChildren(state);
     }
 
     private void physicsBtn() {
-        generationParameters.setVisible(false);
-        basicParameters.setVisible(false);
+        toggleDialog(basicParameters, false);
+        toggleDialog(generationParameters, false);
     }
 
     private void basicBtn(Button b) {
-        generationParameters.setVisible(false);
-        basicParameters.setVisible(true);
+        toggleDialog(basicParameters, true);
+        toggleDialog(generationParameters, false);
     }
 
     private void generationBtn(Button b) {
-        basicParameters.setVisible(false);
-        generationParameters.setVisible(true);
+        toggleDialog(basicParameters, false);
+        toggleDialog(generationParameters, true);
     }
 
     public void appendText(String text) {

@@ -32,4 +32,8 @@ public final class Pool<T> {
             p.reset();
         }
     }
+
+    public void clear() {
+        freeObjects.clear();
+    }
 }

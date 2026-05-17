@@ -1,8 +1,12 @@
-package core.g2d;
+package core.graphic;
 
+import core.EventHandling.EventHandler;
+import core.Global;
+import core.input.InputHandler;
 import core.math.Mat3;
 import core.math.Rectangle;
 import core.math.Vector2f;
+import core.util.DebugTools;
 
 public final class Camera2 {
     public final Vector2f position = new Vector2f();

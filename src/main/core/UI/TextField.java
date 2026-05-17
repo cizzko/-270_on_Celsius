@@ -3,6 +3,7 @@ package core.UI;
 import core.Global;
 import core.Window;
 import core.g2d.Drawable;
+import core.g2d.StackfulRender;
 import core.g2d.Fill;
 import core.g2d.Font;
 import core.util.Color;
@@ -12,7 +13,6 @@ import org.apache.logging.log4j.Logger;
 
 import java.util.function.Consumer;
 
-import static core.Global.batch;
 import static core.Global.input;
 import static org.lwjgl.glfw.GLFW.*;
 
@@ -229,7 +229,7 @@ public class TextField extends BaseElement<TextField> {
     public void draw() {
         Drawable background = style.background;
         if (background != null) {
-            Global.batch.draw(background, x, y);
+            StackfulRender.draw(background, x, y);
         } else {
             float w = width;
             if (glyphCache.rect.width > w) {
@@ -245,7 +245,7 @@ public class TextField extends BaseElement<TextField> {
             for (int i = minI; i <= maxI; i++) {
                 lineWidth += positions[i].width;
                 if (text.charAt(i) == '\n') {
-                    Fill.rect(lineX, lineY, lineWidth, style.font.fontSize * 1.5f, selectionColor); // TODO
+                    Fill.rect(lineX, lineY, lineWidth, Font.fontSize * 1.5f, selectionColor); // TODO
 
                     if (i + 1 <= maxI) {
                         var next = positions[i + 1];
@@ -259,14 +259,14 @@ public class TextField extends BaseElement<TextField> {
                 }
             }
             if (text.charAt(maxI) != '\n')
-                Fill.rect(lineX, lineY, lineWidth, style.font.fontSize * 1.5f, selectionColor); // TODO
+                Fill.rect(lineX, lineY, lineWidth, Font.fontSize * 1.5f, selectionColor); // TODO
         }
 
         var glyphs = glyphCache.getGlyphs();
         int count = glyphCache.getCount();
         for (int i = 0; i < count; i++) {
             GlyphCache.GlyphData pos = glyphs.get(i);
-            batch.draw(pos.glyph, pos.rgba8888, pos.x, pos.y);
+            StackfulRender.draw(pos.glyph, pos.rgba8888, pos.x, pos.y);
         }
 
         if (cursorOn) {

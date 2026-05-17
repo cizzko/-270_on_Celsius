@@ -1,5 +1,6 @@
 package core.g2d;
 
+import it.unimi.dsi.fastutil.HashCommon;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -39,11 +40,11 @@ public final class Atlas {
         return regions.getOrDefault(regionName, errorRegion);
     }
 
-    public Region getErrorRegion() {
+    public Region errorRegion() {
         return errorRegion;
     }
 
-    public Texture getTexture() {
+    public Texture texture() {
         return texture;
     }
 
@@ -56,13 +57,13 @@ public final class Atlas {
         private float u, v;
         private float u2, v2;
 
-        public Region(Atlas atlas, String name, int x, int y, int width, int height) {
+        Region(Atlas atlas, String name, int x, int y, short width, short height) {
             this.atlas = atlas;
             this.name = name;
             this.x = x;
             this.y = y;
-            this.width = (short) width;
-            this.height = (short) height;
+            this.width = width;
+            this.height = height;
         }
 
         void computeTextureCoordinates() {
@@ -87,6 +88,9 @@ public final class Atlas {
         public int y() {
             return y;
         }
+
+        @Override
+        public short id() { return atlas.texture.id(); }
 
         @Override
         public int width() {
@@ -131,9 +135,7 @@ public final class Atlas {
 
         @Override
         public int hashCode() {
-            int h = 5381;
-            h += (h << 5) + name.hashCode();
-            return h;
+            return HashCommon.mix(name.hashCode());
         }
 
         @Override

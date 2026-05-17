@@ -1,6 +1,5 @@
 package core.World.StaticWorldObjects;
 
-import core.Global;
 import core.World.Weather.Sun;
 import core.math.Point2i;
 import core.util.Sized;

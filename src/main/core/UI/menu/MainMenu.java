@@ -31,9 +31,9 @@ public class MainMenu extends Dialog {
         panel.addButton(Styles.TEXT_BUTTON, this::playButton)
                 .set(46, 990, 240, 65)
                 .setName(lang.get("Play"));
-        // panel.addButton(Styles.TEXT_BUTTON, this::loadSave)
-        //         .set(46 + 240 + 20, 990, 240, 65)
-        //         .setName(lang.get("LoadSave"));
+        panel.addButton(Styles.TEXT_BUTTON, this::loadSave)
+                .set(46 + 240 + 20, 990, 240, 65)
+                .setName(lang.get("LoadSave"));
     }
 
     private void loadSave() {

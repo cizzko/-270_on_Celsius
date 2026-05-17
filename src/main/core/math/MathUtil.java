@@ -29,4 +29,18 @@ public final class MathUtil {
     public static float lerp(float a, float b, float progress) {
         return a + (b - a) * progress;
     }
+
+    public static byte toByteExact(int value) {
+        if ((byte)value != value) {
+            throw new ArithmeticException("byte overflow");
+        }
+        return (byte)value;
+    }
+
+    public static short toShortExact(int value) {
+        if ((short)value != value) {
+            throw new ArithmeticException("short overflow");
+        }
+        return (short)value;
+    }
 }

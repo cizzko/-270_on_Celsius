@@ -4,6 +4,9 @@ import core.math.Rectangle;
 
 public interface HitboxComponent extends PositionComponent {
 
+    float prevX();
+    float prevY();
+
     void getHitboxTo(Rectangle out);
 
     CollisionResult onCollide(HitboxComponent them);

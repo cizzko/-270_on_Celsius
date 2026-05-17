@@ -11,6 +11,7 @@ import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.Textures.TextureDrawing;
 import core.content.entity.BaseBlockEntity;
 import core.g2d.Atlas;
+import core.g2d.StackfulRender;
 import core.math.Point2i;
 import core.math.Vector2f;
 
@@ -73,7 +74,7 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
                 Point2i mousePos = input.mousePos();
                 float uiScale = item.item().uiScale();
                 Atlas.Region tex = item.item().texture;
-                batch.draw(tex, mousePos.x - 15, mousePos.y - 15, tex.width() * uiScale, tex.height() * uiScale);
+                StackfulRender.draw(tex, mousePos.x - 15, mousePos.y - 15, tex.width() * uiScale, tex.height() * uiScale);
             }
         } else {
             Point2i inventoryUMB = Inventory.getFocusedItemIdx();
@@ -117,15 +118,15 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
     }
 
     @Override
-    public void draw() {
+    public void draw(float drawX) {
         if (!isClicked) {
             return;
         }
 
-        float xPos = x - 61;
+        float xPos = drawX - 61;
         float yPos = y + 56;
 
-        batch.draw(atlas.get("UI/GUI/inventory/chestInventory"), xPos, yPos);
+        StackfulRender.draw(atlas.get("UI/GUI/inventory/chestInventory"), xPos, yPos);
 
         var storage = getStorage();
         for (int x = 0; x < storage.length; x++) {

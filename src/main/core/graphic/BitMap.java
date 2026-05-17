@@ -1,4 +1,4 @@
-package core.g2d;
+package core.graphic;
 
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.system.NativeResource;

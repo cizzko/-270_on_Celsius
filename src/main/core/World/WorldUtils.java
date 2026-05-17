@@ -15,7 +15,6 @@ import java.util.concurrent.ThreadLocalRandom;
 import static core.Global.*;
 import static core.World.Textures.TextureDrawing.blockSize;
 import static core.World.WorldGenerator.WorldGenerator.copySize;
-import static core.content.creatures.ItemEntity.ITEM_DROPPED_SIZE;
 
 public class WorldUtils {
 
@@ -35,8 +34,8 @@ public class WorldUtils {
     /// @return абсолютное значение в блоках от игрока до мыши
     public static int getDistanceToMouse() {
         return (int) Math.abs(
-                (player.getX() / TextureDrawing.blockSize - Global.input.mouseBlockPos().x) +
-                (player.getY() / TextureDrawing.blockSize - Global.input.mouseBlockPos().y));
+                (player.x() / TextureDrawing.blockSize - Global.input.mouseBlockPos().x) +
+                (player.y() / TextureDrawing.blockSize - Global.input.mouseBlockPos().y));
     }
 
     public static int getDistanceBetweenBlocks(Point2i mainPoint, Point2i secondPoint) {

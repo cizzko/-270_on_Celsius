@@ -13,7 +13,7 @@
                 <TimeBasedTriggeringPolicy />
                 <OnStartupTriggeringPolicy />
             </Policies>
-            <DefaultRolloverStrategy max="10"/>
+            <DefaultRolloverStrategy max="5"/>
         </RollingRandomAccessFile>
     </Appenders>
 
@@ -22,6 +22,7 @@
             <AppenderRef ref="Console"/>
             <AppenderRef ref="File"/>
         </Root>
-<!--        <Logger name="core.UIScene" level="OFF"></Logger>-->
+        <Logger name="core.UIScene" level="DEBUG"></Logger>
+        <Logger name="core.g2d" level="ERROR"></Logger>
     </Loggers>
 </Configuration>

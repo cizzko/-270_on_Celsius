@@ -2,12 +2,16 @@ package core;
 
 import com.sun.management.OperatingSystemMXBean;
 import core.EventHandling.Config;
+import core.assets.AssetsManager;
 import core.content.EntityPool;
 import core.g2d.Atlas;
+import core.g2d.StackfulRender;
 import core.g2d.Font;
-import core.g2d.SortingBatch;
+import core.g2d.Shader;
+import core.g2d.Render;
 import core.input.InputHandler;
 import core.util.DebugTools;
+import core.util.FutureUtil;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.io.IoBuilder;
@@ -81,6 +85,7 @@ public final class Window extends Application {
            }
        }));
 
+        // glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
         switch (System.getenv("XDG_SESSION_TYPE")) {
             case "wayland" -> {
                 glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
@@ -94,6 +99,7 @@ public final class Window extends Application {
 
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        // glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
         if (Config.getBoolean("DebugMACOSX") || Platform.get() == Platform.MACOSX) {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -102,7 +108,7 @@ public final class Window extends Application {
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         }
 
-        glfwWindow = glfwCreateWindow(defaultWidth, defaultHeight, "-270 on Celsius", glfwGetPrimaryMonitor(), MemoryUtil.NULL);
+        glfwWindow = glfwCreateWindow(defaultWidth, defaultHeight, "-270 on Celsius", /* 0 для оконного */ glfwGetPrimaryMonitor(), MemoryUtil.NULL);
         if (glfwWindow == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create window");
         }
@@ -163,9 +169,9 @@ public final class Window extends Application {
             }
         }));
 
-        batch = new SortingBatch(4 * 1024 * 1024, 1024 * 8, 1024 * 8);
-
+        StackfulRender.defaultShader = FutureUtil.join(Global.assets.load(Shader.class, "default", AssetsManager.LoadType.SYNC));
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
+
         glfwShowWindow(glfwWindow);
 
         lang = new LangTranslation();
@@ -225,8 +231,10 @@ public final class Window extends Application {
         updateTime();
 
         input.update();
+        var rq = Render.queue();
+        rq.beginFrame();
         gameScene.loop();
-        batch.flush();
+        rq.endFrame();
 
         glfwSwapBuffers(glfwWindow);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -237,7 +245,7 @@ public final class Window extends Application {
     @Override
     protected void cleanup() {
         glfwTerminate();
-        batch.close();
+        Render.queue.close();
         assets.unloadAll();
     }
 }

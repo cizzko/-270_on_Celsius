@@ -3,11 +3,11 @@ package core.content.entity;
 import core.World.Textures.TextureDrawing;
 
 public interface PositionComponent {
-    float getX();
-    float getY();
+    float x();
+    float y();
 
-    default int getBlockX() { return TextureDrawing.toBlock(getX()); }
-    default int getBlockY() { return TextureDrawing.toBlock(getY()); }
+    default int blockX() { return TextureDrawing.toBlock(x()); }
+    default int blockY() { return TextureDrawing.toBlock(y()); }
 
     void setPosition(float x, float y);
 
@@ -17,8 +17,8 @@ public interface PositionComponent {
     boolean hasFloor();
 
     default float dst2(float ox, float oy) {
-        float dx = ox - getX();
-        float dy = oy - getY();
+        float dx = ox - x();
+        float dy = oy - y();
         return (dx * dx + dy * dy);
     }
 
@@ -27,8 +27,8 @@ public interface PositionComponent {
     }
 
     default boolean withinBlocks(int ox, int oy, int radius) {
-        long dx = ox - getBlockX();
-        long dy = oy - getBlockY();
+        long dx = ox - blockX();
+        long dy = oy - blockY();
         long radiusSq = (long) radius * radius;
         return (dx * dx + dy * dy) <= radiusSq;
     }

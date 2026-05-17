@@ -7,8 +7,12 @@ import static core.Global.uiScene;
 public class Dialog extends BaseGroup<Dialog> {
     protected static final int FLAG_MAXIMIZED = GROUP_LAST_FLAG << 2;
 
+    protected Dialog(Group parent) {
+        super(parent);
+    }
+
     public Dialog() {
-        this(null);
+        super(null);
     }
 
     public Dialog setMaximized(boolean state) {
@@ -16,22 +20,11 @@ public class Dialog extends BaseGroup<Dialog> {
         return this;
     }
 
-    protected Dialog(Group parent) {
-        super(parent);
-    }
-
-    @Override
-    public void onResize(int width, int height) {
-        if ((flags & FLAG_MAXIMIZED) != 0) {
-            set(0, 0, width, height);
-        }
-
-        super.onResize(width, height);
-    }
-
     @Override
     protected void resize() {
-        setSize(uiScene.root().width(), uiScene.root().height());
+        if ((flags & FLAG_MAXIMIZED) != 0) {
+            setSize(uiScene.root().width(), uiScene.root().height());
+        }
     }
 
     public void show() {

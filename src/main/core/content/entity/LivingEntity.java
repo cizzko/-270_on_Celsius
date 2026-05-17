@@ -6,5 +6,5 @@ public interface LivingEntity
                 DrawComponent {
 
     @Override
-    default void draw() { draw(getX()); }
+    default void draw() { draw(x()); }
 }

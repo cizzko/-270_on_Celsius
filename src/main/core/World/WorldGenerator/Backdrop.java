@@ -1,6 +1,7 @@
 package core.World.WorldGenerator;
 
-import core.graphic.Layer;
+import core.g2d.StackfulRender;
+import core.g2d.Render;
 
 import static core.Global.*;
 import static core.World.Textures.TextureDrawing.blockSize;
@@ -14,19 +15,19 @@ public class Backdrop {
     private static Biomes lastBiome = null;
 
     public static void update() {
-        Biomes currentBiome = world.getBiomes(player.getBlockX());
+        Biomes currentBiome = world.getBiomes(player.blockX());
 
         if (currentBiome != lastBiome) {
             lastBiome = currentBiome;
             //lastX = (int) DynamicObjects.getFirst().getX() / blockSize;
         }
 
-        batch.z(Layer.BACKGROUND);
-        batch.pushState(() -> {
-            batch.scale(scaleX * 2, scaleY * 2);
-            batch.draw(atlas.get(currentBiome.getBackdrop()),((lastX - (player.getX() / blockSize)) * 2) - 1500, 0);
-            batch.scale(scaleX, scaleY);
-            batch.draw(atlas.get(currentBiome.getBackdrop()),((lastX - (player.getX() / blockSize)) * 3) - 1500, 0);
+        StackfulRender.pushState(() -> {
+            StackfulRender.z(Render.LAYER_BACKGROUND);
+            StackfulRender.scale(scaleX * 2, scaleY * 2);
+            StackfulRender.draw(atlas.get(currentBiome.getBackdrop()), ((lastX - (player.x() / blockSize)) * 2) - 1500, 0);
+            StackfulRender.scale(scaleX, scaleY);
+            StackfulRender.draw(atlas.get(currentBiome.getBackdrop()), ((lastX - (player.x() / blockSize)) * 3) - 1500, 0);
         });
     }
 }

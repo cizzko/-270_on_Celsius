@@ -1,19 +1,21 @@
 package core;
 
 import core.EventHandling.Config;
+import core.EventHandling.EventHandler;
 import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Items.Bullets;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
 import core.World.Textures.TextureDrawing;
 import core.World.Weather.Sun;
-import core.graphic.Layer;
+import core.g2d.StackfulRender;
 import core.util.Commandline;
 import core.util.DebugTools;
 
 import static core.EventHandling.EventHandler.updateHotkeys;
 import static core.Global.*;
 import static core.World.Creatures.Player.Player.*;
+import static core.g2d.Render.*;
 
 public final class PlayGameScene extends GameScene {
     public final Sun sun = new Sun();
@@ -71,13 +73,13 @@ public final class PlayGameScene extends GameScene {
     @Override
     protected void draw() {
 
-        batch.z(Layer.BACKGROUND);
+        StackfulRender.z(LAYER_BACKGROUND);
         sun.draw();
         postEffect.draw();
-        batch.z(Layer.STATIC_OBJECTS);
-        batch.matrix(camera.projection); // Центрируем камеру на позицию игрока
+        StackfulRender.z(LAYER_BLOCKS);
+        StackfulRender.matrix(camera.projection); // Центрируем камеру на позицию игрока
         TextureDrawing.drawBlocks();
-        batch.z(Layer.DYNAMIC_OBJECTS);
+        StackfulRender.z(LAYER_ENTITIES);
         TextureDrawing.drawEntities();
 
         DebugTools.drawDebugBorders();
@@ -111,12 +113,12 @@ public final class PlayGameScene extends GameScene {
             float base = 0.08f * Math.max(1, player.getVelocity().len() / 4f);
             base = Math.min(1f, base);
             float alpha = 1 - (float)Math.pow(1 - base, Time.delta);
-            camera.position.lerp(player.getX() + 32, player.getY() + 200, alpha);
+            camera.position.lerp(player.x() + 32, player.y() + 200, alpha);
             // if (Float.isNaN(Global.camera.position.x) || Float.isNaN(Global.camera.position.y)) {
             //     System.out.println("NAN CAM POS: x=" + player.getX() + " y=" + player.getY() + " v=" + player.getVelocity() + " base=" + base + " alpha=" + alpha);
             // }
         } else {
-            camera.position.set(player.getX() + 32, player.getY() + 200);
+            camera.position.set(player.x() + 32, player.y() + 200);
         }
 
         camera.update();
