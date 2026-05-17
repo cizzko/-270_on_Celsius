@@ -1,6 +1,6 @@
 package core.content.entity;
 
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.content.ItemStack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 

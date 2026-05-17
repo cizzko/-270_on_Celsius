@@ -1,4 +1,4 @@
-package core.World;
+package core.content.items;
 
 import core.content.ContentLoader;
 

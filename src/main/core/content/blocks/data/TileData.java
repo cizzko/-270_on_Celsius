@@ -1,4 +1,4 @@
-package core.World.StaticWorldObjects;
+package core.content.blocks.data;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;

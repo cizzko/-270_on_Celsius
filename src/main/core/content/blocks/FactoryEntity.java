@@ -7,12 +7,13 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.Time;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.ItemGrid;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.content.ItemGrid;
+import core.content.ItemStack;
 import core.World.Textures.TextureDrawing;
 import core.content.entity.BaseBlockEntity;
 import core.content.entity.BlockItemStorage;
 import core.g2d.Fill;
+import core.g2d.RenderList;
 import core.util.ArrayUtils;
 
 import java.io.IOException;
@@ -137,7 +138,10 @@ public class FactoryEntity extends BaseBlockEntity<Factory> {
     }
 
     @Override
-    public void draw() {
+    public final boolean drawStateChanged() { return false; }
+
+    @Override
+    public void draw(RenderList rlist) {
         if (isSelected) {
             float addedX = block.texture.width();
             float addedY = block.texture.height();

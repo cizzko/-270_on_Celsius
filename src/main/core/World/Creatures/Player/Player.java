@@ -2,10 +2,10 @@ package core.World.Creatures.Player;
 
 import core.EventHandling.Config;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.ItemData;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
-import core.World.ItemBlock;
-import core.World.ItemTool;
+import core.content.items.data.ItemData;
+import core.content.ItemStack;
+import core.content.items.ItemBlock;
+import core.content.items.ItemTool;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.TextureDrawing;

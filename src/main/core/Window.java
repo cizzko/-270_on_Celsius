@@ -170,6 +170,8 @@ public final class Window extends Application {
         }));
 
         StackfulRender.defaultShader = FutureUtil.join(Global.assets.load(Shader.class, "default", AssetsManager.LoadType.SYNC));
+        Render.init();
+
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
 
         glfwShowWindow(glfwWindow);
@@ -234,6 +236,7 @@ public final class Window extends Application {
         var rq = Render.queue();
         rq.beginFrame();
         gameScene.loop();
+        StackfulRender.pushRList();
         rq.endFrame();
 
         glfwSwapBuffers(glfwWindow);

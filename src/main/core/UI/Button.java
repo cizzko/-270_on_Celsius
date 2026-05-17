@@ -16,6 +16,12 @@ public class Button extends BaseButton<Button> {
     }
 
     @Override
+    protected void resize() {
+        name.set(x + 20, y + height / 2.8f, 0, 0);
+        name.resize();
+    }
+
+    @Override
     public void updateThis(float dt) {
         if (!visible()) {
             return;
@@ -23,6 +29,7 @@ public class Button extends BaseButton<Button> {
         if (!isClickable) {
             return;
         }
+        name.update(dt);
         boolean press = hit(input.mousePos()) == this && input.justClicked(GLFW_MOUSE_BUTTON_1);
         isClicked = press;
         if (press && clickAction != null) {
@@ -54,14 +61,13 @@ public class Button extends BaseButton<Button> {
                 Fill.rect(x, y, width, height, disabledColor);
             }
         }
-        if (name != null) {
-            drawText(x + 20, y + height / 2.8f, name);
-        }
+
+        name.draw();
 
         if (isUnderMouse) Fill.rect(
                 x + borderWidth, y + borderWidth,
                 width - 2*borderWidth, height - 2*borderWidth, Color.rgba8888(34,34, 34, 120));
 
-        drawPrompt(this, style.font);
+        // drawPrompt(this, style.font);
     }
 }

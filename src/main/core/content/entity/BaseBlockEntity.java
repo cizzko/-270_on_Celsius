@@ -46,8 +46,4 @@ public abstract class BaseBlockEntity<B extends StaticObjectsConst> implements B
     public void setY(float y) {
         this.y = y;
     }
-
-    @Override
-    public void draw() {
-    }
 }

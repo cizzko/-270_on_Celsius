@@ -2,8 +2,8 @@ package core.World.Creatures.Player.WorkbenchMenu;
 
 import core.EventHandling.EventHandler;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Item;
-import core.World.ItemBlock;
+import core.content.items.Item;
+import core.content.items.ItemBlock;
 import core.World.Textures.TextureDrawing;
 import core.content.blocks.Factory;
 import core.content.blocks.Workbench;

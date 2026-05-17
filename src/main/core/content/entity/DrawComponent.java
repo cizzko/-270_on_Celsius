@@ -7,8 +7,5 @@ public interface DrawComponent {
     // Из-за проблем с неточными числами можно просто 2-3 пикселя отступать и этого даже не будет заметно
     float GAP = 1f / blockSize;
 
-    void draw();
-    default void draw(float drawX) {
-        draw();
-    }
+    void draw(float drawX);
 }

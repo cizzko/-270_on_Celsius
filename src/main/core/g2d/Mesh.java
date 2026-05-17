@@ -15,10 +15,14 @@ public final class Mesh implements Disposable {
 
     private final int vao, vbo;
 
+    private boolean dirty = true;
+
     public Mesh() {
         vao = glGenVertexArrays();
         vbo = glGenBuffers();
     }
+
+    public void setDirty(boolean state) { dirty = state; }
 
     public void bindVbo() {
         if (lastVbo == vbo) return;
@@ -49,19 +53,21 @@ public final class Mesh implements Disposable {
         bindVao();
         bindVbo();
 
-        int stride = format.vertexByteSize();
-        int byteOffset = vertexOffset * stride;
-        int byteSize = vertexCount * stride;
-        int oldPos = vertices.position();
-        int oldLim = vertices.limit();
+        if (dirty) {
+            int stride = format.vertexByteSize();
+            int byteOffset = vertexOffset * stride;
+            int byteSize = vertexCount * stride;
+            int oldPos = vertices.position();
+            int oldLim = vertices.limit();
 
-        vertices.position(byteOffset / Float.BYTES);
-        vertices.limit((byteOffset + byteSize) / Float.BYTES);
-        try {
-            nglBufferSubData(GL_ARRAY_BUFFER, byteOffset, byteSize, memAddress(vertices));
-        } finally {
-            vertices.position(oldPos);
-            vertices.limit(oldLim);
+            vertices.position(byteOffset / Float.BYTES);
+            vertices.limit((byteOffset + byteSize) / Float.BYTES);
+            try {
+                nglBufferSubData(GL_ARRAY_BUFFER, byteOffset, byteSize, memAddress(vertices));
+            } finally {
+                vertices.position(oldPos);
+                vertices.limit(oldLim);
+            }
         }
 
         if (ebo != null) {

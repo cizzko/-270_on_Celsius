@@ -3,7 +3,7 @@ package core.World.StaticWorldObjects;
 import core.content.ContentLoader;
 import core.content.ContentResolver;
 import core.content.ContentType;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.content.ItemStack;
 import core.World.Textures.TextureDrawing;
 import core.content.entity.BlockEntity;
 import core.g2d.Atlas;

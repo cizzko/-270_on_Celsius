@@ -4,17 +4,14 @@ import core.Global;
 import core.UI.Styles;
 import core.Window;
 import core.World.Creatures.Physics;
-import core.World.Creatures.Player.Inventory.Items.Bullets;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
-import core.World.Item;
+import core.World.Creatures.Player.Inventory.Bullets;
+import core.content.ItemStack;
+import core.content.items.Item;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.TemperatureMap;
-import core.World.StaticWorldObjects.TileData;
+import core.content.blocks.data.TileData;
 import core.content.entity.DrawComponent;
-import core.g2d.Atlas;
-import core.g2d.StackfulRender;
-import core.g2d.Fill;
-import core.g2d.Font;
+import core.g2d.*;
 import core.math.Point2i;
 import core.math.Rectangle;
 import core.util.Color;
@@ -157,26 +154,122 @@ public class TextureDrawing {
         return textSize.set(width, linesCount * 28 + 16);
     }
 
-    public static void drawBlocks() {
-        camera.getBoundsTo(viewport);
-        int minX = (int) Math.floor((viewport.x - blockSize) / blockSize);
-        int maxX = (int) Math.floor((viewport.x + viewport.width + blockSize) / blockSize);
-        int minY = (int) Math.floor((viewport.y - blockSize) / blockSize);
-        int maxY = (int) Math.floor((viewport.y + viewport.height + blockSize) / blockSize);
+    private static class Chunk {
+        private final RenderList renderList = Render.queue().allocRList(RenderList.KIND_STATIC);
 
-        for (int x = minX; x <= maxX; x++) {
-            for (int y = minY; y <= maxY; y++) {
-                if (!world.inBounds(x, y)) {
-                    continue;
+        private boolean drawStateChanged;
+        private int lastPreviewBlocks;
+        private final Rectangle lastBounds = new Rectangle();
+
+        void draw() {
+            camera.getBoundsTo(viewport);
+            if (drawStateChanged()) {
+                lastBounds.set(viewport);
+                lastPreviewBlocks = previewBlocks.size();
+                drawStateChanged = false;
+
+                renderList.setDirty(true);
+                renderList.clear();
+                collectScene();
+                // System.out.println("renderList = " + renderList);
+            } else {
+                renderList.setDirty(false);
+                // System.out.println("NO COLLECT!");
+                // System.out.println("renderList = " + renderList);
+            }
+            Render.queue().push(renderList);
+        }
+
+        private boolean drawStateChanged() {
+            return drawStateChanged ||
+                   lastPreviewBlocks != previewBlocks.size() ||
+                   !viewport.equalsEps(lastBounds, 1e-4f);
+        }
+
+        private void collectScene() {
+            int minX = (int) Math.floor((viewport.x - blockSize) / blockSize);
+            int maxX = (int) Math.floor((viewport.x + viewport.width + blockSize) / blockSize);
+            int minY = (int) Math.floor((viewport.y - blockSize) / blockSize);
+            int maxY = (int) Math.floor((viewport.y + viewport.height + blockSize) / blockSize);
+
+            renderList.begin();
+            try (var __ = StackfulRender.pushState()) {
+                StackfulRender.rlist(renderList);
+                for (int x = minX; x <= maxX; x++) {
+                    for (int y = minY; y <= maxY; y++) {
+                        if (!world.inBounds(x, y)) {
+                            continue;
+                        }
+                        int blockId = world.getBlockId(x, y);
+                        if (blockId <= 0) continue;
+                        var obj = world.getBlock(x, y);
+                        int hp = world.getHp(x, y);
+                        drawBlock(x, y, obj, hp);
+                    }
                 }
-                int blockId = world.getBlockId(x, y);
-                if (blockId <= 0) continue;
-                var obj = world.getBlock(x, y);
-                int hp = world.getHp(x, y);
-                drawBlock(x, y, obj, hp);
+            }
+            renderList.end();
+        }
+
+        private void drawBlock(int x, int y, StaticObjectsConst obj, int hp) {
+            int wx = x * blockSize;
+            int wy = y * blockSize;
+
+            if (world.getData(x, y) instanceof TileData.MultiblockPart part) {
+                drawDamage(obj, hp, wx, wy);
+                // int rootX = (x - part.rootOffsetX);
+                // int rootY = (y - part.rootOffsetY);
+                // if (isOnCamera(rootX * blockSize, rootY * blockSize, obj.texture)) {
+                //     drawBlock0(rootX, rootY, obj, hp);
+                //
+                //     for (int blockX = 0; blockX < obj.tileCountY; blockX++) {
+                //         for (int blockY = 0; blockY < obj.tileCountY; blockY++) {
+                //             int partX = blockX + rootX;
+                //             int partY = blockY + rootY;
+                //
+                //         }
+                //     }
+                // } else {
+                // }
+            } else {
+                drawBlock0(x, y, obj, hp);
             }
         }
 
+        private void drawBlock0(int x, int y, StaticObjectsConst obj, int hp) {
+            int wx = x * blockSize;
+            int wy = y * blockSize;
+
+            Color color = ShadowMap.getColorTo(x, y, tmp);
+            final int upperLimit = 100;
+            final int lowestLimit = -20;
+            final int maxColor = 65;
+            float temp = TemperatureMap.getTemp(x, y);
+
+            int a;
+            if (temp > upperLimit) {
+                a = (int) Math.min(maxColor, Math.abs((temp - upperLimit) / 3));
+                color.set(color.r(), color.g() - (a / 2), color.b() - a, color.a());
+            } else if (temp < lowestLimit) {
+                a = (int) Math.min(maxColor, Math.abs((temp + lowestLimit) / 3));
+                color.set(color.r() - a, color.g() - (a / 2), color.b(), color.a());
+            }
+
+            StackfulRender.draw(obj.texture, color, wx, wy);
+            drawDamage(obj, hp, wx, wy);
+
+            var blockEntity = world.getEntity(x, y);
+            if (blockEntity != null && blockEntity.drawStateChanged()) {
+                drawStateChanged = true;
+                blockEntity.draw(renderList);
+            }
+        }
+    }
+
+    private static final Chunk chunk = new Chunk();
+
+    public static void drawBlocks() {
+        chunk.draw();
         for (BlockPreview q : previewBlocks) {
             drawPreviewBlocks(q.x, q.y, q.blockId, q.hp, q.canBreak);
         }
@@ -206,59 +299,6 @@ public class TextureDrawing {
         }
     }
 
-    private static void drawBlock(int x, int y, StaticObjectsConst obj, int hp) {
-        int wx = x * blockSize;
-        int wy = y * blockSize;
-
-        if (world.getData(x, y) instanceof TileData.MultiblockPart part) {
-            drawDamage(obj, hp, wx, wy);
-            // int rootX = (x - part.rootOffsetX);
-            // int rootY = (y - part.rootOffsetY);
-            // if (isOnCamera(rootX * blockSize, rootY * blockSize, obj.texture)) {
-            //     drawBlock0(rootX, rootY, obj, hp);
-            //
-            //     for (int blockX = 0; blockX < obj.tileCountY; blockX++) {
-            //         for (int blockY = 0; blockY < obj.tileCountY; blockY++) {
-            //             int partX = blockX + rootX;
-            //             int partY = blockY + rootY;
-            //
-            //         }
-            //     }
-            // } else {
-            // }
-        } else {
-            drawBlock0(x, y, obj, hp);
-        }
-    }
-
-    private static void drawBlock0(int x, int y, StaticObjectsConst obj, int hp) {
-        int wx = x * blockSize;
-        int wy = y * blockSize;
-
-        Color color = ShadowMap.getColorTo(x, y, tmp);
-        final int upperLimit = 100;
-        final int lowestLimit = -20;
-        final int maxColor = 65;
-        float temp = TemperatureMap.getTemp(x, y);
-
-        int a;
-        if (temp > upperLimit) {
-            a = (int) Math.min(maxColor, Math.abs((temp - upperLimit) / 3));
-            color.set(color.r(), color.g() - (a / 2), color.b() - a, color.a());
-        } else if (temp < lowestLimit) {
-            a = (int) Math.min(maxColor, Math.abs((temp + lowestLimit) / 3));
-            color.set(color.r() - a, color.g() - (a / 2), color.b(), color.a());
-        }
-
-        StackfulRender.draw(obj.texture, color, wx, wy);
-        drawDamage(obj, hp, wx, wy);
-
-        var blockEntity = world.getEntity(x, y);
-        if (blockEntity != null) {
-            blockEntity.draw();
-        }
-    }
-
     public static void addBlockPreview(int blockX, int blockY, short blockId, byte hp, boolean breakable) {
         previewBlocks.add(new BlockPreview(blockX, blockY, blockId, hp, breakable));
     }
@@ -270,7 +310,7 @@ public class TextureDrawing {
 
 
                 if (ent == player) {
-                    d.draw();
+                    d.draw(player.x());
                 } else {
                     float rightBorder = (world.sizeX - swap) * blockSize;
                     float leftBorder = swap * blockSize;

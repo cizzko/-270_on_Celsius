@@ -34,6 +34,5 @@ public class ImageButton extends BaseElement<ImageButton> {
     @Override
     public void draw() {
         if (image != null) StackfulRender.draw(image, x, y, width, height);
-        // Fill.rectangleBorder(x, y, width, height, red);
     }
 }

@@ -4,15 +4,15 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import core.EventHandling.Config;
 import core.Global;
-import core.World.*;
 import core.content.ContentManager.Type;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
-import core.World.StaticWorldObjects.BlockUnresolved;
+import core.content.blocks.BlockUnresolved;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.content.blocks.Factory;
 import core.content.creatures.PlayerType;
 import core.content.blocks.Chest;
 import core.content.blocks.Workbench;
+import core.content.items.*;
+import core.content.strctures.Structure;
 import core.g2d.Atlas;
 
 import java.io.IOException;
@@ -20,6 +20,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Function;
 
 import static core.Global.assets;
@@ -38,6 +39,8 @@ public class ContentLoader {
         ctor(Type.BLOCK, "factory", Factory::new);
 
         ctor(Type.CREATURE, "player", PlayerType::new);
+
+        ctor(Type.STRUCTURE, "structure", Structure::new);
     }
 
     private static void ctor(Type type, String classType, Function<String, ContentType> constr) {
@@ -113,8 +116,7 @@ public class ContentLoader {
                 }
                 var itemStacks = new ItemStack[node.size()];
                 int i = 0;
-                for (var it = node.fields(); it.hasNext(); ) {
-                    var pair = it.next();
+                for (var pair : node.properties()) {
                     String itemId = pair.getKey();
                     int count = pair.getValue().asInt(0);
                     itemStacks[i++] = new ItemStack(new ItemUnresolved(itemId), count);

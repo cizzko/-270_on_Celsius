@@ -2,7 +2,7 @@ package core.content.creatures;
 
 import core.Time;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.content.ItemStack;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.TextureDrawing;
 import core.content.entity.*;

@@ -1,10 +1,13 @@
 package core.UI;
 
+import core.Global;
 import core.g2d.StackfulRender;
 
 import java.util.Objects;
 
 public class TextArea extends BaseElement<TextArea> {
+    private static final int FLAG_TRANSLATION = ELEMENT_LAST_FLAG << 1;
+
     private final GlyphCache cache = new GlyphCache();
 
     public String text;
@@ -16,7 +19,15 @@ public class TextArea extends BaseElement<TextArea> {
         setTouchable(false);
     }
 
+    public TextArea setTranslation(String id) { // TODO доработать обновление в зависимости от языка
+        setFlag(FLAG_TRANSLATION, true);
+        this.text = id;
+        resolveTranslation(id);
+        return this;
+    }
+
     public TextArea setText(String newText) {
+        setFlag(FLAG_TRANSLATION, false);
         if (Objects.equals(this.text, newText)) {
             return this;
         }
@@ -27,9 +38,18 @@ public class TextArea extends BaseElement<TextArea> {
 
     @Override
     protected void resize() {
-        if ((flags & (FLAG_X_CHANGED | FLAG_Y_CHANGED)) != 0) {
-            this.cache.recomputePosition(x, y);
+        if ((flags & FLAG_TRANSLATION) != 0 && Global.lang.languageHasChanged()) {
+            resolveTranslation(text);
+        } else {
+            if ((flags & (FLAG_X_CHANGED | FLAG_Y_CHANGED)) != 0) {
+                this.cache.recomputePosition(x, y);
+            }
         }
+    }
+
+    private void resolveTranslation(String id) {
+        String newText = Global.lang.get(id);
+        this.cache.setText(style.font, newText, 0, newText.length(), style.color, x, y);
     }
 
     @Override

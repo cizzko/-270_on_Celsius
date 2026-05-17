@@ -2,9 +2,9 @@ package core.World.Creatures.Player.Inventory;
 
 import core.EventHandling.EventHandler;
 import core.EventHandling.Config;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
-import core.World.Item;
-import core.World.ItemBlock;
+import core.content.ItemStack;
+import core.content.items.Item;
+import core.content.items.ItemBlock;
 import core.World.WorldGenerator.WorldGenerator;
 import core.World.WorldUtils;
 import core.content.entity.InventoryComponent;

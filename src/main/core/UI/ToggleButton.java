@@ -19,6 +19,12 @@ public class ToggleButton extends BaseButton<ToggleButton> {
     }
 
     @Override
+    protected void resize() {
+        name.set(width + x + style.textOffset, y, 0, 0);
+        name.resize();
+    }
+
+    @Override
     public void updateThis(float dt) {
         if (!visible()) {
             return;
@@ -26,6 +32,7 @@ public class ToggleButton extends BaseButton<ToggleButton> {
         if (!isClickable) {
             return;
         }
+        name.update(dt);
         if (hit(input.mousePos()) == this && input.justClicked(GLFW_MOUSE_BUTTON_1)) {
             isClicked = !isClicked;
             if (clickAction != null) {
@@ -49,8 +56,9 @@ public class ToggleButton extends BaseButton<ToggleButton> {
 
         Drawable tex = isClicked ? style.checkUp : style.checkDown;
         StackfulRender.draw(tex, x, y, width, height);
-        drawText(width + x + style.textOffset, y, name);
 
-        drawPrompt(this, style.font);
+        name.draw();
+
+        // drawPrompt(this, style.font);
     }
 }

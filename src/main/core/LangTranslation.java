@@ -17,6 +17,10 @@ public final class LangTranslation {
     private static final String REFERENCE_LOCALE = "en";
 
     private String language;
+    private boolean languageHasChanged = false;
+    public boolean languageHasChanged() {
+        return languageHasChanged;
+    }
 
     private final HashMap<String, String> map = new HashMap<>();
     private final ArrayList<String> languages = new ArrayList<>();
@@ -85,6 +89,9 @@ public final class LangTranslation {
         if (language.equals(newLanguage) || !languages.contains(newLanguage)) {
             return;
         }
+        languageHasChanged = true;
+        Global.scheduler.post(() -> languageHasChanged = false);
+
         var oldLanguage = language;
         language = newLanguage;
         try {

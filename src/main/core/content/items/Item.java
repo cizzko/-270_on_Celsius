@@ -1,8 +1,8 @@
-package core.World;
+package core.content.items;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import core.Global;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.content.ItemStack;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.content.ContentLoader;
 import core.content.ContentResolver;

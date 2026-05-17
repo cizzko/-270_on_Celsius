@@ -2,15 +2,18 @@ package core.World;
 
 import core.Application;
 import core.Global;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.World.Creatures.Player.Player;
+import core.content.ItemStack;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator.WorldGenerator;
 import core.content.creatures.CreatureType;
 import core.content.creatures.ItemEntity;
 import core.content.entity.CreatureEntity;
+import core.content.strctures.Structure;
 import core.math.Point2i;
 
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.stream.Stream;
 
 import static core.Global.*;
 import static core.World.Textures.TextureDrawing.blockSize;
@@ -83,5 +86,23 @@ public class WorldUtils {
         @SuppressWarnings("unchecked")
         var ent = (E) entity.create(wx, wy);
         return ent;
+    }
+
+    public static boolean checkPlaceRules(int x, int y, Structure structure) {
+        for (Structure.Part p : structure.blocks) {
+            if (!world.checkPlaceRules(x + p.offsetX, y + p.offsetY, p.block())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static void setStructure(int x, int y, Structure tree) {
+        // if (!checkPlaceRules(x, y, tree)) {
+        //     return;
+        // }
+        for (Structure.Part p : tree.blocks) {
+            world.set(x + p.offsetX, y + p.offsetY, p.block(), false);
+        }
     }
 }

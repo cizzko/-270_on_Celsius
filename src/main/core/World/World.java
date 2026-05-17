@@ -15,7 +15,7 @@ import core.Application;
 import core.GameState;
 import core.Global;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.StaticWorldObjects.TileData;
+import core.content.blocks.data.TileData;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator.Biomes;
@@ -63,7 +63,6 @@ public class World {
 
         @JsonIgnore
         public Biomes[] biomes;
-
 
         private int pos2index(int x, int y) { return x + sizeX * y; }
         private int index2x(int index)      { return index % sizeX; }
@@ -212,6 +211,8 @@ public class World {
             }
         }
     }
+
+    public int getBlockId(Point2i pos) { return getBlockId(pos.x, pos.y); }
 
     /// @return {@code -1} в случае выхода за границу. В остальных случаях неотрицательный blockId
     public int getBlockId(int x, int y) {

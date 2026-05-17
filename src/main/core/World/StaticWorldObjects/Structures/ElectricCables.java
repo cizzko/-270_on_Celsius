@@ -1,6 +1,6 @@
 package core.World.StaticWorldObjects.Structures;
 
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.content.ItemStack;
 import core.World.Textures.TextureDrawing;
 import core.math.Point2i;
 

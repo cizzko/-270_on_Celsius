@@ -5,6 +5,4 @@ public interface LivingEntity
                 VelocityComponent, HealthComponent,
                 DrawComponent {
 
-    @Override
-    default void draw() { draw(x()); }
 }

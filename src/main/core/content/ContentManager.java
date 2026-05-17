@@ -1,11 +1,11 @@
 package core.content;
 
 import core.Global;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
-import core.World.Item;
-import core.World.ItemBlock;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.content.creatures.CreatureType;
+import core.content.items.Item;
+import core.content.items.ItemBlock;
+import core.content.strctures.Structure;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,12 +16,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public class ContentManager {
+public final class ContentManager {
     private static final Logger log = LogManager.getLogger();
 
     public final Registry<Item> itemsRegistry = new Registry<>();
     public final Registry<StaticObjectsConst> blocksRegistry = new Registry<>();
     public final Registry<CreatureType> creaturesRegistry = new Registry<>();
+    public final Registry<Structure> structuresRegistry = new Registry<>();
 
     private final ArrayList<Item> craftableByPlayer = new ArrayList<>();
     private final Int2ObjectOpenHashMap<ArrayList<Item>> craftableByWorkbench = new Int2ObjectOpenHashMap<>();
@@ -43,7 +44,8 @@ public class ContentManager {
 
                 new ContentSource(Type.ITEM, contentDir.resolve("items")),
                 new ContentSource(Type.BLOCK, contentDir.resolve("blocks")),
-                new ContentSource(Type.CREATURE, contentDir.resolve("creatures"))
+                new ContentSource(Type.CREATURE, contentDir.resolve("creatures")),
+                new ContentSource(Type.STRUCTURE, contentDir.resolve("structures"))
         );
 
         final EnumMap<Type, HashMap<String, ContentType>> contentMap = new EnumMap<>(Type.class);
@@ -124,20 +126,7 @@ public class ContentManager {
     }
 
     private void generateIds(EnumMap<Type, HashMap<String, ContentType>> contentMap) {
-        for (ContentType value : contentMap.get(Type.ITEM).values()) {
-            if (!(value instanceof Item item)) {
-                throw new IllegalStateException(); // ??
-            }
-            itemsRegistry.put1(item);
-            itemsRegistry.put2(item);
-        }
-
-        for (ContentType value : contentMap.get(Type.ITEM).values()) {
-            if (!(value instanceof Item item)) {
-                throw new IllegalStateException(); // ??
-            }
-            itemsRegistry.put1(item);
-        }
+        indexContent(contentMap, itemsRegistry, Type.ITEM, Item.class);
 
         for (ContentType value : contentMap.get(Type.BLOCK).values()) {
             if (!(value instanceof StaticObjectsConst block)) {
@@ -163,17 +152,22 @@ public class ContentManager {
         }
 
 
-        for (ContentType value : contentMap.get(Type.CREATURE).values()) {
-            if (!(value instanceof CreatureType creature)) {
-                throw new IllegalStateException(); // ??
-            }
-            creaturesRegistry.put1(creature);
-            creaturesRegistry.put2(creature);
-        }
+        indexContent(contentMap, creaturesRegistry, Type.CREATURE, CreatureType.class);
+        indexContent(contentMap, structuresRegistry, Type.STRUCTURE, Structure.class);
 
         itemsRegistry.trim();
         blocksRegistry.trim();
         creaturesRegistry.trim();
+    }
+
+    private <C extends ContentType> void indexContent(EnumMap<Type, HashMap<String, ContentType>> contentMap,
+                                                      Registry<C> registry,
+                                                      Type type, Class<C> contentType) {
+        for (ContentType value : contentMap.get(type).values()) {
+            C cnt = contentType.cast(value);
+            registry.put1(cnt);
+            registry.put2(cnt);
+        }
     }
 
     public List<Item> getCraftsFor(StaticObjectsConst createWith) {
@@ -213,6 +207,7 @@ public class ContentManager {
     public enum Type {
         ITEM,
         BLOCK,
-        CREATURE
+        CREATURE,
+        STRUCTURE,
     }
 }

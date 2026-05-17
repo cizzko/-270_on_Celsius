@@ -245,7 +245,7 @@ public class InputHandler {
         if (idx >= 0 && idx < bits.length) {
             bits[idx] |= 1L << i;
         } else {
-            log.error("Unexpected button: {}", i);
+            log.error("Unexpected button: {}", i, new Exception());
         }
     }
 
@@ -254,7 +254,7 @@ public class InputHandler {
         if (idx >= 0 && idx < bits.length) {
             bits[idx] &= ~(1L << i);
         } else {
-            log.error("Unexpected button: {}", i);
+            log.error("Unexpected button: {}", i, new Exception());
         }
     }
 
@@ -263,7 +263,7 @@ public class InputHandler {
         if (idx >= 0 && idx < bits.length) {
             return (bits[idx] & (1L << i)) != 0;
         }
-        log.error("Unexpected button: {}", i);
+        log.error("Unexpected button: {}", i, new Exception());
         return false;
     }
 

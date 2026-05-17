@@ -40,6 +40,13 @@ public final class Rectangle {
         return contains(x, y, width, height, point.x, point.y);
     }
 
+    public void set(Rectangle other) {
+        this.x = other.x;
+        this.y = other.y;
+        this.width = other.width;
+        this.height = other.height;
+    }
+
     public void set(float x, float y, float width, float height) {
         this.x = x;
         this.y = y;
@@ -67,6 +74,13 @@ public final class Rectangle {
     public Rectangle setCentered(float x, float y, float width, float height) {
         set(x - width/2f, y - height/2f, width, height);
         return this;
+    }
+
+    public boolean equalsEps(Rectangle other, float eps) {
+        return MathUtil.equalsEps(x, other.x, eps)  &&
+               MathUtil.equalsEps(y, other.y, eps)  &&
+               MathUtil.equalsEps(width, other.width, eps) &&
+               MathUtil.equalsEps(height, other.height, eps);
     }
 
     @Override

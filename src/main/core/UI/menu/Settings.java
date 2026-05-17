@@ -52,7 +52,7 @@ public class Settings extends Dialog {
             })
                     .setPosition(310, 980)
                     .setName(Global.lang.get(INTERPOLATE_SUNSET_KEY))
-                    .setPrompt(Global.lang.get("InterpolateSunsetPrompt"))
+                    .setPrompt("InterpolateSunsetPrompt")
                     .setClicked(getBoolean(INTERPOLATE_SUNSET_KEY));
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
                 boolean newState = getBoolean(PRELOAD_RESOURCES_KEY);
@@ -60,7 +60,7 @@ public class Settings extends Dialog {
             })
                     .setPosition(310, 910)
                     .setName(Global.lang.get(PRELOAD_RESOURCES_KEY))
-                    .setPrompt(Global.lang.get("PreloadResourcesPrompt"))
+                    .setPrompt("PreloadResourcesPrompt")
                     .setClicked(getBoolean(PRELOAD_RESOURCES_KEY));
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
                 boolean newState = getBoolean(VERTICAL_SYNC_KEY);
@@ -68,7 +68,7 @@ public class Settings extends Dialog {
             })
                     .setPosition(310, 840)
                     .setName(Global.lang.get(VERTICAL_SYNC_KEY))
-                    .setPrompt(Global.lang.get("VerticalSyncPrompt"))
+                    .setPrompt("VerticalSyncPrompt")
                     .setClicked(getBoolean(VERTICAL_SYNC_KEY));
         }});
         basicSettings = mainPanel.add(new Dialog() {{
@@ -100,13 +100,13 @@ public class Settings extends Dialog {
             })
                     .setPosition(310, 980)
                     .setName(Global.lang.get(SHOW_PROMPTS_KEY))
-                    .setPrompt(Global.lang.get("ShowPromptsPrompt"))
+                    .setPrompt("ShowPromptsPrompt")
                     .setClicked(getBoolean(SHOW_PROMPTS_KEY));
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
             })
                     .setPosition(310, 910)
                     .setName(Global.lang.get(DETECT_LANGUAGE_KEY))
-                    .setPrompt(Global.lang.get("DetectLanguagePrompt"))
+                    .setPrompt("DetectLanguagePrompt")
                     .setClicked(getBoolean(DETECT_LANGUAGE_KEY));
             addImage(745, 965, atlas.get("UI/GUI/languageIcon"));
         }});

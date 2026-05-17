@@ -1,10 +1,11 @@
-package core.World.Creatures.Player.Inventory.Items;
+package core.World.Creatures.Player.Inventory;
 
 import core.Global;
 import core.UI.Sounds.Sound;
 import core.World.HitboxMap;
-import core.World.ItemWeapon;
+import core.content.items.ItemWeapon;
 import core.World.Textures.TextureDrawing;
+import core.content.items.data.ItemData;
 import core.g2d.Atlas;
 import core.math.Point2i;
 

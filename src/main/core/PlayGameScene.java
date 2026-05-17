@@ -1,10 +1,9 @@
 package core;
 
 import core.EventHandling.Config;
-import core.EventHandling.EventHandler;
 import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.Bullets;
+import core.World.Creatures.Player.Inventory.Bullets;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
 import core.World.Textures.TextureDrawing;
 import core.World.Weather.Sun;

@@ -5,15 +5,15 @@ import core.EventHandling.EventHandler;
 import core.Global;
 import core.Time;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.World.WorldUtils;
+import core.content.ItemStack;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.StaticWorldObjects.TileData;
+import core.content.blocks.data.TileData;
 import core.World.Textures.TextureDrawing;
 import core.World.World;
 import core.g2d.Fill;
 import core.math.Point2i;
 import core.math.Rectangle;
-import it.unimi.dsi.fastutil.HashCommon;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -165,8 +165,8 @@ public class DebugTools {
         //setDebugValue(() -> "Current time: " + sun.currentTime);
     }
 
-    public static int leftInt(long field) { return (int)(field >> 32); }
-    public static int rightInt(long field) { return (int)(field); }
+    // public static int leftInt(long field) { return (int)(field >> 32); }
+    // public static int rightInt(long field) { return (int)(field); }
 
     public static void drawDebugBorders() {
         if (debugLevel < 2) {
@@ -318,7 +318,7 @@ public class DebugTools {
             try {
                 ImageIO.write(image, "png", path.toFile());
             } catch (IOException e) {
-                log.error(e.getMessage());
+                log.error("", e);
             }
         });
     }
@@ -330,10 +330,19 @@ public class DebugTools {
 
         if (input.justPressed(GLFW_KEY_F1)) app.setFramerate(60);
         if (input.justPressed(GLFW_KEY_F2)) app.setFramerate(1000);
-        if (input.justPressed(GLFW_KEY_F3)) serializeWorld();
+        if (input.justClicked(GLFW_MOUSE_BUTTON_RIGHT)) setStructureUnderMouse();
+        // if (input.justPressed(GLFW_KEY_F3)) serializeWorld();
         if (input.justPressed(GLFW_KEY_F4)) deserializeWorld();
-        if (input.justClicked(GLFW_MOUSE_BUTTON_RIGHT)) serializeTargetBlock();
+        // if (input.justClicked(GLFW_MOUSE_BUTTON_RIGHT)) serializeTargetBlock();
         debugUIHotkeys();
+    }
+
+    private static void setStructureUnderMouse() {
+        Point2i pointedBlock = input.mouseBlockPos();
+        if (Global.world.getBlockId(pointedBlock) == 0) {
+            var tree = content.structuresRegistry.typeByName("tree");
+            WorldUtils.setStructure(pointedBlock.x, pointedBlock.y, tree);
+        }
     }
 
     public static void menuHotKeys() {

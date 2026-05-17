@@ -4,12 +4,12 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.content.ItemStack;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 
 import java.io.IOException;
 
-public interface BlockEntity extends DrawComponent, PositionComponent {
+public interface BlockEntity extends BlockDrawComponent, PositionComponent {
 
     /** Вызывается при создании сущности на координатах */
     default void init() {}

@@ -22,18 +22,18 @@ public class MainMenu extends Dialog {
                 .setImage(atlas.get("UI/discordIcon"));
         panel.addButton(Styles.TEXT_BUTTON, this::exitBtn)
                 .set(822, 990, 240, 65)
-                .setName(lang.get("Exit"))
+                .setTranslation("Exit")
                 .setColor(Styles.DIRTY_WHITE);
         panel.addButton(Styles.TEXT_BUTTON, this::settingsBtn)
                 .set(548, 990, 240, 65)
-                .setName(lang.get("Settings"))
+                .setTranslation("Settings")
                 .setColor(Styles.DIRTY_WHITE);
         panel.addButton(Styles.TEXT_BUTTON, this::playButton)
                 .set(46, 990, 240, 65)
-                .setName(lang.get("Play"));
+                .setTranslation("Play");
         panel.addButton(Styles.TEXT_BUTTON, this::loadSave)
                 .set(46 + 240 + 20, 990, 240, 65)
-                .setName(lang.get("LoadSave"));
+                .setTranslation("LoadSave");
     }
 
     private void loadSave() {

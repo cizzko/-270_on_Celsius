@@ -1,4 +1,4 @@
-package core.World;
+package core.content.items;
 
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.content.ContentLoader;

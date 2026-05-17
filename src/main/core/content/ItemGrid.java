@@ -1,13 +1,14 @@
-package core.World.Creatures.Player.Inventory.Items;
+package core.content;
 
-import core.World.Item;
+import core.content.items.Item;
 import core.content.entity.BlockEntity;
 import core.content.entity.InventoryComponent.TransitionResult;
 import core.math.Point2i;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 
-public class ItemGrid {
+public final class ItemGrid {
+    private ItemGrid() {}
 
     public static Point2i findItemOrFree(ObjectArrayList<ObjectArrayList<@Nullable ItemStack>> items, Point2i except, Item item) {
         Point2i free = null;

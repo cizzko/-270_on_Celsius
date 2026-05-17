@@ -1,5 +1,6 @@
-package core.World.StaticWorldObjects;
+package core.content.blocks;
 
+import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.content.ContentLoader;
 import core.content.ContentResolver;
 

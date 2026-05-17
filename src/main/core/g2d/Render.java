@@ -2,8 +2,17 @@ package core.g2d;
 
 import org.intellij.lang.annotations.MagicConstant;
 
+import static org.lwjgl.opengl.GL11.*;
+
 public final class Render {
+
     private Render() {}
+
+    // Всего: 1 << 2
+    public static final int PRIMITIVE_TYPE_TRIANGLES = GL_TRIANGLES;
+    public static final int PRIMITIVE_TYPE_TRIANGLE_STRIP = GL_TRIANGLE_STRIP;
+    public static final int PRIMITIVE_TYPE_LINES = GL_LINES;
+    public static final int PRIMITIVE_TYPE_LINES_STRIP = GL_LINE_STRIP;
 
     // Всего: 1 << 3
     public static final byte LAYER_BACKGROUND = 0;
@@ -68,13 +77,19 @@ public final class Render {
                (index & INDEX_MASK);
     }
 
-    static final int RENDER_MAX_ITEMS_COUNT   = 32 * 1024;
+    /// Максимальное количество вершин в [RenderList]
     static final int RENDER_MAX_VERTEX_COUNT  = 64 * 1024;
-    static final int RENDER_BUFFER_IN_PROCESS = 2;
+    /// Максимальное количество [RenderItem] в [RenderList]
+    static final int RENDER_MAX_ITEMS_COUNT   = 32 * 1024;
 
     public static final RenderQueue queue = new RenderQueue(
-            RENDER_MAX_ITEMS_COUNT, RENDER_MAX_VERTEX_COUNT,
-            RENDER_BUFFER_IN_PROCESS);
+            RENDER_MAX_ITEMS_COUNT, RENDER_MAX_VERTEX_COUNT);
+
+    public static void init() {
+        StackfulRender.state().rlist = queue.allocRList(RenderList.KIND_DYNAMIC);
+        StackfulRender.state().shader = StackfulRender.defaultShader;
+    }
+
     public static RenderQueue queue() { return queue; }
     public static RenderItem allocItem() { return queue.allocItem(); }
 }

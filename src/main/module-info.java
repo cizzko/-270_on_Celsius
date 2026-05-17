@@ -49,4 +49,7 @@ open module core.main {
     exports core.World.StaticWorldObjects.Structures;
     exports core.World.Textures;
     exports core.World.Weather;
+    exports core.content.blocks.data;
+    exports core.content.items;
+    exports core.content.strctures;
 }

@@ -43,4 +43,8 @@ public final class MathUtil {
         }
         return (short)value;
     }
+
+    public static boolean equalsEps(float a, float b, float eps) {
+        return Math.abs(a - b) < eps;
+    }
 }

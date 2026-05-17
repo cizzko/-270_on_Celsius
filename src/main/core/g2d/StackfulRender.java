@@ -4,8 +4,11 @@ import core.math.Mat3;
 import core.pool.Pool;
 import core.pool.Poolable;
 import core.util.Color;
+import core.util.Disposable;
 import org.intellij.lang.annotations.MagicConstant;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 
@@ -13,33 +16,44 @@ import static core.g2d.Render.*;
 
 public class StackfulRender {
 
-    public static final class State implements Poolable {
-        @MagicConstant(intValues = {LAYER_BACKGROUND, LAYER_BLOCKS, LAYER_ENTITIES, LAYER_GUI, LAYER_DEBUG})
-        byte layer;
-        @MagicConstant(intValues = {BLENDING_NORMAL})
-        byte blending;
+    public static void pushRList() {
+        Render.queue.push(state.rlist);
+    }
 
-        Shader shader;
-        int colorRgba8888;
-        final Mat3 transform = new Mat3();
-        float xScale, yScale;
+    public static final class State implements Poolable {
+        public RenderList rlist;
+
+        @MagicConstant(intValues = {LAYER_BACKGROUND, LAYER_BLOCKS, LAYER_ENTITIES, LAYER_GUI, LAYER_DEBUG})
+        public byte layer;
+        @MagicConstant(intValues = {BLENDING_NORMAL})
+        public byte blending;
+
+        public Shader shader;
+        public int colorRgba8888;
+        public final Mat3 transform = new Mat3();
+        public float xScale, yScale;
 
         State() {
             reset();
         }
 
-        void set(State old) {
-            this.shader = old.shader;
+        public void set(State old) {
+            this.rlist = old.rlist;
+            this.layer = old.layer;
             this.blending = old.blending;
+            this.shader = old.shader;
             this.colorRgba8888 = old.colorRgba8888;
             this.transform.set(old.transform);
+            this.xScale = old.xScale;
+            this.yScale = old.yScale;
         }
 
         @Override
         public void reset() {
-            shader = null;
+            rlist = null;
             layer = LAYER_BACKGROUND;
             blending = BLENDING_NORMAL;
+            shader = defaultShader;
             colorRgba8888 = Color.white;
             xScale = yScale = 1;
             Arrays.fill(transform.val, 0);
@@ -81,6 +95,11 @@ public class StackfulRender {
         state = stack.getLast();
     }
 
+    public static Disposable pushState() {
+        pushState0();
+        return StackfulRender::popState0;
+    }
+
     private static void pushState0() {
         var newState = statePool.obtain();
         stack.addLast(newState);
@@ -108,9 +127,11 @@ public class StackfulRender {
         float h = tex.height() * state.yScale;
 
         draw(
+                state.rlist,
                 state.layer,
                 state.blending,
                 tex.id(),
+                state.shader.id(),
                 colorRgba8888,
                 x, y,
                 x + w, y + h,
@@ -124,9 +145,11 @@ public class StackfulRender {
 
     public static void draw(Drawable tex, int colorRgba8888, float x, float y, float w, float h) {
         draw(
+                state.rlist,
                 state.layer,
                 state.blending,
                 tex.id(),
+                state.shader.id(),
                 colorRgba8888,
                 x, y,
                 x + w, y + h,
@@ -142,11 +165,13 @@ public class StackfulRender {
 
 
     public static void draw(
+            RenderList rlist,
             @MagicConstant(intValues = {LAYER_BACKGROUND, LAYER_BLOCKS, LAYER_ENTITIES, LAYER_GUI, LAYER_DEBUG})
             byte layer,
             @MagicConstant(intValues = {BLENDING_NORMAL})
             byte blending,
             short texId,
+            byte shader,
             int rgba8888,
             float x, float y,
             float x2, float y2,
@@ -156,44 +181,45 @@ public class StackfulRender {
             float u2, float v2,
             Mat3 transform) {
 
-        var rq = Render.queue();
-        rq.advice(1, rq.getVertexCountPerQuad());
+
+        int vertexCountPerQuad = queue.getVertexCountPerQuad();
+        rlist.checkSpace(1, vertexCountPerQuad);
 
         var item = Render.allocItem();
-        int vertexOffset = rq.addRectangle(rgba8888,
+
+        item.vertexOffset = rlist.getVertexIndex();
+        item.vertexCount = vertexCountPerQuad;
+
+        rlist.addRectangle(Render.PRIMITIVE_TYPE_TRIANGLES, rgba8888,
                 x, y,
                 x2, y2,
                 x3, y3,
                 x4, y4,
                 u, v,
                 u2, v2);
-        item.vertexOffset = vertexOffset;
-        item.vertexCount = rq.getVertexCountPerQuad();
 
-        int INDICES_PER_QUAD = 6;
-        int VERTICES_PER_QUAD = 4;
-        int quadIndex = vertexOffset / VERTICES_PER_QUAD;
+        final int INDICES_PER_QUAD = 6;
+        final int VERTICES_PER_QUAD = 4;
+        int quadIndex = item.vertexOffset / VERTICES_PER_QUAD;
 
         item.indexOffset = quadIndex * INDICES_PER_QUAD;
         item.indexCount = 6;
+
         transform.to(item.matrix);
-        item.sortKey = Render.makeSortKey(
-                layer,
-                blending,
-                texId,
-                ShaderCache.shadersById.firstByteKey(),
-                rq.getItemIndex()); // TODO
+        item.sortKey = Render.makeSortKey(layer, blending, texId, shader, rlist.getItemIndex());
 
         item.validate();
-        rq.push(item);
+        rlist.push(item);
     }
 
     public static void draw(
+            RenderList rlist,
             @MagicConstant(intValues = {LAYER_BACKGROUND, LAYER_BLOCKS, LAYER_ENTITIES, LAYER_GUI, LAYER_DEBUG})
             byte layer,
             @MagicConstant(intValues = {BLENDING_NORMAL})
             byte blending,
             short texId,
+            byte shaderId,
             int rgba8888,
             float x, float y,
             float x2, float y2,
@@ -202,31 +228,25 @@ public class StackfulRender {
             Mat3 transform)
     {
 
-        var rq = Render.queue();
-
-        rq.advice(1, rq.getVertexCountPerQuad());
+        int vertexCountPerQuad = queue.getVertexCountPerQuad();
+        rlist.checkSpace(1, vertexCountPerQuad);
 
         var item = Render.allocItem();
-        int vertexOffset = rq.addRectangle(rgba8888, x, y, x2, y2, u, v, u2, v2);
-        item.vertexOffset = vertexOffset;
-        item.vertexCount = rq.getVertexCountPerQuad();
+        item.vertexOffset = rlist.getVertexIndex();
+        item.vertexCount = vertexCountPerQuad;
+        rlist.addRectangle(PRIMITIVE_TYPE_TRIANGLES, rgba8888, x, y, x2, y2, u, v, u2, v2);
 
         int INDICES_PER_QUAD = 6;
         int VERTICES_PER_QUAD = 4;
-        int quadIndex = vertexOffset / VERTICES_PER_QUAD;
+        int quadIndex = item.vertexOffset / VERTICES_PER_QUAD;
 
         item.indexOffset = quadIndex * INDICES_PER_QUAD;
         item.indexCount = 6;
         transform.to(item.matrix);
-        item.sortKey = Render.makeSortKey(
-                layer,
-                blending,
-                texId,
-                ShaderCache.shadersById.firstByteKey(),
-                rq.getItemIndex()); // TODO
+        item.sortKey = Render.makeSortKey(layer, blending, texId, shaderId, rlist.getItemIndex());
 
         item.validate();
-        rq.push(item);
+        rlist.push(item);
     }
 
     public static void rect(Drawable tex,
@@ -236,9 +256,11 @@ public class StackfulRender {
                            float x3, float y3,
                            float x4, float y4) {
         draw(
+                state.rlist,
                 state.layer,
                 state.blending,
                 tex.id(),
+                state.shader.id(),
                 colorRgba8888,
                 x, y,
                 x2, y2,
@@ -275,5 +297,9 @@ public class StackfulRender {
 
     public static void shader(Shader shader) {
         state.shader = shader;
+    }
+
+    public static void rlist(RenderList renderList) {
+        state.rlist = renderList;
     }
 }

@@ -2,7 +2,7 @@ package core.content.blocks;
 
 import core.content.ContentLoader;
 import core.content.ContentResolver;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.content.ItemStack;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import org.jetbrains.annotations.Nullable;
 

@@ -1,4 +1,4 @@
-package core.World.Creatures.Player.Inventory.Items;
+package core.content;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -6,7 +6,8 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
-import core.World.Item;
+import core.content.items.Item;
+import core.content.items.data.ItemData;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -115,7 +116,7 @@ public final class ItemStack {
         return count == 0;
     }
 
-    public boolean isSame(ItemStack other) {
+    public boolean isSame(@Nullable ItemStack other) {
         return this == other || other != null && item.equals(other.item);
     }
 

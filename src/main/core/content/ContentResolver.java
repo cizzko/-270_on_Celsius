@@ -1,10 +1,9 @@
 package core.content;
 
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
-import core.World.Item;
-import core.World.ItemUnresolved;
-import core.World.StaticWorldObjects.BlockUnresolved;
+import core.content.blocks.BlockUnresolved;
 import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.content.items.Item;
+import core.content.items.ItemUnresolved;
 
 import java.util.EnumMap;
 import java.util.HashMap;

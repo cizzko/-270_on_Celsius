@@ -6,11 +6,13 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.ItemGrid;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.content.ItemGrid;
+import core.content.ItemStack;
 import core.World.Textures.TextureDrawing;
 import core.content.entity.BaseBlockEntity;
 import core.g2d.Atlas;
+import core.g2d.Render;
+import core.g2d.RenderList;
 import core.g2d.StackfulRender;
 import core.math.Point2i;
 import core.math.Vector2f;
@@ -83,6 +85,29 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
             }
             draggedCell = null;
         }
+
+        if (!isClicked) {
+            return;
+        }
+
+
+        StackfulRender.pushState(() -> {
+            float xPos = x - 61;
+            float yPos = y + 56;
+
+            StackfulRender.z(Render.LAYER_GUI);
+            StackfulRender.draw(atlas.get("UI/GUI/inventory/chestInventory"), xPos, yPos);
+            var storage = getStorage();
+            for (int x = 0; x < storage.length; x++) {
+                var line = storage[x];
+                for (int y = 0; y < line.length; y++) {
+                    var itemStack = line[y];
+                    if (itemStack != null) {
+                        TextureDrawing.drawItemStack(10 + xPos + x * 54, 10 + yPos + y * 54f, itemStack);
+                    }
+                }
+            }
+        });
     }
 
     @Override
@@ -117,33 +142,13 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
         assert p.currentToken() == JsonToken.END_OBJECT;
     }
 
-    @Override
-    public void draw(float drawX) {
-        if (!isClicked) {
-            return;
-        }
-
-        float xPos = drawX - 61;
-        float yPos = y + 56;
-
-        StackfulRender.draw(atlas.get("UI/GUI/inventory/chestInventory"), xPos, yPos);
-
-        var storage = getStorage();
-        for (int x = 0; x < storage.length; x++) {
-            var line = storage[x];
-            for (int y = 0; y < line.length; y++) {
-                var itemStack = line[y];
-                if (itemStack != null) {
-                    TextureDrawing.drawItemStack(10 + xPos + x * 54, 10 + yPos + y * 54f, itemStack);
-                }
-            }
-        }
-    }
-
     private Point2i getItemUnderMouse() {
         Vector2f worldPos = input.mouseWorldPos();
         return new Point2i(
                 (int) ((worldPos.x - (x - 61)) / 54),
                 (int) ((worldPos.y - (y + 56)) / 54));
     }
+
+    @Override
+    public final boolean drawStateChanged() { return false; }
 }

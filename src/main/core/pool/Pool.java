@@ -17,9 +17,13 @@ public final class Pool<T> {
 
     public T obtain() {
         if (freeObjects.isEmpty()) {
-            return supplier.get();
+            return create();
         }
         return freeObjects.pollLast();
+    }
+
+    public T create() {
+        return supplier.get();
     }
 
     public void free(T object) {

@@ -1,4 +1,4 @@
-package core.World.Creatures.Player.Inventory.Items;
+package core.content.items.data;
 
 public abstract class ItemData {
 
