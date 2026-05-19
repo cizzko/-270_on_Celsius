@@ -1,6 +1,5 @@
 package core.util;
 
-import core.EventHandling.EventHandler;
 import jdk.jshell.JShell;
 import jdk.jshell.SnippetEvent;
 import jdk.jshell.execution.LocalExecutionControlProvider;
@@ -11,20 +10,19 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.management.ManagementFactory;
 import java.lang.module.ModuleDescriptor;
 import java.util.*;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 public class JavaInterpreter {
     private static final Logger log = LogManager.getLogger();
 
-    public static final JShell jshell = JShell.builder()
-            .executionEngine(new LocalExecutionControlProvider(), Map.of())
-            .build();
-
-    public static final ExecutorService exec = Executors.newVirtualThreadPerTaskExecutor();
+    public static JShell jshell;
 
     public static void init(boolean exploded) {
+
+        jshell = JShell.builder()
+                .executionEngine(new LocalExecutionControlProvider(), Map.of())
+                .build();
+
         var runtimeMxBean = ManagementFactory.getRuntimeMXBean();
         var jvmArgs = runtimeMxBean.getInputArguments();
         for (String jvmArg : jvmArgs) {
@@ -39,16 +37,19 @@ public class JavaInterpreter {
 
         execute0("import static core.Global.*;", null);
         execute0("import static core.Application.*;", null);
-        var packages = JavaInterpreter.class.getModule().getDescriptor().exports().stream()
-                .map(ModuleDescriptor.Exports::source)
-                .collect(Collectors.toCollection(TreeSet::new));
-        for (String aPackage : packages) {
-            execute0("import " + aPackage + ".*;", null);
+        var dscr = JavaInterpreter.class.getModule().getDescriptor();
+        if (dscr != null) { // хммм, тут всё сложнее
+            var packages = dscr.exports().stream()
+                    .map(ModuleDescriptor.Exports::source)
+                    .collect(Collectors.toCollection(TreeSet::new));
+            for (String aPackage : packages) {
+                execute0("import " + aPackage + ".*;", null);
+            }
         }
     }
 
     public static void execute(String snippet) {
-        exec.execute(() -> {
+        Thread.ofVirtual().name("JShell Thread", 0).start(() -> {
             Thread.currentThread().setName("JShell Thread");
             var out = new StringJoiner("\\n").setEmptyValue("");
             execute0(snippet, out);
@@ -100,6 +101,13 @@ public class JavaInterpreter {
 
                 }
             }
+        }
+    }
+
+    public static void close() {
+        if (jshell != null) {
+            jshell.stop();
+            jshell.close();
         }
     }
 }

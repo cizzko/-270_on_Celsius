@@ -5,6 +5,7 @@ import core.g2d.AtlasHandler;
 import core.g2d.FontHandler;
 import core.g2d.ShaderHandler;
 import core.g2d.TextureHandler;
+import core.util.Debug;
 import core.util.JavaInterpreter;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.apache.logging.log4j.LogManager;
@@ -72,7 +73,8 @@ public final class AssetsManager {
         register(new TextureHandler());
         register(new AtlasHandler());
 
-        jscriptInit(exploded);
+        if (Debug.debugLevel >= 3)
+            jscriptInit(exploded);
     }
 
     private void jscriptInit(boolean exploded) throws IOException {

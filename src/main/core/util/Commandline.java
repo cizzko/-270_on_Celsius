@@ -18,6 +18,9 @@ public class Commandline {
     }
 
     public static void inputUpdate() {
+        if (Debug.debugLevel < 3)
+            return;
+
         if (input.justPressed(GLFW_KEY_F5)) {
             if (Global.uiScene.contains(consoleField)) {
                 uiScene.remove(consoleField);
