@@ -1,17 +1,20 @@
 package core.util;
 
 import core.EventHandling.Config;
-import core.EventHandling.EventHandler;
 import core.Global;
 import core.Time;
+import core.UI.Dialog;
+import core.UI.Styles;
+import core.UI.TextArea;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.WorldUtils;
-import core.content.ItemStack;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.content.blocks.data.TileData;
-import core.World.Textures.TextureDrawing;
 import core.World.World;
+import core.content.items.Item;
 import core.g2d.Fill;
+import core.g2d.Render;
+import core.g2d.StackfulRender;
 import core.math.Point2i;
 import core.math.Rectangle;
 
@@ -24,23 +27,28 @@ import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.function.Supplier;
 
 import static core.Application.*;
 import static core.EventHandling.Config.json;
-import static core.EventHandling.EventHandler.debugLevel;
-import static core.EventHandling.EventHandler.setDebugValue;
 import static core.Global.*;
 import static core.World.Creatures.Physics.swap;
 import static core.World.Textures.TextureDrawing.blockSize;
+import static core.content.ItemStack.itemStack;
 import static core.content.entity.DrawComponent.GAP;
 import static core.util.Color.*;
 import static org.lwjgl.glfw.GLFW.*;
 
-public class DebugTools {
+public class Debug {
     public static final DecimalFormat FLOATS = new DecimalFormat("#.#", new DecimalFormatSymbols(Locale.ROOT));
+
+    public static int debugLevel = Config.getInt("Debug");
 
     static final Rectangle rect = new Rectangle();
     static final int acid = 0x8ffe09ff;
+
+    // Включается по нажатию M английской
+    public static boolean debugMesh = false;
 
     @SuppressWarnings("unchecked")
     public static <T extends Throwable> void rethrow(Throwable t) throws T {
@@ -129,7 +137,7 @@ public class DebugTools {
         setDebugValue(() -> "DeltaTime: " + Time.delta);
     }
 
-    private static boolean once;
+    static boolean once;
 
     public static void initDebugValuesGame() {
         if (debugLevel < 2 || once) {
@@ -173,6 +181,8 @@ public class DebugTools {
             return;
         }
 
+        StackfulRender.z(Render.LAYER_DEBUG);
+
         entityPool.entities().values().forEach(e -> {
             e.getHitboxTo(rect);
             Fill.rectangleBorder(rect.x, rect.y, rect.width, rect.height, red);
@@ -181,10 +191,10 @@ public class DebugTools {
         });
 
         if (debugLevel >= 3) {
-            entityPool.worldIndex().eachNode(0, 0, camera.width(), camera.height(), e -> {
-                Fill.rectangleBorder(e.bounds.x, e.bounds.y, e.bounds.width, e.bounds.height, acid);
-                TextureDrawing.drawText(e.bounds.x, e.bounds.y, "GroupSize: " + e.objects.size());
-            });
+            // entityPool.worldIndex().eachNode(0, 0, camera.width(), camera.height(), e -> {
+            //     Fill.rectangleBorder(e.bounds.x, e.bounds.y, e.bounds.width, e.bounds.height, acid);
+            //     TextureDrawing.drawText(e.bounds.x, e.bounds.y, "GroupSize: " + e.objects.size());
+            // });
 
 
             // var r = entityPool.worldIndex().resolution;
@@ -238,6 +248,15 @@ public class DebugTools {
                 }
             }
 
+            // {
+            //     camera.getBoundsTo(viewport);
+            //     int minX = (int) Math.floor(viewport.x / blockSize);
+            //     int minY = (int) Math.floor(viewport.y / blockSize);
+            //     int maxX = (int) Math.floor((viewport.x + viewport.width) / blockSize);
+            //     int maxY = (int) Math.floor((viewport.y + viewport.height) / blockSize);
+            //     Fill.rectangleBorder(minX * blockSize + 5, minY * blockSize + 5, maxX * blockSize - 5, maxY * blockSize - 5, acid);
+            // }
+
             { // Блоки которые считаются за пол. Черная обводка
                 int minX = (int) Math.floor(player.x() / blockSize);
                 int maxX = (int) Math.floor((player.x() + player.creature.texture.width() - GAP) / blockSize);
@@ -287,19 +306,19 @@ public class DebugTools {
     public static void giveItems() {
         final int n = 10;
 
-        Inventory.addItem(content.itemById("blockDeleter"));
-        Inventory.addItemStack(new ItemStack(content.itemById("aluminum"), n));
-        Inventory.addItemStack(new ItemStack(content.itemById("chest"), n));
-        Inventory.addItemStack(new ItemStack(content.itemById("stick"), n));
-        Inventory.addItemStack(new ItemStack(content.itemById("redHammer"), n));
-        Inventory.addItemStack(new ItemStack(content.itemById("grass"), n));
-        Inventory.addItemStack(new ItemStack(content.itemById("workbenchSmall"), n));
-        Inventory.addItemStack(new ItemStack(content.itemById("smallStone"), n));
-        Inventory.addItemStack(new ItemStack(content.itemById("stoneOven"), n));
+        Inventory.addItemStack(itemStack(content.itemById("blockDeleter"), Item.DEFAULT_MAX_STACK_SIZE));
+        Inventory.addItemStack(itemStack(content.itemById("aluminum"), n));
+        Inventory.addItemStack(itemStack(content.itemById("chest"), n));
+        Inventory.addItemStack(itemStack(content.itemById("stick"), n));
+        Inventory.addItemStack(itemStack(content.itemById("redHammer"), n));
+        Inventory.addItemStack(itemStack(content.itemById("grass"), n));
+        Inventory.addItemStack(itemStack(content.itemById("workbenchSmall"), n));
+        Inventory.addItemStack(itemStack(content.itemById("smallStone"), n));
+        Inventory.addItemStack(itemStack(content.itemById("stoneOven"), n));
     }
 
     public static void saveWorldImage() {
-        if (EventHandler.debugLevel < 2) {
+        if (debugLevel < 2) {
             return;
         }
         Thread.startVirtualThread(() -> {
@@ -324,7 +343,7 @@ public class DebugTools {
     }
 
     public static void debugHotKeys() {
-        if (EventHandler.debugLevel < 2) {
+        if (debugLevel < 2) {
             return;
         }
 
@@ -337,7 +356,7 @@ public class DebugTools {
         debugUIHotkeys();
     }
 
-    private static void setStructureUnderMouse() {
+    static void setStructureUnderMouse() {
         Point2i pointedBlock = input.mouseBlockPos();
         if (Global.world.getBlockId(pointedBlock) == 0) {
             var tree = content.structuresRegistry.typeByName("tree");
@@ -346,14 +365,46 @@ public class DebugTools {
     }
 
     public static void menuHotKeys() {
-        if (EventHandler.debugLevel < 2) {
+        if (debugLevel < 2) {
             return;
         }
         debugUIHotkeys();
     }
 
-    private static void debugUIHotkeys() {
+    static void debugUIHotkeys() {
         if (input.justPressed(GLFW_KEY_F9)) uiScene.toggleDebug();
         if (input.justPressed(GLFW_KEY_F10)) uiScene.debug();
+        if (input.justPressed(GLFW_KEY_M)) debugMesh = !debugMesh;
+    }
+
+    static final class DebugBox extends TextArea {
+        final Supplier<String> format;
+
+        DebugBox(Supplier<String> format) {
+            super(debugDialog, Styles.DEBUG_TEXT);
+            this.format = format;
+        }
+
+        @Override
+        public void updateThis(float dt) { setText(format.get()); }
+    }
+    static final Dialog debugDialog = new Dialog();
+
+    ///фактически можно вызывать откуда угодно, но рекомендуется ставить в DebugTools.initDebugValuesGame() или DebugTools.initDebugValuesMenu()
+    public static void setDebugValue(Supplier<String> format) {
+        if (Debug.debugLevel <= 0) {
+            return;
+        }
+
+        var elem = new DebugBox(format);
+        debugDialog.add(elem);
+        int i = debugDialog.children().size();
+        elem.setPosition(5, 1080 - (25 * i));
+    }
+
+    public static void drawTextValues() {
+        StackfulRender.z(Render.LAYER_DEBUG);
+        debugDialog.update(42);
+        debugDialog.draw();
     }
 }

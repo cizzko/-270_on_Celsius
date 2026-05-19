@@ -2,11 +2,13 @@ package core.UI;
 
 import core.g2d.Fill;
 import core.util.Color;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.function.Consumer;
 
 public class Panel extends BaseGroup<Panel> {
     public final Style.Panel style;
-
-    public Color color = Styles.DEFAULT_PANEL_COLOR;
+    public @Nullable Color color;
 
     public Panel(Group parent, Style.Panel style) {
         super(parent);

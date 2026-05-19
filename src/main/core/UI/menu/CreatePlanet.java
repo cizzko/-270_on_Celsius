@@ -62,8 +62,8 @@ public class CreatePlanet extends Dialog {
             }
             planet.setImage(atlas.get("World/WorldGenerator/" + pic));
             parameters.size = size;
-        })
-                .set(1460, 340, 420, 20);
+        }).set(1460, 340, 420, 20);
+
         basicParameters = background.add(new Dialog() {{
             setId("basicParameters");
             toggleDialog(this, true);

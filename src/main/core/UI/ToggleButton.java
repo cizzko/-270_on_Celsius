@@ -4,6 +4,7 @@ import core.g2d.Drawable;
 import core.g2d.StackfulRender;
 import core.g2d.Fill;
 import core.util.Color;
+import org.jetbrains.annotations.Nullable;
 
 import static core.Global.input;
 import static core.World.Textures.TextureDrawing.drawText;
@@ -12,10 +13,23 @@ import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 public class ToggleButton extends BaseButton<ToggleButton> {
     protected final Style.ToggleButton style;
 
+    public @Nullable Drawable customCheckUp;
+    public boolean checkboxAllText;
+
     protected ToggleButton(Group panel, Style.ToggleButton style) {
         super(panel);
         this.style = style;
         setSize(style.width, style.height);
+    }
+
+    public ToggleButton setCustomCheckUp(@Nullable Drawable checkUp) {
+        this.customCheckUp = checkUp;
+        return this;
+    }
+
+    public ToggleButton setCheckboxAllText(boolean checkboxAllText) {
+        this.checkboxAllText = checkboxAllText;
+        return this;
     }
 
     @Override
@@ -52,9 +66,14 @@ public class ToggleButton extends BaseButton<ToggleButton> {
             c = style.backgroundColor;
         }
 
+        var checkUp = customCheckUp;
+        if (checkUp == null) {
+            checkUp = style.checkUp;
+        }
+
         Fill.rectangleBorder(x - margin, y - margin, width + margin*2, height + margin*2, margin, c.rgba8888());
 
-        Drawable tex = isClicked ? style.checkUp : style.checkDown;
+        Drawable tex = isClicked ? checkUp : style.checkDown;
         StackfulRender.draw(tex, x, y, width, height);
 
         name.draw();

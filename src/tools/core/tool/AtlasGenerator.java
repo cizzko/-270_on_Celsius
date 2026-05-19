@@ -26,13 +26,13 @@ import java.util.stream.Collectors;
 public final class AtlasGenerator {
 
     private static final String IMAGE_EXT = ".png";
-    // Это способ исправления проблем с мерцающими текстурами.
-    // Поскольку мерцания происходят при смене кадров и причём при определённых действиях, то
-    // скорее всего это ошибка округления текстурных координат.
-    // Что-то типа наслаивания (?)
-    private static final int PIXEL_GAP = 2;
+    // Сколько пикселей продублировать по краям
+    // Это решает проблему кровоточащих текселей
+    private static final int COPY_BORDER = 1;
     // Максимальный размер по одной из осей для текстуры
     public static int MAX_EXTENT = 1024;
+    // квадратные атласы причём грани степени двойки
+    public static boolean QUADRATIC = true;
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -98,6 +98,9 @@ public final class AtlasGenerator {
         HashMap<String, Region> regionMap = new HashMap<>();
 
         Path atlasHashPath = outputDir.resolve(atlasBaseName + Atlas.HASH_EXT);
+        Path atlasPath = outputDir.resolve(atlasBaseName + Atlas.ATLAS_EXT);
+        Path atlasMetaPath = outputDir.resolve(atlasBaseName + Atlas.META_EXT);
+
         HashMap<Path, byte[]> oldHashes;
         if (Files.exists(atlasHashPath)) {
             oldHashes = readHash(atlasHashPath);
@@ -148,7 +151,9 @@ public final class AtlasGenerator {
 
         Files.walkFileTree(sourceDir, new WalkVisitor());
 
-        if (oldHashes != null && oldHashes.size() == regionMap.size()) {
+        if (oldHashes != null && oldHashes.size() == regionMap.size() &&
+                    Files.exists(atlasPath) &&
+                    Files.exists(atlasMetaPath)) {
             var byRelPath = regionMap.values().stream()
                     .collect(Collectors.toMap(r -> r.path, Function.identity()));
             boolean allMatched = true;
@@ -200,7 +205,13 @@ public final class AtlasGenerator {
         for (Region region : regions) {
             RectanglePacker.Position pos;
 
-            while ((pos = packer.pack(region.ow(), region.oh(), PIXEL_GAP)).isInvalid()) {
+            while ((pos = packer.pack(region.ow(), region.oh(), COPY_BORDER)).isInvalid()) {
+                int w = nextBoundary(region.ow() + COPY_BORDER * 2, packer.w);
+                if (QUADRATIC) {
+                    packer.resize(w, w);
+                    continue;
+                }
+
                 boolean increaseW = packer.w <= packer.h;
                 if (packer.w >= max && increaseW) {
                     throw new IllegalArgumentException("Image '" +
@@ -208,9 +219,10 @@ public final class AtlasGenerator {
                             "' is too large to pack into " + max + "x" + max);
                 }
                 if (increaseW) {
-                    packer.resize(nextBoundary(region.ow(), packer.w), packer.h);
+                    packer.resize(w, packer.h);
                 } else {
-                    packer.resize(packer.w, nextBoundary(region.oh(), packer.h));
+                    int h = nextBoundary(region.oh() + COPY_BORDER * 2, packer.h);
+                    packer.resize(packer.w, h);
                 }
             }
             region.rx = pos.x;
@@ -223,18 +235,53 @@ public final class AtlasGenerator {
         BufferedImage atlasImage = new BufferedImage(packer.w, packer.h, BufferedImage.TYPE_INT_ARGB);
         Graphics2D gr = atlasImage.createGraphics();
         for (Region region : regions) {
-            gr.drawImage(region.regionImage, region.rx, region.ry, null);
+            // Рисуем оригинал со смещением на borderSize
+            var im = region.regionImage;
+            gr.drawImage(im, region.rx + COPY_BORDER, region.ry + COPY_BORDER, null);
+
+            // Дублируем верхний и нижний края
+            for (int x = 0; x < im.getWidth(); x++) {
+                int topRGB = im.getRGB(x, 0);
+                int bottomRGB = im.getRGB(x, im.getHeight() - 1);
+
+                for (int b = 0; b < COPY_BORDER; b++) {
+                    atlasImage.setRGB(region.rx + COPY_BORDER + x, region.ry + b, topRGB);           // верх
+                    atlasImage.setRGB(region.rx + COPY_BORDER + x, region.ry + COPY_BORDER + im.getHeight() + b, bottomRGB); // низ
+                }
+            }
+
+            // Дублируем левый и правый края
+            for (int y = 0; y < im.getHeight(); y++) {
+                int leftRGB = im.getRGB(0, y);
+                int rightRGB = im.getRGB(im.getWidth() - 1, y);
+
+                for (int b = 0; b < COPY_BORDER; b++) {
+                    atlasImage.setRGB(region.rx + b, region.ry + COPY_BORDER + y, leftRGB);         // лево
+                    atlasImage.setRGB(region.rx + COPY_BORDER + im.getWidth() + b, region.ry + COPY_BORDER + y, rightRGB); // право
+                }
+            }
+
+            // Дублируем углы
+            int topLeft = im.getRGB(0, 0);
+            int topRight = im.getRGB(im.getWidth() - 1, 0);
+            int bottomLeft = im.getRGB(0, im.getHeight() - 1);
+            int bottomRight = im.getRGB(im.getWidth() - 1, im.getHeight() - 1);
+
+            for (int b1 = 0; b1 < COPY_BORDER; b1++) {
+                for (int b2 = 0; b2 < COPY_BORDER; b2++) {
+                    atlasImage.setRGB(region.rx + b1, region.ry + b2, topLeft);                           // верх-левый
+                    atlasImage.setRGB(region.rx + COPY_BORDER + im.getWidth() + b1, region.ry + b2, topRight); // верх-правый
+                    atlasImage.setRGB(region.rx + b1, region.ry + COPY_BORDER + im.getHeight() + b2, bottomLeft); // низ-левый
+                    atlasImage.setRGB(region.rx + COPY_BORDER + im.getWidth() + b1, region.ry + COPY_BORDER + im.getHeight() + b2, bottomRight); // низ-правый
+                }
+            }
         }
         gr.dispose();
 
         Files.createDirectories(outputDir);
 
-        Path atlasPath = outputDir.resolve(atlasBaseName + Atlas.ATLAS_EXT);
         ImageIO.write(atlasImage, "png", atlasPath.toFile());
-
-        Path atlasMetaPath = outputDir.resolve(atlasBaseName + Atlas.META_EXT);
         writeMetadata(atlasMetaPath, regions, errorRegion);
-
         writeHash(atlasHashPath, regions);
     }
 

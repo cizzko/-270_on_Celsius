@@ -8,12 +8,12 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 
+import static core.g2d.Render.*;
 import static core.g2d.RenderQueue.*;
 import static core.g2d.StackfulRender.defaultShader;
 import static core.util.Color.toGLBits;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static org.lwjgl.opengl.GL11.GL_TRIANGLE_STRIP;
 
 public final class RenderList implements Disposable, Poolable {
     public static final int KIND_STATIC  = 1;
@@ -82,7 +82,7 @@ public final class RenderList implements Disposable, Poolable {
     public RenderList checkSpace(int itemCount, int vertexCount) {
         if (!hasSpace(itemCount, vertexCount)) {
             var n = next;
-            var newRList = Render.queue.allocRList(kind);
+            var newRList = queue.allocRList(kind);
             if (n == null) {
                 next = n = newRList;
             } else {
@@ -108,7 +108,7 @@ public final class RenderList implements Disposable, Poolable {
     }
 
     public void clear() {
-        items.forEach(Render.queue.ritemAlloc::free);
+        items.forEach(queue.ritemAlloc::free);
         items.clear();
         vertices.clear();
     }
@@ -120,7 +120,7 @@ public final class RenderList implements Disposable, Poolable {
                             float x4, float y4,
                             float u, float v,
                             float u2, float v2) {
-        if (primitiveType == GL_TRIANGLE_STRIP) {
+        if (primitiveType == PRIMITIVE_TYPE_TRIANGLE_STRIP) {
             addRectangleStripes(rgba8888, x, y, x2, y2, x3, y3, x4, y4, u, v, u2, v2);
         } else {
             addRectangle(primitiveType, x, y, x2, y2, x3, y3, x4, y4, u, v, u2, v2, toGLBits(rgba8888));
@@ -148,22 +148,23 @@ public final class RenderList implements Disposable, Poolable {
     }
 
     public void addRectangle(int primitiveType, int rgba8888,
-                            float x, float y,
+                            float x1, float y1,
                             float x2, float y2,
-                            float u, float v,
+                            float u1, float v1,
                             float u2, float v2) {
 
-        if (primitiveType == GL_TRIANGLE_STRIP) {
+        if (primitiveType == PRIMITIVE_TYPE_TRIANGLE_STRIP) {
             float color = toGLBits(rgba8888);
             var va = vertices;
-            addVertex0(va, x, y2,    u,  v,   color);
-            addVertex0(va, x2, y2,    u2, v,   color);
-            addVertex0(va, x, y, u,  v2,  color);
-            addVertex0(va, x2, y, u2, v2,  color);
+
+            addVertex0(va, x1, y1, u1, v1, color); // BL
+            addVertex0(va, x1, y2, u1, v2, color); // TL
+            addVertex0(va, x2, y2, u2, v2, color); // TR
+            addVertex0(va, x2, y1, u2, v1, color); // BR
         } else {
             addRectangle(primitiveType,
-                    x, y, x, y2, x2, y2, x2, y,
-                    u, v,
+                    x1, y1, x1, y2, x2, y2, x2, y1,
+                    u1, v1,
                     u2, v2,
                     toGLBits(rgba8888));
         }
@@ -177,7 +178,7 @@ public final class RenderList implements Disposable, Poolable {
                             float u2, float v2,
                             float c) {
         var va = vertices;
-        if (primitiveType == GL_TRIANGLE_STRIP) {
+        if (primitiveType == PRIMITIVE_TYPE_TRIANGLE_STRIP) {
             addVertex0(va, x1, y1, u1,  v1,  c);  // TL
             addVertex0(va, x2, y2, u2, v1,   c);  // TR
             addVertex0(va, x3, y3, u1,  v2,  c);  // BL
@@ -206,6 +207,10 @@ public final class RenderList implements Disposable, Poolable {
         va.put(color);
         va.put(u);
         va.put(v);
+    }
+
+    public void addVertex(float x, float y, float u, float v, float color) {
+        addVertex0(vertices, x,  y, u, v, color);
     }
 
     public void push(RenderItem item) {

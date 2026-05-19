@@ -77,9 +77,11 @@ public final class BlockItemStorage implements SerializableContent {
             if (allowedStack.isSame(stack)) {
                 int toAdd = maxCapacity - allowedStack.count();
                 if (toAdd >= 0) {
-                    allowedStack.add(toAdd);
-                    total += toAdd;
-                    return toAdd;
+                    int d = allowedStack.add(toAdd);
+                    if (d >= 0) {
+                        total += toAdd;
+                        return toAdd;
+                    }
                 }
             }
         }

@@ -9,10 +9,10 @@ public final class Render {
     private Render() {}
 
     // Всего: 1 << 2
-    public static final int PRIMITIVE_TYPE_TRIANGLES = GL_TRIANGLES;
-    public static final int PRIMITIVE_TYPE_TRIANGLE_STRIP = GL_TRIANGLE_STRIP;
-    public static final int PRIMITIVE_TYPE_LINES = GL_LINES;
-    public static final int PRIMITIVE_TYPE_LINES_STRIP = GL_LINE_STRIP;
+    public static final byte PRIMITIVE_TYPE_TRIANGLES      = 0; // GL_TRIANGLES
+    public static final byte PRIMITIVE_TYPE_TRIANGLE_STRIP = 1; // GL_TRIANGLE_STRIP
+    public static final byte PRIMITIVE_TYPE_LINES          = 2; // GL_LINES
+    public static final byte PRIMITIVE_TYPE_LINE_STRIP     = 3; // GL_LINE_STRIP
 
     // Всего: 1 << 3
     public static final byte LAYER_BACKGROUND = 0;
@@ -25,28 +25,47 @@ public final class Render {
     public static final byte BLENDING_NORMAL  = 0;
 
     // SortKey:
-    // [61..59  | 58..56  | 55..40    | 39..32   | 31..0 ]
-    //  ^ layer   ^ blend   ^ texture   ^ shader   ^ index
-    //  (3 bit)   (3 bit)   (16 bit)    (8 bit)    (32 bit)
+    // [ 63..62 | 61..59  | 58..56  | 55..40    | 39..32   | 31..24 |  23..0   ]
+    //   ^ prim   ^ layer   ^ blend   ^ texture   ^ shader   ^ ublock  ^ index
+    //   (2 bit)  (3 bit)   (3 bit)   (16 bit)    (8 bit)    (8 bit)   (24 bit)
 
-    private static final byte LAYER_SHIFT = 59;
-    private static final byte BLEND_SHIFT = 56;
+    private static final byte PRIMITIVE_TYPE_SHIFT = 62;
+    private static final byte LAYER_SHIFT   = 59;
+    private static final byte BLEND_SHIFT   = 56;
     private static final byte TEXTURE_SHIFT = 40;
-    private static final byte SHADER_SHIFT = 32;
+    private static final byte SHADER_SHIFT  = 32;
+    private static final byte UBLOCK_SHIFT  = 24;
 
-    // Маски для очистки данных (чтобы не вышли за пределы битов)
-    private static final byte  LAYER_MASK = (byte) 0x7;       // 3 бита
-    private static final byte  BLEND_MASK = (byte) 0x7;       // 3 бита
-    private static final short TEXTURE_MASK = (byte) 0xFFFF;    // 16 битов
-    private static final byte  SHADER_MASK = (byte) 0xFF;       // 8 битов
-    private static final long INDEX_MASK = 0xFFFFFFFFL;  // 32 бита
+    private static final byte  PRIMITIVE_TYPE_MASK = (byte) 0b11; // 2 бита
+    private static final byte  LAYER_MASK = (byte) 0x7;           // 3 бита
+    private static final byte  BLEND_MASK = (byte) 0x7;           // 3 бита
+    private static final short TEXTURE_MASK = (short) 0xFFFF;     // 16 битов
+    private static final byte  SHADER_MASK = (byte) 0xFF;         // 8 битов
+    private static final int   UBLOCK_MASK = (byte) 0xFF;         // 8 битов
+    private static final int   INDEX_MASK = 0xFFFFFF;             // 24 бита
+
+    public static int toGlType(@MagicConstant(intValues = {PRIMITIVE_TYPE_TRIANGLES, PRIMITIVE_TYPE_TRIANGLE_STRIP, PRIMITIVE_TYPE_LINES, PRIMITIVE_TYPE_LINE_STRIP}) int primitiveType) {
+        return switch (primitiveType) {
+            case -1 -> -1; // забавно
+            case PRIMITIVE_TYPE_TRIANGLES -> GL_TRIANGLES;
+            case PRIMITIVE_TYPE_TRIANGLE_STRIP -> GL_TRIANGLE_STRIP;
+            case PRIMITIVE_TYPE_LINES -> GL_LINES;
+            case PRIMITIVE_TYPE_LINE_STRIP -> GL_LINE_STRIP;
+            default -> throw new IllegalArgumentException("Invalid primitive type: " + primitiveType);
+        };
+    }
+
+    @MagicConstant(intValues = {PRIMITIVE_TYPE_TRIANGLES, PRIMITIVE_TYPE_TRIANGLE_STRIP, PRIMITIVE_TYPE_LINES, PRIMITIVE_TYPE_LINE_STRIP})
+    public static byte getPrimitiveType(long sortKey) {
+        return (byte) ((sortKey >>> PRIMITIVE_TYPE_SHIFT) & PRIMITIVE_TYPE_MASK);
+    }
 
     @MagicConstant(intValues = {LAYER_BLOCKS})
     public static byte getLayer(long sortKey) {
         return (byte) ((sortKey >>> LAYER_SHIFT) & LAYER_MASK);
     }
 
-    @MagicConstant(intValues = {Render.BLENDING_NORMAL})
+    @MagicConstant(intValues = {BLENDING_NORMAL})
     public static byte getBlending(long sortKey) {
         return (byte) ((sortKey >>> BLEND_SHIFT) & BLEND_MASK);
     }
@@ -59,21 +78,29 @@ public final class Render {
         return (byte) ((sortKey >>> SHADER_SHIFT) & SHADER_MASK);
     }
 
+    public static byte getUblock(long sortKey) {
+        return (byte) ((sortKey >>> UBLOCK_SHIFT) & UBLOCK_MASK);
+    }
+
     public static int getIndex(long sortKey) {
         return (int) (sortKey & INDEX_MASK);
     }
 
     public static long makeSortKey(
+            byte primitiveType,
             byte layer,
             byte blending,
             short texture,
             byte shader,
+            int ublock,
             int index) {
 
-        return (long)(layer & LAYER_MASK)       << LAYER_SHIFT |
+        return (long)(primitiveType & PRIMITIVE_TYPE_MASK) << PRIMITIVE_TYPE_SHIFT |
+               (long)(layer & LAYER_MASK)       << LAYER_SHIFT |
                (long)(blending & BLEND_MASK)    << BLEND_SHIFT |
                (long)(texture & TEXTURE_MASK)   << TEXTURE_SHIFT |
                (long)(shader & SHADER_MASK)     << SHADER_SHIFT |
+               (long)(ublock & UBLOCK_MASK)     << UBLOCK_SHIFT |
                (index & INDEX_MASK);
     }
 

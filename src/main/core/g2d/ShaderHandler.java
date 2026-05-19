@@ -72,7 +72,7 @@ public final class ShaderHandler extends AssetHandler<Shader, Void, ShaderHandle
         String fragSource = res.join(state.fragSource);
         var attributes = res.join(state.attributesSource);
         res.checkIfFailed();
-        return Shader.load(vertSource, fragSource, attributes.vertexFormat, attributes.uniforms);
+        return Shader.load(name, vertSource, fragSource, attributes.vertexFormat, attributes.uniforms);
     }
 
     @Override
@@ -88,7 +88,7 @@ public final class ShaderHandler extends AssetHandler<Shader, Void, ShaderHandle
     public record Attributes(VertexFormat vertexFormat, Map<String, Shader.Uniform> uniforms) { }
 
     public static final class State {
-        private Future<String> vertSource, fragSource;
-        private Future<Attributes> attributesSource;
+        Future<String> vertSource, fragSource;
+        Future<Attributes> attributesSource;
     }
 }

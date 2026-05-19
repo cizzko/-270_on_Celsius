@@ -118,7 +118,7 @@ public class ContentLoader {
                 int i = 0;
                 for (var pair : node.properties()) {
                     String itemId = pair.getKey();
-                    int count = pair.getValue().asInt(0);
+                    int count = pair.getValue().asInt(1);
                     itemStacks[i++] = new ItemStack(new ItemUnresolved(itemId), count);
                 }
                 return itemStacks;

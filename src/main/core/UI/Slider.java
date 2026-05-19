@@ -8,6 +8,7 @@ import core.util.Color;
 
 import static core.Global.*;
 import static core.World.Textures.TextureDrawing.calculateTextSize;
+import static core.util.Color.*;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 
 public class Slider extends BaseElement<Slider> {
@@ -75,7 +76,7 @@ public class Slider extends BaseElement<Slider> {
 
         Fill.rect(sliderPos - (triangle.width() / 2f) - (numbersWidth / (rectWidth * 2)),
                 y + rectY, 30 + numbersWidth / rectWidth, rectHeight,
-                Color.fromRgba8888(0, 0, 0, rectBrightness));
+                rgba8888(0, 0, 0, rectBrightness));
 
         float x = sliderPos - (numbersWidth / 2f) + 5;
         for (int i = 0; i < sliderValue.length(); i++) {

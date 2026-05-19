@@ -50,11 +50,8 @@ public class JavaInterpreter {
     public static void execute(String snippet) {
         exec.execute(() -> {
             Thread.currentThread().setName("JShell Thread");
-            EventHandler.resetKeyLogginText();
             var out = new StringJoiner("\\n").setEmptyValue("");
             execute0(snippet, out);
-
-            EventHandler.setKeyLoggingText(out.toString());
         });
     }
 

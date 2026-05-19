@@ -18,6 +18,9 @@ import static core.g2d.Font.PIXEL_GAP;
 import static core.g2d.Font.fontSize;
 import static core.math.MathUtil.toByteExact;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_S;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_T;
+import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
 
 public final class FontHandler extends AssetHandler<Font, Void, FontHandler.State> {
 
@@ -132,7 +135,8 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
         res.checkIfFailed();
 
         var fnt = glyphData.fnt;
-        fnt.texture = Texture.load(glyphData.atlas, GL_TEXTURE_2D, 0, 0, 1, 1);
+        fnt.texture = Texture.load(glyphData.atlas, GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, 0, 0, 1, 1);
+
         fnt.glyphTable = glyphData.glyphTable;
         fnt.unknownGlyph = fnt.glyphTable.get('?');
 

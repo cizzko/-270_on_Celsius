@@ -6,6 +6,7 @@ import core.math.Vector2f;
 import core.util.Sized;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.List;
 import java.util.function.Predicate;
 
 public interface Element extends InputListener {
@@ -26,6 +27,9 @@ public interface Element extends InputListener {
 
     void update(float dt);
     boolean remove();
+
+    void addListener(InputListener listener);
+    List<InputListener> listeners();
 
     Element setId(@Nullable String id);
     Element setParent(@Nullable Group parent);
@@ -48,7 +52,7 @@ public interface Element extends InputListener {
     Element setHotkey(int key, Runnable action);
 
     @Nullable Element hit(float x, float y);
-    default @Nullable Element hit(Point2i point) { return hit(point.x, point.y); }
+    default @Nullable Element hit(Point2i point)  { return hit(point.x, point.y); }
     default @Nullable Element hit(Vector2f point) { return hit(point.x, point.y); }
 
     @SuppressWarnings("unchecked")

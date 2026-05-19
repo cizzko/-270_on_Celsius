@@ -6,22 +6,22 @@ import core.assets.AssetsManager;
 import core.g2d.*;
 import core.g2d.Render;
 import core.util.Commandline;
-import core.util.DebugTools;
+import core.util.Debug;
 
 import static core.Global.*;
 
 public final class MenuScene extends GameScene {
 
-    @Load(value = "arial.ttf", owned = false, load = AssetsManager.LoadType.SYNC)
-    private Font font;
     @Load(value = "sprites", owned = false)
     private Atlas sprites;
+    @Load(value = "arial.ttf", owned = false, load = AssetsManager.LoadType.SYNC)
+    private Font font;
     @Load(value = "World/Other/background.png", load = AssetsManager.LoadType.SYNC)
     private Texture backgroundTex;
 
     @Override
     public void onInit() {
-        DebugTools.initMenu();
+        Debug.initMenu();
 
         camera.setToOrthographic(input.getWidth(), input.getHeight());
         StackfulRender.matrix(camera.projection);
@@ -35,13 +35,12 @@ public final class MenuScene extends GameScene {
         Styles.loadAll();
         content.loadAll();
 
-        EventHandler.init();
         UIMenus.mainMenu().show();
     }
 
     @Override
     protected void inputUpdate() {
-        DebugTools.menuHotKeys();
+        Debug.menuHotKeys();
         Commandline.inputUpdate();
     }
 
@@ -54,6 +53,7 @@ public final class MenuScene extends GameScene {
     protected void draw() {
         drawLoading();
         uiScene.draw();
+        Debug.drawTextValues();
     }
 
     @Override

@@ -29,6 +29,10 @@ public class ShadowMap {
         }
     }
 
+    public static int getRawShadow(int x, int y) {
+        return shadows[x + world.sizeX * y];
+    }
+
     public static void setShadow(int x, int y, Color color) {
         setShadow(x, y, color.rgba8888());
     }

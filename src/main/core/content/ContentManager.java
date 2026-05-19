@@ -56,8 +56,12 @@ public final class ContentManager {
                 var index = contentMap.computeIfAbsent(source.type, k -> new HashMap<>());
                 for (Path file : dirstr) {
                     loader.init(source.type, file);
-                    var cont = loader.readContent();
-                    index.put(cont.id(), cont);
+                    try {
+                        var cont = loader.readContent();
+                        index.put(cont.id(), cont);
+                    } catch (Exception e) {
+                        log.error("Failed to load content: '{}'", file, e);
+                    }
                 }
             } catch (IOException e) {
                 log.error("Failed to list directory: '{}'", source.dir, e);

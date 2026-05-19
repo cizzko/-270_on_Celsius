@@ -2,6 +2,7 @@ package core.UI.animation;
 
 import java.util.ArrayList;
 
+//одновременно
 public class ParallelAction<A> extends Action<A> {
     // TODO: Может это COW-список?
     protected final ArrayList<Action<A>> actions = new ArrayList<>(4);

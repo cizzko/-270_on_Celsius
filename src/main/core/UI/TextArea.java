@@ -20,6 +20,11 @@ public class TextArea extends BaseElement<TextArea> {
     }
 
     public TextArea setTranslation(String id) { // TODO доработать обновление в зависимости от языка
+        if (id == null) {
+            this.text = null;
+            this.cache.reset();
+            return this;
+        }
         setFlag(FLAG_TRANSLATION, true);
         this.text = id;
         resolveTranslation(id);
@@ -28,6 +33,12 @@ public class TextArea extends BaseElement<TextArea> {
 
     public TextArea setText(String newText) {
         setFlag(FLAG_TRANSLATION, false);
+        if (newText == null) {
+            this.text = null;
+            this.cache.reset();
+            return this;
+        }
+
         if (Objects.equals(this.text, newText)) {
             return this;
         }

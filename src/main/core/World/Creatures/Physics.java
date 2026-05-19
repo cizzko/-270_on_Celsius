@@ -5,6 +5,8 @@ import core.Time;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.ShadowMap;
 import core.content.entity.*;
+import core.g2d.Atlas;
+import core.g2d.Drawable;
 import core.math.Rectangle;
 import core.math.Vector2f;
 import core.util.FixedBitset;
@@ -373,5 +375,24 @@ public class Physics {
         }
 
         return friction;
+    }
+
+    public static boolean checkIntersection(float wx, float wy, Drawable texture) {
+        entityHitbox.set(wx, wy, texture.width(), texture.height());
+
+        int minX = (int) Math.floor(entityHitbox.x / blockSize);
+        int minY = (int) Math.floor(entityHitbox.y / blockSize);
+
+        int maxX = (int) Math.floor((entityHitbox.x + entityHitbox.width) / blockSize);
+        int maxY = (int) Math.floor((entityHitbox.y + entityHitbox.height) / blockSize);
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                var block = world.getBlock(x, y);
+                if (block == null || block.type == StaticObjectsConst.Type.SOLID)
+                    return true;
+            }
+        }
+        return false;
     }
 }

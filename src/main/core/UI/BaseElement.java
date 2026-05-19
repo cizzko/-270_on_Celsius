@@ -3,21 +3,23 @@ package core.UI;
 import core.Global;
 import core.input.InputListener;
 import core.math.Rectangle;
-import core.util.DebugTools;
+import core.util.Debug;
 import core.util.Sized;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public abstract class BaseElement<E extends BaseElement<E>> implements Element {
-    protected static final int FLAG_X_CHANGED   = 1 << 0;
-    protected static final int FLAG_Y_CHANGED   = 1 << 1;
-    protected static final int FLAG_W_CHANGED   = 1 << 2;
-    protected static final int FLAG_H_CHANGED   = 1 << 3;
-    protected static final int FLAG_VISIBLE     = 1 << 4;
-    protected static final int FLAG_TOUCHABLE   = 1 << 5;
+    protected static final int FLAG_X_CHANGED      = 1 << 0;
+    protected static final int FLAG_Y_CHANGED      = 1 << 1;
+    protected static final int FLAG_W_CHANGED      = 1 << 2;
+    protected static final int FLAG_H_CHANGED      = 1 << 3;
+    protected static final int FLAG_VISIBLE        = 1 << 4;
+    protected static final int FLAG_TOUCHABLE      = 1 << 5;
+    protected static final int FLAG_ONE_TOUCH_DOWN = 1 << 6;
 
-    protected static final int ELEMENT_LAST_FLAG = FLAG_TOUCHABLE;
+    protected static final int ELEMENT_LAST_FLAG = FLAG_ONE_TOUCH_DOWN;
 
     // Допустимая погрешность в координатах интерфейса
     private static final float SIZE_EPSILON = 1e-4f;
@@ -36,6 +38,7 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     protected void flipFlag(int flag) {
         flags ^= flag;
     }
+    protected boolean isFlag(int flag) { return (flags & flag) != 0; }
 
     public Group parent;
 
@@ -49,9 +52,13 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
         this.parent = parent;
     }
 
-    public void addListener(InputListener listener) {
+    @Override
+    public final void addListener(InputListener listener) {
         this.inputListeners.add(listener);
     }
+
+    @Override
+    public final List<InputListener> listeners() { return inputListeners; }
 
     @Override
     public final boolean remove() {
@@ -227,6 +234,9 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
         for (InputListener listener : inputListeners) {
             if (listener.onTouchDown(x, y, button)) {
                 Global.uiScene.setFocus(this);
+                if (isFlag(FLAG_ONE_TOUCH_DOWN)) {
+                    break;
+                }
                 anyHandled = true;
             }
         }
@@ -296,10 +306,10 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
 
     protected String printPosition() {
         return "(" +
-                "x=" + DebugTools.FLOATS.format(x) +
-                ", y=" + DebugTools.FLOATS.format(y) +
-                ", w=" + DebugTools.FLOATS.format(width) +
-                ", h=" + DebugTools.FLOATS.format(height) +
-                ")";
+               "x=" + Debug.FLOATS.format(x) +
+               ", y=" + Debug.FLOATS.format(y) +
+               ", w=" + Debug.FLOATS.format(width) +
+               ", h=" + Debug.FLOATS.format(height) +
+               ")";
     }
 }

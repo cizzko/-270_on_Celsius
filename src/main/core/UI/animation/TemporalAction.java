@@ -2,6 +2,7 @@ package core.UI.animation;
 
 import core.math.Interpolation;
 
+//от дт
 abstract public class TemporalAction<A> extends Action<A> {
     private float duration, time;
     private Interpolation interpolation;
@@ -15,6 +16,7 @@ abstract public class TemporalAction<A> extends Action<A> {
         }
         time += delta;
         complete = time >= duration;
+
         float percent;
         if (complete) {
             percent = 1;

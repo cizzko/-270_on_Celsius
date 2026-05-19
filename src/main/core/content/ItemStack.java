@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import core.content.items.Item;
 import core.content.items.data.ItemData;
+import org.jetbrains.annotations.CheckReturnValue;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
@@ -27,7 +28,7 @@ public final class ItemStack {
                      @JsonProperty("count") int count,
                      @JsonProperty("data") @Nullable ItemData data) {
         this.item = Objects.requireNonNull(item);
-        this.count = requireNonNegativeCount(count);
+        this.count = Math.min(requirePositive(count), item.maxStackSize);
         this.data = data;
     }
 
@@ -39,7 +40,7 @@ public final class ItemStack {
         return new ItemStack(item, count);
     }
 
-    private static int requireNonNegativeCount(int count) {
+    private static int requirePositive(int count) {
         if (count < 0) {
             throw new IllegalArgumentException("Negative ItemStack size");
         }
@@ -48,8 +49,10 @@ public final class ItemStack {
 
     public ItemStack(Item item, int count) {
         this.item = Objects.requireNonNull(item);
-        this.count = requireNonNegativeCount(count);
+        this.count = Math.min(requirePositive(count), item.maxStackSize);
     }
+
+    public static ItemStack itemStack(Item item, int count) { return new ItemStack(item, count); }
 
     public static ItemStack[] createArray(ItemStack[] same) {
         return same.length == 0 ? EMPTY_ARRAY : new ItemStack[same.length];
@@ -83,7 +86,7 @@ public final class ItemStack {
     }
 
     public void setCount(int count) {
-        this.count = requireNonNegativeCount(count);
+        this.count = Math.min(requirePositive(count), item.maxStackSize);
     }
 
     public void setData(@Nullable ItemData data) {
@@ -92,24 +95,39 @@ public final class ItemStack {
 
     public void set(Item item, int count) {
         this.item = Objects.requireNonNull(item);
-        this.count = requireNonNegativeCount(count);
+        this.count = Math.min(requirePositive(count), item.maxStackSize);
+        this.data = null;
     }
 
-    public boolean decrement() {
-        return decrement(1);
-    }
+    @CheckReturnValue
+    public boolean decrement() { return decrement(1); }
 
+    @CheckReturnValue
     public boolean decrement(int d) {
+        assert (count - d) >= 0;
         count = Math.max(0, count - d);
         return count == 0;
     }
 
-    public void increment() {
-        add(1);
+    @CheckReturnValue
+    public int increment() { return add(1); }
+
+    /// Попытка увеличить количество предметов в стеке
+    /// @return В случае успешного добавления вернёт `>=0` число,
+    /// в противном случае `<0`, что будет означать на сколько по модулю переполнится стек
+    @CheckReturnValue
+    public int add(int d) {
+        if (count + d <= item.maxStackSize) {
+            count += d;
+            assert count <= item.maxStackSize;
+            return d;
+        }
+        return item.maxStackSize - (d + count);
     }
 
-    public void add(int d) {
-        count += d;
+    @CheckReturnValue
+    public int merge(ItemStack itemStack) {
+        return add(itemStack.count());
     }
 
     public boolean isEmpty() {
@@ -142,10 +160,6 @@ public final class ItemStack {
             h += (h << 5) + data.hashCode();
         }
         return h;
-    }
-
-    public void merge(ItemStack itemStack) {
-        add(itemStack.count());
     }
 
     public static class ItemStackGridSerializer extends StdSerializer<ItemStack[][]> {

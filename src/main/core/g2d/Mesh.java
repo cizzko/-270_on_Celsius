@@ -1,5 +1,6 @@
 package core.g2d;
 
+import core.util.Debug;
 import core.util.Disposable;
 import org.jetbrains.annotations.Nullable;
 
@@ -70,13 +71,17 @@ public final class Mesh implements Disposable {
             }
         }
 
-        if (ebo != null) {
+        if (Debug.debugMesh)
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        if (ebo != null && primitiveType != GL_TRIANGLE_STRIP) {
             ebo.bind();
             long byteOffsetInEBO = (long) indexOffset * Integer.BYTES;
             glDrawElements(primitiveType, indexCount, GL_UNSIGNED_INT, byteOffsetInEBO);
         } else {
             glDrawArrays(primitiveType, vertexOffset, vertexCount);
         }
+        if (Debug.debugMesh)
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         return true;
     }

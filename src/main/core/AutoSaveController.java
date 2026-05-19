@@ -1,6 +1,7 @@
 package core;
 
 import core.EventHandling.Config;
+import core.World.WorldUtils;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -31,10 +32,6 @@ public class AutoSaveController {
                 .truncatedTo(ChronoUnit.MILLIS);
 
         Path saveFile = assets.workingDir().resolve("open_worl_" + now.format(formatter) + ".json");
-        try {
-            Config.json.writeValue(saveFile.toFile(), world);
-        } catch (IOException e) {
-            Application.log.error("Failed to auto-save world to file '{}'", saveFile, e);
-        }
+        WorldUtils.saveWorld(world, saveFile);
     }
 }

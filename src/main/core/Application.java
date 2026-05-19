@@ -3,7 +3,9 @@ package core;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.system.NativeResource;
+import org.lwjgl.system.Platform;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
 
@@ -141,5 +143,32 @@ public class Application {
 
     public final int getFpsMeasurement() {
         return fpsMeasurement;
+    }
+
+    public static void open(String uri) {
+        switch (Platform.get()) {
+            case LINUX, FREEBSD -> openUri("xdg-open", uri);
+            case MACOSX -> openUri("open", uri);
+            case WINDOWS -> openUri("rundll32", "url.dll,FileProtocolHandler", uri);
+        }
+    }
+
+    private static void openUri(String cmd, String arg0, String arg1) {
+        Thread.startVirtualThread(() -> {
+            try {
+                ProcessBuilder pb = new ProcessBuilder(cmd, arg0);
+                var list = pb.command();
+                if (!arg1.isEmpty()) {
+                    list.add(arg1);
+                }
+                pb.start();
+            } catch (IOException e) {
+                Application.log.warn("Failed to open uri '{}'", cmd, e);
+            }
+        });
+    }
+
+    private static void openUri(String cmd, String uri) {
+        openUri(cmd, uri, "");
     }
 }

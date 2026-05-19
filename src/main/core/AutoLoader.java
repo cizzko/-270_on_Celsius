@@ -1,7 +1,7 @@
 package core;
 
 import core.assets.AssetsManager;
-import core.util.DebugTools;
+import core.util.Debug;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -244,7 +244,7 @@ public final class AutoLoader {
                                     name, inst.getClass().getSimpleName(), binding.fieldName,
                                     binding.type, actualNames[i]);
                         }
-                        DebugTools.rethrow(asset.exceptionNow());
+                        Debug.rethrow(asset.exceptionNow());
                         return false;
                     }
                 }

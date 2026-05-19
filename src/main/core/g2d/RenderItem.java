@@ -1,13 +1,9 @@
 package core.g2d;
 
-import com.fasterxml.jackson.annotation.JsonValue;
 import core.pool.Poolable;
-
-import java.util.Arrays;
 
 public final class RenderItem implements Poolable {
     public /* unsigned */ long sortKey;
-    public final float[] matrix = new float[9];
     public int vertexOffset, vertexCount;
     public int indexOffset, indexCount;
 
@@ -23,10 +19,8 @@ public final class RenderItem implements Poolable {
         sortKey = 0;
         vertexOffset = vertexCount = 0;
         indexOffset = indexCount = 0;
-        Arrays.fill(matrix, 0);
     }
 
-    @JsonValue
     @Override
     public String toString() {
         return "RenderItem{" +

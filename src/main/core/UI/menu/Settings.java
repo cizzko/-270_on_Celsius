@@ -96,8 +96,8 @@ public class Settings extends Dialog {
             addButton(Styles.TEXT_BUTTON, dropDownMenu::toggleVisibility)
                     .set(780, 950, 240, 65)
                     .setName(Global.lang.get("Language"));
-            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
-            })
+
+            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {})
                     .setPosition(310, 980)
                     .setName(Global.lang.get(SHOW_PROMPTS_KEY))
                     .setPrompt("ShowPromptsPrompt")

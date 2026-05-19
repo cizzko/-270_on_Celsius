@@ -2,7 +2,6 @@ package core.g2d;
 
 import core.pool.Pool;
 import core.util.Disposable;
-import it.unimi.dsi.fastutil.ints.IntArraySet;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,8 +17,7 @@ import static core.g2d.RenderList.*;
 import static core.g2d.StackfulRender.defaultShader;
 import static core.g2d.Render.*;
 import static java.lang.Math.*;
-import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL15.GL_STATIC_DRAW;
+import static org.lwjgl.opengl.GL46.*;
 
 public final class RenderQueue implements Disposable {
     static final Logger log = LogManager.getLogger();
@@ -34,12 +32,11 @@ public final class RenderQueue implements Disposable {
     final Pool<RenderList> rlistAlloc;
     final @Nullable ElementBufferObject ebo;
 
-    private static final int primitiveType = GL_TRIANGLES;
-
     private int rlistCount;
 
     private final ArrayDeque<RenderList> renderLists = new ArrayDeque<>();
     private final ObjectArrayList<RenderList> created = new ObjectArrayList<>();
+    private final UniformBuffer uniformBuffer = new UniformBuffer();
 
     public RenderQueue(int itemCount, int vertexCount) {
         this.ritemAlloc = new Pool<>(RenderItem::new, itemCount);
@@ -49,9 +46,8 @@ public final class RenderQueue implements Disposable {
             return list;
         }, 10);
 
-
         if (!USE_INDEXES) {
-            ebo  = null;
+            ebo = null;
         } else {
             int capedVertCount = max(USE_INDEXES ? 4 : 6, vertexCount);
             int quadCount = capedVertCount * VERTEX_PER_ITEM;
@@ -73,17 +69,68 @@ public final class RenderQueue implements Disposable {
         }
     }
 
+    public UniformBuffer uniformBuffer() { return uniformBuffer; }
+
     public RenderItem allocItem() { return ritemAlloc.obtain(); }
 
-    public int getVertexCountPerQuad() { return RenderQueue.USE_INDEXES ? 4 : 6; }
+    public int getVertexCountPerQuad(
+            @MagicConstant(intValues = {PRIMITIVE_TYPE_TRIANGLES, PRIMITIVE_TYPE_TRIANGLE_STRIP, PRIMITIVE_TYPE_LINES, PRIMITIVE_TYPE_LINE_STRIP})
+            byte primitiveType) {
+        return switch (primitiveType) {
+            case PRIMITIVE_TYPE_TRIANGLE_STRIP -> 4;
+            case PRIMITIVE_TYPE_TRIANGLES -> USE_INDEXES ? 4 : 6;
+            default -> throw new IllegalArgumentException("Unsupported primitive type: " + primitiveType);
+        };
+    }
 
     public void beginFrame() {
     }
 
     public void endFrame() {
+        if (renderLists.isEmpty()) {
+            return;
+        }
+
+        // if (Global.postEffect.use) {
+        //     glBindFramebuffer(GL_FRAMEBUFFER, Global.postEffect.frameBufferId);
+        //     glClear(GL_COLOR_BUFFER_BIT);
+        // } else {
+        //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // }
+        drainCommandQueue();
+
+        // if (Global.postEffect.use) {
+        //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        //
+        //     try (var __ = StackfulRender.pushState()) {
+        //         StackfulRender.z(LAYER_DEBUG);
+        //         StackfulRender.shader(Global.postEffect.shader);
+        //         var bl = uniformBuffer.allocate();
+        //
+        //         bl.push(UniformBuffer.Uniform.of("u_resolution", input.getHeight(), input.getWidth()));
+        //         bl.push(UniformBuffer.Uniform.of("u_curvatureStrength", -0.8f));
+        //         bl.push(UniformBuffer.Uniform.of("u_aspectCorrection", 1f));
+        //         uniformBuffer.push(bl);
+        //         StackfulRender.setUniformBlock(bl);
+        //
+        //         StackfulRender.drawPostEffect(Global.postEffect.screenTexture);
+        //
+        //         StackfulRender.pushRList();
+        //         drainCommandQueue();
+        //     }
+        // }
+
+        uniformBuffer.clear();
+    }
+
+    private void drainCommandQueue() {
         RenderList it;
         while ((it = renderLists.pollFirst()) != null)
             submitCommandList(it);
+    }
+
+    public void flush() {
+        drainCommandQueue();
     }
 
     public RenderList allocRList(@MagicConstant(intValues = {KIND_STATIC, KIND_DYNAMIC}) int kind) {
@@ -97,20 +144,21 @@ public final class RenderQueue implements Disposable {
     }
 
     public void push(RenderList renderList) {
+        if (renderList.isEmpty()) {
+            return;
+        }
         if (renderLists.contains(renderList)) {
             throw new IllegalStateException(renderList.id + " already in queue");
         }
         renderLists.addLast(renderList);
     }
 
-    public void submitCommandList(RenderList rlist) {
-        for (var it = rlist; it != null; it = it.next) {
+    private void submitCommandList(RenderList rlist) {
+        for (var it = rlist; it != null; it = it.next)
             submitRenderList(it);
-        }
     }
 
     private void submitRenderList(RenderList rlist) {
-        log.debug("RList[{}]", rlist.id);
         if (rlist.isEmpty()) {
             return;
         }
@@ -127,10 +175,12 @@ public final class RenderQueue implements Disposable {
         int vapos = vertices.position(), vacount = vertices.limit();
         vertices.flip();
 
+        int currentPrimitiveType = -1;
         int currentLayer = -1;
+        int currentBlending = -1;
         int currentTextureId = -1;
         int currentShaderId = -1;
-        int currentBlending = -1;
+        int currentUblock = -1;
 
         int groupIndexOffset = 0;
         int groupVertexOffset = 0;
@@ -143,25 +193,29 @@ public final class RenderQueue implements Disposable {
         for (int i = 0; i < items.size(); ++i) {
             var item = items.get(i);
 
+            byte primitiveType = getPrimitiveType(item.sortKey);
             byte layer = getLayer(item.sortKey);
             byte blending = getBlending(item.sortKey);
             short textureId = getTextureId(item.sortKey);
             byte shaderId = getShaderId(item.sortKey);
+            byte ublock = getUblock(item.sortKey);
 
             boolean sameGroup = (
+                    primitiveType == currentPrimitiveType &&
                     layer == currentLayer &&
                     blending == currentBlending &&
                     textureId == currentTextureId &&
-                    shaderId == currentShaderId) &&
+                    shaderId == currentShaderId &&
+                    ublock == currentUblock) &&
                     // разрыв, придётся отдельным вызовом сделать
-                    (groupIndexOffset + item.vertexCount == item.vertexOffset);
+                    (groupVertexOffset + item.vertexCount == item.vertexOffset);
 
             if (sameGroup) {
                 groupIndexCount  += item.indexCount;
                 groupVertexCount += item.vertexCount;
             } else {
 
-                mesh.draw(primitiveType,
+                mesh.draw(toGlType(currentPrimitiveType),
                         vertices, groupVertexOffset, groupVertexCount,
                         ebo, groupIndexOffset, groupIndexCount,
                         currentVertexFormat);
@@ -169,24 +223,30 @@ public final class RenderQueue implements Disposable {
                 if (currentBlending != blending)
                     setBlending(blending);
 
-                var shader = ShaderCache.shadersById.get(shaderId);
-                Objects.requireNonNull(shader, ShaderCache.shadersById::toString);
-                if (currentShaderId != shaderId)
+                var shader = ResourceCache.shadersById.get(shaderId);
+                Objects.requireNonNull(shader, ResourceCache.shadersById::toString);
+                if (currentShaderId != shaderId) {
                     shader.use();
+                    mesh.bindVao();
+                    shader.vertexFormat().enableAttributes();
+                }
 
-                mesh.bindVao();
-                shader.vertexFormat().enableAttributes();
-                currentVertexFormat = shader.vertexFormat();
+                if (currentUblock != ublock) {
+                    var block = uniformBuffer.id2blocks.get(ublock);
+                    block.setTo(shader);
+                }
 
-                if (currentTextureId != textureId)
-                    shader.setUniform("u_texture", textureId, 0);
+                if (currentTextureId != textureId) // TODO ubo?
+                    shader.setUniformTexture2d("u_texture", textureId, 0);
 
-                shader.setUniformTransforming("u_proj", item.matrix);
-
+                currentPrimitiveType = primitiveType;
                 currentLayer = layer;
                 currentBlending = blending;
                 currentTextureId = textureId;
                 currentShaderId = shaderId;
+                currentUblock = ublock;
+
+                currentVertexFormat = shader.vertexFormat();
 
                 groupVertexOffset = item.vertexOffset;
                 groupIndexOffset = item.indexOffset;
@@ -196,7 +256,7 @@ public final class RenderQueue implements Disposable {
             }
         }
 
-        mesh.draw(primitiveType,
+        mesh.draw(toGlType(currentPrimitiveType),
                 vertices, groupVertexOffset, groupVertexCount,
                 ebo, groupIndexOffset, groupIndexCount,
                 currentVertexFormat);

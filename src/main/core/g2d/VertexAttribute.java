@@ -14,6 +14,15 @@ public final class VertexAttribute {
         this.format = format;
     }
 
+    @Override
+    public String toString() {
+        return "VertexAttribute{" +
+               "size=" + size +
+               ", type=" + type +
+               ", format=" + format +
+               '}';
+    }
+
     public static VertexAttribute create(int size, Type type, Format format) {
         return new VertexAttribute(size, type, format);
     }

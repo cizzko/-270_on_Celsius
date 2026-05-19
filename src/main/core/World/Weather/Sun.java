@@ -114,19 +114,15 @@ public class Sun extends GameObject {
 
     @Override
     public void draw() {
-//        batch.draw(skyBackgroundTex, skyColor);
+        // StackfulRender.draw(skyBackgroundTex, skyColor, 0, 0);
 //        batch.draw(sunsetTex, sunsetColor);
 
         StackfulRender.pushState(() -> {
-            StackfulRender.z(Render.LAYER_BACKGROUND);
             StackfulRender.scale(scaleX * 2, scaleY * 2);
             StackfulRender.draw(atlas.get(lastBiome.getBackdrop()), ((lastX - (player.x() / blockSize)) * 2) - 1500, 0);
             StackfulRender.scale(scaleX, scaleY);
             StackfulRender.draw(atlas.get(lastBiome.getBackdrop()), ((lastX - (player.x() / blockSize)) * 3) - 1500, 0);
         });
-        StackfulRender.pushState(() -> {
-            StackfulRender.z(Render.LAYER_BACKGROUND);
-            StackfulRender.draw(sunTex, sunColor, x, y);
-        });
+        StackfulRender.draw(sunTex, sunColor, x, y);
     }
 }

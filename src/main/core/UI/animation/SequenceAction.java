@@ -1,5 +1,6 @@
 package core.UI.animation;
 
+//действие с кадром
 public class SequenceAction<A> extends ParallelAction<A> {
     private int index;
 

@@ -22,9 +22,23 @@ public class Styles {
     public static final Color DIRTY_BLACK = Color.fromRgba8888(10, 10, 10, 55);
     public static final Color DIRTY_WHITE = Color.fromRgba8888(230, 230, 230, 55);
     public static final Color DEFAULT_ORANGE = Color.fromRgba8888(255, 80, 0, 55);
+    public static final Color DEFAULT_BRIGHT_ORANGE = Color.fromRgba8888(255, 80, 0, 255);
     public static final Color GRAY_BRIGHT = Color.fromRgba8888(150, 150, 150, 255);
 
     public static final Style.ToggleButton DEFAULT_TOGGLE_BUTTON = new Style.ToggleButton() {
+        @Override
+        public void load() {
+            font = assets.load(Font.class, "arial.ttf").resultNow();
+            checkUp = Global.atlas.get("UI/GUI/checkMarkTrue");
+            checkDown = Global.atlas.get("UI/GUI/checkMarkFalse");
+            width = height = 44;
+            backgroundColor = DIRTY_WHITE;
+            borderOffset = 6;
+            textOffset = 24;
+        }
+    };
+
+    public static final Style.ToggleButton TOGGLE_BUTTON_ORANGE_LINE = new Style.ToggleButton() {
         @Override
         public void load() {
             font = assets.load(Font.class, "arial.ttf").resultNow();
@@ -62,6 +76,14 @@ public class Styles {
         public void load() {
             borderWidth = 20;
             backgroundColor = DEFAULT_PANEL_COLOR;
+        }
+    };
+
+    public static final Style.Panel DUMMY_PANEL = new Style.Panel() {
+        @Override
+        public void load() {
+            borderWidth = 0;
+            backgroundColor = Color.CLEAR;
         }
     };
 
@@ -109,6 +131,7 @@ public class Styles {
 
     public static void loadAll() {
         // TODO пока не вижу в этом проблемы. Пусть побудет в статическом контексте
+        DUMMY_PANEL.load();
         DEFAULT_TOGGLE_BUTTON.load();
         SIMPLE_TEXT_BUTTON.load();
         TEXT_BUTTON.load();

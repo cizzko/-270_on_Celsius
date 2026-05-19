@@ -5,6 +5,7 @@ import core.content.entity.BlockEntity;
 import core.content.entity.InventoryComponent.TransitionResult;
 import core.math.Point2i;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.jetbrains.annotations.CheckReturnValue;
 import org.jetbrains.annotations.Nullable;
 
 public final class ItemGrid {
@@ -83,9 +84,12 @@ public final class ItemGrid {
                 line.set(sj, toAdd);
                 return TransitionResult.MOVE;
             } else {
-                itemStack.add(toAdd.count());
-                toAdd.setCount(0);
-                return TransitionResult.PARTIAL_MOVE;
+                int d = itemStack.add(toAdd.count());
+                if (d >= 0) {
+                    toAdd.decrement(d);
+                    return TransitionResult.PARTIAL_MOVE;
+                }
+                return TransitionResult.FAILED;
             }
         }
 
@@ -115,13 +119,17 @@ public final class ItemGrid {
 
         if (si != -1 /* && sj != -1 */) {
             // assert sj != -1;
-            if (grid[si][sj] == null) {
+            ItemStack itemStack = grid[si][sj];
+            if (itemStack == null) {
                 grid[si][sj] = toAdd;
                 return BlockEntity.TransitionResult.MOVE;
             } else {
-                grid[si][sj].add(toAdd.count());
-                toAdd.setCount(0);
-                return BlockEntity.TransitionResult.PARTIAL_MOVE;
+                int d = itemStack.add(toAdd.count());
+                if (d >= 0) {
+                    toAdd.decrement(d);
+                    return BlockEntity.TransitionResult.PARTIAL_MOVE;
+                }
+                return BlockEntity.TransitionResult.FAILED;
             }
         }
 
@@ -142,11 +150,13 @@ public final class ItemGrid {
         from[fromCell.x][fromCell.y] = null;
     }
 
-    public static void insertCopy(ItemStack[] to, int toIndex, ItemStack[] from, int fromIndex) {
+    @CheckReturnValue
+    public static int insertCopy(ItemStack[] to, int toIndex, ItemStack[] from, int fromIndex) {
         if (to[toIndex] == null) {
             to[toIndex] = from[fromIndex].copy();
+            return 0;
         } else {
-            to[toIndex].add(from[fromIndex].count());
+            return to[toIndex].merge(from[fromIndex]);
         }
     }
 }

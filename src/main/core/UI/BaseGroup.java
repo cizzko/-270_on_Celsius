@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.StringJoiner;
 
 public abstract class BaseGroup<G extends BaseElement<G> & Group> extends BaseElement<G> implements Group {
-    protected static final int FLAG_TOUCHABLE_CHILDREN = ELEMENT_LAST_FLAG << 2;
+    protected static final int FLAG_TOUCHABLE_CHILDREN = ELEMENT_LAST_FLAG << 1;
 
     protected static final int GROUP_LAST_FLAG = FLAG_TOUCHABLE_CHILDREN;
 

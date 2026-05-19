@@ -15,7 +15,7 @@ public final class Actions {
         return alpha(0, duration, Interpolation.identity);
     }
 
-    static <A extends AlphaAction.Colored> AlphaAction<A> alpha(float a){
+    static <A extends AlphaAction.Colored> AlphaAction<A> alpha(float a) {
         return alpha(a, 0, Interpolation.identity);
     }
 
@@ -27,7 +27,7 @@ public final class Actions {
         return action;
     }
 
-    static <A> SequenceAction<A> sequence(Action<A> action1, Action<A> action2){
+    static <A> SequenceAction<A> sequence(Action<A> action1, Action<A> action2) {
         var action = new SequenceAction<A>();
         action.addAction(action1);
         action.addAction(action2);

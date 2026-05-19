@@ -7,9 +7,7 @@ import core.UI.Dialog;
 import core.UI.Styles;
 import core.UIMenus;
 
-import java.awt.*;
-import java.net.URI;
-
+import static core.Constants.discordLink;
 import static core.Global.*;
 
 public class MainMenu extends Dialog {
@@ -20,20 +18,22 @@ public class MainMenu extends Dialog {
         panel.addImageButton(this::discordBtn)
                 .setPosition(1830, 990)
                 .setImage(atlas.get("UI/discordIcon"));
-        panel.addButton(Styles.TEXT_BUTTON, this::exitBtn)
-                .set(822, 990, 240, 65)
-                .setTranslation("Exit")
-                .setColor(Styles.DIRTY_WHITE);
-        panel.addButton(Styles.TEXT_BUTTON, this::settingsBtn)
-                .set(548, 990, 240, 65)
-                .setTranslation("Settings")
-                .setColor(Styles.DIRTY_WHITE);
+
         panel.addButton(Styles.TEXT_BUTTON, this::playButton)
-                .set(46, 990, 240, 65)
-                .setTranslation("Play");
+                .set(40, 990, 240, 65)
+                .setName(lang.get("NewGame"));
         panel.addButton(Styles.TEXT_BUTTON, this::loadSave)
-                .set(46 + 240 + 20, 990, 240, 65)
-                .setTranslation("LoadSave");
+                .set(300, 990, 240, 65)
+                .setName(lang.get("LoadSave"));
+
+        panel.addButton(Styles.TEXT_BUTTON, this::settingsBtn)
+                .set(720, 990, 240, 65)
+                .setName(lang.get("Settings"))
+                .setColor(Styles.DIRTY_WHITE);
+        panel.addButton(Styles.TEXT_BUTTON, this::exitBtn)
+                .set(980, 990, 240, 65)
+                .setName(lang.get("Exit"))
+                .setColor(Styles.DIRTY_WHITE);
     }
 
     private void loadSave() {
@@ -42,12 +42,7 @@ public class MainMenu extends Dialog {
     }
 
     private void discordBtn() {
-        try { // TODO НЕ ИСПОЛЬЗОВАТЬ АПИ ЖАВЫ
-            Desktop desktop = Desktop.getDesktop();
-            desktop.browse(new URI("https://discord.gg/gUS9X6exAQ"));
-        } catch (Exception e) {
-            Application.log.error("Error when open discord server", e);
-        }
+        Application.open(discordLink);
     }
 
     private void exitBtn() {

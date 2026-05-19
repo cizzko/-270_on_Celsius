@@ -1,5 +1,7 @@
 package core.math;
 
+import java.awt.*;
+
 public final class Rectangle {
     public float x, y;
     public float width, height;
@@ -11,6 +13,10 @@ public final class Rectangle {
         this.y = y;
         this.width = width;
         this.height = height;
+    }
+
+    public boolean contains(Rectangle rect) {
+        return x < rect.x + rect.width && x + width > rect.x && y < rect.y + rect.height && y + height > rect.y;
     }
 
     public boolean overlaps(Rectangle rect) {
@@ -25,6 +31,10 @@ public final class Rectangle {
         vector.x = x + width / 2;
         vector.y = y + height / 2;
         return vector;
+    }
+
+    public boolean contains(Point2i point) {
+        return contains(point.x, point.y);
     }
 
     public boolean contains(float px, float py) {

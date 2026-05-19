@@ -16,7 +16,6 @@ public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B>
     public Color color;
     public final TextArea name, prompt;
     public Consumer<? super B> clickAction;
-    private static boolean showPrompts = getBoolean("ShowPrompts");
 
     protected boolean isUnderMouse;
 

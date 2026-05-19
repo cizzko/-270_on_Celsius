@@ -31,7 +31,7 @@ import java.io.UncheckedIOException;
 import java.util.Objects;
 
 @JsonSerialize(using = World.WorldSerializer.class)
-public class World {
+public final class World {
     public final int sizeX, sizeY;
     public final /* unsigned */ short[] tiles;
     public final /* unsigned */ byte[] hp;
@@ -47,11 +47,34 @@ public class World {
     @JsonIgnore
     public final Biomes[] biomes;
 
+    public final Meta meta;
+
+    public static final class Meta {
+        public int sizeX, sizeY;
+        public @Nullable String name, description;
+        public long lastPlayTime;  // секунды
+        public long totalPlayTime; // секунды
+
+        @JsonCreator
+        public Meta(int sizeX, int sizeY,
+                    @Nullable String name,
+                    @Nullable String description,
+                    long lastPlayTime, long totalPlayTime) {
+            this.sizeX = sizeX;
+            this.sizeY = sizeY;
+            this.name = name;
+            this.description = description;
+            this.lastPlayTime = lastPlayTime;
+            this.totalPlayTime = totalPlayTime;
+        }
+    }
+
     public static class Tmp {
 
         public int sizeX, sizeY;
         public /* unsigned */ short[] tiles;
         public /* unsigned */ byte[] hp;
+        public Meta meta;
 
         // Будущее к которому стремимся:
         // public final byte[] temperature;
@@ -78,24 +101,32 @@ public class World {
         this.data = tmp.data;
         this.entity = tmp.entity;
         this.biomes = new Biomes[sizeX];
+        this.meta = tmp.meta;
     }
 
-    public World(int sizeX, int sizeY) {
-        // assert sizeX > 0 && sizeY > 0;
-        this.sizeX = sizeX;
-        this.sizeY = sizeY;
+    public World(Meta meta) {
+        this.sizeX = meta.sizeX;
+        this.sizeY = meta.sizeY;
         this.tiles = new short[sizeX * sizeY];
         this.hp = new byte[sizeX * sizeY];
         this.biomes = new Biomes[sizeX];
         this.data = new Int2ObjectOpenHashMap<>();
         this.entity = new  Int2ObjectOpenHashMap<>();
+        this.meta = meta;
     }
 
     public void update() {
         for (BlockEntity entity : entity.values()) {
-            entity.update();
+            try {
+                entity.update();
+            } catch (Exception e) {
+                Application.log.error("Failed to update block entity at ({}. {})",
+                        entity.blockX(), entity.blockY(), e);
+            }
         }
     }
+
+    public Meta meta() { return meta; }
 
     public void setBiomes(int x, Biomes biomes) {
         this.biomes[x] = biomes;
@@ -222,9 +253,9 @@ public class World {
 
     // region Приватные методы
 
-    private int pos2index(int x, int y) { return x + sizeX * y; }
-    private int index2x(int index)      { return index % sizeX; }
-    private int index2y(int index)      { return index / sizeX; }
+    public int pos2index(int x, int y) { return x + sizeX * y; }
+    public int index2x(int index)      { return index % sizeX; }
+    public int index2y(int index)      { return index / sizeX; }
 
     private void setImpls(int x, int y, StaticObjectsConst object, boolean followingRules) {
         destroyBlock(x, y);
@@ -373,7 +404,7 @@ public class World {
 
     // endregion
 
-    public static class EntityDeserializer extends StdDeserializer<Int2ObjectOpenHashMap<BlockEntity>> {
+    public static final class EntityDeserializer extends StdDeserializer<Int2ObjectOpenHashMap<BlockEntity>> {
         public EntityDeserializer() {
             super((Class<?>) null);
         }
@@ -414,7 +445,7 @@ public class World {
 
     }
 
-    public static class DataDeserializer extends StdDeserializer<Int2ObjectOpenHashMap<TileData>> {
+    public static final class DataDeserializer extends StdDeserializer<Int2ObjectOpenHashMap<TileData>> {
 
         public DataDeserializer() {
             super(Int2ObjectOpenHashMap.class);
@@ -454,7 +485,7 @@ public class World {
         }
     }
 
-    public static class WorldSerializer extends StdSerializer<World> {
+    public static final class WorldSerializer extends StdSerializer<World> {
 
         public WorldSerializer() {
             super(World.class);

@@ -9,7 +9,7 @@ import core.g2d.Atlas;
 import core.graphic.Camera2;
 import core.input.InputHandler;
 
-import static core.util.DebugTools.rethrow;
+import static core.util.Debug.rethrow;
 
 public final class Global {
     private Global() {}

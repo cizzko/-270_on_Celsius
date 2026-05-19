@@ -1,13 +1,14 @@
 package core.g2d;
 
 import core.graphic.BitMap;
+import core.util.Disposable;
 
 import java.awt.image.BufferedImage;
 
 import static core.graphic.TextureLoader.decodeImage;
 import static org.lwjgl.opengl.GL46.*;
 
-public final class Texture implements Drawable {
+public final class Texture implements Drawable, Disposable {
     public static final int MAX_ID = 1 << 16; // TODO сделать безнаковым
 
     final short glHandle;
@@ -25,9 +26,12 @@ public final class Texture implements Drawable {
         this.v2 = v2;
     }
 
-    static Texture load(BufferedImage bufferedImage, int glTarget, float u, float v, float u2, float v2) {
+    static Texture load(BufferedImage bufferedImage,
+                        int glTarget,
+                        int glClamp,
+                        float u, float v, float u2, float v2) {
         var image = decodeImage(bufferedImage);
-        return load(image, glTarget, u, v, u2, v2);
+        return load(image, glTarget, glClamp, u, v, u2, v2);
     }
 
     static short genId() {
@@ -38,14 +42,16 @@ public final class Texture implements Drawable {
         return (short)i;
     }
 
-    static Texture load(BitMap img, int glTarget, float u, float v, float u2, float v2) {
+    static Texture load(BitMap img,
+                        int glTarget, int glClamp,
+                        float u, float v, float u2, float v2) {
         short glHandle = genId();
 
         glBindTexture(glTarget, glHandle);
         glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(glTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, glClamp);
+        glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, glClamp);
 
         int w = img.width();
         int h = img.height();
@@ -53,7 +59,9 @@ public final class Texture implements Drawable {
             glTexImage2D(glTarget, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data());
         }
         glBindTexture(glTarget, 0);
-        return new Texture(glHandle, w, h, u, v, u2, v2);
+        var tex = new Texture(glHandle, w, h, u, v, u2, v2);
+        ResourceCache.texturesById.put(glHandle, tex);
+        return tex;
     }
 
     @Override
@@ -92,5 +100,11 @@ public final class Texture implements Drawable {
     @Override
     public String toString() {
         return "Texture{" + "id=" + glHandle + ", w=" + width + ", h=" + height + '}';
+    }
+
+    @Override
+    public void close() {
+        ResourceCache.texturesById.remove(glHandle);
+        glDeleteTextures(glHandle);
     }
 }

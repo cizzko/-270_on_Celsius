@@ -96,17 +96,15 @@ public final class UIScene implements InputListener {
     public void draw() {
         StackfulRender.z(Render.LAYER_GUI);
         StackfulRender.matrix(view.projection);
-        if (debugBorders) {
-            StackfulRender.pushState(() -> {
-                StackfulRender.z(Render.LAYER_DEBUG);
-                TextureDrawing.drawText(mouse.x, mouse.y - 32, "Pos: " + mouse);
-            });
-        }
 
         rootElement.draw();
 
         if (debugBorders) {
-            debugBorders();
+            StackfulRender.pushState(() -> {
+                StackfulRender.z(Render.LAYER_DEBUG);
+                TextureDrawing.drawText(mouse.x, mouse.y - 32, "Pos: " + mouse);
+                debugBorders();
+            });
         }
     }
 
@@ -220,6 +218,9 @@ public final class UIScene implements InputListener {
 
     @Override
     public void onResize(int width, int height) {
+        // if (Global.postEffect.use) {
+        //     Global.postEffect.resize(width, height);
+        // }
         view.setToOrthographic(width, height);
         rootElement.onResize(width, height);
     }

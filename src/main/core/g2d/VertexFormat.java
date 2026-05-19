@@ -1,39 +1,49 @@
 package core.g2d;
 
-public final class VertexFormat {
-    private final VertexAttribute[] vertexAttributes;
-    private final int[] offsets;
-    private final int vertexByteSize;
+import java.util.Arrays;
 
-    public VertexFormat(VertexAttribute... vertexAttributes) {
-        this.vertexAttributes = vertexAttributes;
-        this.offsets = new int[vertexAttributes.length];
+public final class VertexFormat {
+    private final VertexAttribute[] attributes;
+    private final int[] offsets;
+    private final int byteSize;
+
+    public VertexFormat(VertexAttribute... attributes) {
+        this.attributes = attributes;
+        this.offsets = new int[attributes.length];
 
         int vsize = 0;
-        for (int i = 0; i < vertexAttributes.length; i++) {
-            VertexAttribute attr = vertexAttributes[i];
+        for (int i = 0; i < attributes.length; i++) {
+            VertexAttribute attr = attributes[i];
             offsets[i] = vsize;
             vsize += attr.byteSize();
         }
-        this.vertexByteSize = vsize;
+        this.byteSize = vsize;
     }
 
     public static VertexFormat of(VertexAttribute... vertexAttributes) {
         return new VertexFormat(vertexAttributes);
     }
 
-    public int vertexByteSize() { return vertexByteSize; }
-    public int vertexSizeIn(int unit) { return vertexByteSize / unit; }
+    @Override
+    public String toString() {
+        return "VertexFormat{" +
+               "attributes=" + Arrays.toString(attributes) +
+               ", byteSize=" + byteSize +
+               '}';
+    }
+
+    public int vertexByteSize() { return byteSize; }
+    public int vertexSizeIn(int unit) { return byteSize / unit; }
 
     public void enableAttributes() {
-        for (int i = 0; i < vertexAttributes.length; i++) {
-            vertexAttributes[i].enable(i, vertexByteSize, offsets[i]);
+        for (int i = 0; i < attributes.length; i++) {
+            attributes[i].enable(i, byteSize, offsets[i]);
         }
     }
 
     public void disableAttributes() {
-        for (int i = 0; i < vertexAttributes.length; i++) {
-            vertexAttributes[i].disable(i);
+        for (int i = 0; i < attributes.length; i++) {
+            attributes[i].disable(i);
         }
     }
 }

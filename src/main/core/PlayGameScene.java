@@ -9,7 +9,7 @@ import core.World.Textures.TextureDrawing;
 import core.World.Weather.Sun;
 import core.g2d.StackfulRender;
 import core.util.Commandline;
-import core.util.DebugTools;
+import core.util.Debug;
 
 import static core.EventHandling.EventHandler.updateHotkeys;
 import static core.Global.*;
@@ -38,7 +38,9 @@ public final class PlayGameScene extends GameScene {
 
     @Override
     public void onInit() {
-        DebugTools.initPlaying();
+        Debug.initPlaying();
+
+        // Global.postEffect.use(true);
 
         updateCamera();
         smoothedCamera = Config.getBoolean("SmoothedCamera");
@@ -81,12 +83,13 @@ public final class PlayGameScene extends GameScene {
         StackfulRender.z(LAYER_ENTITIES);
         TextureDrawing.drawEntities();
 
-        DebugTools.drawDebugBorders();
+        Debug.drawDebugBorders();
 
         uiScene.draw();
         WorkbenchLogic.draw();
         Inventory.draw();
         drawCurrentHP();
+        Debug.drawTextValues();
     }
 
     @Override

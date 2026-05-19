@@ -30,7 +30,8 @@ public final class AssetsManager {
 
     // TODO а точно нужна карта? Может хочется сделать полиморфные загрузчики
     //  Вообще, тут возможно состояние гонки, т.к. к этим объектам идёт доступ из других потоков в load()
-    final Map<Class<?>, AssetHandler<?, ?, ?>> handlers = new IdentityHashMap<>();
+    final Map<Class<?>, AssetHandler<?, ?, ?>> handlersByType = new IdentityHashMap<>();
+    final Map<Class<?>, AssetHandler<?, ?, ?>> handlersByClass = new IdentityHashMap<>();
     final Map<Object, Asset<?>> refsByAssets = new HashMap<>();
     final Map<Class<?>, Map<String, ? super Asset<?>>> assets = new IdentityHashMap<>();
     final Path workingDir, assetsDir, dataDir;
@@ -71,6 +72,10 @@ public final class AssetsManager {
         register(new TextureHandler());
         register(new AtlasHandler());
 
+        jscriptInit(exploded);
+    }
+
+    private void jscriptInit(boolean exploded) throws IOException {
         JavaInterpreter.init(exploded);
         try (var dirstr = Files.newDirectoryStream(assetsDir.resolve("scripts"), "*.java")) {
             StringBuilder sb = new StringBuilder();
@@ -81,10 +86,7 @@ public final class AssetsManager {
                         sb.append(line);
                         String str = sb.toString();
                         var status = JavaInterpreter.jshell.sourceCodeAnalysis().analyzeCompletion(str);
-                        // var complete = status.source();
-                        // var remaining = status.remaining();
                         var comp = status.completeness();
-                        // System.out.println((complete == null || complete.isBlank() ? "" : "complete = " + complete) + (remaining.isBlank() ? "" : " remaining = " + remaining) + " comp = " + comp);
 
                         if (comp.isComplete()) {
                             JavaInterpreter.execute0(str, null);
@@ -100,7 +102,8 @@ public final class AssetsManager {
 
     public void register(AssetHandler<?, ?, ?> loader) {
         loader.setDir(assetsDir.resolve(loader.dirName));
-        handlers.put(loader.type(), loader);
+        handlersByType.put(loader.type(), loader);
+        handlersByClass.put(loader.getClass(), loader);
     }
 
     /// Текущая директория откуда запустили игру
@@ -194,7 +197,8 @@ public final class AssetsManager {
         });
         assets.clear();
         refsByAssets.clear();
-        handlers.clear();
+        handlersByClass.clear();
+        handlersByType.clear();
 
         try {
             executor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
@@ -256,7 +260,7 @@ public final class AssetsManager {
             }
         }
 
-        AssetHandler<T, P, Object> loader = getHandler(type);
+        AssetHandler<T, P, Object> loader = getHandlerByType(type);
         var params = loader.createParams();
         if (paramsModifier != null) {
             paramsModifier.accept(params);
@@ -293,7 +297,7 @@ public final class AssetsManager {
             }
         }
 
-        AssetHandler<T, P, Object> loader = getHandler(type);
+        AssetHandler<T, P, Object> loader = getHandlerByType(type);
         var params = loader.createParams();
         if (paramsModifier != null) {
             paramsModifier.accept(params);
@@ -309,6 +313,44 @@ public final class AssetsManager {
         }
     }
 
+    <T, P, S> Future<T> loadInternalByHandler(BaseAssetResolver parent,
+                                  Class<? extends AssetHandler<T, P, S>> handlerType, String name, LoadType loadType,
+                                  Consumer<? super P> paramsModifier) {
+
+        var loader = getHandlerByClass(handlerType);
+
+        var loadingMap = getLoadingAssets(loader.type);
+        if (loadingMap != null) {
+            var future = loadingMap.get(name);
+            if (future != null) {
+                return future;
+            }
+        }
+
+        var loadedAssets = getAssets(loader.type);
+        if (loadedAssets != null) {
+            var loadedInst = loadedAssets.get(name);
+            if (loadedInst != null) {
+                incrementRefCount(parent, loadedInst);
+                return CompletableFuture.completedFuture(loadedInst.value);
+            }
+        }
+
+        var params = loader.createParams();
+        if (paramsModifier != null) {
+            paramsModifier.accept(params);
+        }
+
+        var state = loader.createState();
+        if (loadType == LoadType.SYNC && Global.app.isMainThread()) {
+            // Это гениально синхронно грузить ресурсы по просьбе из другого потока
+            // Хотя бы по той причине, что главный поток будет больше времени заниматься не своим делом
+            return loadSync((SyncAssetResolver<?, ?, ?>) parent, name, loader, params, state);
+        } else {
+            return loadAsync((AsyncAssetResolver<?, ?, ?>) parent, loader.type, name, loader, params, state, loadingMap);
+        }
+    }
+
     private final ReferenceOpenHashSet<Object> set = new ReferenceOpenHashSet<>();
 
     <T> void releaseInternal(T asset) {
@@ -321,7 +363,7 @@ public final class AssetsManager {
         //  Подумаю, нужно ли переусложнять. Указывать везде тип, который обрабатывает AssetHandler немного неудобно
         @SuppressWarnings("unchecked")
         var type = (Class<T>) asset.getClass();
-        AssetHandler<T, ?, ?> handler = getHandler(type);
+        AssetHandler<T, ?, ?> handler = getHandlerByType(type);
 
         try {
             handler.release(releaser, asset);
@@ -340,9 +382,9 @@ public final class AssetsManager {
         }
     }
 
-    private <T, P> AsyncAssetResolver<T, P, Object> loadAsync(AsyncAssetResolver<?, ?, ?> parent,
+    private <T, P, S> AsyncAssetResolver<T, P, S> loadAsync(AsyncAssetResolver<?, ?, ?> parent,
                                                               Class<T> type, String name,
-                                                              AssetHandler<T, P, Object> loader, P params, Object state,
+                                                              AssetHandler<T, P, S> loader, P params, S state,
                                                               Map<String, AsyncAssetResolver<T, ?, ?>> loadingMap) {
         var res = new AsyncAssetResolver<>(parent, loader, name, params, state);
         if (loadingMap == null) {
@@ -362,10 +404,10 @@ public final class AssetsManager {
         return res;
     }
 
-    private <T, P> Future<T> loadSync(SyncAssetResolver<?, ?, ?> parent, String name,
-                                      AssetHandler<T, P, Object> loader,
-                                      P params, Object state) {
-        var res = new SyncAssetResolver<T, P, Object>(loader, name, params, state);
+    private <T, P, S> Future<T> loadSync(SyncAssetResolver<?, ?, ?> parent, String name,
+                                      AssetHandler<T, P, S> loader,
+                                      P params, S state) {
+        var res = new SyncAssetResolver<T, P, S>(loader, name, params, state);
         incrementRefCount(parent, res.desc);
         return res.load();
     }
@@ -386,8 +428,17 @@ public final class AssetsManager {
     }
 
     @SuppressWarnings("unchecked")
-    <T, P, S> AssetHandler<T, P, S> getHandler(Class<T> type) {
-        var loader = (AssetHandler<T, P, S>) handlers.get(type);
+    <T, P, S> AssetHandler<T, P, S> getHandlerByClass(Class<? extends AssetHandler<T, P, S>> type) {
+        var loader = (AssetHandler<T, P, S>) handlersByClass.get(type);
+        if (loader == null) {
+            throw new IllegalStateException("Unknown asset type: " + type);
+        }
+        return loader;
+    }
+
+    @SuppressWarnings("unchecked")
+    <T, P, S> AssetHandler<T, P, S> getHandlerByType(Class<T> type) {
+        var loader = (AssetHandler<T, P, S>) handlersByType.get(type);
         if (loader == null) {
             throw new IllegalStateException("Unknown asset type: " + type);
         }

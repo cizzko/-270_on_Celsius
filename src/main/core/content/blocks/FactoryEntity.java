@@ -69,12 +69,14 @@ public class FactoryEntity extends BaseBlockEntity<Factory> {
     private void produceItem() {
         for (int i = 0; i < block.output.length; i++) {
             for (int j = 0; j < outputStored.length; j++) {
-                if (outputStored[j] == null || outputStored[j].isSame(block.output[i])) {
+                if (outputStored[j] != null && !outputStored[j].isSame(block.output[i])) {
+                    continue;
+                }
+                if (ItemGrid.insertCopy(outputStored, j, block.output, i) >= 0) {
                     fuel.removeFirst();
                     input.removeFirst();
-                    ItemGrid.insertCopy(outputStored, j, block.output, i);
-                    // Sound.playSound(block.sound, Sound.types.EFFECT, false);
                 }
+                // Sound.playSound(block.sound, Sound.types.EFFECT, false);
             }
         }
     }

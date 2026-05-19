@@ -60,29 +60,6 @@ public class Config {
         map.putAll(magic);
     }
 
-    private static final HashMap<Path, Map<String, String>> propsCache = new HashMap<>();
-
-    public static Map<String, String> getProperties(Path path) {
-        var props = Config.propsCache.get(path);
-        if (props == null) {
-            var tmp = new Properties();
-            try (var in = Files.newInputStream(path)) {
-                tmp.load(in);
-            } catch (IOException e) {
-                log.error("Error when loading properties '{}'", path, e);
-            }
-            @SuppressWarnings("unchecked")
-            var magic = (Map<String, String>) (Map<?, ?>) tmp;
-            props = new HashMap<>(magic);
-            Config.propsCache.put(path, props);
-        }
-        return props;
-    }
-
-    public static Map<String, String> getProperties(String path) {
-        return getProperties(assets.assetsDir().resolve(path));
-    }
-
     public static String getString(String key, String def) {
         String v = config.get(key);
 

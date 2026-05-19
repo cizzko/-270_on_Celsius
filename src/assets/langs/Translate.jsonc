@@ -1,8 +1,8 @@
 {
   "en": {
     "Language": "Language",
-    "Play": "Play",
-    "LoadSave": "Load save",
+    "NewGame": "Play",
+    "LoadSave": "Load",
     "Settings": "Settings",
     "Menu": "Main menu",
     "Exit": "Exit",
@@ -48,8 +48,8 @@
 
   "ru": {
     "Language": "Язык",
-    "Play": "Начать",
-    "LoadSave": "Загрузить сохранение",
+    "NewGame": "Начать",
+    "LoadSave": "Загрузить",
     "Settings": "Настройки",
     "Exit": "Выход",
     "Menu": "Главное меню",
@@ -95,7 +95,7 @@
 
   "uk": {
     "Language": "Язык",
-    "Play": "Начати",
+    "NewGame": "Начати",
     "Settings": "Налаштування",
     "Exit": "Выхід",
     "Continue": "Продовжити",

@@ -4,13 +4,9 @@ import com.sun.management.OperatingSystemMXBean;
 import core.EventHandling.Config;
 import core.assets.AssetsManager;
 import core.content.EntityPool;
-import core.g2d.Atlas;
-import core.g2d.StackfulRender;
-import core.g2d.Font;
-import core.g2d.Shader;
-import core.g2d.Render;
+import core.g2d.*;
 import core.input.InputHandler;
-import core.util.DebugTools;
+import core.util.Debug;
 import core.util.FutureUtil;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.logging.log4j.*;
@@ -26,7 +22,6 @@ import java.awt.image.BufferedImage;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 
-import static core.EventHandling.EventHandler.debugLevel;
 import static core.Global.*;
 import static core.graphic.TextureLoader.decodeImage;
 import static org.lwjgl.glfw.GLFW.*;
@@ -52,10 +47,9 @@ public final class Window extends Application {
     protected void init() throws Throwable {
         // Хмм, надо бы где-то тут создавать сцену
         assets.load(Font.class, "arial.ttf");
-        assets.load(Atlas.class, "sprites");
 
         Config.checkConfig();
-        if (debugLevel >= 4) {
+        if (Debug.debugLevel >= 4) {
             Configuration.DEBUG.set(true);
             Configuration.DEBUG_STREAM.set(IoBuilder.forLogger(lwjglLogger)
                     .setLevel(Level.DEBUG)
@@ -145,7 +139,7 @@ public final class Window extends Application {
 
         GL.createCapabilities();
 
-         if (debugLevel >= 5) {
+         if (Debug.debugLevel >= 5) {
              glEnable(GL_DEBUG_OUTPUT);
              keep(GLUtil.setupDebugMessageCallback());
              keep(() -> glDisable(GL_DEBUG_OUTPUT));
@@ -169,19 +163,25 @@ public final class Window extends Application {
             }
         }));
 
+        assets.load(Atlas.class, "sprites", AssetsManager.LoadType.SYNC);
+        Shaders.repeat = FutureUtil.join(Global.assets.load(Shader.class, "repeat", AssetsManager.LoadType.SYNC));
         StackfulRender.defaultShader = FutureUtil.join(Global.assets.load(Shader.class, "default", AssetsManager.LoadType.SYNC));
         Render.init();
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
 
         glfwShowWindow(glfwWindow);
+        // int[] w = new int[1], h = new int[1];
+        // glfwGetFramebufferSize(glfwWindow, w, h);
+
+        // postEffect = new PostEffect(w[0], h[0], );
 
         lang = new LangTranslation();
         lang.load(); // TODO придумать как загружать и перезагружать
 
         entityPool = new EntityPool(Short.MAX_VALUE);
 
-        DebugTools.initDebugValuesMenu();
+        Debug.initDebugValuesMenu();
 
         setGameScene(new MenuScene());
     }
@@ -213,8 +213,8 @@ public final class Window extends Application {
         var memMxbean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
         double gib = 1024d * 1024d * 1024d;
 
-        log.info("Heap max capacity: {} GiB", DebugTools.FLOATS.format(Runtime.getRuntime().maxMemory() / gib));
-        log.info("Total memory size: {} GiB", DebugTools.FLOATS.format(memMxbean.getTotalMemorySize() / gib));
+        log.info("Heap max capacity: {} GiB", Debug.FLOATS.format(Runtime.getRuntime().maxMemory() / gib));
+        log.info("Total memory size: {} GiB", Debug.FLOATS.format(memMxbean.getTotalMemorySize() / gib));
     }
 
     @Override
@@ -236,11 +236,11 @@ public final class Window extends Application {
         var rq = Render.queue();
         rq.beginFrame();
         gameScene.loop();
-        StackfulRender.pushRList();
+        StackfulRender.pushRenderList();
         rq.endFrame();
 
         glfwSwapBuffers(glfwWindow);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
 
         nextFrame();
     }

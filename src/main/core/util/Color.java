@@ -91,6 +91,8 @@ public final class Color {
     public Colorf copy() { return new Colorf(this); }
     public Color copyi() { return new Color(this); }
 
+    public boolean equals(Color o) { return rgba8888 == o.rgba8888; }
+
     @Override
     public boolean equals(Object o) {
         return this == o || o instanceof Color that && rgba8888 == that.rgba8888;

@@ -12,7 +12,7 @@ import core.World.Textures.TextureDrawing;
 import core.World.World;
 import core.World.WorldUtils;
 import core.math.Point2i;
-import core.util.DebugTools;
+import core.util.Debug;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -38,10 +38,12 @@ public class WorldGenerator {
 
     public static void generateWorld(CreatePlanet.GenerationParameters params) {
         long startTime = System.currentTimeMillis();
-        int SizeX = params.size;
-        int SizeY = params.size;
-        World world = new World(SizeX, SizeY);
-        entityPool.worldIndex().bounds.set(0,0, SizeX*TextureDrawing.blockSize, SizeY*TextureDrawing.blockSize);
+        int sizeX = params.size;
+        int sizeY = params.size;
+        World world = new World(
+                new World.Meta(sizeX, sizeY, null, null,
+                        System.currentTimeMillis()/1000, 0));
+        entityPool.worldIndex().bounds.set(0,0, sizeX*TextureDrawing.blockSize, sizeY*TextureDrawing.blockSize);
         Global.world = world;
 
         boolean simple = params.simple;
@@ -83,7 +85,7 @@ public class WorldGenerator {
                 })
                 .thenRun(() -> {
                     log("generating done! " + (System.currentTimeMillis() - startTime) + "ms");
-                    DebugTools.saveWorldImage();
+                    Debug.saveWorldImage();
                     scheduler.post(() -> startGame(playGameScene), Time.ONE_SECOND);
                 })
                 .whenComplete((__, e) -> {

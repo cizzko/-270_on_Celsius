@@ -87,26 +87,19 @@ public class Inventory {
                         !Rectangle.contains(1488, 756, 500, 500, input.mousePos())) {
                 boolean canBuild = getDistanceToMouse() < 8 && world.checkPlaceRules(blockPos.x, blockPos.y, b.block);
                 addBlockPreview(blockPos.x, blockPos.y, (short) content.blocksRegistry.idByType(b.block), (byte) b.block.maxHp, canBuild);
-                drawBuildGrid(blockPos.x, blockPos.y);
             }
         }
     }
 
     public static void drawBuildGrid(int blockX, int blockY) {
-        if (!buildGrid) {
+        if (!buildGrid || player.hasDraggingItem()) {
             return;
         }
-
         var itemInHand = player.getItemInHand();
-        if (itemInHand != null && itemInHand.item() instanceof ItemBlock b) {
-
-            //todo ?????
-            StackfulRender.matrix(camera.projection);
-            if (!player.hasDraggingItem()) {
-                StackfulRender.draw(atlas.get("World/buildGrid"),
-                        rgba8888(230, 230, 230, 150),
-                        WorldGenerator.findX(blockX, blockY) - 243f, WorldGenerator.findY(blockX, blockY) - 244f);
-            }
+        if (itemInHand != null && itemInHand.item() instanceof ItemBlock) {
+            StackfulRender.draw(atlas.get("World/buildGrid"),
+                    rgba8888(230, 230, 230, 150),
+                    blockX*blockSize - 243f, blockY*blockSize - 244f);
         }
     }
 

@@ -1,19 +1,16 @@
 package core.content.creatures;
 
-import core.EventHandling.EventHandler;
 import core.Global;
 import core.Time;
-import core.World.PlayerChunk;
 import core.content.ItemGrid;
 import core.content.ItemStack;
 import core.World.WorldUtils;
 import core.content.entity.BaseCreatureEntity;
 import core.content.entity.HitboxComponent;
 import core.content.entity.InventoryComponent;
-import core.g2d.RenderList;
 import core.math.Point2i;
 import core.math.Vector2f;
-import core.util.DebugTools;
+import core.util.Debug;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 
@@ -68,12 +65,11 @@ public class PlayerEntity
     }
 
     public void updateInput() {
-        // todo тут надо проверять элемент UI на фокусировку, т.е. на порядок отображения (фокусирован = самый последний элемент)
-        if (EventHandler.isKeylogging() || isDead()) {
+        if (isDead()) {
             return;
         }
 
-        DebugTools.debugHotKeys();
+        Debug.debugHotKeys();
 
         if (input.justPressed(GLFW_KEY_Q))
             player.resetItemInHand();

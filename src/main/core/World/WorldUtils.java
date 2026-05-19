@@ -1,7 +1,9 @@
 package core.World;
 
 import core.Application;
+import core.EventHandling.Config;
 import core.Global;
+import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Player;
 import core.content.ItemStack;
 import core.World.Textures.TextureDrawing;
@@ -12,10 +14,14 @@ import core.content.entity.CreatureEntity;
 import core.content.strctures.Structure;
 import core.math.Point2i;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Stream;
 
 import static core.Global.*;
+import static core.Global.world;
 import static core.World.Textures.TextureDrawing.blockSize;
 import static core.World.WorldGenerator.WorldGenerator.copySize;
 
@@ -36,9 +42,8 @@ public class WorldUtils {
 
     /// @return абсолютное значение в блоках от игрока до мыши
     public static int getDistanceToMouse() {
-        return (int) Math.abs(
-                (player.x() / TextureDrawing.blockSize - Global.input.mouseBlockPos().x) +
-                (player.y() / TextureDrawing.blockSize - Global.input.mouseBlockPos().y));
+        Point2i blockPos = input.mouseBlockPos();
+        return Math.abs(player.blockX() - blockPos.x + player.blockY() - blockPos.y);
     }
 
     public static int getDistanceBetweenBlocks(Point2i mainPoint, Point2i secondPoint) {
@@ -75,11 +80,11 @@ public class WorldUtils {
     }
 
     private static <E extends CreatureEntity> E spawn0(CreatureType entity, int bx) {
-        float wx = bx * TextureDrawing.blockSize;
-        float wy = blockSize * (WorldGenerator.findTopmostSolidBlock(bx, 5) + 1);
+        float wx = bx * blockSize;
+        float wy = (WorldGenerator.findTopmostSolidBlock(bx, 5) + 1) * blockSize;
 
-        if (HitboxMap.checkIntersInside(wx, wy * blockSize, entity.texture.width(), entity.texture.height()) != null) {
-            Application.log.warn("Unable spawning at: ({}, {})", wx, wy * blockSize);
+        if (Physics.checkIntersection(wx, wy, entity.texture)) {
+            Application.log.warn("Unable spawning at: ({}, {})", wx, wy);
             return spawn0(entity, bx + 1);
         }
 
@@ -104,5 +109,17 @@ public class WorldUtils {
         for (Structure.Part p : tree.blocks) {
             world.set(x + p.offsetX, y + p.offsetY, p.block(), false);
         }
+    }
+
+    public static void saveWorld(World world, Path file) {
+        try {
+            Config.json.writeValue(file.toFile(), world);
+        } catch (IOException e) {
+            Application.log.error("Failed to world to file '{}'", file, e);
+        }
+    }
+
+    public static World loadWorld(Path file) {
+        return null;
     }
 }
