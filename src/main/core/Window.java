@@ -48,7 +48,6 @@ public final class Window extends Application {
         // Хмм, надо бы где-то тут создавать сцену
         assets.load(Font.class, "arial.ttf");
 
-        Config.checkConfig();
         if (Debug.debugLevel >= 4) {
             Configuration.DEBUG.set(true);
             Configuration.DEBUG_STREAM.set(IoBuilder.forLogger(lwjglLogger)
