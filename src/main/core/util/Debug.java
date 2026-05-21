@@ -42,7 +42,7 @@ import static org.lwjgl.glfw.GLFW.*;
 public class Debug {
     public static final DecimalFormat FLOATS = new DecimalFormat("#.#", new DecimalFormatSymbols(Locale.ROOT));
 
-    public static int debugLevel = Config.getInt("Debug");
+    public static final int debugLevel = Config.getInt("Debug");
 
     static final Rectangle rect = new Rectangle();
     static final int acid = 0x8ffe09ff;
@@ -403,6 +403,9 @@ public class Debug {
     }
 
     public static void drawTextValues() {
+        if (Debug.debugLevel <= 0) {
+            return;
+        }
         StackfulRender.z(Render.LAYER_DEBUG);
         debugDialog.update(42);
         debugDialog.draw();

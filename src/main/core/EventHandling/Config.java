@@ -24,41 +24,7 @@ public class Config {
 
     public static final ObjectMapper json =  new ObjectMapper();
 
-    private static boolean configCheckMark = false;
-
-    private static final HashMap<String, String> config = new HashMap<>();
-
-    // checks if the startup configuration contains any parameters
-    public static void checkConfig() {
-        if (!configCheckMark) {
-            copyFromResource(config, "configDefault.properties", "config.properties");
-            configCheckMark = true;
-        }
-    }
-
-    // TODO выглядит как неплохая функция для AssetsManager
-    static void copyFromResource(HashMap<String, String> map, String resourceFileName, String externalFileName) {
-
-        var externalFile = assets.workingDir().resolve(externalFileName);
-        if (Files.notExists(externalFile)) {
-            var resourceFile = assets.assetsDir().resolve(resourceFileName);
-            try {
-                Files.copy(resourceFile, externalFile);
-            } catch (IOException e) {
-                log.error("Failed to copy from '{}' to '{}'", resourceFileName, externalFileName, e);
-            }
-        }
-
-        var props = new Properties();
-        try (var in = Files.newInputStream(externalFile)) {
-            props.load(in);
-        } catch (IOException e) {
-            log.error("Failed to load '{}' properties", externalFile, e);
-        }
-        @SuppressWarnings("unchecked")
-        var magic = (Map<String, String>) (Map<?, ?>) props;
-        map.putAll(magic);
-    }
+    public static final HashMap<String, String> config = new HashMap<>();
 
     public static String getString(String key, String def) {
         String v = config.get(key);

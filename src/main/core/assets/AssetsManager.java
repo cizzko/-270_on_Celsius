@@ -1,10 +1,12 @@
 package core.assets;
 
+import core.EventHandling.Config;
 import core.Global;
 import core.g2d.AtlasHandler;
 import core.g2d.FontHandler;
 import core.g2d.ShaderHandler;
 import core.g2d.TextureHandler;
+import core.util.Debug;
 import core.util.JavaInterpreter;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.apache.logging.log4j.LogManager;
@@ -22,6 +24,8 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
+
+import static core.EventHandling.Config.config;
 
 public final class AssetsManager {
     static final Logger log = LogManager.getLogger("AssetsManager");
@@ -72,7 +76,33 @@ public final class AssetsManager {
         register(new TextureHandler());
         register(new AtlasHandler());
 
-        jscriptInit(exploded);
+        copyFromResource(config, "configDefault.properties", "config.properties");
+
+        if (Debug.debugLevel >= 3)
+            jscriptInit(exploded);
+    }
+
+    void copyFromResource(HashMap<String, String> map, String resourceFileName, String externalFileName) {
+
+        var externalFile = workingDir.resolve(externalFileName);
+        if (Files.notExists(externalFile)) {
+            var resourceFile = assetsDir.resolve(resourceFileName);
+            try {
+                Files.copy(resourceFile, externalFile);
+            } catch (IOException e) {
+                log.error("Failed to copy from '{}' to '{}'", resourceFileName, externalFileName, e);
+            }
+        }
+
+        var props = new Properties();
+        try (var in = Files.newInputStream(externalFile)) {
+            props.load(in);
+        } catch (IOException e) {
+            log.error("Failed to load '{}' properties", externalFile, e);
+        }
+        @SuppressWarnings("unchecked")
+        var magic = (Map<String, String>) (Map<?, ?>) props;
+        map.putAll(magic);
     }
 
     private void jscriptInit(boolean exploded) throws IOException {
