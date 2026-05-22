@@ -5,12 +5,10 @@ import core.Load;
 import core.Time;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.TextureDrawing;
-import core.World.WorldGenerator.Biomes;
 import core.g2d.StackfulRender;
 import core.g2d.Texture;
 import core.util.Color;
 
-import static core.EventHandling.Config.getBoolean;
 import static core.Global.player;
 import static core.Global.world;
 import static core.math.MathUtil.lerp;
@@ -20,12 +18,7 @@ public class Sun extends GameObject {
     private final Color sunColor = new Color();
     private final Color sunsetColor = new Color();
 
-    private static final float scaleX = 1.5f, scaleY = 1.5f;
-    private static int lastX, nextX;
-    private static Biomes lastBiome = null;
-    private long lastTime;
-
-    public float x = 520, y = 0;
+    public float x = 577, y = 0;
     public float currentTime = 0;
 
     @Load("World/Sky/skyBackground0.png")
@@ -36,11 +29,6 @@ public class Sun extends GameObject {
 
     @Load("World/Sun/sun.png")
     protected Texture sunTex;
-
-    protected String sunsetTexName() {
-        String sunsetType = getBoolean("InterpolateSunset") ? "" : "non";
-        return "World/Sun/" + sunsetType + "InterpolatedSunset.png";
-    }
 
     public static float globalTime = 0f;
     private static final float TIME_SPEED = 0.1f;
@@ -147,6 +135,6 @@ public class Sun extends GameObject {
         StackfulRender.draw(sunsetTex, sunsetColor, 0, 0);
         StackfulRender.pushRenderList();
         StackfulRender.flush();
-        StackfulRender.draw(sunTex, sunColor, 520, y);
+        StackfulRender.draw(sunTex, sunColor, x, y);
     }
 }
