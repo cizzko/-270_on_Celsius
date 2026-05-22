@@ -7,7 +7,7 @@ public final class Constants {
     public static final String version = "beta " + versionStamp + " (non stable)";
     public static final String appName = "Celsius";
 
-    public static final String discordLink = "https://discord.gg/gUS9X6exAQ";
+    public static final String link = "https://discord.gg/gUS9X6exAQ";
 
     public static final class World {
         public static final int availableProcessors = Runtime.getRuntime().availableProcessors();

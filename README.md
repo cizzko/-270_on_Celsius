@@ -33,3 +33,5 @@ After building, the project structure must look like this:
 * `src/`
 * `celsius.exe`
 * `config.properties`
+
+### Join our Discord community: https://discord.gg/GBUP7QdA

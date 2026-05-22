@@ -1,13 +1,11 @@
 package core.UI.menu;
 
-import core.Application;
 import core.GameState;
 import core.Global;
 import core.UI.Dialog;
 import core.UI.Styles;
 import core.UIMenus;
 
-import static core.Constants.discordLink;
 import static core.Global.*;
 
 public class MainMenu extends Dialog {
@@ -15,9 +13,6 @@ public class MainMenu extends Dialog {
         setMaximized(true);
 
         var panel = addPanel(Styles.SIMPLE_PANEL, 0, 965, input.getWidth(), 115);
-        panel.addImageButton(this::discordBtn)
-                .setPosition(1830, 990)
-                .setImage(atlas.get("UI/discordIcon"));
 
         panel.addButton(Styles.TEXT_BUTTON, this::playButton)
                 .set(40, 990, 240, 65)
@@ -39,10 +34,6 @@ public class MainMenu extends Dialog {
     private void loadSave() {
         hide();
         UIMenus.loadSave().show();
-    }
-
-    private void discordBtn() {
-        Application.open(discordLink);
     }
 
     private void exitBtn() {
