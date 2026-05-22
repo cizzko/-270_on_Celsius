@@ -304,8 +304,8 @@ public final class AtlasGenerator {
                 wr.writeObjectFieldStart("regions");
                 for (Region region : regions) {
                     wr.writeObjectFieldStart(region.name);
-                    wr.writeNumberField("x", region.rx);
-                    wr.writeNumberField("y", region.ry);
+                    wr.writeNumberField("x", region.rx + COPY_BORDER);
+                    wr.writeNumberField("y", region.ry + COPY_BORDER);
                     wr.writeNumberField("width", region.ow());
                     wr.writeNumberField("height", region.oh());
                     wr.writeEndObject();
