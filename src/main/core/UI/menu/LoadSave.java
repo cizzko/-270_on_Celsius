@@ -9,7 +9,6 @@ import core.World.WorldGenerator.WorldGenerator;
 
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.ArrayList;
 
 import static core.Global.assets;
 import static core.Global.atlas;
@@ -95,7 +94,8 @@ public final class LoadSave extends Dialog {
                 pic = "planetMini";
             }
             planet.setImage(atlas.get("World/WorldGenerator/" + pic));
-            parameters.size = size;
+            parameters.sizeX = size;
+            parameters.sizeY = size;
         }).set(1460, 340, 420, 20);
         //todo и не забыть сделать скроллабле список-панель
     }

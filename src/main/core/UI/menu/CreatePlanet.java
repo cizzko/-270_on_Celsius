@@ -5,6 +5,9 @@ import core.Global;
 import core.UI.*;
 import core.UIMenus;
 import core.World.WorldGenerator.WorldGenerator;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 import static core.Global.atlas;
 
@@ -61,7 +64,8 @@ public class CreatePlanet extends Dialog {
                 pic = "planetMini";
             }
             planet.setImage(atlas.get("World/WorldGenerator/" + pic));
-            parameters.size = size;
+            parameters.sizeX = size;
+            parameters.sizeY = size;
         }).set(1460, 340, 420, 20);
 
         basicParameters = background.add(new Dialog() {{
@@ -124,6 +128,9 @@ public class CreatePlanet extends Dialog {
         public boolean randomSpawn;
         public boolean creatures;
         public boolean simple;
-        public int size = Constants.World.MIN_WORLD_SIZE;
+        public int sizeX = Constants.World.MIN_WORLD_SIZE;
+        public int sizeY = Constants.World.MIN_WORLD_SIZE;
+        public long seed = ThreadLocalRandom.current().nextLong();
+        public @Nullable String name, description;
     }
 }
