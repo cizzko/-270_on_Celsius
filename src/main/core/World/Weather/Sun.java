@@ -18,7 +18,7 @@ public class Sun extends GameObject {
     private final Color sunColor = new Color();
     private final Color sunsetColor = new Color();
 
-    public float x = 577, y = 0;
+    public float x = 578, y = 0;
     public float currentTime = 0;
 
     @Load("World/Sky/skyBackground0.png")

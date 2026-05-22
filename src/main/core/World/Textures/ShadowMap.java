@@ -71,19 +71,6 @@ public class ShadowMap {
             int chunkSize = (totalColumns / cores) + 1;
 
             world.genPool.submit(() -> IntStream.range(0, cores).parallel().forEach(p -> {
-                int startChunkX = Math.max(2, p * chunkSize);
-                int endChunkX = Math.min(world.sizeX - 2, startChunkX + chunkSize);
-                int dirtyBrightBlack = Styles.DIRTY_BRIGHT_BLACK.rgba8888();
-                for (int y = 2; y < world.sizeY; y++) {
-                    for (int x = startChunkX; x < endChunkX; x++) {
-                        if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
-                            setShadow0(x, y, dirtyBrightBlack);
-                        }
-                    }
-                }
-            })).join();
-
-            world.genPool.submit(() -> IntStream.range(0, cores).parallel().forEach(p -> {
                 int shadowWhite = Color.rgba8888(165, 165, 165, 255);
                 int startChunkX = Math.max(1, p * chunkSize);
                 int endChunkX = Math.min(world.sizeX - 1, startChunkX + chunkSize);
@@ -106,6 +93,19 @@ public class ShadowMap {
                     for (int y = 1; y < world.sizeY; y++) {
                         if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
                             setShadow0(x, y, shadowDirtWhite);
+                        }
+                    }
+                }
+            })).join();
+
+            world.genPool.submit(() -> IntStream.range(0, cores).parallel().forEach(p -> {
+                int startChunkX = Math.max(2, p * chunkSize);
+                int endChunkX = Math.min(world.sizeX - 2, startChunkX + chunkSize);
+                int dirtyBrightBlack = Styles.DIRTY_BRIGHT_BLACK.rgba8888();
+                for (int y = 2; y < world.sizeY; y++) {
+                    for (int x = startChunkX; x < endChunkX; x++) {
+                        if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
+                            setShadow0(x, y, dirtyBrightBlack);
                         }
                     }
                 }
