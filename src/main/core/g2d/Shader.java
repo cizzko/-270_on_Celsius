@@ -17,8 +17,6 @@ public final class Shader implements Disposable {
     final VertexFormat vertexFormat;
     final Map<String, Uniform> uniforms;
 
-    private final float[] mat4adapt = new float[16];
-
     Shader(byte id, String shaderName, VertexFormat vertexFormat, Map<String, Uniform> uniforms) {
         this.id = id;
         this.shaderName = shaderName;
@@ -42,8 +40,9 @@ public final class Shader implements Disposable {
 
     private static byte genId() {
         int id = glCreateProgram();
-        if (id >= MAX_ID)
+        if (id >= MAX_ID) {
             throw new IllegalStateException("Max shader id exceeded");
+        }
         return (byte)id;
     }
 
@@ -122,9 +121,11 @@ public final class Shader implements Disposable {
         glUniform1i(uniformLocation(name), val);
     }
 
-    public void setUniform(String name, float x, float y) {
+    public void setUniformVec2f(String name, float x, float y) {
         glUniform2f(uniformLocation(name), x, y);
     }
+
+    private static final float[] mat4adapt = new float[16];
 
     public void setUniformTransforming(String name, float[] val) {
         float[] mat4 = mat4adapt;
@@ -134,6 +135,24 @@ public final class Shader implements Disposable {
 
     public void setUniformTransforming(String name, Mat3 val) {
         setUniformTransforming(name, val.val);
+    }
+
+    public void setUniformTransforming(String name,
+                                       float m00, float m01, float m02,
+                                       float m10, float m11, float m12,
+                                       float m20, float m21, float m22) {
+        float[] res = mat4adapt;
+        res[0]  = m00;
+        res[4]  = m01;
+        res[12] = m02;
+
+        res[1]  = m10;
+        res[5]  = m11;
+        res[10] = m22;
+
+        res[13] = m12;
+        res[15] = 1;
+        glUniformMatrix4fv(uniformLocation(name), false, res);
     }
 
     private static void toMat4(float[] val, float[] res) {
@@ -153,7 +172,7 @@ public final class Shader implements Disposable {
     private int uniformLocation(String name) {
         Uniform uniform = uniforms.get(name);
         if (uniform == null) {
-            Render.queue().uniformBuffer().debug();
+            //Render.queue().uniformBuffer().debug();
         }
         Objects.requireNonNull(uniform, () -> "Invalid uniform name: '" + name + "' in " + toString());
         return uniform.position;
@@ -162,11 +181,11 @@ public final class Shader implements Disposable {
     @Override
     public String toString() {
         return "Shader{" +
-               "name='" + shaderName +
-               "', id=" + id +
-               ", vertexFormat=" + vertexFormat +
-               ", uniforms=" + uniforms +
-               '}';
+                "name='" + shaderName +
+                "', id=" + id +
+                ", vertexFormat=" + vertexFormat +
+                ", uniforms=" + uniforms +
+                '}';
     }
 
     @Override
@@ -191,9 +210,9 @@ public final class Shader implements Disposable {
         @Override
         public String toString() {
             return "Uniform{" +
-                   "type=" + type +
-                   ", position=" + position +
-                   '}';
+                    "type=" + type +
+                    ", position=" + position +
+                    '}';
         }
 
         public enum Type {

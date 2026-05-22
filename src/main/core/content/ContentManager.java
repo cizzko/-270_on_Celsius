@@ -14,15 +14,18 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
 
 public final class ContentManager {
     private static final Logger log = LogManager.getLogger();
 
-    public final Registry<Item> itemsRegistry = new Registry<>();
-    public final Registry<StaticObjectsConst> blocksRegistry = new Registry<>();
-    public final Registry<CreatureType> creaturesRegistry = new Registry<>();
-    public final Registry<Structure> structuresRegistry = new Registry<>();
+    public Registry<Item> itemsRegistry;
+    public Registry<StaticObjectsConst> blocksRegistry;
+    public Registry<CreatureType> creaturesRegistry;
+    public Registry<Structure> structuresRegistry;
 
     private final ArrayList<Item> craftableByPlayer = new ArrayList<>();
     private final Int2ObjectOpenHashMap<ArrayList<Item>> craftableByWorkbench = new Int2ObjectOpenHashMap<>();
@@ -74,8 +77,8 @@ public final class ContentManager {
 
         generateBlockItems(contentMap);
         resolveAll(contentMap);
-        loadCrafts(contentMap);
         generateIds(contentMap);
+        loadCrafts(contentMap);
     }
 
     private void loadCrafts(EnumMap<Type, HashMap<String, ContentType>> contentMap) {
@@ -130,48 +133,51 @@ public final class ContentManager {
     }
 
     private void generateIds(EnumMap<Type, HashMap<String, ContentType>> contentMap) {
-        indexContent(contentMap, itemsRegistry, Type.ITEM, Item.class);
 
-        for (ContentType value : contentMap.get(Type.BLOCK).values()) {
+        // TODO в идеале предмет воздуха тоже с id 0
+        var blockList = contentMap.get(Type.BLOCK).values();
+
+        // +1 из-за воздуха. см ниже
+        var blgen = new RegistryGenerator<>(StaticObjectsConst.class, blockList.size() + 1);
+        for (ContentType value : blockList) {
             if (!(value instanceof StaticObjectsConst block)) {
                 throw new IllegalStateException(); // ??
             }
-            blocksRegistry.put1(block);
+            blgen.putName(block);
         }
 
         {
-            var air = getConstById("air");
+            var air = blgen.name2Type.get("air");
             StaticObjectsConst.AIR = air;
-            blocksRegistry.put2(air);
+            blgen.putId(air);
         }
 
-        for (ContentType value : contentMap.get(Type.BLOCK).values()) {
+        for (ContentType value : blockList) {
             if (!(value instanceof StaticObjectsConst block)) {
                 throw new IllegalStateException(); // ??
             }
             if (block.id.equals("air")) {
                 continue;
             }
-            blocksRegistry.put2(block);
+            blgen.putId(block);
         }
 
-
-        indexContent(contentMap, creaturesRegistry, Type.CREATURE, CreatureType.class);
-        indexContent(contentMap, structuresRegistry, Type.STRUCTURE, Structure.class);
-
-        itemsRegistry.trim();
-        blocksRegistry.trim();
-        creaturesRegistry.trim();
+        itemsRegistry = indexContent(contentMap, Type.ITEM, Item.class);
+        creaturesRegistry = indexContent(contentMap, Type.CREATURE, CreatureType.class);
+        structuresRegistry = indexContent(contentMap, Type.STRUCTURE, Structure.class);
+        blocksRegistry = blgen.complete();
     }
 
-    private <C extends ContentType> void indexContent(EnumMap<Type, HashMap<String, ContentType>> contentMap,
-                                                      Registry<C> registry,
-                                                      Type type, Class<C> contentType) {
-        for (ContentType value : contentMap.get(type).values()) {
+    private <C extends ContentType> Registry<C> indexContent(EnumMap<Type, HashMap<String, ContentType>> contentMap,
+                                                             Type type, Class<C> contentType) {
+        var cntList = contentMap.get(type).values();
+        var gen = new RegistryGenerator<>(contentType, cntList.size());
+        for (ContentType value : cntList) {
             C cnt = contentType.cast(value);
-            registry.put1(cnt);
-            registry.put2(cnt);
+            gen.putName(cnt);
+            gen.putId(cnt);
         }
+        return gen.complete();
     }
 
     public List<Item> getCraftsFor(StaticObjectsConst createWith) {
