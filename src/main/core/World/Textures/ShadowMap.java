@@ -2,18 +2,22 @@ package core.World.Textures;
 
 import core.GameState;
 import core.UI.Styles;
-import core.World.Creatures.DynamicWorldObjects;
 import core.World.StaticWorldObjects.StaticObjectsConst.Type;
+import core.content.entity.CreatureEntity;
 import core.util.Color;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.IntStream;
 
 import static core.Global.*;
+import static core.World.Textures.TextureDrawing.blockSize;
+import static core.World.Textures.TextureDrawing.viewport;
 
 public class ShadowMap {
     private static int[] shadows;
-    private static HashMap<DynamicWorldObjects, Color> shadowsDynamic = new HashMap<>();
+    private static HashMap<CreatureEntity, Color> shadowsDynamic = new HashMap<>();
     private static Color deletedColor = Color.CLEAR, deletedColorDynamic = Color.CLEAR, addedColor = Color.CLEAR, addedColorDynamic = Color.CLEAR;
 
     private static final Color tmp = new Color();
@@ -28,6 +32,10 @@ public class ShadowMap {
         }
     }
 
+    public static int getRawShadow(int x, int y) {
+        return shadows[x + world.sizeX * y];
+    }
+
     public static void setShadow(int x, int y, Color color) {
         setShadow(x, y, color.rgba8888());
     }
@@ -36,6 +44,10 @@ public class ShadowMap {
         if (x < 0 || y < 0 || x >= world.sizeX || y >= world.sizeY) {
             return;
         }
+        setShadow0(x, y, rgba8888);
+    }
+
+    private static void setShadow0(int x, int y, int rgba8888) {
         shadows[x + world.sizeX * y] = rgba8888;
     }
 
@@ -45,70 +57,101 @@ public class ShadowMap {
         return (int) Math.abs(Math.ceil(rgb / 198f - 4));
     }
 
-    public static void generate() {
+    public static CompletableFuture<Void> generate() {
         shadows = new int[world.sizeX * world.sizeY];
-        Arrays.fill(shadows, Color.WHITE.rgba8888());
+        Arrays.fill(shadows, Color.white);
 
-        generateShadows();
+        return generateShadows();
     }
 
-    private static void generateShadows() {
-        int shadowWhite = Color.rgba8888(165, 165, 165, 255);
-        int shadowDirtWhite = Color.rgba8888(85, 85, 85, 255);
+    private static CompletableFuture<Void> generateShadows() {
+        return CompletableFuture.runAsync(() -> {
+            int totalColumns = world.sizeX;
+            int cores = Runtime.getRuntime().availableProcessors();
+            int chunkSize = (totalColumns / cores) + 1;
 
-        for (int x = 1; x < world.sizeX - 1; x++) {
-            for (int y = 1; y < world.sizeY - 1; y++) {
-                if (checkHasGasAround(x, y, 1)) {
-                    setShadow(x, y, shadowWhite);
-                } else {
-                    setShadow(x, y, Color.WHITE);
+            world.genPool.submit(() -> IntStream.range(0, cores).parallel().forEach(p -> {
+                int shadowWhite = Color.rgba8888(165, 165, 165, 255);
+                int startChunkX = Math.max(1, p * chunkSize);
+                int endChunkX = Math.min(world.sizeX - 1, startChunkX + chunkSize);
+                for (int y = 1; y < world.sizeY; y++) {
+                    for (int x = startChunkX; x < endChunkX; x++) {
+                        if (checkHasGasAround(x, y, 1)) {
+                            setShadow0(x, y, shadowWhite);
+                        } else {
+                            setShadow0(x, y, Color.white);
+                        }
+                    }
                 }
-            }
-        }
+            })).join();
 
-        for (int x = 1; x < world.sizeX - 1; x++) {
-            for (int y = 1; y < world.sizeY - 1; y++) {
-                if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
-                    setShadow(x, y, shadowDirtWhite);
+            world.genPool.submit(() -> IntStream.range(0, cores).parallel().forEach(p -> {
+                int shadowDirtWhite = Color.rgba8888(85, 85, 85, 255);
+                int startChunkX = Math.max(1, p * chunkSize);
+                int endChunkX = Math.min(world.sizeX - 1, startChunkX + chunkSize);
+                for (int x = startChunkX; x < endChunkX; x++) {
+                    for (int y = 1; y < world.sizeY; y++) {
+                        if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
+                            setShadow0(x, y, shadowDirtWhite);
+                        }
+                    }
                 }
-            }
-        }
+            })).join();
 
-        for (int x = 2; x < world.sizeX - 2; x++) {
-            for (int y = 2; y < world.sizeY - 2; y++) {
-                if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
-                    setShadow(x, y, Styles.DIRTY_BRIGHT_BLACK);
+            world.genPool.submit(() -> IntStream.range(0, cores).parallel().forEach(p -> {
+                int startChunkX = Math.max(2, p * chunkSize);
+                int endChunkX = Math.min(world.sizeX - 2, startChunkX + chunkSize);
+                int dirtyBrightBlack = Styles.DIRTY_BRIGHT_BLACK.rgba8888();
+                for (int y = 2; y < world.sizeY; y++) {
+                    for (int x = startChunkX; x < endChunkX; x++) {
+                        if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
+                            setShadow0(x, y, dirtyBrightBlack);
+                        }
+                    }
                 }
-            }
-        }
+            })).join();
+
+        }, world.genPool);
     }
 
     public static void update() {
         if (gameState == GameState.PLAYING) {
-            int xPos = (int) player.getX();
-            int yPos = (int) player.getY();
+            updateShadows();
+        }
+    }
 
-            for (int x = xPos / TextureDrawing.blockSize - 20; x < xPos / TextureDrawing.blockSize + 21; x++) {
-                for (int y = yPos / TextureDrawing.blockSize - 8; y < yPos / TextureDrawing.blockSize + 16; y++) {
-                    if (checkHasGasAround(x, y, 1)) {
-                        setShadow(x, y, Color.rgba8888(165, 165, 165, 255));
-                    } else {
-                        setShadow(x, y, Color.WHITE);
-                    }
+    private static void updateShadows() {
+        camera.getBoundsTo(viewport);
+        int minX = Math.max(0, (int) Math.floor((viewport.x - blockSize) / blockSize));
+        int minY = Math.max(0, (int) Math.floor((viewport.y - blockSize) / blockSize));
+        int maxX = Math.min(world.sizeX,(int) Math.floor((viewport.x + viewport.width + blockSize) / blockSize));
+        int maxY = Math.min(world.sizeY, (int) Math.floor((viewport.y + viewport.height + blockSize) / blockSize));
+
+        int c1 = Color.rgba8888(165, 165, 165, 255);
+        for (int y = minY; y < maxY; y++) {
+            for (int x = minX; x < maxX; x++) {
+                if (checkHasGasAround(x, y, 1)) {
+                    setShadow(x, y, c1);
+                } else {
+                    setShadow(x, y, Color.white);
                 }
             }
-            for (int x = xPos / TextureDrawing.blockSize - 20; x < xPos / TextureDrawing.blockSize + 21; x++) {
-                for (int y = yPos / TextureDrawing.blockSize - 8; y < yPos / TextureDrawing.blockSize + 16; y++) {
-                    if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
-                        setShadow(x, y, Color.rgba8888(85, 85, 85, 255));
-                    }
+        }
+
+        int c2 = Color.rgba8888(85, 85, 85, 255);
+        for (int y = minY; y < maxY; y++) {
+            for (int x = minX; x < maxX; x++) {
+                if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
+                    setShadow0(x, y, c2);
                 }
             }
-            for (int x = xPos / TextureDrawing.blockSize - 20; x < xPos / TextureDrawing.blockSize + 21; x++) {
-                for (int y = yPos / TextureDrawing.blockSize - 8; y < yPos / TextureDrawing.blockSize + 16; y++) {
-                    if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
-                        setShadow(x, y, Styles.DIRTY_BRIGHT_BLACK);
-                    }
+        }
+
+        int dirtyBrightBlack = Styles.DIRTY_BRIGHT_BLACK.rgba8888();
+        for (int y = minY; y < maxY; y++) {
+            for (int x = minX; x < maxX; x++) {
+                if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
+                    setShadow0(x, y, dirtyBrightBlack);
                 }
             }
         }
@@ -121,7 +164,7 @@ public class ShadowMap {
         return out;
     }
 
-    public static Color getColorDynamic(DynamicWorldObjects object) {
+    public static Color getColorDynamic(CreatureEntity object) {
         Color color = new Color(shadowsDynamic.computeIfAbsent(object, k -> new Color(Color.WHITE)));
         color.add(addedColorDynamic);
         color.sub(deletedColorDynamic);
@@ -145,22 +188,24 @@ public class ShadowMap {
     }
 
     private static boolean isNotGas(int x, int y) {
-        var block = world.getBlock(x, y);
-        return block != null && block.type != Type.GAS;
+        int id = world.getBlockId(x, y);
+        return id > 0 && content.blocksRegistry.typeById(id).type != Type.GAS;
     }
 
     private static boolean checkHasGasAround(int x, int y, int radius) {
-        return isNotGas(x - radius, y) &&
-               isNotGas(x + radius, y) &&
-               isNotGas(x, y - radius) &&
-               isNotGas(x, y + radius) &&
-               isNotGas(x, y);
+        return isNotGas(x, y) &&
+                isNotGas(x - radius, y) &&
+                isNotGas(x + radius, y) &&
+                isNotGas(x, y - radius) &&
+                //соблюдайте порядок проверки!!! y + radius весомо тяжелее остальных
+                //мне так профайлер напел
+                isNotGas(x, y + radius);
     }
 
     private static boolean checkHasDegreeAround(int x, int y, int radius) {
         return getDegree(x - radius, y) > 0 &&
-               getDegree(x + radius, y) > 0 &&
-               getDegree(x, y + radius) > 0 &&
-               getDegree(x, y - radius) > 0;
+                getDegree(x + radius, y) > 0 &&
+                getDegree(x, y - radius) > 0 &&
+                getDegree(x, y + radius) > 0;
     }
 }

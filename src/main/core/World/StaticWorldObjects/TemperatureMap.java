@@ -1,12 +1,12 @@
 package core.World.StaticWorldObjects;
 
-import core.Global;
 import core.World.Weather.Sun;
 import core.math.Point2i;
 import core.util.Sized;
 
 import java.util.HashMap;
 
+import static core.Global.*;
 import static core.World.Textures.TextureDrawing.blockSize;
 
 public class TemperatureMap {
@@ -20,10 +20,11 @@ public class TemperatureMap {
         //todo
         //currentWorldTemperature = playGameScene.sun.currentTime / 100;
         currentWorldTemperature = 10;
-        temperature = new float[Global.world.sizeY];
+        int sizeY = world.sizeY;
+        temperature = new float[sizeY];
 
         for (int i = 0; i < temperature.length; i++) {
-            temperature[i] = Math.min(coreTemp, (coreTemp / (i + 1)) * (Global.world.sizeY / 1000f));
+            temperature[i] = Math.min(coreTemp, (coreTemp / (i + 1)) * (sizeY / 1000f));
         }
     }
 
@@ -59,7 +60,6 @@ public class TemperatureMap {
         int count = 0;
         float totalTemp = 0;
 
-
         int minX = (int) Math.floor(xPos / blockSize);
         int minY = (int) Math.floor(yPos / blockSize);
 
@@ -68,7 +68,7 @@ public class TemperatureMap {
 
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
-                if (Global.world.inBounds(x, y)) {
+                if (world.inBounds(x, y)) {
                     totalTemp += getTemp(x, y);
                     count++;
                 }

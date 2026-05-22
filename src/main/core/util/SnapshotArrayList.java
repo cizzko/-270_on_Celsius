@@ -5,6 +5,7 @@ import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import it.unimi.dsi.fastutil.objects.ObjectList;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
@@ -13,6 +14,8 @@ import java.util.function.Predicate;
 
 public class SnapshotArrayList<T> extends ObjectArrayList<T> {
     private int snapshots;
+    private T[] tmp;
+    private T[] snapshot;
 
     public SnapshotArrayList(T[] a, boolean wrapped) {
         super(a, wrapped);
@@ -54,21 +57,56 @@ public class SnapshotArrayList<T> extends ObjectArrayList<T> {
         super(i);
     }
 
+    public void end() {
+    }
+
+    public static int allocs = 0;
+
     public T[] begin() {
+        if (snapshots > 0 && tmp == snapshot) {
+            allocs++;
+            tmp = a.clone();
+        }
         snapshots++;
+        snapshot = a;
         return a;
     }
 
-    public void end() {
-        snapshots --;
-        if (snapshots < 0) {
-            throw new IllegalStateException();
+    public void end(Object[] prev) {
+        snapshots = Math.decrementExact(snapshots);
+        if (prev == a) {
+            // Вернулись к прежнему состоянию
+            if (tmp != null) {
+                var t = a;
+                a = snapshot = tmp;
+                tmp = t;
+                Arrays.fill(tmp, null);
+            }
+        } else {
+            Arrays.fill(tmp, null);
         }
+        snapshot = null;
     }
 
     private void modified() {
-        if (snapshots > 0) {
-            a = a.clone();
+        if (snapshots == 0 || size == 0) {
+            return;
+        }
+
+        if ((tmp == null || size > tmp.length)) {
+            allocs++;
+
+            // Создаём временный массив и сохраняем в него копию содержимого
+            T[] tmp1 = a.clone();
+            this.tmp = a;
+            a = tmp1;
+        } else if (snapshot != tmp && tmp != a) {
+            // Есть временный массив, перекопируем в него текущее содержимое
+            System.arraycopy(a, 0, tmp, 0, size);
+
+            var tmp = a;
+            a = this.tmp;
+            this.tmp = tmp;
         }
     }
 
@@ -92,8 +130,11 @@ public class SnapshotArrayList<T> extends ObjectArrayList<T> {
 
     @Override
     public boolean remove(Object k) {
-        modified();
-        return super.remove(k);
+        if (super.remove(k)) {
+            modified();
+            return true;
+        }
+        return false;
     }
 
     @Override

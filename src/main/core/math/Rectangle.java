@@ -1,11 +1,30 @@
 package core.math;
 
+import java.awt.*;
+
 public final class Rectangle {
     public float x, y;
     public float width, height;
 
+    public Rectangle() {}
+
+    public Rectangle(float x, float y, float width, float height) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+    }
+
+    public boolean contains(Rectangle rect) {
+        return x < rect.x + rect.width && x + width > rect.x && y < rect.y + rect.height && y + height > rect.y;
+    }
+
     public boolean overlaps(Rectangle rect) {
         return x <= rect.x + rect.width && x + width >= rect.x && y <= rect.y + rect.height && y + height >= rect.y;
+    }
+
+    public boolean overlaps(float rx, float ry, float rwidth, float rheight) {
+        return x <= rx + rwidth && x + width >= rx && y <= ry + rheight && y + height >= ry;
     }
 
     public Vector2f getCenterTo(Vector2f vector) {
@@ -14,8 +33,8 @@ public final class Rectangle {
         return vector;
     }
 
-    public boolean contains(float rx, float ry, float rwidth, float rheight) {
-        return x <= rx + rwidth && x + width >= rx && y <= ry + rheight && y + height >= ry;
+    public boolean contains(Point2i point) {
+        return contains(point.x, point.y);
     }
 
     public boolean contains(float px, float py) {
@@ -29,6 +48,13 @@ public final class Rectangle {
 
     public static boolean contains(int x, int y, int width, int height, Point2i point) {
         return contains(x, y, width, height, point.x, point.y);
+    }
+
+    public void set(Rectangle other) {
+        this.x = other.x;
+        this.y = other.y;
+        this.width = other.width;
+        this.height = other.height;
     }
 
     public void set(float x, float y, float width, float height) {
@@ -58,6 +84,13 @@ public final class Rectangle {
     public Rectangle setCentered(float x, float y, float width, float height) {
         set(x - width/2f, y - height/2f, width, height);
         return this;
+    }
+
+    public boolean equalsEps(Rectangle other, float eps) {
+        return MathUtil.equalsEps(x, other.x, eps)  &&
+               MathUtil.equalsEps(y, other.y, eps)  &&
+               MathUtil.equalsEps(width, other.width, eps) &&
+               MathUtil.equalsEps(height, other.height, eps);
     }
 
     @Override

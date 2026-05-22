@@ -18,7 +18,9 @@ public class FutureUtil {
                 }
             }
         } finally {
-            if (interrupted) Thread.currentThread().interrupt();
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 

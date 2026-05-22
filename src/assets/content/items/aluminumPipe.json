@@ -1,5 +1,5 @@
 {
   "Id": "aluminumPipe",
-  "ClassType": "detail",
+  "ClassType": "item",
   "Texture": "textures/items/aluminumPipe"
 }

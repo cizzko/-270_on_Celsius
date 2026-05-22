@@ -2,11 +2,12 @@ package core.World.Creatures.Player.WorkbenchMenu;
 
 import core.EventHandling.EventHandler;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Item;
-import core.World.ItemBlock;
+import core.content.items.Item;
+import core.content.items.ItemBlock;
 import core.World.Textures.TextureDrawing;
 import core.content.blocks.Factory;
 import core.content.blocks.Workbench;
+import core.g2d.StackfulRender;
 import core.g2d.Fill;
 import core.math.Point2i;
 import core.util.Color;
@@ -15,9 +16,7 @@ import java.util.EnumMap;
 import java.util.List;
 
 import static core.Global.*;
-import static core.World.Creatures.Player.Inventory.Inventory.inventoryObjects;
 import static core.World.Textures.TextureDrawing.drawObjects;
-import static org.lwjgl.glfw.GLFW.GLFW_KEY_B;
 
 public class WorkbenchLogic {
     public static EnumMap<Workbench.Tier, Workbench> nearbyWorkbench = new EnumMap<>(Workbench.Tier.class);
@@ -33,24 +32,12 @@ public class WorkbenchLogic {
 
     public static void updateInput() {
         updateBenchButton();
-        updateOpen();
         updateScroll();
         updateBuildButton();
     }
 
     private static void updateBenchButton() {
         nearbyWorkbench.clear();
-    }
-
-    private static void updateOpen() {
-        // Point2i blockUMB = Global.input.mouseBlockPos();
-        // todo сделать проверку на нахождение мыши на элте интерфейса
-        // if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && getFileName(world.get(blockUMB.x, blockUMB.y)) != null && getFileName(world.get(blockUMB.x, blockUMB.y)).toLowerCase().contains("workbench")) {
-        //     isOpen = true;
-        // }
-        if (EventHandler.getRectangleClick(1768, 0, 1810, 42) || input.justPressed(GLFW_KEY_B)) {
-            isOpen = !isOpen;
-        }
     }
 
     private static void updateScroll() {
@@ -64,34 +51,32 @@ public class WorkbenchLogic {
 
     public static void draw() {
 
-        if (EventHandler.getRectangleClick(menuXPos + 8, 580, menuXPos + 54, 626)) {
+        if (EventHandler.isMouseClickedIn(menuXPos + 8, 580, menuXPos + 54, 626)) {
             //todo некрасиво
             currentObject = null;
             current = 0;
         }
         if (!nearbyWorkbench.isEmpty()) {
-            if (EventHandler.getRectangleClick(menuXPos + 8, 634, menuXPos + 54, 682) &&
+            if (EventHandler.isMouseClickedIn(menuXPos + 8, 634, menuXPos + 54, 682) &&
                 nearbyWorkbench.containsKey(Workbench.Tier.LARGE)) {
                 currentObject = null;
                 current = 1;
             }
-            if (EventHandler.getRectangleClick(menuXPos + 8, 688, menuXPos + 54, 734) &&
+            if (EventHandler.isMouseClickedIn(menuXPos + 8, 688, menuXPos + 54, 734) &&
                 nearbyWorkbench.containsKey(Workbench.Tier.MEDIUM)) {
                 currentObject = null;
                 current = 2;
             }
-            if (EventHandler.getRectangleClick(menuXPos + 8, 742, menuXPos + 54, 788) &&
+            if (EventHandler.isMouseClickedIn(menuXPos + 8, 742, menuXPos + 54, 788) &&
                 nearbyWorkbench.containsKey(Workbench.Tier.SMALL)) {
                 currentObject = null;
                 current = 3;
             }
         }
 
-        batch.draw(atlas.byPath("UI/GUI/buildMenu/menuClosed"), 1650, 0);
-
         if (isOpen) {
-            batch.draw(atlas.byPath("UI/GUI/workbenchMenu/menu" + (currentObject == null ? "Small" : "Full")), menuXPos, 400);
-            Fill.rect(menuXPos + 3, 587 + (54 * current), 3, 32, Color.fromRgba8888(255, 80, 0, 200));
+            StackfulRender.draw(atlas.get("UI/GUI/workbenchMenu/menu" + (currentObject == null ? "Small" : "Full")), menuXPos, 400);
+            Fill.rect(menuXPos + 3, 587 + (54 * current), 3, 32, Color.rgba8888(255, 80, 0, 200));
 
             if (!nearbyWorkbench.containsKey(Workbench.Tier.SMALL)) {
                 Fill.rect(menuXPos + 8, 742, 46, 46, fogging);
@@ -114,9 +99,9 @@ public class WorkbenchLogic {
                 float yCoord = 1000 + scroll + (y * 54f);
 
                 if (yCoord < 755) {
-                    Inventory.drawItem(xCoord, yCoord, currentWorkbench.get(i));
+                    TextureDrawing.drawItem(xCoord, yCoord, currentWorkbench.get(i));
 
-                    if (EventHandler.getRectangleClick((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
+                    if (EventHandler.isMouseClickedIn((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
                         currentObject = new Point2i(x, y);
                         currentObjectIdx = i;
                     }
@@ -130,7 +115,7 @@ public class WorkbenchLogic {
             if (currentObjectIdx != -1) {
                 TextureDrawing.drawText(menuXPos + 585, 703, currentWorkbench.get(currentObjectIdx).getName());
                 drawRequirements(menuXPos + 590,  648);
-                batch.draw(atlas.byPath("UI/GUI/inventory/inventoryCurrent.png"), menuXPos + 62 + currentObject.x * 54,  986 + scroll + (currentObject.y * 54));
+                StackfulRender.draw(atlas.get("UI/GUI/inventory/inventoryCurrent"), menuXPos + 62 + currentObject.x * 54, 986 + scroll + (currentObject.y * 54));
             }
 
             // scrollbar
@@ -150,7 +135,7 @@ public class WorkbenchLogic {
     }
 
     private static void updateBuildButton() {
-        if (!isOpen || !EventHandler.getRectangleClick(menuXPos + 580, 742, menuXPos + 625, 788)) {
+        if (!isOpen || !EventHandler.isMouseClickedIn(menuXPos + 580, 742, menuXPos + 625, 788)) {
             return;
         }
         var required = hasRequiredItems();
@@ -161,10 +146,14 @@ public class WorkbenchLogic {
         if (Inventory.addItem(currentItems.get(currentObjectIdx))) {
             for (var obj : required) {
                 if (obj != null) {
-                    Inventory.decrementItem(obj.x, obj.y, obj.count);
+                    player.takeItem(obj.x, obj.y, obj.count);
                 }
             }
         }
+    }
+
+    public static void toggleBuildMenu() {
+        isOpen = !isOpen;
     }
 
     record ItemCraftTransaction(int x, int y, int count) {}
@@ -184,10 +173,13 @@ public class WorkbenchLogic {
             int neededCounter = 0;
 
             for (int i = 0; i < required.length; i++) {
-                for (int x = 0; x < inventoryObjects.length; x++) {
-                    for (int y = 0; y < inventoryObjects[x].length; y++) {
-                        if (inventoryObjects[x][y] != null && inventoryObjects[x][y].getItem() == required[i].getItem()) {
-                            hasNeededObject[i] = new ItemCraftTransaction(x, y, required[i].getCount());
+                var items = player.items();
+                for (int x = 0; x < items.size(); x++) {
+                    var line = items.get(x);
+                    for (int y = 0; y < line.size(); y++) {
+                        var itemStack = line.get(y);
+                        if (itemStack != null && itemStack.isSame(required[i])) {
+                            hasNeededObject[i] = new ItemCraftTransaction(x, y, required[i].count());
                             neededCounter++;
                         }
                     }
@@ -205,9 +197,9 @@ public class WorkbenchLogic {
         var currentItems = getCurrentItems();
         var stack = currentItems.get(currentObjectIdx);
         if (stack instanceof ItemBlock itemBlock && itemBlock.block instanceof Factory factory) {
-            drawObjects(x, y - 41, factory.input, atlas.byPath("UI/GUI/buildMenu/factoryIn.png"));
-            drawObjects(x, y - 82, factory.output, atlas.byPath("UI/GUI/buildMenu/factoryOut.png"));
+            drawObjects(x, y - 41, factory.input, atlas.get("UI/GUI/buildMenu/factoryIn"));
+            drawObjects(x, y - 82, factory.output, atlas.get("UI/GUI/buildMenu/factoryOut"));
         }
-        drawObjects(x, y, stack.requirements, atlas.byPath("UI/GUI/buildMenu/build.png"));
+        drawObjects(x, y, stack.requirements, atlas.get("UI/GUI/buildMenu/build"));
     }
 }

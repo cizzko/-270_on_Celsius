@@ -1,0 +1,27 @@
+{
+  "attributes": {
+    "a_pos": {
+      "size": 2,
+      "type": "FLOAT",
+      "format": "DIRECT"
+    },
+    "a_color": {
+      "size": 4,
+      "type": "UNSIGNED_BYTE",
+      "format": "NORMALIZED"
+    },
+    "a_uv": {
+      "size": 2,
+      "type": "FLOAT",
+      "format": "DIRECT"
+    }
+  },
+  "uniforms": {
+    "u_proj": {
+      "type": "MATRIX4F"
+    },
+    "u_texture": {
+      "type": "TEXTURE2D"
+    }
+  }
+}

@@ -1,16 +1,12 @@
 package core;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.fasterxml.jackson.core.type.TypeReference;
 import core.EventHandling.Config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import static core.Global.lang;
 
@@ -21,6 +17,10 @@ public final class LangTranslation {
     private static final String REFERENCE_LOCALE = "en";
 
     private String language;
+    private boolean languageHasChanged = false;
+    public boolean languageHasChanged() {
+        return languageHasChanged;
+    }
 
     private final HashMap<String, String> map = new HashMap<>();
     private final ArrayList<String> languages = new ArrayList<>();
@@ -46,25 +46,28 @@ public final class LangTranslation {
             language = Config.getString("Language", "en");
         }
 
-        JsonObject json = Global.assets.jsonReader(TRANSLATE_JSONC);
+        loadFile();
+    }
 
-        loadLanguages(json);
-        JsonObject langMap = json.getAsJsonObject(language);
-        if (langMap != null) {
-            loadTranslations(langMap);
-        } else {
-            log.warn("Unknown language {}", language);
+    private void loadFile() throws IOException {
+        try (var reader = Global.assets.resourceReader(TRANSLATE_JSONC)) {
+            var deserialized = Config.json.readValue(reader, new TypeReference<Map<String, Map<String, String>>>() {});
+            loadLanguages(deserialized);
+            var langMap = deserialized.get(language);
+            if (langMap != null) {
+                loadTranslations(langMap);
+            } else {
+                log.warn("Unknown language '{}'", language);
+            }
         }
     }
 
-    private void loadTranslations(JsonObject json) {
+    private void loadTranslations(Map<String, String> translation) {
         map.clear();
-        json.asMap().forEach((strId, translation) -> {
-            map.put(strId, translation.getAsString());
-        });
+        map.putAll(translation);
     }
 
-    private void loadLanguages(JsonObject json) {
+    private void loadLanguages(Map<String, Map<String, String>> json) {
         languages.clear();
         languages.addAll(json.keySet());
     }
@@ -83,18 +86,19 @@ public final class LangTranslation {
     }
 
     public void setLanguage(String newLanguage) {
-        if (!languages.contains(newLanguage) || language.equals(newLanguage)) {
+        if (language.equals(newLanguage) || !languages.contains(newLanguage)) {
             return;
         }
-        JsonObject json;
-        try (var reader = Global.assets.resourceReader(TRANSLATE_JSONC)) {
-            json = JsonParser.parseReader(reader)
-                    .getAsJsonObject();
+        languageHasChanged = true;
+        Global.scheduler.post(() -> languageHasChanged = false);
+
+        var oldLanguage = language;
+        language = newLanguage;
+        try {
+            loadFile();
         } catch (IOException e) {
-            log.error("Failed to reload language from: '{}' to '{}'", language, newLanguage, e);
-            return;
+            log.error("Failed to change language from '{}' to '{}'", oldLanguage, newLanguage, e);
         }
-        loadLanguages(json);
     }
 
     public String getCurrentLanguage() {

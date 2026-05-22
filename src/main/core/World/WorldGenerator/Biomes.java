@@ -3,6 +3,7 @@ package core.World.WorldGenerator;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.Global;
+import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.content.serialize.SerializableContent;
 
 import java.io.IOException;
@@ -60,12 +61,15 @@ public enum Biomes implements SerializableContent {
         return defaultBiome;
     }
 
+    private static final Biomes[] values = Biomes.values();
+
     public static Biomes getRand() {
-        return Biomes.values()[(int) (Math.random() * Biomes.values().length)];
+        return values[(int) (Math.random() * values.length)];
     }
 
     private static short shortIdByName(String name) {
-        return (short) Global.content.getBlockIdByType(Global.content.getConstById(name));
+        StaticObjectsConst block = Global.content.getConstById(name);
+        return (short) Global.content.blocksRegistry.idByType(block);
     }
 
     private static short[] getMountains() {

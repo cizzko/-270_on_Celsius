@@ -1,28 +1,43 @@
 package core.World;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import core.Application;
 import core.GameState;
 import core.Global;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.StaticWorldObjects.TileData;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator.Biomes;
 import core.World.WorldGenerator.WorldGenerator;
-import core.entity.BlockEntity;
+import core.content.blocks.data.TileData;
+import core.content.entity.BlockEntity;
 import core.math.MathUtil;
 import core.math.Point2i;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Objects;
+import java.util.concurrent.ForkJoinPool;
+
+import static core.Constants.World.availableProcessors;
 
 @JsonSerialize(using = World.WorldSerializer.class)
-public class World {
+public final class World {
+    public final ForkJoinPool genPool = new ForkJoinPool(availableProcessors);
+
     public final int sizeX, sizeY;
     public final /* unsigned */ short[] tiles;
     public final /* unsigned */ byte[] hp;
@@ -30,25 +45,97 @@ public class World {
     // Будущее к которому стремимся:
     // public final byte[] temperature;
     // public final byte[] light;
-    public final Int2ObjectOpenHashMap<TileData> data = new Int2ObjectOpenHashMap<>();
-    public final Int2ObjectOpenHashMap<BlockEntity> entity = new Int2ObjectOpenHashMap<>();
+    @JsonDeserialize(using = DataDeserializer.class)
+    public final Int2ObjectOpenHashMap<TileData> data;
+    @JsonDeserialize(using = EntityDeserializer.class)
+    public final Int2ObjectOpenHashMap<BlockEntity> entity;
 
+    @JsonIgnore
     public final Biomes[] biomes;
 
-    public World(int sizeX, int sizeY) {
-        // assert sizeX > 0 && sizeY > 0;
-        this.sizeX = sizeX;
-        this.sizeY = sizeY;
+    public final Meta meta;
+
+    public static final class Meta {
+        public final int sizeX, sizeY;
+        public final long seed;
+
+        public @Nullable String name, description;
+        public long lastPlayTime;  // секунды
+        public long totalPlayTime; // секунды
+
+        @JsonCreator
+        public Meta(int sizeX, int sizeY, long seed,
+                    @Nullable String name,
+                    @Nullable String description,
+                    long lastPlayTime, long totalPlayTime) {
+            this.sizeX = sizeX;
+            this.sizeY = sizeY;
+            this.seed = seed;
+            this.name = name;
+            this.description = description;
+            this.lastPlayTime = lastPlayTime;
+            this.totalPlayTime = totalPlayTime;
+        }
+    }
+
+    public static class Tmp {
+
+        public int sizeX, sizeY;
+        public /* unsigned */ short[] tiles;
+        public /* unsigned */ byte[] hp;
+        public Meta meta;
+
+        // Будущее к которому стремимся:
+        // public final byte[] temperature;
+        // public final byte[] light;
+        @JsonDeserialize(using = DataDeserializer.class)
+        public Int2ObjectOpenHashMap<TileData> data;
+        @JsonDeserialize(using = EntityDeserializer.class)
+        public Int2ObjectOpenHashMap<BlockEntity> entity;
+
+        @JsonIgnore
+        public Biomes[] biomes;
+
+        private int pos2index(int x, int y) { return x + sizeX * y; }
+        private int index2x(int index)      { return index % sizeX; }
+        private int index2y(int index)      { return index / sizeX; }
+    }
+
+    @JsonCreator
+    public World(World.Tmp tmp) {
+        this.sizeX = tmp.sizeX;
+        this.sizeY = tmp.sizeY;
+        this.tiles = tmp.tiles;
+        this.hp = tmp.hp;
+        this.data = tmp.data;
+        this.entity = tmp.entity;
+        this.biomes = new Biomes[sizeX];
+        this.meta = tmp.meta;
+    }
+
+    public World(Meta meta) {
+        this.sizeX = meta.sizeX;
+        this.sizeY = meta.sizeY;
         this.tiles = new short[sizeX * sizeY];
         this.hp = new byte[sizeX * sizeY];
         this.biomes = new Biomes[sizeX];
+        this.data = new Int2ObjectOpenHashMap<>();
+        this.entity = new  Int2ObjectOpenHashMap<>();
+        this.meta = meta;
     }
 
     public void update() {
         for (BlockEntity entity : entity.values()) {
-            entity.update();
+            try {
+                entity.update();
+            } catch (Exception e) {
+                Application.log.error("Failed to update block entity at ({}. {})",
+                        entity.blockX(), entity.blockY(), e);
+            }
         }
     }
+
+    public Meta meta() { return meta; }
 
     public void setBiomes(int x, Biomes biomes) {
         this.biomes[x] = biomes;
@@ -71,7 +158,7 @@ public class World {
         set(x, y, null, false);
     }
 
-    public void set(int x, int y, StaticObjectsConst object, boolean followingRules) {
+    public void set(int x, int y, @Nullable StaticObjectsConst object, boolean followingRules) {
         if (object == null)
             object = StaticObjectsConst.AIR;
 
@@ -86,22 +173,30 @@ public class World {
         }
     }
 
-    private void copyFromTo(int fromX, int fromY, int toX, int toY,
-                            StaticObjectsConst object, boolean followingRules) {
+    public void copyFromTo(int fromX, int fromY, int toX, int toY, StaticObjectsConst object, boolean followingRules) {
         setImpls(toX, toY, object, followingRules);
         setHp(toX, toY, getHp(fromX, fromY));
-        setData(toX, toY, getData(fromX, fromY));
+        var fromData = getData(fromX, fromY);
+
+        if (fromData != null) {
+            setData(toX, toY, fromData);
+        }
     }
 
     public void setData(int x, int y, TileData data) {
+        Objects.requireNonNull(data);
         this.data.put(pos2index(x, y), data);
     }
 
-    public TileData getData(int x, int y) {
+    public @Nullable TileData getData(int x, int y) {
         return data.get(pos2index(x, y));
     }
 
-    public BlockEntity getEntity(int x, int y) {
+    public @Nullable BlockEntity getEntity(Point2i pos) {
+        return getEntity(pos.x, pos.y);
+    }
+
+    public @Nullable BlockEntity getEntity(int x, int y) {
         var rootPos = getRootBlockPos(x, y);
         if (rootPos != null) {
             return entity.get(pos2index(rootPos.x, rootPos.y));
@@ -128,7 +223,7 @@ public class World {
             return null;
         }
         int blockId = Short.toUnsignedInt(tiles[pos2index(x, y)]);
-        return Global.content.getConstByBlockId(blockId);
+        return Global.content.blocksRegistry.typeById(blockId);
     }
 
     /// @return {@code -1} в случае выхода за границу. В остальных случаях здоровье в отрезке `[0, 255]`
@@ -140,8 +235,9 @@ public class World {
     /// @param newHp новое значение здоровья блока. Должно быть в отрезке `[0, 255]`
     public void setHp(int x, int y, int newHp) {
         // Global.app.ensureMainThread();
-        if (newHp < 0 || newHp >= (1 << 8))
+        if (newHp < 0 || newHp >= (1 << 8)) {
             throw new IllegalArgumentException("HP out of range: [0, 255]");
+        }
 
         if (inBounds(x, y)) {
             var root = getRootBlockPos(x, y);
@@ -160,6 +256,8 @@ public class World {
         }
     }
 
+    public int getBlockId(Point2i pos) { return getBlockId(pos.x, pos.y); }
+
     /// @return {@code -1} в случае выхода за границу. В остальных случаях неотрицательный blockId
     public int getBlockId(int x, int y) {
         // Global.app.ensureMainThread();
@@ -168,9 +266,9 @@ public class World {
 
     // region Приватные методы
 
-    private int pos2index(int x, int y) {
-        return x + sizeX * y;
-    }
+    public int pos2index(int x, int y) { return x + sizeX * y; }
+    public int index2x(int index)      { return index % sizeX; }
+    public int index2y(int index)      { return index / sizeX; }
 
     private void setImpls(int x, int y, StaticObjectsConst object, boolean followingRules) {
         destroyBlock(x, y);
@@ -223,7 +321,7 @@ public class World {
 
     private void setImpl(int x, int y, StaticObjectsConst block, boolean followingRules) {
         if (!followingRules || checkPlaceRules(x, y, block)) {
-            tiles[pos2index(x, y)] = (short) Global.content.getBlockIdByType(block);
+            tiles[pos2index(x, y)] = (short) Global.content.blocksRegistry.idByType(block);
         }
     }
 
@@ -288,22 +386,23 @@ public class World {
             }
 
             if (root.type == StaticObjectsConst.Type.SOLID) {
-                boolean anyCollision = Global.entityPool.worldIndex().findAnyInRange(
+                boolean anyCollision = Global.entityPool.worldIndex().any(
                         x * TextureDrawing.blockSize, y * TextureDrawing.blockSize,
-                        root.texture.width(), root.texture.height(),
-                        e -> true);
+                        root.texture.width(), root.texture.height()
+                );
                 return !anyCollision;
             }
         } else {
-            if (root.type == StaticObjectsConst.Type.SOLID) {
-                boolean anyCollision = Global.entityPool.worldIndex().findAnyInRange(
-                        x * TextureDrawing.blockSize, y * TextureDrawing.blockSize,
-                        root.texture.width(), root.texture.height(),
-                        e -> true);
-                if (anyCollision) {
-                    return false;
-                }
-            }
+            //todo загадочно сломано
+//            if (root.type == StaticObjectsConst.Type.SOLID) {
+//                boolean anyCollision = Global.entityPool.worldIndex().any(
+//                        x * TextureDrawing.blockSize, y * TextureDrawing.blockSize,
+//                        root.texture.width(), root.texture.height()
+//                );
+//                if (anyCollision) {
+//                    return false;
+//                }
+//            }
 
             // рядышком есть твёрдый блок
             for (Point2i d : MathUtil.CROSS_OFFSETS) {
@@ -319,7 +418,92 @@ public class World {
 
     // endregion
 
-    public static class WorldSerializer extends StdSerializer<World> {
+    public static final class EntityDeserializer extends StdDeserializer<Int2ObjectOpenHashMap<BlockEntity>> {
+        public EntityDeserializer() {
+            super((Class<?>) null);
+        }
+
+        @Override
+        public Int2ObjectOpenHashMap<BlockEntity> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+            if (!(p.getParsingContext().getParent().getCurrentValue() instanceof World.Tmp worl)) {
+                throw new IllegalStateException("WORL!!!");
+            }
+            if (!p.isExpectedStartObjectToken()) {
+                ctxt.reportWrongTokenException(this, JsonToken.START_OBJECT, "OBJECT!!!");
+            }
+
+            var entity = new Int2ObjectOpenHashMap<BlockEntity>();
+
+            JsonToken t;
+            while ((t = p.nextToken()) != null) {
+                if (t == JsonToken.END_OBJECT) {
+                    break;
+                }
+                if (t == JsonToken.FIELD_NAME) {
+                    int pos = Integer.parseInt(p.currentName());
+                    short blockId = worl.tiles[pos];
+                    if (blockId >= 0) {
+                        var block = Global.content.blocksRegistry.typeById(blockId);
+                        if (block != null) {
+                            var ent = block.createEntity(worl.index2x(pos), worl.index2y(pos));
+                            if (ent != null) {
+                                p.nextToken(); // START_OBJECT
+                                ent.deserialize(p, ctxt);
+                                entity.put(pos, ent);
+                            }
+                        }
+                    }
+                }
+            }
+            assert t == JsonToken.END_OBJECT;
+            return entity;
+        }
+
+    }
+
+    public static final class DataDeserializer extends StdDeserializer<Int2ObjectOpenHashMap<TileData>> {
+
+        public DataDeserializer() {
+            super(Int2ObjectOpenHashMap.class);
+        }
+
+        @Override
+        public Int2ObjectOpenHashMap<TileData> deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JacksonException {
+            if (!(p.getParsingContext().getParent().getCurrentValue() instanceof World.Tmp worl)) {
+                throw new IllegalStateException("" + p.getParsingContext().getParent().getCurrentValue());
+            }
+            if (!p.isExpectedStartObjectToken()) {
+                ctxt.reportWrongTokenException(this, JsonToken.START_OBJECT, "");
+            }
+            var data = new Int2ObjectOpenHashMap<TileData>();
+            p.assignCurrentValue(data);
+
+            JsonToken t;
+            while ((t = p.nextToken()) != null) {
+                if (t == JsonToken.END_OBJECT) {
+                    break;
+                }
+                if (t == JsonToken.FIELD_NAME) {
+                    int pos = Integer.parseInt(p.currentName());
+                    short blockId = worl.tiles[pos];
+                    if (blockId >= 0) {
+                        var block = Global.content.blocksRegistry.typeById(blockId);
+                        if (block != null) {
+                            if (block.isMultiblock()) {
+                                p.nextToken(); // START_OBJECT
+                                var md = ctxt.readValue(p, TileData.MultiblockPart.class);
+                                data.put(pos, md);
+                            }
+                        }
+                    }
+                }
+            }
+            assert t == JsonToken.END_OBJECT;
+            return data;
+        }
+    }
+
+    public static final class WorldSerializer extends StdSerializer<World> {
 
         public WorldSerializer() {
             super(World.class);

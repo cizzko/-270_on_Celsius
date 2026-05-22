@@ -1,0 +1,15 @@
+{
+  "Id": "workbenchMedium",
+  "ClassType": "workbench",
+  "Resistance": 95,
+  "Texture": "textures/blocks/workbenchMedium",
+  "Type": "WALKABLE",
+  "MaxHp": 100,
+  "Tier": "MEDIUM",
+  "Requirements": {
+    "smallStone": 2
+  },
+  "Density": 1,
+  "CreateWith": "player",
+  "LightTransmission": 100
+}

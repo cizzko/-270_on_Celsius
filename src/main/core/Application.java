@@ -1,15 +1,14 @@
 package core;
 
+import core.util.JavaInterpreter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.system.NativeResource;
+import org.lwjgl.system.Platform;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
-
-import static core.EventHandling.EventHandler.setDebugValue;
-import static core.util.ImportClassMethod.exec;
-import static core.util.ImportClassMethod.jshell;
 
 public class Application {
     public static final Logger log = LogManager.getLogger("Game");
@@ -17,7 +16,6 @@ public class Application {
     private final Thread mainThread;
 
     protected final ArrayList<NativeResource> natives = new ArrayList<>();
-    protected final ArrayList<ApplicationListener> listeners = new ArrayList<>();
 
     private boolean running = true;
 
@@ -41,7 +39,6 @@ public class Application {
         try {
             Thread.currentThread().setName("UpdateThread");
             init();
-            setDebugValue(() -> "deltaTime: " + Time.delta);
 
             while (running) {
                 update();
@@ -50,9 +47,7 @@ public class Application {
             log.error("The fatal exception is caused", t);
         } finally {
             freeNatives();
-            jshell.stop();
-            jshell.close();
-            exec.shutdown();
+            JavaInterpreter.close();
             Global.scheduler.shutdown();
             cleanup();
         }
@@ -92,12 +87,6 @@ public class Application {
         if (!isMainThread()) {
             throw new IllegalStateException("Async access");
         }
-    }
-
-    public void addListener(ApplicationListener listener) {
-        Objects.requireNonNull(listener);
-        ensureMainThread();
-        listeners.add(listener);
     }
 
     private int framerate = -1;
@@ -152,12 +141,30 @@ public class Application {
         return fpsMeasurement;
     }
 
-    public void save() {
-        for (ApplicationListener listener : listeners) {
-            if (listener instanceof AutoSaveListener a) {
-                a.update();
-                break;
-            }
+    public static void open(String uri) {
+        switch (Platform.get()) {
+            case LINUX, FREEBSD -> openUri("xdg-open", uri);
+            case MACOSX -> openUri("open", uri);
+            case WINDOWS -> openUri("rundll32", "url.dll,FileProtocolHandler", uri);
         }
+    }
+
+    private static void openUri(String cmd, String arg0, String arg1) {
+        Thread.startVirtualThread(() -> {
+            try {
+                ProcessBuilder pb = new ProcessBuilder(cmd, arg0);
+                var list = pb.command();
+                if (!arg1.isEmpty()) {
+                    list.add(arg1);
+                }
+                pb.start();
+            } catch (IOException e) {
+                Application.log.warn("Failed to open uri '{}'", cmd, e);
+            }
+        });
+    }
+
+    private static void openUri(String cmd, String uri) {
+        openUri(cmd, uri, "");
     }
 }

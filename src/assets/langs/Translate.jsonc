@@ -1,8 +1,10 @@
 {
   "en": {
     "Language": "Language",
-    "Play": "Play",
+    "NewGame": "Play",
+    "LoadSave": "Load",
     "Settings": "Settings",
+    "Menu": "Main menu",
     "Exit": "Exit",
     "Continue": "Continue",
     "Return": "Return",
@@ -41,16 +43,16 @@
 
     "SettingsOther": "Other",
     "Autopause": "Autopause",
-    "AutopausePrompt": "If lose focus (minimize) the game window - the pause will automatically open",
-
-    "StoneAxe": "Stone axe"
+    "AutopausePrompt": "If lose focus (minimize) the game window - the pause will automatically open"
   },
 
   "ru": {
     "Language": "Язык",
-    "Play": "Начать",
+    "NewGame": "Начать",
+    "LoadSave": "Загрузить",
     "Settings": "Настройки",
     "Exit": "Выход",
+    "Menu": "Главное меню",
     "Continue": "Продолжить",
     "Return": "Вернуться",
 
@@ -88,14 +90,12 @@
 
     "SettingsOther": "Другое",
     "Autopause": "Автопауза",
-    "AutopausePrompt": "При потере фокуса (сворачивании) окна игры - автоматически откроется пауза",
-
-    "StoneAxe": "Каменный топор"
+    "AutopausePrompt": "При потере фокуса (сворачивании) окна игры - автоматически откроется пауза"
   },
 
   "uk": {
     "Language": "Язык",
-    "Play": "Начати",
+    "NewGame": "Начати",
     "Settings": "Налаштування",
     "Exit": "Выхід",
     "Continue": "Продовжити",
@@ -135,8 +135,6 @@
 
     "SettingsOther": "Друге",
     "Autopause": "Автопауза",
-    "AutopausePrompt": "При потере фокуса (сворачивании) окна игры - автоматически откроется пауза",
-
-    "StoneAxe": "Каменный топор"
+    "AutopausePrompt": "При потере фокуса (сворачивании) окна игры - автоматически откроется пауза"
   }
 }

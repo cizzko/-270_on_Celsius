@@ -6,6 +6,7 @@ public sealed interface Drawable
         extends Sized
         permits Atlas.Region, Font.Glyph, Texture {
 
+    short id();
     int width();
     int height();
 

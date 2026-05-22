@@ -1,23 +1,27 @@
 package core.content.blocks;
 
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.Time;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.ItemGrid;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
 import core.World.Textures.TextureDrawing;
-import core.entity.BaseBlockEntity;
-import core.entity.BlockItemStorage;
+import core.content.ItemGrid;
+import core.content.ItemStack;
+import core.content.entity.BaseBlockEntity;
+import core.content.entity.BlockItemStorage;
 import core.g2d.Fill;
+import core.g2d.RenderList;
 import core.util.ArrayUtils;
-import core.util.Color;
 
 import java.io.IOException;
 
 import static core.Global.atlas;
-import static core.World.Creatures.Player.Player.playerSize;
+import static core.Global.player;
 import static core.World.Textures.TextureDrawing.blockSize;
+import static core.util.Color.rgba8888;
 
 public class FactoryEntity extends BaseBlockEntity<Factory> {
     public boolean isSelected;
@@ -65,12 +69,14 @@ public class FactoryEntity extends BaseBlockEntity<Factory> {
     private void produceItem() {
         for (int i = 0; i < block.output.length; i++) {
             for (int j = 0; j < outputStored.length; j++) {
-                if (outputStored[j] == null || outputStored[j].isSame(block.output[i])) {
+                if (outputStored[j] != null && !outputStored[j].isSame(block.output[i])) {
+                    continue;
+                }
+                if (ItemGrid.insertCopy(outputStored, j, block.output, i) >= 0) {
                     fuel.removeFirst();
                     input.removeFirst();
-                    ItemGrid.insertCopy(outputStored, j, block.output, i);
-                    // Sound.playSound(block.sound, Sound.types.EFFECT, false);
                 }
+                // Sound.playSound(block.sound, Sound.types.EFFECT, false);
             }
         }
     }
@@ -101,26 +107,63 @@ public class FactoryEntity extends BaseBlockEntity<Factory> {
     }
 
     @Override
-    public void draw() {
+    public void deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
+        assert p.currentToken() == JsonToken.START_OBJECT;
+
+        JsonToken t;
+        while ((t = p.nextToken()) != null) {
+            if (t == JsonToken.END_OBJECT) {
+                break;
+            }
+            if (t == JsonToken.FIELD_NAME) {
+                switch (p.currentName()) {
+                    case "progress" -> {
+                        p.nextToken();
+                        progress = p.getFloatValue();
+                    }
+                    case "input" -> {
+                        p.nextToken();
+                        input = ctxt.readValue(p, BlockItemStorage.class);
+                    }
+                    case "fuel" -> {
+                        p.nextToken();
+                        fuel = ctxt.readValue(p, BlockItemStorage.class);
+                    }
+                    case "outputStored" -> {
+                        p.nextToken();
+                        outputStored = ctxt.readValue(p, ItemStack[].class);
+                    }
+                }
+            }
+        }
+
+        assert p.currentToken() == JsonToken.END_OBJECT;
+    }
+
+    @Override
+    public final boolean drawStateChanged() { return false; }
+
+    @Override
+    public void draw(RenderList rlist) {
         if (isSelected) {
             float addedX = block.texture.width();
             float addedY = block.texture.height();
             float x = this.x + addedX - (blockSize / 2f);
             float y = this.y + addedY - (blockSize / 2f);
 
-            Color color = Color.fromRgba8888(0, 0, 0, 170);
+            int playerSize = Math.max(player.creature.texture.width(), player.creature.texture.height());
             if (!input.isEmpty()) {
                 int width1 = input.items.length * 54 + playerSize;
 
-                Fill.rect(x, y, width1, 64, color);
-                TextureDrawing.drawObjects(x, y, input.items, atlas.byPath("UI/GUI/buildMenu/factoryIn.png"));
+                Fill.rect(x, y, width1, 64, rgba8888(0, 0, 0, 170));
+                TextureDrawing.drawObjects(x, y, input.items, atlas.get("UI/GUI/buildMenu/factoryIn"));
             }
             if (ArrayUtils.findFreeCell(outputStored) != 0) {
                 x += (ArrayUtils.findFreeCell(outputStored) != 0 ? 78 : 0);
                 int width = ArrayUtils.findDistinctObjects(outputStored) * 54 + playerSize;
 
-                Fill.rect(x, y, width, 64, color);
-                TextureDrawing.drawObjects(x, y, outputStored, atlas.byPath("UI/GUI/buildMenu/factoryOut.png"));
+                Fill.rect(x, y, width, 64, rgba8888(0, 0, 0, 170));
+                TextureDrawing.drawObjects(x, y, outputStored, atlas.get("UI/GUI/buildMenu/factoryOut"));
             }
         }
     }

@@ -1,19 +1,20 @@
 package core.assets;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import core.Global;
 import core.g2d.AtlasHandler;
 import core.g2d.FontHandler;
 import core.g2d.ShaderHandler;
 import core.g2d.TextureHandler;
+import core.util.Debug;
+import core.util.JavaInterpreter;
+import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.system.Platform;
 
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Reader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -23,12 +24,17 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
+import static core.EventHandling.Config.config;
+
 public final class AssetsManager {
     static final Logger log = LogManager.getLogger("AssetsManager");
 
+    final boolean exploded;
+
     // TODO а точно нужна карта? Может хочется сделать полиморфные загрузчики
     //  Вообще, тут возможно состояние гонки, т.к. к этим объектам идёт доступ из других потоков в load()
-    final Map<Class<?>, AssetHandler<?, ?, ?>> handlers = new IdentityHashMap<>();
+    final Map<Class<?>, AssetHandler<?, ?, ?>> handlersByType = new IdentityHashMap<>();
+    final Map<Class<?>, AssetHandler<?, ?, ?>> handlersByClass = new IdentityHashMap<>();
     final Map<Object, Asset<?>> refsByAssets = new HashMap<>();
     final Map<Class<?>, Map<String, ? super Asset<?>>> assets = new IdentityHashMap<>();
     final Path workingDir, assetsDir, dataDir;
@@ -38,6 +44,7 @@ public final class AssetsManager {
     final AssetReleaser releaser = this::releaseInternal;
 
     public AssetsManager(boolean exploded, String appName) throws IOException {
+        this.exploded = exploded;
         this.workingDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
         this.dataDir = switch (Platform.get()) {
             case WINDOWS -> Path.of(System.getenv("AppData"), appName).toAbsolutePath();
@@ -67,21 +74,79 @@ public final class AssetsManager {
         register(new FontHandler());
         register(new TextureHandler());
         register(new AtlasHandler());
+
+        copyFromResource(config, "configDefault.properties", "config.properties");
+
+        if (Debug.debugLevel >= 3) {
+            jscriptInit(exploded);
+        }
     }
+
+    void copyFromResource(HashMap<String, String> map, String resourceFileName, String externalFileName) {
+
+        var externalFile = workingDir.resolve(externalFileName);
+        if (Files.notExists(externalFile)) {
+            var resourceFile = assetsDir.resolve(resourceFileName);
+            try {
+                Files.copy(resourceFile, externalFile);
+            } catch (IOException e) {
+                log.error("Failed to copy from '{}' to '{}'", resourceFileName, externalFileName, e);
+            }
+        }
+
+        var props = new Properties();
+        try (var in = Files.newInputStream(externalFile)) {
+            props.load(in);
+        } catch (IOException e) {
+            log.error("Failed to load '{}' properties", externalFile, e);
+        }
+        @SuppressWarnings("unchecked")
+        var magic = (Map<String, String>) (Map<?, ?>) props;
+        map.putAll(magic);
+    }
+
+    private void jscriptInit(boolean exploded) throws IOException {
+        JavaInterpreter.init(exploded);
+        try (var dirstr = Files.newDirectoryStream(assetsDir.resolve("scripts"), "*.java")) {
+            StringBuilder sb = new StringBuilder();
+            for (Path jscript : dirstr) {
+                try (var reader = Files.newBufferedReader(jscript)) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line);
+                        String str = sb.toString();
+                        var status = JavaInterpreter.jshell.sourceCodeAnalysis().analyzeCompletion(str);
+                        var comp = status.completeness();
+
+                        if (comp.isComplete()) {
+                            JavaInterpreter.execute0(str, null);
+                            sb.setLength(0);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public boolean isExploded() { return exploded; }
 
     public void register(AssetHandler<?, ?, ?> loader) {
         loader.setDir(assetsDir.resolve(loader.dirName));
-        handlers.put(loader.type(), loader);
+        handlersByType.put(loader.type(), loader);
+        handlersByClass.put(loader.getClass(), loader);
     }
 
+    /// Текущая директория откуда запустили игру
     public Path workingDir() {
         return workingDir;
     }
 
+    /// %AppData% и аналоги. Сюда сохраняем настройки и всё важное
     public Path dataDir() {
         return dataDir;
     }
 
+    /// Данная директория только для чтения, поскольку может содержать внутреннее пути архива
     public Path assetsDir() {
         return assetsDir;
     }
@@ -94,21 +159,12 @@ public final class AssetsManager {
         return null;
     }
 
-    public Reader resourceReader(String path) throws IOException {
+    public BufferedReader resourceReader(String path) throws IOException {
         Path resolve = assetsDir.resolve(path);
         if (Files.isRegularFile(resolve)) {
             return Files.newBufferedReader(resolve, StandardCharsets.UTF_8);
         }
         return null;
-    }
-
-    public JsonObject jsonReader(String path) {
-        try (var reader = resourceReader(path)) {
-            return JsonParser.parseReader(reader).getAsJsonObject();
-        } catch (IOException e) {
-            log.error(e);
-            return null;
-        }
     }
 
     public void unload(Class<?> type, String name) {
@@ -171,7 +227,8 @@ public final class AssetsManager {
         });
         assets.clear();
         refsByAssets.clear();
-        handlers.clear();
+        handlersByClass.clear();
+        handlersByType.clear();
 
         try {
             executor.awaitTermination(Long.MAX_VALUE, TimeUnit.SECONDS);
@@ -233,7 +290,7 @@ public final class AssetsManager {
             }
         }
 
-        AssetHandler<T, P, Object> loader = getHandler(type);
+        AssetHandler<T, P, Object> loader = getHandlerByType(type);
         var params = loader.createParams();
         if (paramsModifier != null) {
             paramsModifier.accept(params);
@@ -270,7 +327,7 @@ public final class AssetsManager {
             }
         }
 
-        AssetHandler<T, P, Object> loader = getHandler(type);
+        AssetHandler<T, P, Object> loader = getHandlerByType(type);
         var params = loader.createParams();
         if (paramsModifier != null) {
             paramsModifier.accept(params);
@@ -286,15 +343,61 @@ public final class AssetsManager {
         }
     }
 
+    <T, P, S> Future<T> loadInternalByHandler(BaseAssetResolver parent,
+                                  Class<? extends AssetHandler<T, P, S>> handlerType, String name, LoadType loadType,
+                                  Consumer<? super P> paramsModifier) {
+
+        var loader = getHandlerByClass(handlerType);
+
+        var loadingMap = getLoadingAssets(loader.type);
+        if (loadingMap != null) {
+            var future = loadingMap.get(name);
+            if (future != null) {
+                return future;
+            }
+        }
+
+        var loadedAssets = getAssets(loader.type);
+        if (loadedAssets != null) {
+            var loadedInst = loadedAssets.get(name);
+            if (loadedInst != null) {
+                incrementRefCount(parent, loadedInst);
+                return CompletableFuture.completedFuture(loadedInst.value);
+            }
+        }
+
+        var params = loader.createParams();
+        if (paramsModifier != null) {
+            paramsModifier.accept(params);
+        }
+
+        var state = loader.createState();
+        if (loadType == LoadType.SYNC && Global.app.isMainThread()) {
+            // Это гениально синхронно грузить ресурсы по просьбе из другого потока
+            // Хотя бы по той причине, что главный поток будет больше времени заниматься не своим делом
+            return loadSync((SyncAssetResolver<?, ?, ?>) parent, name, loader, params, state);
+        } else {
+            return loadAsync((AsyncAssetResolver<?, ?, ?>) parent, loader.type, name, loader, params, state, loadingMap);
+        }
+    }
+
+    private final ReferenceOpenHashSet<Object> set = new ReferenceOpenHashSet<>();
+
     <T> void releaseInternal(T asset) {
+        if (set.contains(asset)) {
+            log.warn("Double release: {}", asset);
+            return;
+        }
+
         // TODO что насчёт полиморфизма?
         //  Подумаю, нужно ли переусложнять. Указывать везде тип, который обрабатывает AssetHandler немного неудобно
         @SuppressWarnings("unchecked")
         var type = (Class<T>) asset.getClass();
-        AssetHandler<T, ?, ?> handler = getHandler(type);
+        AssetHandler<T, ?, ?> handler = getHandlerByType(type);
 
         try {
             handler.release(releaser, asset);
+            set.add(asset);
             log.debug("Released: {}", asset);
         } catch (Exception e) {
             log.error("Exception while releasing {}", asset, e);
@@ -309,9 +412,9 @@ public final class AssetsManager {
         }
     }
 
-    private <T, P> AsyncAssetResolver<T, P, Object> loadAsync(AsyncAssetResolver<?, ?, ?> parent,
+    private <T, P, S> AsyncAssetResolver<T, P, S> loadAsync(AsyncAssetResolver<?, ?, ?> parent,
                                                               Class<T> type, String name,
-                                                              AssetHandler<T, P, Object> loader, P params, Object state,
+                                                              AssetHandler<T, P, S> loader, P params, S state,
                                                               Map<String, AsyncAssetResolver<T, ?, ?>> loadingMap) {
         var res = new AsyncAssetResolver<>(parent, loader, name, params, state);
         if (loadingMap == null) {
@@ -331,10 +434,10 @@ public final class AssetsManager {
         return res;
     }
 
-    private <T, P> Future<T> loadSync(SyncAssetResolver<?, ?, ?> parent, String name,
-                                      AssetHandler<T, P, Object> loader,
-                                      P params, Object state) {
-        var res = new SyncAssetResolver<T, P, Object>(loader, name, params, state);
+    private <T, P, S> Future<T> loadSync(SyncAssetResolver<?, ?, ?> parent, String name,
+                                      AssetHandler<T, P, S> loader,
+                                      P params, S state) {
+        var res = new SyncAssetResolver<T, P, S>(loader, name, params, state);
         incrementRefCount(parent, res.desc);
         return res.load();
     }
@@ -355,8 +458,17 @@ public final class AssetsManager {
     }
 
     @SuppressWarnings("unchecked")
-    <T, P, S> AssetHandler<T, P, S> getHandler(Class<T> type) {
-        var loader = (AssetHandler<T, P, S>) handlers.get(type);
+    <T, P, S> AssetHandler<T, P, S> getHandlerByClass(Class<? extends AssetHandler<T, P, S>> type) {
+        var loader = (AssetHandler<T, P, S>) handlersByClass.get(type);
+        if (loader == null) {
+            throw new IllegalStateException("Unknown asset type: " + type);
+        }
+        return loader;
+    }
+
+    @SuppressWarnings("unchecked")
+    <T, P, S> AssetHandler<T, P, S> getHandlerByType(Class<T> type) {
+        var loader = (AssetHandler<T, P, S>) handlersByType.get(type);
         if (loader == null) {
             throw new IllegalStateException("Unknown asset type: " + type);
         }

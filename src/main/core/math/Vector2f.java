@@ -48,6 +48,12 @@ public final class Vector2f {
         return this;
     }
 
+    public Vector2f sub(float x, float y) {
+        this.x -= x;
+        this.y -= y;
+        return this;
+    }
+
     public Vector2f scale(float scalar) {
         x *= scalar;
         y *= scalar;
@@ -86,6 +92,20 @@ public final class Vector2f {
         this.x = (x * invAlpha) + (tx * progress);
         this.y = (y * invAlpha) + (ty * progress);
         return this;
+    }
+
+    public Vector2f lerp(float tx, float ty, float alpha) {
+        alpha = Math.clamp(alpha, 0, 1);
+        float inv = 1.0f - alpha;
+        this.x = (x * inv) + (tx * alpha);
+        this.y = (y * inv) + (ty * alpha);
+        return this;
+    }
+
+    public float hypot() { return (float) Math.hypot(x, y); }
+
+    public float projectTo(float velX, float velY) {
+        return velX * x + velY * y;
     }
 
     @Override

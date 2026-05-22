@@ -1,5 +1,7 @@
 package core.math;
 
+import java.util.Arrays;
+
 // column major matrix
 public final class Mat3 {
     public static final int M00 = 0;
@@ -15,6 +17,8 @@ public final class Mat3 {
     public static final int M22 = 8;
 
     public final float[] val = new float[9];
+
+    public static final int BYTES = Float.BYTES * 9;
 
     public Mat3() {
         identity();
@@ -204,5 +208,30 @@ public final class Mat3 {
         val[M00] *= scale;
         val[M11] *= scale;
         return this;
+    }
+
+    public void to(float[] array) {
+        System.arraycopy(val, 0, array, 0, val.length);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj == this || (obj instanceof Mat3 m && equalsEps(m.val));
+    }
+
+    static final float FLOAT_EPSILON = Math.ulp(1f);
+
+    private boolean equalsEps(float[] other) {
+        for (int i = 0; i < val.length; i++) {
+            if (!MathUtil.equalsEps(val[i], other[i], FLOAT_EPSILON)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public String toString() {
+        return Arrays.toString(val);
     }
 }

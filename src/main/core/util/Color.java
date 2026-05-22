@@ -1,6 +1,15 @@
 package core.util;
 
+import static core.util.Colorf.clamp;
+
 public final class Color {
+    public static final int red = rgba8888(255, 0, 0, 255);
+    public static final int green = rgba8888(0, 255, 0, 255);
+    public static final int blue = rgba8888(0, 0, 255, 255);
+
+    public static final int white = rgba8888(255, 255, 255, 255);
+    public static final int black = rgba8888(0, 0, 0, 255);
+
     public static final Color WHITE = new Color(0xFFFFFFFF);
     public static final Color BLACK = new Color(0x000000FF);
     public static final Color CLEAR = new Color(0x00000000);
@@ -8,6 +17,8 @@ public final class Color {
     private int rgba8888;
 
     public Color() {}
+
+    public Color(Colorf color) { this.rgba8888 = color.rgba8888(); }
 
     public Color(Color color) {
         this.rgba8888 = color.rgba8888;
@@ -50,6 +61,11 @@ public final class Color {
     public int b() { return rgba8888 >> 8 & 0xFF; }
     public int a() { return rgba8888 & 0xFF; }
 
+    public float rf() { return r() / 255f; }
+    public float gf() { return g() / 255f; }
+    public float bf() { return b() / 255f; }
+    public float af() { return a() / 255f; }
+
     public void r(int r) { this.rgba8888 = rgba8888(r, g(), b(), a()); }
     public void g(int g) { this.rgba8888 = rgba8888(r(), g, b(), a()); }
     public void b(int b) { this.rgba8888 = rgba8888(r(), g(), b, a()); }
@@ -65,6 +81,17 @@ public final class Color {
     public void sub(Color color) { this.rgba8888 = rgba8888(r() - color.r(), g() - color.g(), b() - color.b(), a() - color.a()); }
     public void mul(Color color) { this.rgba8888 = rgba8888(r() * color.r(), g() * color.g(), b() * color.b(), a() * color.a()); }
     public void div(Color color) { this.rgba8888 = rgba8888(r() / color.r(), g() / color.g(), b() / color.b(), a() / color.a()); }
+
+    static int toInt(float c) { return (int) (clamp(c) / 255); }
+    public void rf(float r) { this.rgba8888 = rgba8888(toInt(r), g(), b(), a()); }
+    public void gf(float g) { this.rgba8888 = rgba8888(r(), toInt(g), b(), a()); }
+    public void bf(float b) { this.rgba8888 = rgba8888(r(), g(), toInt(b), a()); }
+    public void af(float a) { this.rgba8888 = rgba8888(r(), g(), b(), toInt(a)); }
+
+    public Colorf copy() { return new Colorf(this); }
+    public Color copyi() { return new Color(this); }
+
+    public boolean equals(Color o) { return rgba8888 == o.rgba8888; }
 
     @Override
     public boolean equals(Object o) {

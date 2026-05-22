@@ -1,9 +1,9 @@
 package core.content.creatures;
 
 import core.Global;
-import core.World.ContentLoader;
-import core.World.ContentType;
-import core.entity.CreatureEntity;
+import core.content.ContentLoader;
+import core.content.ContentType;
+import core.content.entity.CreatureEntity;
 import core.g2d.Atlas;
 
 public abstract class CreatureType implements ContentType {

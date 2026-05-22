@@ -1,10 +1,10 @@
 package core;
 
 import core.World.StaticWorldObjects.TemperatureMap;
+import core.g2d.StackfulRender;
 import core.g2d.Texture;
 import core.util.Color;
 
-import static core.Global.batch;
 import static core.Global.player;
 
 public final class PostEffect extends GameObject {
@@ -15,7 +15,7 @@ public final class PostEffect extends GameObject {
 
     @Override
     public void update() {
-        int temp = (int) TemperatureMap.getAverageTempAroundDynamic(player.getX(), player.getY(), player.creature.texture);
+        int temp = (int) TemperatureMap.getAverageTempAroundDynamic(player.x(), player.y(), player.creature.texture);
         int upperLimit = 100;
         int lowestLimit = -20;
         int maxColor = 90;
@@ -36,6 +36,6 @@ public final class PostEffect extends GameObject {
 
     @Override
     public void draw() {
-        batch.draw(temperatureTex, temperatureColor);
+        StackfulRender.draw(temperatureTex, temperatureColor, 0, 0);
     }
 }

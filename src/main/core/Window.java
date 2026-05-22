@@ -2,35 +2,28 @@ package core;
 
 import com.sun.management.OperatingSystemMXBean;
 import core.EventHandling.Config;
+import core.assets.AssetsManager;
 import core.content.EntityPool;
-import core.g2d.Atlas;
-import core.g2d.Font;
-import core.g2d.SortingBatch;
+import core.g2d.*;
 import core.input.InputHandler;
-import core.util.DebugTools;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import core.util.Debug;
+import core.util.FutureUtil;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.io.IoBuilder;
-import org.lwjgl.glfw.GLFWImage;
-import org.lwjgl.glfw.GLFWVidMode;
-import org.lwjgl.glfw.GLFWWindowCloseCallback;
-import org.lwjgl.glfw.GLFWWindowFocusCallback;
+import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLUtil;
-import org.lwjgl.system.Configuration;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.system.MemoryUtil;
-import org.lwjgl.system.Platform;
+import org.lwjgl.system.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 
-import static core.EventHandling.EventHandler.debugLevel;
 import static core.Global.*;
-import static core.assets.TextureLoader.decodeImage;
+import static core.graphic.TextureLoader.decodeImage;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;
 
@@ -42,14 +35,20 @@ public final class Window extends Application {
     public static long glfwWindow;
     public static Font defaultFont;
 
+    public static void setClipboardText(@Nullable CharSequence text) {
+        glfwSetClipboardString(glfwWindow, text);
+    }
+
+    public static @Nullable String getClipboardText() {
+        return glfwGetClipboardString(glfwWindow);
+    }
+
     @Override
     protected void init() throws Throwable {
         // Хмм, надо бы где-то тут создавать сцену
         assets.load(Font.class, "arial.ttf");
-        assets.load(Atlas.class, "sprites");
 
-        Config.checkConfig();
-        if (debugLevel >= 2) {
+        if (Debug.debugLevel >= 4) {
             Configuration.DEBUG.set(true);
             Configuration.DEBUG_STREAM.set(IoBuilder.forLogger(lwjglLogger)
                     .setLevel(Level.DEBUG)
@@ -58,27 +57,28 @@ public final class Window extends Application {
             Configuration.DEBUG_STACK.set(true);
         }
 
-//        glfwSetErrorCallback(Global.app.keep(new GLFWErrorCallback() {
-//            private final Marker GLFW = MarkerManager.getMarker("GLFW");
-//            private final Int2ObjectOpenHashMap<String> ERROR_CODES;
-//            {
-//                ERROR_CODES = new Int2ObjectOpenHashMap<>(APIUtil.apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, org.lwjgl.glfw.GLFW.class));
-//                ERROR_CODES.trim();
-//            }
-//
-//            @Override
-//            public void invoke(int error, long description) {
-//                String errorStr = ERROR_CODES.get(error);
-//                String msg = getDescription(description);
-//                lwjglLogger.error(GLFW, "error code: {}, description: {}", errorStr, msg);
-//
-//                StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-//                for (int i = 4; i < stack.length; i++) {
-//                    lwjglLogger.error(GLFW,"\tat {}", stack[i]);
-//                }
-//            }
-//        }));
+       glfwSetErrorCallback(Global.app.keep(new GLFWErrorCallback() {
+           private final Marker GLFW = MarkerManager.getMarker("GLFW");
+           private final Int2ObjectOpenHashMap<String> ERROR_CODES;
+           {
+               ERROR_CODES = new Int2ObjectOpenHashMap<>(APIUtil.apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, org.lwjgl.glfw.GLFW.class));
+               ERROR_CODES.trim();
+           }
 
+           @Override
+           public void invoke(int error, long description) {
+               String errorStr = ERROR_CODES.get(error);
+               String msg = getDescription(description);
+               lwjglLogger.error(GLFW, "error code: {}, description: {}", errorStr, msg);
+
+               StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+               for (int i = 4; i < stack.length; i++) {
+                   lwjglLogger.error(GLFW,"\tat {}", stack[i]);
+               }
+           }
+       }));
+
+        // glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
         switch (System.getenv("XDG_SESSION_TYPE")) {
             case "wayland" -> {
                 glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
@@ -92,6 +92,7 @@ public final class Window extends Application {
 
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        // glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
 
         if (Config.getBoolean("DebugMACOSX") || Platform.get() == Platform.MACOSX) {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -100,7 +101,7 @@ public final class Window extends Application {
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         }
 
-        glfwWindow = glfwCreateWindow(defaultWidth, defaultHeight, "-270 on Celsius", glfwGetPrimaryMonitor(), MemoryUtil.NULL);
+        glfwWindow = glfwCreateWindow(defaultWidth, defaultHeight, "-270 on Celsius", /* 0 для оконного */ glfwGetPrimaryMonitor(), MemoryUtil.NULL);
         if (glfwWindow == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create window");
         }
@@ -122,20 +123,25 @@ public final class Window extends Application {
         printComputerInfo();
 
         if (Config.getBoolean("VerticalSync")) {
-            log.info("Framerate: Vertical Sync");
+            log.info("Target Framerate: Vertical Sync");
             glfwSwapInterval(1);
         } else {
             glfwSwapInterval(0);
-            int targetFPS = Config.getInt("TargetFPS", 60);
-            log.info("Framerate: {} fps", targetFPS);
-            setFramerate(targetFPS);
+            int targetFPS = Config.getInt("TargetFPS", -1);
+            if (targetFPS != -1) {
+                log.info("Target Framerate: {} FPS", targetFPS);
+                setFramerate(targetFPS);
+            } else {
+                log.info("Target Framerate: Uncapped");
+            }
         }
 
         GL.createCapabilities();
 
-         if (debugLevel >= 3) {
+         if (Debug.debugLevel >= 5) {
              glEnable(GL_DEBUG_OUTPUT);
              keep(GLUtil.setupDebugMessageCallback());
+             keep(() -> glDisable(GL_DEBUG_OUTPUT));
          }
 
         uiScene = new UIScene(defaultWidth, defaultHeight);
@@ -156,17 +162,25 @@ public final class Window extends Application {
             }
         }));
 
-        batch = new SortingBatch(4 * 1024 * 1024, 1024 * 8, 1024 * 8);
-
-        addListener(new AutoSaveListener());
+        assets.load(Atlas.class, "sprites", AssetsManager.LoadType.SYNC);
+        Shaders.repeat = FutureUtil.join(Global.assets.load(Shader.class, "repeat", AssetsManager.LoadType.SYNC));
+        StackfulRender.defaultShader = FutureUtil.join(Global.assets.load(Shader.class, "default", AssetsManager.LoadType.SYNC));
+        Render.init();
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
+
         glfwShowWindow(glfwWindow);
+        // int[] w = new int[1], h = new int[1];
+        // glfwGetFramebufferSize(glfwWindow, w, h);
+
+        // postEffect = new PostEffect(w[0], h[0], );
 
         lang = new LangTranslation();
         lang.load(); // TODO придумать как загружать и перезагружать
 
-        entityPool = new EntityPool(4);
+        entityPool = new EntityPool(Short.MAX_VALUE);
+
+        Debug.initDebugValuesMenu();
 
         setGameScene(new MenuScene());
     }
@@ -198,8 +212,8 @@ public final class Window extends Application {
         var memMxbean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
         double gib = 1024d * 1024d * 1024d;
 
-        log.info("Heap max capacity: {} GiB", DebugTools.FLOATS.format(Runtime.getRuntime().maxMemory() / gib));
-        log.info("Total memory size: {} GiB", DebugTools.FLOATS.format(memMxbean.getTotalMemorySize() / gib));
+        log.info("Heap max capacity: {} GiB", Debug.FLOATS.format(Runtime.getRuntime().maxMemory() / gib));
+        log.info("Total memory size: {} GiB", Debug.FLOATS.format(memMxbean.getTotalMemorySize() / gib));
     }
 
     @Override
@@ -217,16 +231,15 @@ public final class Window extends Application {
         // 6) Отрисовка мира в порядке отображения
         updateTime();
 
-        for (ApplicationListener listener : listeners) {
-            listener.update();
-        }
-
         input.update();
+        var rq = Render.queue();
+        rq.beginFrame();
         gameScene.loop();
-        batch.flush();
+        StackfulRender.pushRenderList();
+        rq.endFrame();
 
         glfwSwapBuffers(glfwWindow);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
 
         nextFrame();
     }
@@ -234,7 +247,7 @@ public final class Window extends Application {
     @Override
     protected void cleanup() {
         glfwTerminate();
-        batch.close();
+        Render.queue.close();
         assets.unloadAll();
     }
 }

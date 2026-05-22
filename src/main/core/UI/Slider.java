@@ -1,12 +1,14 @@
 package core.UI;
 
 import core.g2d.Atlas;
+import core.g2d.StackfulRender;
 import core.g2d.Fill;
 import core.g2d.Font;
 import core.util.Color;
 
 import static core.Global.*;
-import static core.World.Textures.TextureDrawing.getTextSize;
+import static core.World.Textures.TextureDrawing.calculateTextSize;
+import static core.util.Color.*;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 
 public class Slider extends BaseElement<Slider> {
@@ -65,28 +67,22 @@ public class Slider extends BaseElement<Slider> {
             rectBrightness = 120;
         }
 
-        Atlas.Region triangle = atlas.byPath("UI/GUI/numberBoardTriangle.png");
+        Atlas.Region triangle = atlas.get("UI/GUI/numberBoardTriangle");
 
-        // todo 7 это высота текстуры треугольника
-
-        batch.draw(triangle, sliderPos - (triangle.width() / 2f), y + rectY - 7);
+        StackfulRender.draw(triangle, sliderPos - (triangle.width() / 2f), y + rectY - triangle.height());
 
         String sliderValue = Integer.toString(getSliderValue());
-        int numbersWidth = getTextSize(sliderValue).x;
+        int numbersWidth = calculateTextSize(sliderValue).x;
 
         Fill.rect(sliderPos - (triangle.width() / 2f) - (numbersWidth / (rectWidth * 2)),
                 y + rectY, 30 + numbersWidth / rectWidth, rectHeight,
-                Color.fromRgba8888(0, 0, 0, rectBrightness));
+                rgba8888(0, 0, 0, rectBrightness));
 
         float x = sliderPos - (numbersWidth / 2f) + 5;
         for (int i = 0; i < sliderValue.length(); i++) {
             char ch = sliderValue.charAt(i);
-            if (ch == ' ') {
-                x += style.font.getGlyph('A').width();
-                continue;
-            }
             Font.Glyph glyph = style.font.getGlyph(ch);
-            batch.draw(glyph, Styles.DIRTY_WHITE, x, y + rectY);
+            StackfulRender.draw(glyph, Styles.DIRTY_WHITE, x, y + rectY);
             x += glyph.width();
         }
 
@@ -101,7 +97,7 @@ public class Slider extends BaseElement<Slider> {
     }
 
     @Override
-    public void updateThis() {
+    public void updateThis(float dt) {
         boolean hit = hit(input.mousePos()) == this;
         if (hit) {
             if (input.justClicked(GLFW_MOUSE_BUTTON_1)) {

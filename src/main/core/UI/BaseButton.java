@@ -3,6 +3,7 @@ package core.UI;
 import core.EventHandling.EventHandler;
 import core.World.Textures.TextureDrawing;
 import core.g2d.Font;
+import core.input.InputListener;
 import core.util.Color;
 
 import java.util.function.Consumer;
@@ -13,12 +14,23 @@ import static core.Global.input;
 public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B> {
     public boolean isClickable = true, isClicked, oneShot; // TODO перевести на битовые флаги.
     public Color color;
-    public String name, prompt;
+    public final TextArea name, prompt;
     public Consumer<? super B> clickAction;
-    private static boolean showPrompts = getBoolean("ShowPrompts");
+
+    protected boolean isUnderMouse;
 
     protected BaseButton(Group panel) {
         super(panel);
+        name = new TextArea(null, Styles.DEFAULT_TEXT);
+        prompt = new TextArea(null, Styles.DEFAULT_TEXT);
+
+        addListener(new InputListener() {
+            @Override
+            public void onMouseEnter(float x, float y) { isUnderMouse = true; }
+
+            @Override
+            public void onMouseExit(float x, float y)  { isUnderMouse = false; }
+        });
     }
 
     public B setClicked(boolean clicked) {
@@ -27,7 +39,7 @@ public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B>
     }
 
     public B setPrompt(String prompt) {
-        this.prompt = prompt;
+        this.prompt.setText(prompt);
         return as();
     }
 
@@ -37,7 +49,12 @@ public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B>
     }
 
     public B setName(String name) {
-        this.name = name;
+        this.name.setText(name);
+        return as();
+    }
+
+    public B setTranslation(String name) {
+        this.name.setTranslation(name);
         return as();
     }
 
@@ -67,11 +84,11 @@ public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B>
     }
 
     protected void drawPrompt(BaseButton<?> button, Font font) {
-        if (showPrompts) {
-            if (EventHandler.isMousePressed(button) && System.currentTimeMillis() - input.getLastMouseMoveTimestamp() >= 1000 && button.prompt != null) {
-                TextureDrawing.drawRectangleText(input.mousePos().x, input.mousePos().y, 0, button.prompt,
-                        false, Styles.DEFAULT_PANEL_COLOR, font);
-            }
-        }
+        // if (showPrompts) {
+            // if (EventHandler.isMousePressed(button) && System.currentTimeMillis() - input.getLastMouseMoveTimestamp() >= 1000 && button.prompt != null) {
+            //     TextureDrawing.drawRectangleText(input.mousePos().x, input.mousePos().y, 0, button.prompt,
+            //             false, Styles.DEFAULT_PANEL_COLOR, font);
+            // }
+        // }
     }
 }

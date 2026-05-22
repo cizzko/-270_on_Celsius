@@ -15,6 +15,8 @@ public interface AssetResolver {
         return load(type, name, loadType(), null);
     }
 
+    <T, P, S> Future<T> load(Class<? extends AssetHandler<T, P, S>> type, String name, Consumer<? super P> paramsModifier);
+
     default <T> Future<T> load(Class<T> type, String name, AssetsManager.LoadType loadType) {
         return load(type, name, loadType, null);
     }

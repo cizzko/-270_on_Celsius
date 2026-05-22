@@ -1,15 +1,25 @@
 package core.UI;
 
+import core.Global;
+import core.input.InputListener;
 import core.math.Rectangle;
-import core.util.DebugTools;
+import core.util.Debug;
 import core.util.Sized;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class BaseElement<E extends BaseElement<E>> implements Element {
-    protected static final int FLAG_X_CHANGED   = 1 << 0;
-    protected static final int FLAG_Y_CHANGED   = 1 << 1;
-    protected static final int FLAG_W_CHANGED   = 1 << 2;
-    protected static final int FLAG_H_CHANGED   = 1 << 3;
-    protected static final int FLAG_VISIBLE     = 1 << 4;
+    protected static final int FLAG_X_CHANGED      = 1 << 0;
+    protected static final int FLAG_Y_CHANGED      = 1 << 1;
+    protected static final int FLAG_W_CHANGED      = 1 << 2;
+    protected static final int FLAG_H_CHANGED      = 1 << 3;
+    protected static final int FLAG_VISIBLE        = 1 << 4;
+    protected static final int FLAG_TOUCHABLE      = 1 << 5;
+    protected static final int FLAG_ONE_TOUCH_DOWN = 1 << 6;
+
+    protected static final int ELEMENT_LAST_FLAG = FLAG_ONE_TOUCH_DOWN;
 
     // Допустимая погрешность в координатах интерфейса
     private static final float SIZE_EPSILON = 1e-4f;
@@ -28,25 +38,35 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     protected void flipFlag(int flag) {
         flags ^= flag;
     }
+    protected boolean isFlag(int flag) { return (flags & flag) != 0; }
 
-    public final Group parent;
+    public Group parent;
 
-    protected String id;
+    protected @Nullable String id;
     protected float x, y;
     protected float width, height;
-    protected int flags = FLAG_VISIBLE;
+    protected int flags = FLAG_VISIBLE | FLAG_TOUCHABLE;
+    protected ArrayList<InputListener> inputListeners = new ArrayList<>();
 
     protected BaseElement(Group parent) {
         this.parent = parent;
     }
 
-    @SuppressWarnings("unchecked")
-    protected E as() {
-        return (E) this;
+    @Override
+    public final void addListener(InputListener listener) {
+        this.inputListeners.add(listener);
     }
 
     @Override
-    public final String id() {
+    public final List<InputListener> listeners() { return inputListeners; }
+
+    @Override
+    public final boolean remove() {
+        return parent != null && parent.remove(this);
+    }
+
+    @Override
+    public final @Nullable String id() {
         return id;
     }
 
@@ -81,19 +101,25 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     }
 
     @Override
-    public E setId(String id) {
+    public final E setId(@Nullable String id) {
         this.id = id;
         return as();
     }
 
+    @Override
+    public final E setParent(@Nullable Group parent) {
+        this.parent = parent;
+        return as();
+    }
+
     protected void resize() {}
-    protected void updateThis() {}
+    protected void updateThis(float dt) {}
 
     @Override
-    public void update() {
+    public void update(float dt) {
         resize();
         flags &= ~(FLAG_X_CHANGED | FLAG_Y_CHANGED | FLAG_W_CHANGED | FLAG_H_CHANGED);
-        updateThis();
+        updateThis(dt);
     }
 
     // region Size setters
@@ -163,21 +189,110 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     // endregion
 
     @Override
-    public E setVisible(boolean visible) {
-        setFlag(FLAG_VISIBLE, visible);
+    public final E setVisible(boolean state) {
+        setFlag(FLAG_VISIBLE, state);
         return as();
     }
 
     @Override
-    public E toggleVisibility() {
+    public final E setTouchable(boolean state) {
+        setFlag(FLAG_TOUCHABLE, state);
+        return as();
+    }
+
+    @Override
+    public final E setHotkey(int key, Runnable action) {
+        addListener(new KeyboardListener(key, action));
+        return as();
+    }
+
+    @Override
+    public final E toggleVisibility() {
         flipFlag(FLAG_VISIBLE);
         return as();
     }
 
     @Override
-    public Element hit(float hx, float hy) {
-        return Rectangle.contains(x, y, width, height, hx, hy) ? this : null;
+    public @Nullable Element hit(float hx, float hy) {
+        if ((flags & FLAG_TOUCHABLE) != 0 && Rectangle.contains(x, y, width, height, hx, hy)) {
+            return this;
+        }
+        return null;
     }
+
+    // region InputListener
+
+
+    @Override
+    public void onResize(int width, int height) {
+        inputListeners.forEach(listener -> listener.onResize(width, height));
+    }
+
+    @Override
+    public boolean onTouchDown(float x, float y, int button) {
+        boolean anyHandled = false;
+        for (InputListener listener : inputListeners) {
+            if (listener.onTouchDown(x, y, button)) {
+                Global.uiScene.setFocus(this);
+                if (isFlag(FLAG_ONE_TOUCH_DOWN)) {
+                    break;
+                }
+                anyHandled = true;
+            }
+        }
+        return anyHandled;
+    }
+
+    @Override
+    public void onTouchUp(float x, float y, int button) {
+        inputListeners.forEach(listener -> listener.onTouchUp(x, y, button));
+    }
+
+    @Override
+    public void onScroll(float xOffset, float yOffset) {
+        inputListeners.forEach(listener -> listener.onScroll(xOffset, yOffset));
+    }
+
+    @Override
+    public void onMouseMove(float x, float y) {
+        inputListeners.forEach(listener -> listener.onMouseMove(x, y));
+    }
+
+    @Override
+    public void onMouseDragged(float x, float y) {
+        inputListeners.forEach(listener -> listener.onMouseDragged(x, y));
+    }
+
+    @Override
+    public void onKeyUp(int key, int scancode) {
+        inputListeners.forEach(listener -> listener.onKeyUp(key, scancode));
+    }
+
+    @Override
+    public void onKeyDown(int key, int scancode) {
+        inputListeners.forEach(listener -> listener.onKeyDown(key, scancode));
+    }
+
+    @Override
+    public void onKeyRepeat(int key, int scancode) {
+        inputListeners.forEach(listener -> listener.onKeyRepeat(key, scancode));
+    }
+
+    @Override
+    public void onCodepoint(int codepoint) {
+        inputListeners.forEach(listener -> listener.onCodepoint(codepoint));
+    }
+
+    @Override
+    public void onMouseEnter(float x, float y) {
+        inputListeners.forEach(listener -> listener.onMouseEnter(x, y));
+    }
+
+    @Override
+    public void onMouseExit(float x, float y) {
+        inputListeners.forEach(listener -> listener.onMouseExit(x, y));
+    }
+    // endregion
 
     @Override
     public final String toString() {
@@ -190,11 +305,11 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
     }
 
     protected String printPosition() {
-        return " (" +
-                "x=" + DebugTools.FLOATS.format(x) +
-                ", y=" + DebugTools.FLOATS.format(y) +
-                ", w=" + DebugTools.FLOATS.format(width) +
-                ", h=" + DebugTools.FLOATS.format(height) +
-                ")";
+        return "(" +
+               "x=" + Debug.FLOATS.format(x) +
+               ", y=" + Debug.FLOATS.format(y) +
+               ", w=" + Debug.FLOATS.format(width) +
+               ", h=" + Debug.FLOATS.format(height) +
+               ")";
     }
 }

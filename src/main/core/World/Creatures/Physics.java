@@ -2,21 +2,21 @@ package core.World.Creatures;
 
 import core.PlayGameScene;
 import core.Time;
-import core.World.HitboxMap;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.entity.CreatureEntity;
-import core.math.Point2i;
+import core.World.Textures.ShadowMap;
+import core.content.entity.HealthComponent;
+import core.content.entity.LivingEntity;
+import core.g2d.Drawable;
 import core.math.Rectangle;
 import core.math.Vector2f;
-
-import java.util.BitSet;
+import core.util.FixedBitset;
+import it.unimi.dsi.fastutil.HashCommon;
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
 import static core.Global.*;
-import static core.World.Creatures.DynamicWorldObjects.GAP;
-import static core.World.Creatures.Player.Player.*;
+import static core.World.Creatures.Player.Player.noClip;
 import static core.World.Textures.TextureDrawing.blockSize;
-import static core.World.WorldGenerator.WorldGenerator.intersDamageMultiplier;
-import static core.World.WorldGenerator.WorldGenerator.minVectorIntersDamage;
+import static core.content.entity.DrawComponent.GAP;
 import static java.lang.Math.abs;
 
 public class Physics {
@@ -29,13 +29,54 @@ public class Physics {
         if (scene.isPaused()) {
             return;
         }
-        update();
+        updateMovement();
+        processCollisions();
     }
 
     static final Rectangle hitbox = new Rectangle();
     static final Rectangle entityHitbox = new Rectangle();
     static final Rectangle blockHitbox = new Rectangle();
     static final Vector2f tmp1 = new Vector2f();
+    static final Vector2f normal = new Vector2f();
+
+    private static void processCollisions() {
+        completedCollisions.clear();
+        entityPool.updatePositions();
+
+        entityPool.entities().values().forEach(me -> {
+            entityPool.worldIndex().intersect(me, them -> {
+                if (me == them) {
+                    return;
+                }
+
+                var meColId   = combine(me.getId(), them.getId());
+                var themColId = combine(them.getId(), me.getId());
+                if (completedCollisions.contains(meColId) || completedCollisions.contains(themColId)) {
+                    return;
+                }
+
+                me.onCollide(them);
+                if (!me.isRemoved()) {
+                    them.onCollide(me);
+                }
+
+                completedCollisions.add(meColId);
+                completedCollisions.add(themColId);
+            });
+        });
+    }
+
+    static final IntOpenHashSet completedCollisions = new IntOpenHashSet();
+
+    static int combine(short a, short b) {
+        return HashCommon.mix(a << 16 | b & 0xffff);
+    }
+
+    private static void updateEntities() {
+        for (var ent : entityPool.entities().values()) {
+            ent.update();
+        }
+    }
 
     private static Vector2f overlap(Rectangle a, Rectangle b) {
         float penetration = 0f;
@@ -65,14 +106,10 @@ public class Physics {
         }
 
         float m = Math.max(penetration, 0.0f);
-
-        tmp1.x *= -m;
-        tmp1.y *= -m;
-
-        return tmp1;
+        return tmp1.scale(-m);
     }
 
-    private static void moveDelta(CreatureEntity entity, float deltaX, float deltaY) {
+    private static void moveDelta(LivingEntity entity, float deltaX, float deltaY) {
         entity.getHitboxTo(hitbox);
         entity.getHitboxTo(entityHitbox);
         entityHitbox.x += deltaX;
@@ -84,73 +121,119 @@ public class Physics {
         int maxX = (int) Math.floor((entityHitbox.x + entityHitbox.width) / blockSize);
         int maxY = (int) Math.floor((entityHitbox.y + entityHitbox.height) / blockSize);
 
+        Vector2f vel = entity.getVelocity();
+
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
-                var block = world.getBlock(x, y);
-                if (block == null || block.type == StaticObjectsConst.Type.SOLID) {
-                    blockHitbox.set(x * blockSize, y * blockSize, blockSize, blockSize);
+                int blockId = world.getBlockId(x, y);
+                if (blockId <= 0) {
+                    continue;
+                }
+                var block = content.blocksRegistry.typeById(blockId);
+                if (block.type != StaticObjectsConst.Type.SOLID) {
+                    continue;
+                }
+                blockHitbox.set(x * blockSize, y * blockSize, blockSize, blockSize);
 
-                    if (blockHitbox.overlaps(entityHitbox)) {
-                        var v = overlap(entityHitbox, blockHitbox);
-                        entityHitbox.x += v.x;
-                        entityHitbox.y += v.y;
+                if (blockHitbox.overlaps(entityHitbox)) {
+                    var offsetVec = overlap(entityHitbox, blockHitbox);
+
+                    float penetration = offsetVec.hypot();
+                    if (penetration > 0f) {
+                        normal.x = -offsetVec.x / penetration; // так как v = normal * -penetration
+                        normal.y = -offsetVec.y / penetration;
+                        if (Math.abs(normal.y) >= Math.abs(normal.x)) {
+                            if (normal.y < 0) {
+                                normal.x = -normal.x;
+                                normal.y = -normal.y;
+                            }
+                        } else { // боковые столкновения: сделаем normal.x положительным (направление вправо от блока к сущности)
+                            if (normal.x < 0) {
+                                normal.x = -normal.x;
+                                normal.y = -normal.y;
+                            }
+                        }
+                    } else {
+                        normal.set(0, 0);
                     }
+
+
+                    final float DAMAGE_MULTIPLIER = 5f/550;
+                    final float IMPACT_MULTIPLIER = 0.25f;
+                    final float FALL_DAMAGE_SPEED_THRESHOLD = 15.5f;
+                    final float FALL_DAMAGE_MULTIPLIER = 10f / 1000.054f;
+
+                    // проекция скорости на нормаль
+                    float vn = normal.projectTo(vel.x, vel.y);
+
+                    // if (vel.x > 0)
+                    //     System.out.println("penetration = " + penetration + ", vn = " + vn + ", normal = " + normal + ", vel = " + vel);
+
+                    if (vn < 0 && vel.y < -FALL_DAMAGE_SPEED_THRESHOLD && hasFloor(entityHitbox)) {
+                        float impact = entity.getWeight() * Math.abs(vel.y);
+                        int damage = (int) Math.floor(impact * FALL_DAMAGE_MULTIPLIER);
+
+                        // System.out.println("(VERTICAL) impact=" + impact + ", damage=" + damage + " (" + x + "," + y + ") vel=" + vel);
+
+                        // TODO: Необходимо что-то придумать с распределением урона по площади контакта
+                        //       Это явно не будет сделано здесь из-за направления обхода и применения урона
+                        if (damage > 0) {
+                            entity.damage(damage, HealthComponent.DamageSource.FALL);
+                            // world.damage(x, y, damage);
+                            vel.y = 0;
+                        }
+                    }
+
+                    // if (Math.abs(vn) >= 15) {
+                    //     // линейный импульс P = m * |vn|
+                    //     float weight = entity.getWeight();
+                    //     float impact = weight * Math.abs(vn);
+                    //     int damage = (int)Math.floor((impact - weight * IMPACT_MULTIPLIER) * DAMAGE_MULTIPLIER);
+                    //     System.out.println("impact=" + impact + " | damage=" + damage + " | vn=" + vn+ " | velX=" + vel.x);
+                    //     if (damage > 0) {
+                    //         // entity.damage(damage);
+                    //         // world.damage(x, y, damage);
+                    //     }
+                    //
+                    //     vel.x -= vn * normal.x;
+                    //     // vel.y -= vn * normal.y;
+                    // }
+
+                    entityHitbox.x += offsetVec.x;
+                    entityHitbox.y += offsetVec.y;
                 }
             }
         }
 
-        entity.setPosition(entity.getX() + entityHitbox.x - hitbox.x, entity.getY() + entityHitbox.y - hitbox.y);
+        entity.setPosition(
+                entity.x() + entityHitbox.x - hitbox.x,
+                entity.y() + entityHitbox.y - hitbox.y);
     }
 
-    private static void decrementHp(DynamicWorldObjects entity, float dt) {
-        float vectorX = dt * entity.getMotionVectorX();
-        float vectorY = dt * entity.getMotionVectorY();
+    private static boolean hasFloor(Rectangle entityHitbox) {
+        int minX = (int) Math.floor(entityHitbox.x / blockSize);
+        int maxX = (int) Math.floor((entityHitbox.x + entityHitbox.width - GAP) / blockSize);
+        int minY = (int) Math.floor((entityHitbox.y - GAP) / blockSize);
 
-        if (vectorX > minVectorIntersDamage || vectorX < -minVectorIntersDamage ||
-                vectorY > minVectorIntersDamage || vectorY < -minVectorIntersDamage) {
-            Point2i[] staticObjectPoint = HitboxMap.checkIntersOutside(entity.getX() + vectorX * 2, entity.getY() + vectorY, entity.getTexture().width(), entity.getTexture().height() + 4);
-
-            if (staticObjectPoint != null) {
-                float damage = 0;
-                for (Point2i point : staticObjectPoint) {
-                    var block = world.getBlock(point.x, point.y);
-                    float currentDamage = ((((block.resistance / 100) * block.density)
-                            + (entity.getWeight() + (Math.max(abs(vectorY), abs(vectorX)) - minVectorIntersDamage)) * intersDamageMultiplier))
-                            / staticObjectPoint.length;
-
-                    damage += currentDamage;
-                    int blockDamage = (int) (currentDamage + (block.resistance / 100) * block.density) / staticObjectPoint.length;
-                    world.damage(point.x, point.y, blockDamage);
-                }
-                entity.incrementCurrentHP(-damage);
-
-                // todo переписать
-                if (entity.getTexture().name().toLowerCase().contains("player")) {
-                    lastDamage = (int) damage;
-                    lastDamageTime = System.currentTimeMillis();
-                }
-                if (entity.getCurrentHP() <= 0 && !entity.getTexture().name().toLowerCase().contains("player")) {
-                    // DynamicObjects.remove(entity);
-                //todo
-                }
+        for (int x = minX; x <= maxX; x++) {
+            int blockId = world.getBlockId(x, minY);
+            if (blockId < 0 || blockId > 0 && content.blocksRegistry.typeById(blockId).type == StaticObjectsConst.Type.SOLID) {
+                return true;
             }
         }
+        return false;
     }
 
     static final float STEPS = 1f / Time.ONE_SECOND;
 
-    private static void update() {
+    private static void updateMovement() {
+
         player.updateInput();
-        entityPool.update();
+
+        updateEntities();
 
         // Физика не будет оставаться на главном потоке, но пока это прототип.
 
-        // Тут я обезопасил кусок кода от пролагов. Если Time.delta >= STEPS(=Time.ONE_SECOND)
-        // то это значит, что игра и вся её логика зависла на секунду. Для каких-нибудь заводов это
-        // может быть не столь критично (нет, критично. Может тогда вынести подобный цикл по фиксированным интервалам в самых верх игрового цикла?)
-        // Но для физики это может быть ещё как критично, поскольку на dt домножаются вектора скорости (и ускорения)
-        // Да, значение фиксированного интервала в 1 секунду это много (в масштабах игры).
-        //                                                                      (Изменю позже)
         float dt = Time.delta;
         while (dt >= STEPS) {
             simulate(STEPS);
@@ -167,37 +250,44 @@ public class Physics {
 
     private static void simulate(float dt) {
         for (var ent : entityPool.entities().values()) {
-            if (ent.getX() > (world.sizeX - swap) * blockSize) {
-                ent.setX(swap * blockSize);
-                camera.position.set(ent.getX() + 32, ent.getY() + 200);
-            } else if (ent.getX() < swap * blockSize) {
-                ent.setX((world.sizeX - swap) * blockSize);
-                camera.position.set(ent.getX() + 32, ent.getY() + 200);
+            float rightBorder = (world.sizeX - swap) * blockSize;
+            float leftBorder = swap * blockSize;
+            float dx = rightBorder - leftBorder;
+
+            // TODO:  при передвижении справа налево движение засчитывается только у ent.getX() (а это левый нижний пиксель)
+            //        Логично что касание должно быть от ent.getX()+hitbox.width
+            if (ent.x() >= rightBorder) {
+                ent.setX(ent.x() - dx);
+                if (player == ent) {
+                    camera.position.x -= dx;
+                    ShadowMap.update();
+                }
+            } else if (ent.x() <= leftBorder) {
+                ent.setX(ent.x() + dx);
+                if (player == ent) {
+                    camera.position.x += dx;
+                    ShadowMap.update();
+                }
             }
 
             if (ent == player && noClip) {
                 continue;
             }
 
-            boolean hasFloor = ent.hasFloor();
-
-            Vector2f vel = ent.getVelocity();
-
-            if (!hasFloor) {
-                vel.y -= ent.getCreature().weight * GRAVITY * dt;
+            if (!(ent instanceof LivingEntity livingEntity)) {
+                continue;
             }
 
-            float k = calculateFriction(ent);
-            float perSecondRetention = Math.clamp(1.0f - k * ent.getCreature().weight * FRICTION_FACTOR, 0.0f, 1.0f);
+            boolean hasFloor = ent.hasFloor();
+            Vector2f vel = livingEntity.getVelocity();
+            if (!hasFloor) {
+                vel.y -= livingEntity.getWeight() * GRAVITY * dt;
+            }
+
+            float k = calculateFriction(livingEntity);
+            float perSecondRetention = Math.clamp(1.0f - k * livingEntity.getWeight() * FRICTION_FACTOR, 0.0f, 1.0f);
             float retentionForDt = (float) Math.pow(perSecondRetention, dt);
             vel.x *= retentionForDt;
-
-
-            // TODO Тут или в логике игрока (Player#update()) должен быть расчёт силы удара.
-            //      Как я описал в ЛС, это F=m*a, то есть можно нужно рассчитать ускорение
-            //      как изменение скорости за время и умножить на массу игрока. Так мы получим численное нечто,
-            //      что можно в дальнейшем перевести в hp. Урон блокам, на которые падает игрок, равносилен урону игрока.
-            //      По 3 закону Ньютона жеж)
 
             if (abs(vel.x) >= maxSpeed) {
                 vel.x = Math.signum(vel.x) * maxSpeed;
@@ -205,12 +295,11 @@ public class Physics {
             if (abs(vel.y) >= maxSpeed) {
                 vel.y = Math.signum(vel.y) * maxSpeed;
             }
-            move(ent, dt);
+            move(livingEntity, dt);
 
-            if (vel.y < 0 && hasFloor) {
+            if (vel.y < 0 && ent.hasFloor()) {
                 vel.y = 0;
             }
-            if (abs(vel.x) < moveThreshold) vel.x = 0;
         }
     }
 
@@ -223,20 +312,9 @@ public class Physics {
     // проблему с округлением координат, что в свою очередь избавляет от возможной "тряски" при движении
     private static final float MOVEMENT_SEGMENT = GAP;
 
-    private static void move(CreatureEntity ent, float dt) {
+    private static void move(LivingEntity ent, float dt) {
         var vel = ent.getVelocity();
         float deltax = vel.x * dt, deltay = vel.y * dt;
-
-        while (abs(deltax) > moveThreshold) {
-            float sgn = Math.signum(deltax);
-            moveDelta(ent, Math.min(abs(deltax), MOVEMENT_SEGMENT) * sgn, 0);
-
-            if (abs(deltax) >= MOVEMENT_SEGMENT) {
-                deltax -= MOVEMENT_SEGMENT * sgn;
-            } else {
-                deltax = 0f;
-            }
-        }
 
         while (abs(deltay) > moveThreshold) {
             float sgn = Math.signum(deltay);
@@ -249,6 +327,17 @@ public class Physics {
             }
         }
 
+        while (abs(deltax) > moveThreshold) {
+            float sgn = Math.signum(deltax);
+            moveDelta(ent, Math.min(abs(deltax), MOVEMENT_SEGMENT) * sgn, 0);
+
+            if (abs(deltax) >= MOVEMENT_SEGMENT) {
+                deltax -= MOVEMENT_SEGMENT * sgn;
+            } else {
+                deltax = 0f;
+            }
+        }
+
         if (abs(deltax) == 0) {
             vel.x = 0;
         }
@@ -257,7 +346,7 @@ public class Physics {
         }
     }
 
-    private static float calculateFriction(CreatureEntity ent) {
+    private static float calculateFriction(LivingEntity ent) {
         ent.getHitboxTo(entityHitbox);
 
         int minX = (int) Math.floor(entityHitbox.x / blockSize);
@@ -267,7 +356,7 @@ public class Physics {
         int maxY = (int) Math.floor((entityHitbox.y + entityHitbox.height) / blockSize);
 
         float resistance = 100;
-        BitSet appliedResistances = new BitSet();
+        var appliedResistances = FixedBitset.createBitSet(content.blocksRegistry.count());
 
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
@@ -276,9 +365,9 @@ public class Physics {
                     blockHitbox.set(x * blockSize, y * blockSize, blockSize, blockSize);
 
                     if (blockHitbox.overlaps(entityHitbox)) {
-                        int blockId = content.getBlockIdByType(block);
-                        if (!appliedResistances.get(blockId)) {
-                            appliedResistances.set(blockId);
+                        int blockId = content.blocksRegistry.idByType(block);
+                        if (!FixedBitset.isSet(appliedResistances, blockId)) {
+                            FixedBitset.setBit(appliedResistances, blockId);
 
                             resistance = Math.min(resistance, block.resistance);
                         }
@@ -292,5 +381,25 @@ public class Physics {
         }
 
         return friction;
+    }
+
+    public static boolean checkIntersection(float wx, float wy, Drawable texture) {
+        entityHitbox.set(wx, wy, texture.width(), texture.height());
+
+        int minX = (int) Math.floor(entityHitbox.x / blockSize);
+        int minY = (int) Math.floor(entityHitbox.y / blockSize);
+
+        int maxX = (int) Math.floor((entityHitbox.x + entityHitbox.width) / blockSize);
+        int maxY = (int) Math.floor((entityHitbox.y + entityHitbox.height) / blockSize);
+
+        for (int x = minX; x <= maxX; x++) {
+            for (int y = minY; y <= maxY; y++) {
+                var block = world.getBlock(x, y);
+                if (block == null || block.type == StaticObjectsConst.Type.SOLID) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

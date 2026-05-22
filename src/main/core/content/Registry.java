@@ -1,17 +1,21 @@
 package core.content;
 
-import core.World.ContentType;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
+import org.jetbrains.annotations.Nullable;
 
 public final class Registry<T extends ContentType> {
 
-    private final Object2ObjectAVLTreeMap<String, T> name2Type = new Object2ObjectAVLTreeMap<>();
-    private final Object2IntOpenHashMap<T> type2Id = new Object2IntOpenHashMap<>();
-    private final Int2ObjectOpenHashMap<T> id2Type = new Int2ObjectOpenHashMap<>();
-    private int id;
+    private final Object2ObjectAVLTreeMap<String, T> name2Type;
+    private final Object2IntOpenHashMap<T> type2Id;
+    private final T[] id2Type;
+
+    Registry(Object2ObjectAVLTreeMap<String, T> name2Type, Object2IntOpenHashMap<T> type2Id, T[] id2Type) {
+        this.name2Type = name2Type;
+        this.type2Id = type2Id;
+        this.id2Type = id2Type;
+    }
 
     public T typeByName(String name) {
         return name2Type.get(name);
@@ -22,26 +26,22 @@ public final class Registry<T extends ContentType> {
     }
 
     public T typeById(int id) {
-        return id2Type.get(id);
+        return id2Type[id];
     }
 
-    public void put1(T type) {
-        name2Type.put(type.id(), type);
+    public @Nullable T typeByIdNull(int id) {
+        if (id < 0 || id >= id2Type.length) {
+            return null;
+        }
+        return typeById(id);
     }
 
-    public void put2(T type) {
-        type2Id.put(type, id);
-        id2Type.put(id, type);
-        id++;
+    public int maxId() {
+        return id2Type.length - 1;
     }
 
-    public int getMaxId() {
-        return id;
-    }
-
-    public void trim() {
-        type2Id.trim();
-        id2Type.trim();
+    public int count() {
+        return id2Type.length;
     }
 
     public ObjectSet<T> values() {

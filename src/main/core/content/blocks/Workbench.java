@@ -1,6 +1,6 @@
 package core.content.blocks;
 
-import core.World.ContentLoader;
+import core.content.ContentLoader;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 
 import java.util.Locale;

@@ -1,0 +1,26 @@
+package core.content.items;
+
+import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.content.ContentLoader;
+import core.content.ContentResolver;
+
+public non-sealed class ItemBlock extends Item {
+    // То, что можно поставить
+    public StaticObjectsConst block;
+
+    public ItemBlock(String id) {
+        super(id);
+    }
+
+    @Override
+    public void load(ContentLoader cnt) {
+        super.load(cnt);
+        this.block = cnt.readBlockUnresolved("block");
+    }
+
+    @Override
+    public void resolve(ContentResolver res) {
+        super.resolve(res);
+        block = res.resolveBlock(block);
+    }
+}

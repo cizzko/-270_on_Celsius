@@ -1,8 +1,13 @@
+import groovy.json.JsonSlurper
+
 plugins {
     java
     id("org.beryx.jlink") version "4.0.0"
     id("com.github.ben-manes.versions") version "0.54.0"
 }
+
+val MAIN_CLASS  = "core.Main"
+val MAIN_MODULE = "core.main"
 
 sourceSets {
     create("tools") {
@@ -15,12 +20,19 @@ sourceSets {
             srcDir("src/main")
         }
         resources {
-            srcDirs("src/assets", "src/assets-gen")
+            srcDir("src/assets")
         }
     }
 }
 
 tasks.withType<JavaExec> {
+    if (name.startsWith(MAIN_CLASS)) {
+        // core.Main.main()
+        jvmArguments.add("--enable-native-access=org.lwjgl")
+        jvmArguments.add("--enable-native-access=org.lwjgl.opengl")
+        jvmArguments.add("-XX:-OmitStackTraceInFastThrow")
+    }
+
     doFirst {
         if (System.getProperty("os.name")?.contains("Linux") == true) {
             val gpuInfo = providers.exec {
@@ -46,17 +58,7 @@ val genatlas = tasks.register<JavaExec>("genatlas") {
             sourceSets["main"].output
 
     workingDir = rootDir
-    mainClass.set("core.tool.AtlasGenerator")
-}
-
-tasks.register<JavaExec>("gentypes") {
-    mustRunAfter(tasks.classes)
-    classpath = sourceSets["tools"].runtimeClasspath +
-            sourceSets["main"].runtimeClasspath +
-            sourceSets["main"].output
-
-    workingDir = rootDir
-    mainClass.set("core.tool.ConvertTypesToJson")
+    mainClass = "core.tool.AtlasGenerator"
 }
 
 tasks.classes {
@@ -88,49 +90,42 @@ val lwjglNatives = Pair(
     }
 }
 
-allprojects {
-    repositories {
-        mavenCentral()
-    }
+repositories {
+    mavenCentral()
+}
 
-    apply(plugin = "java")
+tasks.compileJava {
+    options.compilerArgs.add("-parameters")
+    options.encoding = "UTF-8"
+    options.release = 21
+}
 
-    dependencies {
-        implementation("com.google.code.gson:gson:2.10.1")
-        implementation("com.fasterxml.jackson.core:jackson-databind:2.21.3")
-        implementation("org.jetbrains:annotations:26.1.0")
-    }
+java {
+    toolchain {
+        val minVersion = 21 // минимальные требования
+        val preferred = 26  // проверено
 
-    tasks.compileJava {
-        options.encoding = "UTF-8"
-        options.release = 21
-    }
+        val current = JavaLanguageVersion.current().asInt()
 
-    java {
-        toolchain {
-            val minVersion = 21 // минимальные требования
-            val preferred = 26  // проверено
-
-            val current = JavaLanguageVersion.current().asInt()
-
-            // Суть в том, чтобы версия java была >=21
-            val target = when {
-                current >= preferred -> current
-                current >= minVersion -> current
-                else -> preferred
-            }
-
-            languageVersion = JavaLanguageVersion.of(target)
+        // Суть в том, чтобы версия java была >=21
+        val target = when {
+            current >= preferred -> current
+            current >= minVersion -> current
+            else -> preferred
         }
+
+        languageVersion = JavaLanguageVersion.of(target)
     }
 }
 
 dependencies {
-    implementation("com.google.code.gson:gson:2.10.1")
     implementation("it.unimi.dsi:fastutil:8.5.18")
     implementation("org.apache.logging.log4j:log4j-api:3.0.0-beta2")
     implementation("org.apache.logging.log4j:log4j-core:3.0.0-beta2")
     implementation("org.apache.logging.log4j:log4j-iostreams:3.0.0-beta2")
+
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.21.3")
+    implementation("org.jetbrains:annotations:26.1.0")
 
     implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
     implementation("org.lwjgl", "lwjgl")
@@ -142,15 +137,18 @@ dependencies {
     implementation("org.lwjgl", "lwjgl-glfw", classifier = lwjglNatives)
     implementation("org.lwjgl", "lwjgl-opengl", classifier = lwjglNatives)
     implementation("org.lwjgl", "lwjgl-jemalloc", classifier = lwjglNatives)
+
+    testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 application {
-    mainClass = "core.Main"
-    mainModule = "core.main"
+    mainClass  = MAIN_CLASS
+    mainModule = MAIN_MODULE
 }
 
 jlink {
-    mainClass.set("core.Main")
+    mainClass = MAIN_CLASS
 
     mergedModule {
         requires("java.desktop")
@@ -164,18 +162,43 @@ jlink {
         options.add("--strip-native-debug-symbols")
         options.add("exclude-debuginfo-files");
     }
-    if (System.getProperty("os.name")!!.startsWith("Darwin") || System.getProperty("os.name")!!.startsWith("Mac OS X")) {
-        options.addAll(listOf(
-            "-XstartOnFirstThread"
-        ))
-    }
 
     launcher {
         name = "celsius"
         args = listOf("--packaged")
+
+        jvmArgs = arrayListOf()
+        if (System.getProperty("os.name")!!.startsWith("Darwin") || System.getProperty("os.name")!!.startsWith("Mac OS X")) {
+            jvmArgs.add("-XstartOnFirstThread")
+        }
+        if (JavaLanguageVersion.current().canCompileOrRun(22)) {
+            jvmArgs.add("--enable-native-access=org.lwjgl.opengl")
+            jvmArgs.add("--enable-native-access=org.lwjgl")
+        }
     }
 }
 
-tasks.named("jpackageImage") {
+tasks.jar {
+    exclude("sprites.atlas.hash")
+    includeEmptyDirs = false
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    isReproducibleFileOrder = true
+
+    doFirst {
+        @Suppress("UNCHECKED_CAST")
+        val json = JsonSlurper().parse(layout.projectDirectory.file("src/assets/sprites.atlas.hash").asFile) as Map<String, String>
+        excludes.addAll(json.keys)
+    }
+}
+
+tasks.jpackageImage {
     dependsOn(tasks.createDelegatingModules)
+}
+
+tasks.test {
+    useJUnitPlatform()
+
+    testLogging {
+        events("passed")
+    }
 }

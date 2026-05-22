@@ -3,25 +3,28 @@ package core;
 import core.EventHandling.EventHandler;
 import core.UI.Styles;
 import core.assets.AssetsManager;
-import core.g2d.Atlas;
-import core.g2d.Font;
-import core.g2d.Texture;
+import core.g2d.*;
+import core.g2d.Render;
+import core.util.Commandline;
+import core.util.Debug;
 
 import static core.Global.*;
 
 public final class MenuScene extends GameScene {
 
-    @Load(value = "arial.ttf", owned = false)
-    private Font font;
     @Load(value = "sprites", owned = false)
     private Atlas sprites;
+    @Load(value = "arial.ttf", owned = false, load = AssetsManager.LoadType.SYNC)
+    private Font font;
     @Load(value = "World/Other/background.png", load = AssetsManager.LoadType.SYNC)
     private Texture backgroundTex;
 
     @Override
     public void onInit() {
+        Debug.initMenu();
+
         camera.setToOrthographic(input.getWidth(), input.getHeight());
-        batch.matrix(camera.projection);
+        StackfulRender.matrix(camera.projection);
     }
 
     @Override
@@ -32,13 +35,13 @@ public final class MenuScene extends GameScene {
         Styles.loadAll();
         content.loadAll();
 
-        EventHandler.init();
         UIMenus.mainMenu().show();
     }
 
     @Override
     protected void inputUpdate() {
-
+        Debug.menuHotKeys();
+        Commandline.inputUpdate();
     }
 
     @Override
@@ -50,10 +53,18 @@ public final class MenuScene extends GameScene {
     protected void draw() {
         drawLoading();
         uiScene.draw();
+        Debug.drawTextValues();
+    }
+
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        UIMenus.createPlanet().reset();
     }
 
     @Override
     protected void drawLoading() {
-        batch.draw(backgroundTex, 0, 0, input.getWidth(), input.getHeight());
+        StackfulRender.z(Render.LAYER_BACKGROUND);
+        StackfulRender.draw(backgroundTex, 0, 0, input.getWidth(), input.getHeight());
     }
 }

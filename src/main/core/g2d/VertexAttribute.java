@@ -6,16 +6,25 @@ public final class VertexAttribute {
     public final int size;
     public final Type type;
 
-    private final Interp interp;
+    private final Format format;
 
-    private VertexAttribute(int size, Type type, Interp interp) {
+    VertexAttribute(int size, Type type, Format format) {
         this.size = size;
         this.type = type;
-        this.interp = interp;
+        this.format = format;
     }
 
-    public static VertexAttribute create(int size, Type type, Interp interp) {
-        return new VertexAttribute(size, type, interp);
+    @Override
+    public String toString() {
+        return "VertexAttribute{" +
+               "size=" + size +
+               ", type=" + type +
+               ", format=" + format +
+               '}';
+    }
+
+    public static VertexAttribute create(int size, Type type, Format format) {
+        return new VertexAttribute(size, type, format);
     }
 
     public int byteSize() {
@@ -24,14 +33,14 @@ public final class VertexAttribute {
 
     public void enable(int index, int vertexByteSize, int offset) {
         GL46.glEnableVertexAttribArray(index);
-        interp.enable(index, size, type.glType, vertexByteSize, offset);
+        format.enable(index, size, type.glType, vertexByteSize, offset);
     }
 
     public void disable(int index) {
         GL46.glDisableVertexAttribArray(index);
     }
 
-    public enum Interp {
+    public enum Format {
         DIRECT_FLOAT {
             @Override
             void enable(int index, int size, int glType, int vertexByteSize, int offset) {

@@ -5,12 +5,26 @@ import static core.Global.uiScene;
 // Никакой это не диалог. Просто базовая реализация BaseGroup.
 // Просто список для дочерних элементов без какой-то особой отрисовки по умолчанию
 public class Dialog extends BaseGroup<Dialog> {
-    public Dialog() {
-        this(null);
-    }
+    protected static final int FLAG_MAXIMIZED = GROUP_LAST_FLAG << 2;
 
     protected Dialog(Group parent) {
         super(parent);
+    }
+
+    public Dialog() {
+        super(null);
+    }
+
+    public Dialog setMaximized(boolean state) {
+        setFlag(FLAG_MAXIMIZED, state);
+        return this;
+    }
+
+    @Override
+    protected void resize() {
+        if ((flags & FLAG_MAXIMIZED) != 0) {
+            setSize(uiScene.root().width(), uiScene.root().height());
+        }
     }
 
     public void show() {
@@ -22,14 +36,11 @@ public class Dialog extends BaseGroup<Dialog> {
     }
 
     public void toggle() {
-        if (uiScene.contains(this)) {
-            hide();
-        } else {
-            show();
-        }
+        uiScene.toggle(this);
     }
 
-    public boolean isShown() { // Если элемент показан это ещё не значит, что он отрисуется или будет взаимодействовать
+    // Если элемент показан это ещё не значит, что он отрисуется или будет взаимодействовать
+    public boolean isShown() {
         return uiScene.contains(this);
     }
 }

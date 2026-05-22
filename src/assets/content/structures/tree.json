@@ -1,0 +1,33 @@
+{
+  "Id": "tree",
+  "ClassType": "structure",
+  "Blocks": [
+    {
+      "Block": "stone"
+    },
+    {
+      "OffsetX": 1,
+      "Block": "stone"
+    },
+    {
+      "OffsetX": -1,
+      "Block": "stone"
+    },
+    {
+      "OffsetY": 1,
+      "Block": "stone"
+    },
+    {
+      "OffsetY": 1,
+      "Block": "stone"
+    },
+    {
+      "OffsetY": 2,
+      "Block": "stone"
+    },
+    {
+      "OffsetY": 3,
+      "Block": "stone"
+    }
+  ]
+}

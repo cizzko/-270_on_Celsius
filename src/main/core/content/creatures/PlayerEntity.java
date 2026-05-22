@@ -1,84 +1,84 @@
 package core.content.creatures;
 
-import core.EventHandling.EventHandler;
 import core.Global;
 import core.Time;
-import core.entity.BaseCreatureEntity;
+import core.World.WorldUtils;
+import core.content.ItemGrid;
+import core.content.ItemStack;
+import core.content.entity.BaseCreatureEntity;
+import core.content.entity.HitboxComponent;
+import core.content.entity.InventoryComponent;
 import core.math.Point2i;
 import core.math.Vector2f;
+import core.util.Debug;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 import static core.Global.*;
-import static core.World.Creatures.Player.Player.noClip;
+import static core.World.Creatures.Player.Player.*;
 import static org.lwjgl.glfw.GLFW.*;
 
-public class PlayerEntity extends BaseCreatureEntity<PlayerType> {
-    private float jumpedTicks; // откат прыжка
-
-    protected PlayerEntity(PlayerType creature) {
-        super(creature);
-    }
+public class PlayerEntity
+        extends BaseCreatureEntity<PlayerType>
+        implements InventoryComponent {
 
     private static final Vector2f tmp = new Vector2f();
 
+    public final Point2i itemInHandIdx = new Point2i(), draggingItemIdx = new Point2i();
+
+    private float jumpedTicks; // откат прыжка
+    private final ObjectArrayList<ObjectArrayList<@Nullable ItemStack>> items;
+
+    protected PlayerEntity(PlayerType creature) {
+        super(creature);
+
+        this.items = new ObjectArrayList<>(creature.width);
+        for (byte i = 0; i < creature.width; i++) {
+            var array = new ObjectArrayList<ItemStack>(creature.height);
+            for (byte j = 0; j < creature.height; j++) {
+                array.add(null);
+            }
+            items.add(array);
+        }
+    }
+
+    @Override
+    public void init() {
+        super.init();
+        resetDraggingItem();
+        resetItemInHand();
+    }
+
+    @Override
+    protected void onDamage(float d) {
+        lastDamage += d;
+        lastDamageTime = System.currentTimeMillis();
+    }
+
+    @Override
+    protected void onDead() {
+        scheduler.post(() -> {
+            Global.player = WorldUtils.spawn(creature, true);
+        }, Time.ONE_SECOND * 5);
+    }
+
     public void updateInput() {
-        // todo тут надо проверять элемент UI на фокусировку, т.е. на порядок отображения (фокусирован = самый последний элемент)
-        if (EventHandler.isKeylogging()) {
+        if (isDead()) {
             return;
         }
 
-        if (input.justPressed(GLFW_KEY_F1)) app.setFramerate(60);
-        if (input.justPressed(GLFW_KEY_F2)) app.setFramerate(1000);
+        Debug.debugHotKeys();
 
-//        if (input.justPressed(GLFW_KEY_F3)) {
-//            final ObjectMapper json = new ObjectMapper();
-//            {
-//                var m = new SimpleModule();
-//                m.addSerializer(new ItemStack.ItemStackSerializer());
-//                m.addSerializer(new World.WorldSerializer());
-//                m.addSerializer(new ItemStack.ItemStackGridSerializer());
-//                json.registerModule(m);
-//            }
-//
-//            long t = System.currentTimeMillis();
-//            try {
-//                Files.writeString(assets.workingDir().resolve("open_worl.json"), Config.json.writeValueAsString(world));
-//            } catch (Exception e) {
-//                Application.log.error(e);
-//            }
-//            Application.log.info("Time took: {}ms", (System.currentTimeMillis() - t));
-//        }
-//
-//        if (input.justClicked(GLFW_MOUSE_BUTTON_RIGHT)) {
-//            Point2i blockUnderMouse = Global.input.mouseBlockPos();
-//
-//            if (world.getBlockId(blockUnderMouse.x, blockUnderMouse.y) > 0) {;
-//                var blockEntity = world.getEntity(blockUnderMouse.x, blockUnderMouse.y);
-//                if (blockEntity != null) {
-//                    long t = System.currentTimeMillis();
-//
-//                    final ObjectMapper json = new ObjectMapper();
-//                    {
-//                        var m = new SimpleModule();
-//                        m.addSerializer(new ItemStack.ItemStackSerializer());
-//                        m.addSerializer(new World.WorldSerializer());
-//                        m.addSerializer(new ItemStack.ItemStackGridSerializer());
-//                        json.registerModule(m);
-//                    }
-//                    var str = new StringWriter();
-//                    try (var out = json.createGenerator(str)) {
-//                        blockEntity.serialize(out, json.getSerializerProvider());
-//                    } catch (Exception e) {
-//                        Application.log.error(e);
-//                    }
-//
-//                    Application.log.info("Time took: {}ms", (System.currentTimeMillis() - t));
-//                }
-//            }
-//        }
+        if (input.justPressed(GLFW_KEY_Q)) {
+            player.resetItemInHand();
+        }
 
-        float speed = noClip ? 2f : 7f;
+        //todo было 9
+        float speed = noClip ? 2f : 9f * ThreadLocalRandom.current().nextFloat(1, 1.15f);
         if (input.pressed(GLFW_KEY_LEFT_SHIFT) || input.pressed(GLFW_KEY_RIGHT_SHIFT)) {
-            speed *= 1.5f;
+            speed *= ThreadLocalRandom.current().nextFloat(1.5f, 1.75f);
         }
 
         if (noClip) {
@@ -92,9 +92,9 @@ public class PlayerEntity extends BaseCreatureEntity<PlayerType> {
         } else {
             velocity.set(0, 0);
 
-            setX(getX() + speed * xf);
+            setX(x() + speed * xf);
             int yf = input.axis(GLFW_KEY_S, GLFW_KEY_W);
-            setY(getY() + speed * yf);
+            setY(y() + speed * yf);
         }
 
         if (jumpedTicks > 0) {
@@ -114,7 +114,9 @@ public class PlayerEntity extends BaseCreatureEntity<PlayerType> {
         }
         var blockEntity = world.getEntity(blockUnderMouse.x, blockUnderMouse.y);
         if (blockEntity != null) {
-            if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) blockEntity.onMouseClick();
+            if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+                blockEntity.onMouseClick();
+            }
 
             blockEntity.onMouseHover();
 
@@ -124,7 +126,7 @@ public class PlayerEntity extends BaseCreatureEntity<PlayerType> {
                 // ====== То есть это хотим ======
 //                int iconY = (root.y * blockSize) + blockSize;
 //                int iconX = (root.x * blockSize) + blockSize;
-//                batch.draw(atlas.byPath("UI/GUI/interactionIcon.png"), iconX, iconY);
+//                batch.draw(atlas.get("UI/GUI/interactionIcon"), iconX, iconY);
 //                batch.draw(Window.defaultFont.getGlyph(interactionChar),
 //                        (root.x * blockSize + 16) + blockSize,
 //                        (root.y * blockSize + 12) + blockSize);
@@ -136,5 +138,75 @@ public class PlayerEntity extends BaseCreatureEntity<PlayerType> {
             }
         }
 
+    }
+
+    @Override
+    public CollisionResult onCollide(HitboxComponent them) {
+        return CollisionResult.WALKTHROUGH;
+    }
+
+    @Override
+    public String toString() {
+        return "Player#" + id;
+    }
+
+    public boolean hasDraggingItem() {
+        return draggingItemIdx.x != -1 && draggingItemIdx.y != -1;
+    }
+
+    public @Nullable ItemStack getDraggingItem() {
+        if (hasItemInHand()) {
+            return items.get(itemInHandIdx.x).get(itemInHandIdx.y);
+        }
+        return null;
+    }
+
+    public void setItem(int x, int y, @Nullable ItemStack itemStack) { items.get(x).set(y, itemStack); }
+    public void setItem(Point2i pos, @Nullable ItemStack itemStack) { setItem(pos.x, pos.y, itemStack); }
+    public @Nullable ItemStack getItem(int x, int y) { return items.get(x).get(y); }
+    public @Nullable ItemStack getItem(Point2i pos) { return getItem(pos.x, pos.y); }
+
+    public boolean hasItemInHand() {
+        return itemInHandIdx.x != -1 && itemInHandIdx.y != -1;
+    }
+
+    public @Nullable ItemStack getItemInHand() {
+        if (hasItemInHand()) {
+            return items.get(itemInHandIdx.x).get(itemInHandIdx.y);
+        }
+        return null;
+    }
+
+    @Override
+    public ObjectArrayList<ObjectArrayList<@Nullable ItemStack>> items() {
+        return items;
+    }
+
+    @Override
+    public TransitionResult addItem(ItemStack itemStack) {
+        return ItemGrid.tryAddTo(items, itemStack, 7, 5);
+    }
+
+    public void takeItem(int x, int y, int count) {
+        var item = items.get(x).get(y);
+        if (item != null && item.decrement(count)) {
+            setItem(x, y, null);
+        }
+    }
+
+    public void takeItemFromHand(int count) {
+        var item = getItemInHand();
+        if (item != null && item.decrement(count)) {
+            setItem(itemInHandIdx.x, itemInHandIdx.y, null);
+            resetItemInHand();
+        }
+    }
+
+    public void resetItemInHand() {
+        itemInHandIdx.set(-1, -1);
+    }
+
+    public void resetDraggingItem() {
+        draggingItemIdx.set(-1, -1);
     }
 }

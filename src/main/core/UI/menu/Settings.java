@@ -24,7 +24,7 @@ public class Settings extends Dialog {
                 .set(40, 900, 240, 65)
                 .setName(Global.lang.get("Return"));
 
-        categories.oneOf(
+        Panel.oneOf(
                 categories.addButton(Styles.SIMPLE_TEXT_BUTTON, this::basicBtn)
                         .set(40, 200, 240, 65)
                         .setName(Global.lang.get("SettingsBasic"))
@@ -37,6 +37,8 @@ public class Settings extends Dialog {
                         .set(40, 300, 240, 65)
                         .setName(Global.lang.get("SettingsGraphics"))
                         .setColor(Styles.DIRTY_BLACK)
+                        .setClickable(false)
+                        .setClicked(true)
         );
 
         save = categories.addButton(Styles.TEXT_BUTTON, this::saveBtn)
@@ -50,7 +52,7 @@ public class Settings extends Dialog {
             })
                     .setPosition(310, 980)
                     .setName(Global.lang.get(INTERPOLATE_SUNSET_KEY))
-                    .setPrompt(Global.lang.get("InterpolateSunsetPrompt"))
+                    .setPrompt("InterpolateSunsetPrompt")
                     .setClicked(getBoolean(INTERPOLATE_SUNSET_KEY));
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
                 boolean newState = getBoolean(PRELOAD_RESOURCES_KEY);
@@ -58,7 +60,7 @@ public class Settings extends Dialog {
             })
                     .setPosition(310, 910)
                     .setName(Global.lang.get(PRELOAD_RESOURCES_KEY))
-                    .setPrompt(Global.lang.get("PreloadResourcesPrompt"))
+                    .setPrompt("PreloadResourcesPrompt")
                     .setClicked(getBoolean(PRELOAD_RESOURCES_KEY));
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
                 boolean newState = getBoolean(VERTICAL_SYNC_KEY);
@@ -66,7 +68,7 @@ public class Settings extends Dialog {
             })
                     .setPosition(310, 840)
                     .setName(Global.lang.get(VERTICAL_SYNC_KEY))
-                    .setPrompt(Global.lang.get("VerticalSyncPrompt"))
+                    .setPrompt("VerticalSyncPrompt")
                     .setClicked(getBoolean(VERTICAL_SYNC_KEY));
         }});
         basicSettings = mainPanel.add(new Dialog() {{
@@ -83,6 +85,7 @@ public class Settings extends Dialog {
                     String lang = langs.get(i);
                     addButton(Styles.TEXT_BUTTON, () -> {
                         newLang = lang;
+                        Global.lang.setLanguage(lang);
                         dropDown.toggleVisibility();
                     })
                             .set(ox, oy - (h * (i + 1)) + (i * 6) + 6, w, h)
@@ -93,19 +96,19 @@ public class Settings extends Dialog {
             addButton(Styles.TEXT_BUTTON, dropDownMenu::toggleVisibility)
                     .set(780, 950, 240, 65)
                     .setName(Global.lang.get("Language"));
-            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
-            })
+
+            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {})
                     .setPosition(310, 980)
                     .setName(Global.lang.get(SHOW_PROMPTS_KEY))
-                    .setPrompt(Global.lang.get("ShowPromptsPrompt"))
+                    .setPrompt("ShowPromptsPrompt")
                     .setClicked(getBoolean(SHOW_PROMPTS_KEY));
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
             })
                     .setPosition(310, 910)
                     .setName(Global.lang.get(DETECT_LANGUAGE_KEY))
-                    .setPrompt(Global.lang.get("DetectLanguagePrompt"))
+                    .setPrompt("DetectLanguagePrompt")
                     .setClicked(getBoolean(DETECT_LANGUAGE_KEY));
-            addImage(745, 965, atlas.byPath("UI/GUI/languageIcon.png"));
+            addImage(745, 965, atlas.get("UI/GUI/languageIcon"));
         }});
         mainPanel.add(new OtterBox(this));
     }
@@ -155,7 +158,7 @@ public class Settings extends Dialog {
                 @Override public void draw() {}
             })
             .set(1800, 0, 120, 120);
-            otterImage = addImage(2160, -480, atlas.byPath("UI/comeOutOtter.png"));
+            otterImage = addImage(2160, -480, atlas.get("UI/comeOutOtter"));
             otterImage.setVisible(false);
         }
 
@@ -167,7 +170,7 @@ public class Settings extends Dialog {
         }
 
         @Override
-        public void updateThis() {
+        public void updateThis(float dt) {
             if (otterClicks >= 5) {
                 otterClicks = 0;
                 otterImage.setVisible(true);
@@ -178,7 +181,7 @@ public class Settings extends Dialog {
             }
         }
 
-        final Vector2f speed = new Vector2f(5f, 5f);
+        static final Vector2f speed = new Vector2f(8f, 8f);
 
         private void runOtter() {
             float x = otterImage.x();

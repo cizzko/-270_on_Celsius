@@ -60,6 +60,11 @@ final class AsyncAssetResolver<T, P, S>
     }
 
     @Override
+    public <T2, P2, S2> Future<T2> load(Class<? extends AssetHandler<T2, P2, S2>> type, String name, Consumer<? super P2> paramsModifier) {
+        return Global.assets.loadInternalByHandler(this, type, name, loadType(), paramsModifier);
+    }
+
+    @Override
     public <T2, P2> Future<T2> load(Class<T2> type, String name, AssetsManager.LoadType loadType,
                                     Consumer<? super P2> paramsModifier) {
         return Global.assets.loadInternal(this, type, name, loadType, paramsModifier);
@@ -77,7 +82,7 @@ final class AsyncAssetResolver<T, P, S>
 
     @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        if (super.cancel(mayInterruptIfRunning)) {
+        if (super.cancel(mayInterruptIfRunning) && params != null) {
             parent.cancel(false); // AsyncAssetResolver не должен прерываться
             return true;
         }

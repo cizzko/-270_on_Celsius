@@ -24,66 +24,7 @@ public class Config {
 
     public static final ObjectMapper json =  new ObjectMapper();
 
-    private static boolean configCheckMark = false;
-
-    private static final HashMap<String, String> config = new HashMap<>();
-    private static final HashMap<String, String> fastCommands = new HashMap<>();
-
-    // checks if the startup configuration contains any parameters
-    public static void checkConfig() {
-        if (!configCheckMark) {
-            copyFromResource(config, "configDefault.properties", "config.properties");
-            copyFromResource(fastCommands, "fastCommands.properties", "fastCommands.properties");
-            configCheckMark = true;
-        }
-    }
-
-    // TODO выглядит как неплохая функция для AssetsManager
-    static void copyFromResource(HashMap<String, String> map, String resourceFileName, String externalFileName) {
-
-        var externalFile = assets.workingDir().resolve(externalFileName);
-        if (Files.notExists(externalFile)) {
-            var resourceFile = assets.assetsDir().resolve(resourceFileName);
-            try {
-                Files.copy(resourceFile, externalFile);
-            } catch (IOException e) {
-                log.error("Failed to copy from '{}' to '{}'", resourceFileName, externalFileName, e);
-            }
-        }
-
-        var props = new Properties();
-        try (var in = Files.newInputStream(externalFile)) {
-            props.load(in);
-        } catch (IOException e) {
-            log.error("Failed to load '{}' properties", externalFile, e);
-        }
-        @SuppressWarnings("unchecked")
-        var magic = (Map<String, String>) (Map<?, ?>) props;
-        map.putAll(magic);
-    }
-
-    private static final HashMap<Path, Map<String, String>> propsCache = new HashMap<>();
-
-    public static Map<String, String> getProperties(Path path) {
-        var props = Config.propsCache.get(path);
-        if (props == null) {
-            var tmp = new Properties();
-            try (var in = Files.newInputStream(path)) {
-                tmp.load(in);
-            } catch (IOException e) {
-                log.error("Error when loading properties '{}'", path, e);
-            }
-            @SuppressWarnings("unchecked")
-            var magic = (Map<String, String>) (Map<?, ?>) tmp;
-            props = new HashMap<>(magic);
-            Config.propsCache.put(path, props);
-        }
-        return props;
-    }
-
-    public static Map<String, String> getProperties(String path) {
-        return getProperties(assets.assetsDir().resolve(path));
-    }
+    public static final HashMap<String, String> config = new HashMap<>();
 
     public static String getString(String key, String def) {
         String v = config.get(key);
@@ -119,11 +60,6 @@ public class Config {
 
     public static int getInt(String key) {
         return getInt(key, 0);
-    }
-
-    // fast commands
-    public static String getFromFC(String key) {
-        return fastCommands.get(key);
     }
 
     public static void updateConfig(String key, String value) {

@@ -1,5 +1,5 @@
 {
   "Id": "aluminumPiece",
-  "ClassType": "detail",
+  "ClassType": "item",
   "Texture": "textures/items/aluminumPiece"
 }

@@ -1,11 +1,11 @@
 package core.World.StaticWorldObjects;
 
-import core.World.ContentLoader;
-import core.World.ContentResolver;
-import core.World.ContentType;
-import core.World.Creatures.Player.Inventory.Items.ItemStack;
+import core.content.ContentLoader;
+import core.content.ContentResolver;
+import core.content.ContentType;
+import core.content.ItemStack;
 import core.World.Textures.TextureDrawing;
-import core.entity.BlockEntity;
+import core.content.entity.BlockEntity;
 import core.g2d.Atlas;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;

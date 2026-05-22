@@ -9,6 +9,8 @@ public final class Colorf {
 
     public Colorf() {}
 
+    public Colorf(Color color) { set(color); }
+
     public Colorf(Colorf color) {
         set(color);
     }
@@ -100,6 +102,9 @@ public final class Colorf {
     public int gi() { return (int) (g * 255f); }
     public int bi() { return (int) (b * 255f); }
     public int ai() { return (int) (a * 255f); }
+
+    public Color copy() { return new Color(this); }
+    public Colorf copyf() { return new Colorf(this); }
 
     @Override
     public boolean equals(Object o) {

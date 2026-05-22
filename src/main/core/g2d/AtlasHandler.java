@@ -1,7 +1,7 @@
 package core.g2d;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import core.EventHandling.Config;
 import core.assets.AssetHandler;
 import core.assets.AssetReleaser;
 import core.assets.AssetResolver;
@@ -12,8 +12,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import static core.g2d.Atlas.ATLAS_EXT;
-import static core.g2d.Atlas.META_EXT;
+import static core.g2d.Atlas.*;
+import static core.math.MathUtil.toShortExact;
 
 public final class AtlasHandler extends AssetHandler<Atlas, Void, AtlasHandler.State> {
     public AtlasHandler() {
@@ -29,30 +29,28 @@ public final class AtlasHandler extends AssetHandler<Atlas, Void, AtlasHandler.S
     public void loadAsync(AssetResolver res, String name, Void params, State state) {
         state.texture = res.load(Texture.class, name + ATLAS_EXT);
         state.meta = res.fork(() -> {
-            var atlas = new Atlas();
-
-            JsonObject meta;
+            ObjectNode meta;
             try (var reader = Files.newBufferedReader(dir.resolve(name + META_EXT), StandardCharsets.UTF_8)) {
-                meta = JsonParser.parseReader(reader).getAsJsonObject();
+                meta = (ObjectNode) Config.json.readTree(reader);
             }
 
-            HashMap<String, Atlas.Region> tmpRegions = new HashMap<>();
-            meta.getAsJsonObject("regions").asMap().forEach((regionName, regMeta) -> {
-                JsonObject regionObject = regMeta.getAsJsonObject();
-                int x = regionObject.get("x").getAsInt();
-                int y = regionObject.get("y").getAsInt();
-                int width = regionObject.get("width").getAsInt();
-                int height = regionObject.get("height").getAsInt();
+            var atlas = new Atlas();
+            var tmpRegions = new HashMap<String, Atlas.Region>();
+            meta.required("regions").forEachEntry((regionName, regMeta) -> {
+                var regionObject = (ObjectNode) regMeta;
+                int x = regionObject.required("x").asInt();
+                int y = regionObject.required("y").asInt();
+                short width = toShortExact(regionObject.required("width").asInt());
+                short height = toShortExact(regionObject.required("height").asInt());
                 tmpRegions.put(regionName, new Atlas.Region(atlas, regionName, x, y, width, height));
             });
-            String errorRegionName = meta.get("error").getAsString();
+            String errorRegionName = meta.required("error").asText();
 
-            Map<String, Atlas.Region> regions = Map.copyOf(tmpRegions);
-            Atlas.Region errorRegion = regions.get(errorRegionName);
+            Atlas.Region errorRegion = tmpRegions.get(errorRegionName);
             if (errorRegion == null) {
                 throw new IllegalArgumentException("No error region");
             }
-            atlas.regions = regions;
+            atlas.regions = Map.copyOf(tmpRegions);
             atlas.errorRegion = errorRegion;
             return atlas;
         });

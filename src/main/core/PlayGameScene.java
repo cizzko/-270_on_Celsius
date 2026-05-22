@@ -1,28 +1,20 @@
 package core;
 
 import core.EventHandling.Config;
-import core.EventHandling.EventHandler;
-import core.UI.Styles;
 import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Items.Bullets;
+import core.World.Creatures.Player.Inventory.Bullets;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
-import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.StaticWorldObjects.TileData;
 import core.World.Textures.TextureDrawing;
 import core.World.Weather.Sun;
-import core.g2d.Fill;
-import core.graphic.Layer;
-import core.math.Rectangle;
-import core.math.Vector2f;
-import core.util.Color;
+import core.g2d.StackfulRender;
 import core.util.Commandline;
+import core.util.Debug;
 
-import static core.EventHandling.EventHandler.debugLevel;
 import static core.EventHandling.EventHandler.updateHotkeys;
 import static core.Global.*;
 import static core.World.Creatures.Player.Player.*;
-import static core.World.Textures.TextureDrawing.blockSize;
+import static core.g2d.Render.*;
 
 public final class PlayGameScene extends GameScene {
     public final Sun sun = new Sun();
@@ -46,38 +38,20 @@ public final class PlayGameScene extends GameScene {
 
     @Override
     public void onInit() {
-        camera.position.set(player.getX(), player.getY());
-        EventHandler.setDebugValue(() -> "Camera Pos: " + camera.position);
-        EventHandler.setDebugValue(() -> "Velocity: " + player.getVelocity());
-        EventHandler.setDebugValue(() -> {
-            var mouseBlockPos = (input.mouseBlockPos());
-            var mouseBlock = world.getBlock(mouseBlockPos.x, mouseBlockPos.y);
-            return "MouseBlock: " + (mouseBlock != null ? mouseBlock.id + " (NID: " + content.getBlockIdByType(mouseBlock) + ")" : "<void>");
-        });
-        EventHandler.setDebugValue(() -> {
-            var mouseBlockPos = (input.mouseBlockPos());
-            return "BlockHp: " + world.getHp(mouseBlockPos.x, mouseBlockPos.y);
-        });
+        Debug.initPlaying();
 
-        //EventHandler.setDebugValue(() -> "Current time: " + sun.currentTime);
+        // Global.postEffect.use(true);
 
+        updateCamera();
         smoothedCamera = Config.getBoolean("SmoothedCamera");
 
-        //todo у предметы
-        for (int i = 0; i < 10; i++) {
-            Inventory.addItem(content.itemById("aluminum"));
-            Inventory.addItem(content.itemById("chest"));
-            Inventory.addItem(content.itemById("stick"));
-            Inventory.addItem(content.itemById("redHammer"));
-            Inventory.addItem(content.itemById("grass"));
-            Inventory.addItem(content.itemById("workbenchSmall"));
-            Inventory.addItem(content.itemById("smallStone"));
-            Inventory.addItem(content.itemById("stoneOven"));
-        }
+        UIMenus.headUpDisplay().show();
     }
 
     @Override
     protected void inputUpdate() {
+        AutoSaveController.update();
+
         updateHotkeys(this);
         WorkbenchLogic.updateInput();
         Commandline.inputUpdate();
@@ -88,7 +62,7 @@ public final class PlayGameScene extends GameScene {
     @Override
     protected void update() {
         Physics.updatePhysics(this);
-        updatePlayerPos();
+        updateCamera();
         postEffect.update();
         sun.update();
         updateInventoryInteraction();
@@ -100,22 +74,22 @@ public final class PlayGameScene extends GameScene {
     @Override
     protected void draw() {
 
-        batch.z(Layer.BACKGROUND);
+        StackfulRender.z(LAYER_BACKGROUND);
         sun.draw();
         postEffect.draw();
-        batch.z(Layer.STATIC_OBJECTS);
-        batch.matrix(camera.projection); // Центрируем камеру на позицию игрока
-        TextureDrawing.drawStatic();
-        batch.z(Layer.DYNAMIC_OBJECTS);
-        TextureDrawing.drawDynamic();
+        StackfulRender.z(LAYER_BLOCKS);
+        StackfulRender.matrix(camera.projection); // Центрируем камеру на позицию игрока
+        TextureDrawing.drawBlocks();
+        StackfulRender.z(LAYER_ENTITIES);
+        TextureDrawing.drawEntities();
 
-        drawDebug();
+        Debug.drawDebugBorders();
 
         uiScene.draw();
-        Commandline.draw();
         WorkbenchLogic.draw();
         Inventory.draw();
         drawCurrentHP();
+        Debug.drawTextValues();
     }
 
     @Override
@@ -123,102 +97,32 @@ public final class PlayGameScene extends GameScene {
 
     }
 
-    // Изменения, связанные с координатами игрока
-    private void updatePlayerPos() {
+    @Override
+    public void onUnloaded() {
+        super.onUnloaded();
+        player = null;
+        world = null;
+        entityPool.clear();
+        TextureDrawing.resetState();
+    }
+
+    public static void updateCamera() {
+        if (player.isDead()) {
+            return;
+        }
 
         if (smoothedCamera) {
-            camera.position.lerpDeltaTime(player.getX() + 32, player.getY() + 200, 0.05f * Math.max(1, player.getVelocity().len() / 4f));
+            float base = 0.08f * Math.max(1, player.getVelocity().len() / 4f);
+            base = Math.min(1f, base);
+            float alpha = 1 - (float)Math.pow(1 - base, Time.delta);
+            camera.position.lerp(player.x() + 32, player.y() + 200, alpha);
+            // if (Float.isNaN(Global.camera.position.x) || Float.isNaN(Global.camera.position.y)) {
+            //     System.out.println("NAN CAM POS: x=" + player.getX() + " y=" + player.getY() + " v=" + player.getVelocity() + " base=" + base + " alpha=" + alpha);
+            // }
         } else {
-            camera.position.set(player.getX() + 32, player.getY() + 200);
+            camera.position.set(player.x() + 32, player.y() + 200);
         }
 
         camera.update();
-    }
-
-    final Rectangle rect = new Rectangle();
-    final Vector2f vec = new Vector2f();
-    final Color green = Color.fromRgba8888(0, 255, 0, 255);
-    final Color red = Color.fromRgba8888(255, 0, 0, 255);
-    final Color blue = Color.fromRgba8888(0, 0, 255, 255);
-    final Color white = Color.fromRgba8888(255, 255, 255, 255);
-    final Color black = Color.fromRgba8888(0, 0, 0, 255);
-
-    private void drawDebug() {
-        if (debugLevel < 2) {
-            return;
-        }
-        {
-            var size = player.creature.texture;
-
-            player.getHitboxTo(rect);
-            var center = rect.getCenterTo(vec);
-
-            int cx = (int) Math.floor(center.x / blockSize);
-            int cy = (int) Math.floor(center.y / blockSize);
-
-            float width = size.width();
-            float height = size.height();
-            int w = (int) Math.ceil(width / blockSize);
-            int h = (int) Math.ceil(height / blockSize);
-
-            int minX = (int) Math.floor(player.getX() / blockSize);
-            int minY = (int) Math.floor(player.getY() / blockSize);
-
-            int maxX = (int) Math.floor((player.getX() + width) / blockSize);
-            int maxY = (int) Math.floor((player.getY() + height) / blockSize);
-
-            TextureDrawing.drawText(player.getX(), player.getY() + size.height() - 32,
-                    "HasFloor: " + player.hasFloor(), black);
-
-            // Интегрированный прямоугольник, который используется как хитбокс
-            for (int x = minX; x <= maxX; x++) {
-                for (int y = minY; y <= maxY; y++) {
-                    Fill.rectangleBorder(x * blockSize, y * blockSize, blockSize, blockSize, white);
-                }
-            }
-
-            TextureDrawing.drawText(player.getX(), player.getY() + size.height(),
-                    "Size: " + w + "x" + h + " (" + size.width() + "x" + size.height() + ")", Styles.DIRTY_BRIGHT_BLACK);
-
-            // Ближайший к центру игрока блок
-            //<место для вашего условия>
-            Fill.rectangleBorder(cx * blockSize, cy * blockSize, blockSize, blockSize, green);
-
-            // Прямоугольник, который показывает занятое текстурой пространство
-            Fill.rectangleBorder(player.getX(), player.getY(), size.width(), size.height(), red);
-
-            // Две пересекающиеся перпендикулярные прямые, точкой пересечения которых является центр текстуры
-            Fill.line(player.getX() + size.width() / 2f, player.getY(), player.getX() + size.width() / 2f, player.getY() + size.height(), blue);
-            Fill.line(player.getX(), player.getY() + size.height() / 2f, player.getX() + size.width(), player.getY() + size.height() / 2f, blue);
-        }
-
-        camera.getBoundsTo(rect);
-        int minX = (int) Math.floor(rect.x / blockSize);
-        int maxX = (int) Math.floor((rect.x + rect.width) / blockSize);
-        int minY = (int) Math.floor(rect.y / blockSize);
-        int maxY = (int) Math.floor((rect.y + rect.height) / blockSize);
-
-        for (int x = minX; x <= maxX; x++) {
-            for (int y = minY; y <= maxY; y++) {
-                if (!world.inBounds(x, y)) {
-                    continue;
-                }
-
-                var obj = world.getBlock(x, y);
-                if (obj == null || obj == StaticObjectsConst.AIR || obj.texture == atlas.getErrorRegion()) {
-                    continue;
-                }
-
-                var data = world.getData(x, y);
-                if (data instanceof TileData.MultiblockPart) {
-                    Fill.rectangleBorder(x * blockSize, y * blockSize, blockSize, blockSize, blue);
-                } else {
-                    var rootPos = world.getRootBlockPos(x, y);
-                    if (rootPos != null && rootPos.x == x && rootPos.y == y) {
-                        Fill.rectangleBorder(x * blockSize, y * blockSize, blockSize, blockSize, red);
-                    }
-                }
-            }
-        }
     }
 }

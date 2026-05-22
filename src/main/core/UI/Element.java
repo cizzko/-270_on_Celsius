@@ -1,30 +1,38 @@
 package core.UI;
 
+import core.input.InputListener;
 import core.math.Point2i;
+import core.math.Vector2f;
 import core.util.Sized;
 import org.jetbrains.annotations.Nullable;
 
-public interface Element {
-    String id();
+import java.util.List;
+import java.util.function.Predicate;
 
-    // null если это корневой элемент интерфейса, т.е. специальная затычка
+public interface Element extends InputListener {
+    @Nullable String id();
+
+    /// @return `null` если элемент не добавлен в сцену. У всех элементов сцены есть родитель
     @Nullable Group parent();
 
     float x();
-
     float y();
 
     float width();
-
     float height();
 
     boolean visible();
 
     void draw();
 
-    void update();
+    void update(float dt);
+    boolean remove();
 
-    Element setId(String id);
+    void addListener(InputListener listener);
+    List<InputListener> listeners();
+
+    Element setId(@Nullable String id);
+    Element setParent(@Nullable Group parent);
 
     Element setX(float x);
     Element setY(float y);
@@ -36,13 +44,28 @@ public interface Element {
     Element setSize(float width, float height);
     Element set(float x, float y, float width, float height);
 
-    Element setVisible(boolean visible);
-
+    Element setVisible(boolean state);
     Element toggleVisibility();
 
-    Element hit(float x, float y);
+    Element setTouchable(boolean state);
 
-    default Element hit(Point2i point) {
-        return hit(point.x, point.y);
+    Element setHotkey(int key, Runnable action);
+
+    @Nullable Element hit(float x, float y);
+    default @Nullable Element hit(Point2i point)  { return hit(point.x, point.y); }
+    default @Nullable Element hit(Vector2f point) { return hit(point.x, point.y); }
+
+    @SuppressWarnings("unchecked")
+    default <E extends Element> E as() { return (E) this; }
+
+    default boolean isDescendantOf(Predicate<Element> pred) {
+        Element parent = this;
+        while (parent != null) {
+            if (pred.test(parent)) {
+                return true;
+            }
+            parent = parent.parent();
+        }
+        return false;
     }
 }

@@ -1,8 +1,10 @@
 package core;
 
+import org.jetbrains.annotations.MustBeInvokedByOverriders;
+
 import static core.Global.scheduler;
 import static core.Global.uiScene;
-import static core.util.DebugTools.rethrow;
+import static core.util.Debug.rethrow;
 
 // У этой магии есть такие свойства:
 //  Данный объект сам по себе является ресурсом и проходит цикл загрузки с вызовом методов AssetLifecycle
@@ -60,18 +62,32 @@ public abstract class GameScene implements AssetLifecycle {
                     readyLoop();
                 } else {
                     scheduler.executeAll();
-                    uiScene.update();
+                    uiScene.update(Time.delta);
+
                     drawLoading();
                 }
             }
             case LOADED -> readyLoop();
+            case UNLOADED -> {}
         }
     }
 
     private void readyLoop() {
         scheduler.executeAll();
+        if (state == State.UNLOADED) {
+            return;
+        }
+
         objectLoader.updatePreload();
-        uiScene.update();
+        if (state == State.UNLOADED) {
+            return;
+        }
+
+        uiScene.update(Time.delta);
+        if (state == State.UNLOADED) {
+            return;
+        }
+
         inputUpdate();
         update();
         draw();
@@ -79,8 +95,13 @@ public abstract class GameScene implements AssetLifecycle {
 
     @Override
     public void onLoaded() {}
+
+
     @Override
-    public void onUnloaded() {}
+    @MustBeInvokedByOverriders
+    public void onUnloaded() {
+        state = State.UNLOADED;
+    }
 
     protected abstract void inputUpdate();
     protected abstract void update();
@@ -101,6 +122,7 @@ public abstract class GameScene implements AssetLifecycle {
     protected enum State {
         LOADING,
         FAILED,
-        LOADED
+        LOADED,
+        UNLOADED
     }
 }

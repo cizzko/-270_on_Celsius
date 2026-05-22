@@ -1,23 +1,21 @@
 package core;
 
-import core.World.ContentManager;
 import core.World.World;
 import core.assets.AssetsManager;
+import core.content.ContentManager;
 import core.content.EntityPool;
 import core.content.creatures.PlayerEntity;
 import core.g2d.Atlas;
-import core.g2d.Camera2;
-import core.g2d.SortingBatch;
+import core.graphic.Camera2;
 import core.input.InputHandler;
 
-import static core.util.DebugTools.rethrow;
+import static core.util.Debug.rethrow;
 
 public final class Global {
     private Global() {}
 
     public static InputHandler input;
     public static Atlas atlas;
-    public static SortingBatch batch;
     public static AssetsManager assets;
     public static UIScene uiScene;
     public static LangTranslation lang;
@@ -37,11 +35,16 @@ public final class Global {
         }
         try {
             newGameScene.init();
+            gameScene = newGameScene;
         } catch (Exception e) {
-            newGameScene.unload();
+            try {
+                newGameScene.unload();
+            } catch (Exception e1) {
+                e.addSuppressed(e1);
+            }
+            gameScene = null;
             rethrow(e);
         }
-        gameScene = newGameScene;
     }
 
     public static final ContentManager content = new ContentManager();

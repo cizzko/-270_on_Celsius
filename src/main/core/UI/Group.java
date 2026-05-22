@@ -2,42 +2,39 @@ package core.UI;
 
 import core.g2d.Drawable;
 import core.util.Sized;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 public interface Group extends Element {
     List<Element> children();
 
     <E extends Element> E add(E element);
+    default <E extends Element> E append(Function<Group, ? extends E> supp) {
+        return add(supp.apply(this));
+    }
 
-    void remove(Element element);
+    boolean remove(Element element);
+    default boolean contains(Element element) { return children().contains(element); }
 
     // region ковариантное переопределение
 
-
-    @Override
+    Group setParent(@Nullable Group parent);
     Group setId(String id);
-    @Override
     Group setX(float x);
-    @Override
     Group setY(float y);
-    @Override
     Group setWidth(float width);
-    @Override
     Group setHeight(float height);
-    @Override
     Group setPosition(float x, float y);
-    @Override
     Group setSize(Sized sized);
-    @Override
     Group setSize(float width, float height);
-    @Override
     Group set(float x, float y, float width, float height);
-    @Override
-    Group setVisible(boolean visible);
-    @Override
+    Group setVisible(boolean state);
     Group toggleVisibility();
+    Group setTouchable(boolean state);
+    Group setHotkey(int key, Runnable action);
 
     // endregion
     // region Дополнительные методы
@@ -78,4 +75,6 @@ public interface Group extends Element {
                 .setImage(path);
     }
     // endregion
+
+    Group setTouchableChildren(boolean state);
 }

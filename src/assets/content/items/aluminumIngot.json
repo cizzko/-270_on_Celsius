@@ -1,5 +1,5 @@
 {
   "Id": "aluminumIngot",
-  "ClassType": "detail",
+  "ClassType": "item",
   "Texture": "textures/items/aluminumIngot"
 }

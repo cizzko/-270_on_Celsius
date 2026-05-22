@@ -34,7 +34,7 @@ final class SyncAssetResolver<T, P, S>
     }
 
     @Override
-    public <T> T join(Future<? extends T> future) {
+    public <T2> T2 join(Future<? extends T2> future) {
         return executionScope.join(future);
     }
 
@@ -46,6 +46,11 @@ final class SyncAssetResolver<T, P, S>
     @Override
     public Future<Void> fork(Runnable runnable) {
         return Global.scheduler.execute(runnable);
+    }
+
+    @Override
+    public <T2, P2, S2> Future<T2> load(Class<? extends AssetHandler<T2, P2, S2>> type, String name, Consumer<? super P2> paramsModifier) {
+        return Global.assets.loadInternalByHandler(this, type, name, loadType(), paramsModifier);
     }
 
     @Override
