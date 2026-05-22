@@ -34,7 +34,9 @@ public class ClickListener implements InputListener {
 
     @Override
     public void onMouseDragged(float x, float y) {
-        if (down && !input.clicked(button)) down = false;
+        if (down && !input.clicked(button)) {
+            down = false;
+        }
     }
 
     @Override
@@ -42,7 +44,9 @@ public class ClickListener implements InputListener {
         if (button == this.button) {
             if (clickType == null || clickType == ClickType.RELEASE) {
                 long time = System.nanoTime();
-                if (time - lastTapTime > tapCountInterval) tapCount = 0;
+                if (time - lastTapTime > tapCountInterval) {
+                    tapCount = 0;
+                }
                 tapCount++;
                 lastTapTime = time;
                 onRelease(x, y);

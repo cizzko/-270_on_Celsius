@@ -1,6 +1,5 @@
 package core.assets;
 
-import core.EventHandling.Config;
 import core.Global;
 import core.g2d.AtlasHandler;
 import core.g2d.FontHandler;
@@ -78,8 +77,9 @@ public final class AssetsManager {
 
         copyFromResource(config, "configDefault.properties", "config.properties");
 
-        if (Debug.debugLevel >= 3)
+        if (Debug.debugLevel >= 3) {
             jscriptInit(exploded);
+        }
     }
 
     void copyFromResource(HashMap<String, String> map, String resourceFileName, String externalFileName) {

@@ -40,7 +40,9 @@ public class Structure implements ContentType {
         @Override
         public int compareTo(Structure.Part o) {
             int cmp = Integer.compare(offsetX, o.offsetX);
-            if (cmp != 0) return cmp;
+            if (cmp != 0) {
+                return cmp;
+            }
             return Integer.compare(offsetY, o.offsetY);
         }
 

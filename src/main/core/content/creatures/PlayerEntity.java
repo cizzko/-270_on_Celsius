@@ -2,9 +2,9 @@ package core.content.creatures;
 
 import core.Global;
 import core.Time;
+import core.World.WorldUtils;
 import core.content.ItemGrid;
 import core.content.ItemStack;
-import core.World.WorldUtils;
 import core.content.entity.BaseCreatureEntity;
 import core.content.entity.HitboxComponent;
 import core.content.entity.InventoryComponent;
@@ -71,8 +71,9 @@ public class PlayerEntity
 
         Debug.debugHotKeys();
 
-        if (input.justPressed(GLFW_KEY_Q))
+        if (input.justPressed(GLFW_KEY_Q)) {
             player.resetItemInHand();
+        }
 
         //todo было 9
         float speed = noClip ? 2f : 9f * ThreadLocalRandom.current().nextFloat(1, 1.15f);
@@ -113,7 +114,9 @@ public class PlayerEntity
         }
         var blockEntity = world.getEntity(blockUnderMouse.x, blockUnderMouse.y);
         if (blockEntity != null) {
-            if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) blockEntity.onMouseClick();
+            if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT)) {
+                blockEntity.onMouseClick();
+            }
 
             blockEntity.onMouseHover();
 

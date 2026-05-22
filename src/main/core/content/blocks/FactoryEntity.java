@@ -7,9 +7,9 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.Time;
 import core.World.Creatures.Player.Inventory.Inventory;
+import core.World.Textures.TextureDrawing;
 import core.content.ItemGrid;
 import core.content.ItemStack;
-import core.World.Textures.TextureDrawing;
 import core.content.entity.BaseBlockEntity;
 import core.content.entity.BlockItemStorage;
 import core.g2d.Fill;
@@ -21,7 +21,7 @@ import java.io.IOException;
 import static core.Global.atlas;
 import static core.Global.player;
 import static core.World.Textures.TextureDrawing.blockSize;
-import static core.util.Color.*;
+import static core.util.Color.rgba8888;
 
 public class FactoryEntity extends BaseBlockEntity<Factory> {
     public boolean isSelected;
@@ -112,8 +112,9 @@ public class FactoryEntity extends BaseBlockEntity<Factory> {
 
         JsonToken t;
         while ((t = p.nextToken()) != null) {
-            if (t == JsonToken.END_OBJECT)
+            if (t == JsonToken.END_OBJECT) {
                 break;
+            }
             if (t == JsonToken.FIELD_NAME) {
                 switch (p.currentName()) {
                     case "progress" -> {

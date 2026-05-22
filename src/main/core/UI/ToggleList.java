@@ -1,10 +1,8 @@
 package core.UI;
 
-import core.input.InputListener;
 import it.unimi.dsi.fastutil.booleans.BooleanConsumer;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.ArrayList;
 import java.util.function.Consumer;
 
 public class ToggleList
@@ -35,7 +33,6 @@ public class ToggleList
                     for (var listener : child.listeners()) {
                         if (listener instanceof ToggleListener<?> t && t.clicked && t.element != element) {
                             t.disable();
-                            System.out.println("DISABLE " + t.element.id());
                         }
                     }
                 }

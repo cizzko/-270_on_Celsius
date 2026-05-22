@@ -1,8 +1,8 @@
 package core;
 
-import core.content.ContentManager;
 import core.World.World;
 import core.assets.AssetsManager;
+import core.content.ContentManager;
 import core.content.EntityPool;
 import core.content.creatures.PlayerEntity;
 import core.g2d.Atlas;

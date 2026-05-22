@@ -63,6 +63,7 @@ public abstract class GameScene implements AssetLifecycle {
                 } else {
                     scheduler.executeAll();
                     uiScene.update(Time.delta);
+
                     drawLoading();
                 }
             }
@@ -73,11 +74,20 @@ public abstract class GameScene implements AssetLifecycle {
 
     private void readyLoop() {
         scheduler.executeAll();
-        if (state == State.UNLOADED) return;
+        if (state == State.UNLOADED) {
+            return;
+        }
+
         objectLoader.updatePreload();
-        if (state == State.UNLOADED) return;
+        if (state == State.UNLOADED) {
+            return;
+        }
+
         uiScene.update(Time.delta);
-        if (state == State.UNLOADED) return;
+        if (state == State.UNLOADED) {
+            return;
+        }
+
         inputUpdate();
         update();
         draw();

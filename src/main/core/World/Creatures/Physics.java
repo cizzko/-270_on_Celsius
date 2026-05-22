@@ -4,8 +4,8 @@ import core.PlayGameScene;
 import core.Time;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.ShadowMap;
-import core.content.entity.*;
-import core.g2d.Atlas;
+import core.content.entity.HealthComponent;
+import core.content.entity.LivingEntity;
 import core.g2d.Drawable;
 import core.math.Rectangle;
 import core.math.Vector2f;
@@ -14,7 +14,7 @@ import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
 import static core.Global.*;
-import static core.World.Creatures.Player.Player.*;
+import static core.World.Creatures.Player.Player.noClip;
 import static core.World.Textures.TextureDrawing.blockSize;
 import static core.content.entity.DrawComponent.GAP;
 import static java.lang.Math.abs;
@@ -45,8 +45,9 @@ public class Physics {
 
         entityPool.entities().values().forEach(me -> {
             entityPool.worldIndex().intersect(me, them -> {
-                if (me == them)
+                if (me == them) {
                     return;
+                }
 
                 var meColId   = combine(me.getId(), them.getId());
                 var themColId = combine(them.getId(), me.getId());
@@ -125,8 +126,9 @@ public class Physics {
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
                 int blockId = world.getBlockId(x, y);
-                if (blockId <= 0)
+                if (blockId <= 0) {
                     continue;
+                }
                 var block = content.blocksRegistry.typeById(blockId);
                 if (block.type != StaticObjectsConst.Type.SOLID) {
                     continue;
@@ -336,8 +338,12 @@ public class Physics {
             }
         }
 
-        if (abs(deltax) == 0) vel.x = 0;
-        if (abs(deltay) == 0) vel.y = 0;
+        if (abs(deltax) == 0) {
+            vel.x = 0;
+        }
+        if (abs(deltay) == 0) {
+            vel.y = 0;
+        }
     }
 
     private static float calculateFriction(LivingEntity ent) {
@@ -350,7 +356,7 @@ public class Physics {
         int maxY = (int) Math.floor((entityHitbox.y + entityHitbox.height) / blockSize);
 
         float resistance = 100;
-        var appliedResistances = FixedBitset.createBitSet(content.blocksRegistry.getMaxId());
+        var appliedResistances = FixedBitset.createBitSet(content.blocksRegistry.count());
 
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
@@ -389,8 +395,9 @@ public class Physics {
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
                 var block = world.getBlock(x, y);
-                if (block == null || block.type == StaticObjectsConst.Type.SOLID)
+                if (block == null || block.type == StaticObjectsConst.Type.SOLID) {
                     return true;
+                }
             }
         }
         return false;

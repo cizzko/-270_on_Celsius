@@ -89,7 +89,9 @@ public final class HashSpatialIndex<E extends HitboxComponent> {
                 var array = hash.get(combine(rx, ry));
                 if (array != null) {
                     for (E e : array) {
-                        if (e == ent) continue;
+                        if (e == ent) {
+                            continue;
+                        }
                         e.getHitboxTo(tmp1);
                         if (tmp0.overlaps(tmp1)) {
                             consumer.accept(e);

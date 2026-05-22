@@ -11,7 +11,7 @@ import org.intellij.lang.annotations.MagicConstant;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 
-import static core.World.Textures.TextureDrawing.*;
+import static core.World.Textures.TextureDrawing.blockSize;
 import static core.g2d.Render.*;
 
 public final class StackfulRender {

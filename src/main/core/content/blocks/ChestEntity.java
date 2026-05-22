@@ -6,13 +6,12 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.World.Creatures.Player.Inventory.Inventory;
+import core.World.Textures.TextureDrawing;
 import core.content.ItemGrid;
 import core.content.ItemStack;
-import core.World.Textures.TextureDrawing;
 import core.content.entity.BaseBlockEntity;
 import core.g2d.Atlas;
 import core.g2d.Render;
-import core.g2d.RenderList;
 import core.g2d.StackfulRender;
 import core.math.Point2i;
 import core.math.Vector2f;
@@ -131,8 +130,9 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
 
         JsonToken t;
         while ((t = p.nextToken()) != null) {
-            if (t == JsonToken.END_OBJECT)
+            if (t == JsonToken.END_OBJECT) {
                 break;
+            }
             if (t == JsonToken.FIELD_NAME && "storage".equals(p.currentName())) {
                 p.nextToken();
                 storage = ctxt.readValue(p, ItemStack[][].class);

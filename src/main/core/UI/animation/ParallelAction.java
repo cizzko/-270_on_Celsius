@@ -11,7 +11,9 @@ public class ParallelAction<A> extends Action<A> {
 
     @Override
     public boolean act(float delta) {
-        if (complete) return true;
+        if (complete) {
+            return true;
+        }
         complete = true;
 
         var actions = this.actions;
@@ -43,7 +45,9 @@ public class ParallelAction<A> extends Action<A> {
 
     public void addAction(Action<A> action) {
         actions.add(action);
-        if (actor != null) action.setActor(actor);
+        if (actor != null) {
+            action.setActor(actor);
+        }
     }
 
     @Override

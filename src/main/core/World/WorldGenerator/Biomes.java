@@ -61,8 +61,10 @@ public enum Biomes implements SerializableContent {
         return defaultBiome;
     }
 
+    private static final Biomes[] values = Biomes.values();
+
     public static Biomes getRand() {
-        return Biomes.values()[(int) (Math.random() * Biomes.values().length)];
+        return values[(int) (Math.random() * values.length)];
     }
 
     private static short shortIdByName(String name) {

@@ -4,7 +4,6 @@ import core.g2d.Fill;
 import core.util.Color;
 
 import static core.Global.input;
-import static core.World.Textures.TextureDrawing.drawText;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 
 public class Button extends BaseButton<Button> {
@@ -64,9 +63,11 @@ public class Button extends BaseButton<Button> {
 
         name.draw();
 
-        if (isUnderMouse) Fill.rect(
-                x + borderWidth, y + borderWidth,
-                width - 2*borderWidth, height - 2*borderWidth, Color.rgba8888(34,34, 34, 120));
+        if (isUnderMouse) {
+            Fill.rect(
+                    x + borderWidth, y + borderWidth,
+                    width - 2*borderWidth, height - 2*borderWidth, Color.rgba8888(34,34, 34, 120));
+        }
 
         // drawPrompt(this, style.font);
     }

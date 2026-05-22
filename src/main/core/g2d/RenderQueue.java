@@ -13,10 +13,11 @@ import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static core.g2d.RenderList.*;
-import static core.g2d.StackfulRender.defaultShader;
 import static core.g2d.Render.*;
-import static java.lang.Math.*;
+import static core.g2d.RenderList.KIND_DYNAMIC;
+import static core.g2d.RenderList.KIND_STATIC;
+import static core.g2d.StackfulRender.defaultShader;
+import static java.lang.Math.max;
 import static org.lwjgl.opengl.GL46.*;
 
 public final class RenderQueue implements Disposable {
@@ -91,42 +92,15 @@ public final class RenderQueue implements Disposable {
             return;
         }
 
-        // if (Global.postEffect.use) {
-        //     glBindFramebuffer(GL_FRAMEBUFFER, Global.postEffect.frameBufferId);
-        //     glClear(GL_COLOR_BUFFER_BIT);
-        // } else {
-        //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        // }
         drainCommandQueue();
-
-        // if (Global.postEffect.use) {
-        //     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        //
-        //     try (var __ = StackfulRender.pushState()) {
-        //         StackfulRender.z(LAYER_DEBUG);
-        //         StackfulRender.shader(Global.postEffect.shader);
-        //         var bl = uniformBuffer.allocate();
-        //
-        //         bl.push(UniformBuffer.Uniform.of("u_resolution", input.getHeight(), input.getWidth()));
-        //         bl.push(UniformBuffer.Uniform.of("u_curvatureStrength", -0.8f));
-        //         bl.push(UniformBuffer.Uniform.of("u_aspectCorrection", 1f));
-        //         uniformBuffer.push(bl);
-        //         StackfulRender.setUniformBlock(bl);
-        //
-        //         StackfulRender.drawPostEffect(Global.postEffect.screenTexture);
-        //
-        //         StackfulRender.pushRList();
-        //         drainCommandQueue();
-        //     }
-        // }
-
         uniformBuffer.clear();
     }
 
     private void drainCommandQueue() {
         RenderList it;
-        while ((it = renderLists.pollFirst()) != null)
+        while ((it = renderLists.pollFirst()) != null) {
             submitCommandList(it);
+        }
     }
 
     public void flush() {
@@ -154,8 +128,9 @@ public final class RenderQueue implements Disposable {
     }
 
     private void submitCommandList(RenderList rlist) {
-        for (var it = rlist; it != null; it = it.next)
+        for (var it = rlist; it != null; it = it.next) {
             submitRenderList(it);
+        }
     }
 
     private void submitRenderList(RenderList rlist) {
@@ -220,8 +195,9 @@ public final class RenderQueue implements Disposable {
                         ebo, groupIndexOffset, groupIndexCount,
                         currentVertexFormat);
 
-                if (currentBlending != blending)
+                if (currentBlending != blending) {
                     setBlending(blending);
+                }
 
                 var shader = ResourceCache.shadersById.get(shaderId);
                 Objects.requireNonNull(shader, ResourceCache.shadersById::toString);
@@ -237,7 +213,9 @@ public final class RenderQueue implements Disposable {
                 }
 
                 if (currentTextureId != textureId) // TODO ubo?
+                {
                     shader.setUniformTexture2d("u_texture", textureId, 0);
+                }
 
                 currentPrimitiveType = primitiveType;
                 currentLayer = layer;
@@ -262,7 +240,7 @@ public final class RenderQueue implements Disposable {
                 currentVertexFormat);
 
         switch (rlist.kind) {
-            // Обратно восставливаем write-mode
+            // восстанавливаем write-mode
             case RenderList.KIND_STATIC -> {
                 vertices.position(vapos);
                 vertices.limit(vacount);
@@ -283,7 +261,9 @@ public final class RenderQueue implements Disposable {
 
     @Override
     public void close() {
-        if (ebo != null) ebo.close();
+        if (ebo != null) {
+            ebo.close();
+        }
         ritemAlloc.clear();
         rlistAlloc.clear();
         for (RenderList renderList : created) {

@@ -37,7 +37,9 @@ public final class QuadTree<T extends HitboxComponent> {
     }
 
     private void split() {
-        if (!leaf) return;
+        if (!leaf) {
+            return;
+        }
 
         float subW = bounds.width / 2;
         float subH = bounds.height / 2;
@@ -63,7 +65,9 @@ public final class QuadTree<T extends HitboxComponent> {
     }
 
     private void unsplit() {
-        if (leaf) return;
+        if (leaf) {
+            return;
+        }
         objects.addAll(botLeft.objects);
         objects.addAll(botRight.objects);
         objects.addAll(topLeft.objects);
@@ -165,10 +169,18 @@ public final class QuadTree<T extends HitboxComponent> {
 
     public void intersect(float x, float y, float width, float height, Consumer<T> out) {
         if (!leaf) {
-            if (topLeft.bounds.overlaps(x, y, width, height)) topLeft.intersect(x, y, width, height, out);
-            if (topRight.bounds.overlaps(x, y, width, height)) topRight.intersect(x, y, width, height, out);
-            if (botLeft.bounds.overlaps(x, y, width, height)) botLeft.intersect(x, y, width, height, out);
-            if (botRight.bounds.overlaps(x, y, width, height)) botRight.intersect(x, y, width, height, out);
+            if (topLeft.bounds.overlaps(x, y, width, height)) {
+                topLeft.intersect(x, y, width, height, out);
+            }
+            if (topRight.bounds.overlaps(x, y, width, height)) {
+                topRight.intersect(x, y, width, height, out);
+            }
+            if (botLeft.bounds.overlaps(x, y, width, height)) {
+                botLeft.intersect(x, y, width, height, out);
+            }
+            if (botRight.bounds.overlaps(x, y, width, height)) {
+                botRight.intersect(x, y, width, height, out);
+            }
         }
 
         for (T object : objects) {
@@ -181,25 +193,38 @@ public final class QuadTree<T extends HitboxComponent> {
 
     public void eachNode(float x, float y, float width, float height, Consumer<QuadTree<T>> out) {
         if (!leaf) {
-            if (topLeft.bounds.overlaps(x, y, width, height))
+            if (topLeft.bounds.overlaps(x, y, width, height)) {
                 out.accept(topLeft);
-            if (topRight.bounds.overlaps(x, y, width, height))
+            }
+            if (topRight.bounds.overlaps(x, y, width, height)) {
                 out.accept(topRight);
-            if (botLeft.bounds.overlaps(x, y, width, height))
+            }
+            if (botLeft.bounds.overlaps(x, y, width, height)) {
                 out.accept(botLeft);
-            if (botRight.bounds.overlaps(x, y, width, height))
+            }
+            if (botRight.bounds.overlaps(x, y, width, height)) {
                 out.accept(botRight);
+            }
         }
-        if (bounds.overlaps(x, y, width, height))
+        if (bounds.overlaps(x, y, width, height)) {
             out.accept(this);
+        }
     }
 
     public boolean any(float x, float y, float width, float height) {
         if (!leaf) {
-            if (topLeft.bounds.overlaps(x, y, width, height) && topLeft.any(x, y, width, height)) return true;
-            if (topRight.bounds.overlaps(x, y, width, height) && topRight.any(x, y, width, height)) return true;
-            if (botLeft.bounds.overlaps(x, y, width, height) && botLeft.any(x, y, width, height)) return true;
-            if (botRight.bounds.overlaps(x, y, width, height) && botRight.any(x, y, width, height)) return true;
+            if (topLeft.bounds.overlaps(x, y, width, height) && topLeft.any(x, y, width, height)) {
+                return true;
+            }
+            if (topRight.bounds.overlaps(x, y, width, height) && topRight.any(x, y, width, height)) {
+                return true;
+            }
+            if (botLeft.bounds.overlaps(x, y, width, height) && botLeft.any(x, y, width, height)) {
+                return true;
+            }
+            if (botRight.bounds.overlaps(x, y, width, height) && botRight.any(x, y, width, height)) {
+                return true;
+            }
         }
 
         for (T item : objects) {

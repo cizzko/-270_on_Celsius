@@ -2,14 +2,14 @@ package core.World.Creatures.Player;
 
 import core.EventHandling.Config;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.content.items.data.ItemData;
-import core.content.ItemStack;
-import core.content.items.ItemBlock;
-import core.content.items.ItemTool;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldUtils;
+import core.content.ItemStack;
+import core.content.items.ItemBlock;
+import core.content.items.ItemTool;
+import core.content.items.data.ItemData;
 import core.g2d.Fill;
 import core.math.Point2i;
 import core.util.Color;
@@ -20,7 +20,8 @@ import static core.World.WorldUtils.getDistanceToMouse;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Player {
-    public static boolean noClip = false, placeRules = true, breakRules = false;
+    //для быстрого дебага
+    public static boolean noClip = false, placeRules = true, breakRules = true;
 
     private static int transparencyHPline = Config.getBoolean("AlwaysOnPlayerHPLine") ? 220 : 0;
 

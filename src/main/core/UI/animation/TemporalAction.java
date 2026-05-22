@@ -9,7 +9,9 @@ abstract public class TemporalAction<A> extends Action<A> {
     private boolean began, complete;
 
     public boolean act(float delta) {
-        if (complete) return true;
+        if (complete) {
+            return true;
+        }
         if (!began) {
             began = true;
             begin();
@@ -22,7 +24,9 @@ abstract public class TemporalAction<A> extends Action<A> {
             percent = 1;
         } else {
             percent = time / duration;
-            if (interpolation != null) percent = interpolation.apply(percent);
+            if (interpolation != null) {
+                percent = interpolation.apply(percent);
+            }
         }
         update(percent);
         return complete;

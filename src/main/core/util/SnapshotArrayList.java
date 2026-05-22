@@ -89,7 +89,9 @@ public class SnapshotArrayList<T> extends ObjectArrayList<T> {
     }
 
     private void modified() {
-        if (snapshots == 0 || size == 0) return;
+        if (snapshots == 0 || size == 0) {
+            return;
+        }
 
         if ((tmp == null || size > tmp.length)) {
             allocs++;

@@ -3,9 +3,9 @@ package core.UI;
 import core.Global;
 import core.Window;
 import core.g2d.Drawable;
-import core.g2d.StackfulRender;
 import core.g2d.Fill;
 import core.g2d.Font;
+import core.g2d.StackfulRender;
 import core.util.Color;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.logging.log4j.LogManager;
@@ -154,8 +154,9 @@ public class TextField extends BaseElement<TextField> {
             positions[i].x = bx;
             positions[i].y = by;
             int w = gl.width();
-            if (c == '\n')
+            if (c == '\n') {
                 w = NEW_LINE_WIDTH;
+            }
             positions[i].width = w;
             positions[i].height = gl.height();
 
@@ -258,8 +259,9 @@ public class TextField extends BaseElement<TextField> {
                     }
                 }
             }
-            if (text.charAt(maxI) != '\n')
+            if (text.charAt(maxI) != '\n') {
                 Fill.rect(lineX, lineY, lineWidth, Font.fontSize * 1.5f, selectionColor); // TODO
+            }
         }
 
         var glyphs = glyphCache.getGlyphs();
@@ -303,7 +305,9 @@ public class TextField extends BaseElement<TextField> {
 
         @Override
         public void onTouchUp(float x, float y, int button) {
-            if (selection == caret) resetSelection();
+            if (selection == caret) {
+                resetSelection();
+            }
             super.onTouchUp(x, y, button);
         }
 
@@ -326,7 +330,9 @@ public class TextField extends BaseElement<TextField> {
         public void onKeyDown(int key, int scancode) {
             switch (key) {
                 case GLFW_KEY_HOME -> {
-                    if (length == 0) return;
+                    if (length == 0) {
+                        return;
+                    }
                     int row = caretRow();
                     int lineBegin = lines.get(row).begin;
 
@@ -344,7 +350,9 @@ public class TextField extends BaseElement<TextField> {
                     }
                 }
                 case GLFW_KEY_END -> {
-                    if (length == 0) return;
+                    if (length == 0) {
+                        return;
+                    }
                     int row = caretRow();
                     int lineEnd = lines.get(row).end;
 
@@ -432,7 +440,9 @@ public class TextField extends BaseElement<TextField> {
                     }
                 }
                 case GLFW_KEY_RIGHT -> {
-                    if (length == 0) return;
+                    if (length == 0) {
+                        return;
+                    }
 
                     if (shift()) {
                         int c = caret;
@@ -447,7 +457,9 @@ public class TextField extends BaseElement<TextField> {
                     }
                 }
                 case GLFW_KEY_LEFT -> {
-                    if (length == 0) return;
+                    if (length == 0) {
+                        return;
+                    }
 
                     if (shift()) {
                         int c = caret;
@@ -463,26 +475,34 @@ public class TextField extends BaseElement<TextField> {
                 }
                 case GLFW_KEY_DOWN -> {
                     // ПОМНИ: ДАУН ЭТО АП, АП ЭТО ДАУН
-                    if (length == 0) return;
+                    if (length == 0) {
+                        return;
+                    }
 
                     int row = caretRow();
                     if (row + 1 < lines.size()) {
                         var nextLine = lines.get(row + 1);
                         int length = nextLine.length();
                         int col = caret - lines.get(row).begin;
-                        if (col > length) col = length;
+                        if (col > length) {
+                            col = length;
+                        }
                         setCaret(nextLine.begin + col);
                     }
                 }
                 case GLFW_KEY_UP -> {
-                    if (length == 0) return;
+                    if (length == 0) {
+                        return;
+                    }
 
                     int row = caretRow();
                     if (row > 0) {
                         var prevLine = lines.get(row - 1);
                         int length = prevLine.length();
                         int col = caret - lines.get(row).begin;
-                        if (col > length) col = length;
+                        if (col > length) {
+                            col = length;
+                        }
                         setCaret(prevLine.begin + col);
                     }
                 }
@@ -554,7 +574,9 @@ public class TextField extends BaseElement<TextField> {
 
         int findClosestIndex(float x, float y) {
             var pos = positions;
-            if (pos.length == 0) return -1;
+            if (pos.length == 0) {
+                return -1;
+            }
             int best = 0;
             float bestDst2 = dst2To(pos[0], x, y);
             for (int i = 1; i < pos.length; i++) {

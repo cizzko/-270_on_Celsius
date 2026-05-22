@@ -33,6 +33,8 @@ public class ImageButton extends BaseElement<ImageButton> {
 
     @Override
     public void draw() {
-        if (image != null) StackfulRender.draw(image, x, y, width, height);
+        if (image != null) {
+            StackfulRender.draw(image, x, y, width, height);
+        }
     }
 }

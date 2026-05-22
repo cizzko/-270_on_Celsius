@@ -6,7 +6,8 @@ import com.fasterxml.jackson.core.JacksonException;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.*;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -15,11 +16,11 @@ import core.Application;
 import core.GameState;
 import core.Global;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.content.blocks.data.TileData;
 import core.World.Textures.ShadowMap;
 import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator.Biomes;
 import core.World.WorldGenerator.WorldGenerator;
+import core.content.blocks.data.TileData;
 import core.content.entity.BlockEntity;
 import core.math.MathUtil;
 import core.math.Point2i;
@@ -29,9 +30,14 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Objects;
+import java.util.concurrent.ForkJoinPool;
+
+import static core.Constants.World.availableProcessors;
 
 @JsonSerialize(using = World.WorldSerializer.class)
 public final class World {
+    public final ForkJoinPool genPool = new ForkJoinPool(availableProcessors);
+
     public final int sizeX, sizeY;
     public final /* unsigned */ short[] tiles;
     public final /* unsigned */ byte[] hp;
@@ -50,18 +56,21 @@ public final class World {
     public final Meta meta;
 
     public static final class Meta {
-        public int sizeX, sizeY;
+        public final int sizeX, sizeY;
+        public final long seed;
+
         public @Nullable String name, description;
         public long lastPlayTime;  // секунды
         public long totalPlayTime; // секунды
 
         @JsonCreator
-        public Meta(int sizeX, int sizeY,
+        public Meta(int sizeX, int sizeY, long seed,
                     @Nullable String name,
                     @Nullable String description,
                     long lastPlayTime, long totalPlayTime) {
             this.sizeX = sizeX;
             this.sizeY = sizeY;
+            this.seed = seed;
             this.name = name;
             this.description = description;
             this.lastPlayTime = lastPlayTime;
@@ -164,11 +173,11 @@ public final class World {
         }
     }
 
-    public void copyFromTo(int fromX, int fromY, int toX, int toY,
-                            StaticObjectsConst object, boolean followingRules) {
+    public void copyFromTo(int fromX, int fromY, int toX, int toY, StaticObjectsConst object, boolean followingRules) {
         setImpls(toX, toY, object, followingRules);
         setHp(toX, toY, getHp(fromX, fromY));
         var fromData = getData(fromX, fromY);
+
         if (fromData != null) {
             setData(toX, toY, fromData);
         }
@@ -183,7 +192,10 @@ public final class World {
         return data.get(pos2index(x, y));
     }
 
-    public @Nullable BlockEntity getEntity(Point2i pos)  { return getEntity(pos.x, pos.y); }
+    public @Nullable BlockEntity getEntity(Point2i pos) {
+        return getEntity(pos.x, pos.y);
+    }
+
     public @Nullable BlockEntity getEntity(int x, int y) {
         var rootPos = getRootBlockPos(x, y);
         if (rootPos != null) {
@@ -223,8 +235,9 @@ public final class World {
     /// @param newHp новое значение здоровья блока. Должно быть в отрезке `[0, 255]`
     public void setHp(int x, int y, int newHp) {
         // Global.app.ensureMainThread();
-        if (newHp < 0 || newHp >= (1 << 8))
+        if (newHp < 0 || newHp >= (1 << 8)) {
             throw new IllegalArgumentException("HP out of range: [0, 255]");
+        }
 
         if (inBounds(x, y)) {
             var root = getRootBlockPos(x, y);
@@ -380,15 +393,16 @@ public final class World {
                 return !anyCollision;
             }
         } else {
-            if (root.type == StaticObjectsConst.Type.SOLID) {
-                boolean anyCollision = Global.entityPool.worldIndex().any(
-                        x * TextureDrawing.blockSize, y * TextureDrawing.blockSize,
-                        root.texture.width(), root.texture.height()
-                );
-                if (anyCollision) {
-                    return false;
-                }
-            }
+            //todo загадочно сломано
+//            if (root.type == StaticObjectsConst.Type.SOLID) {
+//                boolean anyCollision = Global.entityPool.worldIndex().any(
+//                        x * TextureDrawing.blockSize, y * TextureDrawing.blockSize,
+//                        root.texture.width(), root.texture.height()
+//                );
+//                if (anyCollision) {
+//                    return false;
+//                }
+//            }
 
             // рядышком есть твёрдый блок
             for (Point2i d : MathUtil.CROSS_OFFSETS) {
@@ -422,7 +436,9 @@ public final class World {
 
             JsonToken t;
             while ((t = p.nextToken()) != null) {
-                if (t == JsonToken.END_OBJECT) break;
+                if (t == JsonToken.END_OBJECT) {
+                    break;
+                }
                 if (t == JsonToken.FIELD_NAME) {
                     int pos = Integer.parseInt(p.currentName());
                     short blockId = worl.tiles[pos];
@@ -464,7 +480,9 @@ public final class World {
 
             JsonToken t;
             while ((t = p.nextToken()) != null) {
-                if (t == JsonToken.END_OBJECT) break;
+                if (t == JsonToken.END_OBJECT) {
+                    break;
+                }
                 if (t == JsonToken.FIELD_NAME) {
                     int pos = Integer.parseInt(p.currentName());
                     short blockId = worl.tiles[pos];

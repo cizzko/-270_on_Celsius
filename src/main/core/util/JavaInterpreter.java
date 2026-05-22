@@ -9,7 +9,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.management.ManagementFactory;
 import java.lang.module.ModuleDescriptor;
-import java.util.*;
+import java.util.Locale;
+import java.util.Map;
+import java.util.StringJoiner;
+import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class JavaInterpreter {
@@ -63,8 +66,9 @@ public class JavaInterpreter {
                 case VALID, OVERWRITTEN -> {
                     if (snippetEvent.value() != null && !snippetEvent.value().isEmpty()) {
                         log.info("{} ==> {}", snippetEvent.snippet().id(), snippetEvent.value());
-                        if (out != null)
+                        if (out != null) {
                             out.add(snippetEvent.snippet().id() + " ==> " + snippetEvent.value());
+                        }
                     } else {
                         if (snippetEvent.exception() != null) {
                             log.error(snippetEvent.exception());
@@ -78,24 +82,28 @@ public class JavaInterpreter {
                             .forEach(diag -> {
                                 if (diag.isError()) {
                                     log.error("Error:");
-                                    if (out != null)
+                                    if (out != null) {
                                         out.add("Error:");
+                                    }
                                     for (String line : diag.getMessage(Locale.US).split("\n")) {
                                         log.error(line);
-                                        if (out != null)
+                                        if (out != null) {
                                             out.add(line);
+                                        }
                                     }
                                     long start = diag.getStartPosition();
                                     long end = diag.getEndPosition();
                                     long pos = diag.getPosition();
                                     String source = snippetEvent.snippet().source();
                                     log.error(source);
-                                    if (out != null)
+                                    if (out != null) {
                                         out.add(source);
+                                    }
                                     String caret = "^".repeat(Math.toIntExact(end - pos));
                                     log.error("{}{}", " ".repeat(Math.toIntExact(start)), caret);
-                                    if (out != null)
+                                    if (out != null) {
                                         out.add(" ".repeat(Math.toIntExact(start)) + caret);
+                                    }
                                 }
                             });
 

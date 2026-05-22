@@ -5,10 +5,10 @@ import core.UI.Dialog;
 import core.UI.Element;
 import core.UI.Group;
 import core.World.Textures.TextureDrawing;
-import core.graphic.Camera2;
-import core.g2d.StackfulRender;
 import core.g2d.Fill;
 import core.g2d.Render;
+import core.g2d.StackfulRender;
+import core.graphic.Camera2;
 import core.input.InputListener;
 import core.math.Vector2f;
 import org.apache.logging.log4j.LogManager;
@@ -165,7 +165,7 @@ public final class UIScene implements InputListener {
             return;
         }
 
-        log.debug("Mouse moved from {} to {}", old, over);
+        //log.debug("Mouse moved from {} to {}", old, over);
         if (old != null) {
             old.onMouseExit(mouse.x, mouse.y);
         }
@@ -210,8 +210,12 @@ public final class UIScene implements InputListener {
             element.onTouchUp(Float.MIN_VALUE, Float.MIN_VALUE, -1);
             touchFocus = null;
         }
-        if (scrollFocus != null && scrollFocus.isDescendantOf(Predicate.isEqual(element))) setScrollFocus(null);
-        if (keyboardFocus != null && keyboardFocus.isDescendantOf(Predicate.isEqual(element))) setKeyboardFocus(null);
+        if (scrollFocus != null && scrollFocus.isDescendantOf(Predicate.isEqual(element))) {
+            setScrollFocus(null);
+        }
+        if (keyboardFocus != null && keyboardFocus.isDescendantOf(Predicate.isEqual(element))) {
+            setKeyboardFocus(null);
+        }
     }
 
 // region InputListener

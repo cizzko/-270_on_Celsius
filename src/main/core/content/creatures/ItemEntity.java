@@ -2,13 +2,14 @@ package core.content.creatures;
 
 import core.Time;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.content.ItemStack;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.Textures.TextureDrawing;
-import core.content.entity.*;
+import core.content.ItemStack;
+import core.content.entity.HitboxComponent;
+import core.content.entity.LivingEntity;
 import core.g2d.Atlas;
-import core.g2d.StackfulRender;
 import core.g2d.Fill;
+import core.g2d.StackfulRender;
 import core.math.Rectangle;
 import core.math.Vector2f;
 import core.util.Color;
@@ -170,18 +171,21 @@ public class ItemEntity implements LivingEntity {
     @Override
     public void setHp(float hp) {
         this.hp = hp;
-        if (hp <= 0)
+        if (hp <= 0) {
             remove();
+        }
     }
 
     @Override
     public void damage(float d, DamageSource source) {
-        if (source == DamageSource.FALL || dead)
+        if (source == DamageSource.FALL || dead) {
             return;
+        }
 
         this.hp -= d;
-        if (hp <= 0)
+        if (hp <= 0) {
             remove();
+        }
     }
 
     @Override

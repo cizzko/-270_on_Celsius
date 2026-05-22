@@ -6,7 +6,9 @@ public class SequenceAction<A> extends ParallelAction<A> {
 
     @Override
     public boolean act(float delta) {
-        if (index >= actions.size()) return true;
+        if (index >= actions.size()) {
+            return true;
+        }
 
         if (actions.get(index).act(delta)) {
             if (actor == null) {

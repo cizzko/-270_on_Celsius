@@ -6,7 +6,7 @@ import core.UI.TextField;
 
 import static core.Global.input;
 import static core.Global.uiScene;
-import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.glfw.GLFW.GLFW_KEY_F5;
 
 public class Commandline {
     // private static final String prefix = Config.getFromFC("Prefix");
@@ -18,8 +18,9 @@ public class Commandline {
     }
 
     public static void inputUpdate() {
-        if (Debug.debugLevel < 3)
+        if (Debug.debugLevel < 3) {
             return;
+        }
 
         if (input.justPressed(GLFW_KEY_F5)) {
             if (Global.uiScene.contains(consoleField)) {

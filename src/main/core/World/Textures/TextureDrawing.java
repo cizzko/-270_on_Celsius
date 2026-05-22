@@ -202,14 +202,20 @@ public class TextureDrawing {
             maxX2 = bx;
 
             int cmx = bx;
-            while (cmx <= maxX && isSame(bx, by, cmx, by)) cmx++;
+            while (cmx <= maxX && isSame(bx, by, cmx, by)) {
+                cmx++;
+            }
             cmx--;
 
             for (int y = by; y <= maxY; y++) {
-                if (!isSame(bx, by, bx, y)) break;
+                if (!isSame(bx, by, bx, y)) {
+                    break;
+                }
 
                 int x = bx;
-                while (x <= cmx && isSame(bx, by, x, y)) x++;
+                while (x <= cmx && isSame(bx, by, x, y)) {
+                    x++;
+                }
                 int validWidth = x - bx;
                 if (validWidth == 0) {
                     break;
@@ -239,8 +245,12 @@ public class TextureDrawing {
                 processed = new boolean[newRows][newCols];
                 merged = new boolean[newRows][newCols];
             } else {
-                for (boolean[] b : merged) Arrays.fill(b, false);
-                for (boolean[] b : processed) Arrays.fill(b, false);
+                for (boolean[] b : merged) {
+                    Arrays.fill(b, false);
+                }
+                for (boolean[] b : processed) {
+                    Arrays.fill(b, false);
+                }
             }
             rows = newRows;
             cols = newCols;
@@ -252,7 +262,9 @@ public class TextureDrawing {
                 for (int x = minX; x <= maxX; x++) {
                     int lx = x - minX;
                     int ly = y - minY;
-                    if (processed[ly][lx]) continue;
+                    if (processed[ly][lx]) {
+                        continue;
+                    }
 
                     int value = world.getBlockId(x, y);
                     if (value <= 0) {
@@ -268,9 +280,11 @@ public class TextureDrawing {
                         Block e = new Block(blockId, shadow, y, x, maxY2, maxX2);
                         blocks.add(e);
 
-                        for (int i = y; i <= maxY2; i++)
-                            for (int j = x; j <= maxX2; j++)
+                        for (int i = y; i <= maxY2; i++) {
+                            for (int j = x; j <= maxX2; j++) {
                                 processed[i - minY][j - minX] = merged[i - minY][j - minX] = true;
+                            }
+                        }
                     }
                 }
             }
@@ -303,11 +317,13 @@ public class TextureDrawing {
 
         }
 
-        boolean USE_DEFAULT = false;
+        boolean USE_DEFAULT = true;
 
         void draw() {
             camera.getBoundsTo(viewport);
-            if (Global.input.justPressed(GLFW.GLFW_KEY_L)) USE_DEFAULT = !USE_DEFAULT;
+            if (Global.input.justPressed(GLFW.GLFW_KEY_L)) {
+                USE_DEFAULT = !USE_DEFAULT;
+            }
 
             if (USE_DEFAULT) {
                 collectScene();
@@ -356,7 +372,9 @@ public class TextureDrawing {
                         continue;
                     }
                     int blockId = world.getBlockId(x, y);
-                    if (blockId <= 0) continue;
+                    if (blockId <= 0) {
+                        continue;
+                    }
                     var obj = world.getBlock(x, y);
                     int hp = world.getHp(x, y);
                     drawBlock(x, y, obj, hp);

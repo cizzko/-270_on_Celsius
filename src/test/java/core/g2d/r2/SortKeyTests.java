@@ -74,15 +74,16 @@ public class SortKeyTests {// Всего: 1 << 3
             assertTrue(Long.compareUnsigned(b, c) < 0);
             assertTrue(Long.compareUnsigned(a, c) < 0);
         }
-        for (int l : new int[]{0, 1})
-            for (int b : new int[]{0, 1})
-                for (int t : new int[]{0, 1})
+        for (int l : new int[]{0, 1}) {
+            for (int b : new int[]{0, 1}) {
+                for (int t : new int[]{0, 1}) {
                     for (int s : new int[]{0, 1}) {
                         long a1 = makeSortKey((byte) l, (byte) b, (short) t, (byte) s, 0);
                         long a2 = makeSortKey((byte) l, (byte) b, (short) t, (byte) s, 1);
                         assertTrue(Long.compareUnsigned(a1, a2) < 0);
                     }
+                }
+            }
+        }
     }
-
-
 }

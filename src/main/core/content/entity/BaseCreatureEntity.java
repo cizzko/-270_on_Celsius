@@ -8,7 +8,7 @@ import core.math.Vector2f;
 import it.unimi.dsi.fastutil.HashCommon;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
-import static core.Global.*;
+import static core.Global.world;
 import static core.World.Textures.TextureDrawing.blockSize;
 
 public abstract class BaseCreatureEntity<C extends CreatureType> implements CreatureEntity {
@@ -181,8 +181,12 @@ public abstract class BaseCreatureEntity<C extends CreatureType> implements Crea
 
     @Override
     public final boolean equals(Object o) {
-        if (this == o) return true;
-        if (!(o instanceof BaseCreatureEntity<?> that)) return false;
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof BaseCreatureEntity<?> that)) {
+            return false;
+        }
         return id == that.id;
     }
 

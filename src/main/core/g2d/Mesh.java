@@ -26,13 +26,17 @@ public final class Mesh implements Disposable {
     public void setDirty(boolean state) { dirty = state; }
 
     public void bindVbo() {
-        if (lastVbo == vbo) return;
+        if (lastVbo == vbo) {
+            return;
+        }
         lastVbo = vbo;
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
     }
 
     public void bindVao() {
-        if (lastVao == vao) return;
+        if (lastVao == vao) {
+            return;
+        }
         lastVao = vao;
         glBindVertexArray(vao);
     }
@@ -71,8 +75,9 @@ public final class Mesh implements Disposable {
             }
         }
 
-        if (Debug.debugMesh)
+        if (Debug.debugMesh) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
         if (ebo != null && primitiveType != GL_TRIANGLE_STRIP) {
             ebo.bind();
             long byteOffsetInEBO = (long) indexOffset * Integer.BYTES;
@@ -80,8 +85,9 @@ public final class Mesh implements Disposable {
         } else {
             glDrawArrays(primitiveType, vertexOffset, vertexCount);
         }
-        if (Debug.debugMesh)
+        if (Debug.debugMesh) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
 
         return true;
     }

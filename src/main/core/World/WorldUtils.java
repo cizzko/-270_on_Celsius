@@ -4,10 +4,8 @@ import core.Application;
 import core.EventHandling.Config;
 import core.Global;
 import core.World.Creatures.Physics;
-import core.World.Creatures.Player.Player;
-import core.content.ItemStack;
-import core.World.Textures.TextureDrawing;
 import core.World.WorldGenerator.WorldGenerator;
+import core.content.ItemStack;
 import core.content.creatures.CreatureType;
 import core.content.creatures.ItemEntity;
 import core.content.entity.CreatureEntity;
@@ -15,21 +13,18 @@ import core.content.strctures.Structure;
 import core.math.Point2i;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.ThreadLocalRandom;
-import java.util.stream.Stream;
 
+import static core.Constants.World.COPY_SIZE;
 import static core.Global.*;
-import static core.Global.world;
 import static core.World.Textures.TextureDrawing.blockSize;
-import static core.World.WorldGenerator.WorldGenerator.copySize;
 
 public class WorldUtils {
 
     public static int mirrorPos(int x) {
-        int rightBorder = (world.sizeX - copySize);
-        int leftBorder = copySize;
+        int rightBorder = (world.sizeX - COPY_SIZE);
+        int leftBorder = COPY_SIZE;
         int dx = rightBorder - leftBorder;
 
         if (x > rightBorder) {
@@ -50,13 +45,13 @@ public class WorldUtils {
         return Math.abs(mainPoint.x - secondPoint.x) + Math.abs(mainPoint.y - secondPoint.y);
     }
 
-    /// @param spawnRules предохраняет от спавна в потенциально опасном для логики отрезке copySize*2
+    /// @param spawnRules предохраняет от спавна в потенциально опасном для логики отрезке COPY_SIZE*2
     public static <E extends CreatureEntity> E spawn(CreatureType entity, boolean spawnRules) {
         int bx;
         if (!spawnRules) {
             bx = ThreadLocalRandom.current().nextInt(0, world.sizeX);
         } else {
-            bx = Math.clamp(ThreadLocalRandom.current().nextInt(0, world.sizeX), copySize * 2, world.sizeX - copySize * 2);
+            bx = Math.clamp(ThreadLocalRandom.current().nextInt(0, world.sizeX), COPY_SIZE * 2, world.sizeX - COPY_SIZE * 2);
         }
         return spawn0(entity, bx);
     }

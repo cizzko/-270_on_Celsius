@@ -2,15 +2,17 @@ package core.util;
 
 import core.EventHandling.Config;
 import core.Global;
+import core.PlayGameScene;
 import core.Time;
 import core.UI.Dialog;
 import core.UI.Styles;
 import core.UI.TextArea;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.WorldUtils;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.content.blocks.data.TileData;
+import core.World.Weather.Sun;
 import core.World.World;
+import core.World.WorldUtils;
+import core.content.blocks.data.TileData;
 import core.content.items.Item;
 import core.g2d.Fill;
 import core.g2d.Render;
@@ -29,7 +31,7 @@ import java.text.DecimalFormatSymbols;
 import java.util.Locale;
 import java.util.function.Supplier;
 
-import static core.Application.*;
+import static core.Application.log;
 import static core.EventHandling.Config.json;
 import static core.Global.*;
 import static core.World.Creatures.Physics.swap;
@@ -88,7 +90,6 @@ public class Debug {
                 } catch (Exception e) {
                     log.error("", e);
                 }
-                System.out.println(str);
 
                 log.info("Time took: {}ms", (System.currentTimeMillis() - t));
             }
@@ -145,28 +146,49 @@ public class Debug {
         }
         once = true;
 
+
         setDebugValue(() -> {
-            if (world == null) return null;
+            if (world == null) {
+                return null;
+            }
+            if (gameScene instanceof PlayGameScene) {
+                Sun sun = ((PlayGameScene) gameScene).sun;
+                return "Sun y: " + (int) (sun.y * 100) / 100f;
+            }
+            return null;
+        });
+        setDebugValue(() -> {
+            if (world == null) {
+                return null;
+            }
             return "[Player] x: " + player.x() + ", y: " + player.y();
         });
         setDebugValue(() -> "Camera Pos: " + camera.position);
         setDebugValue(() ->{
-            if (world == null) return null;
+            if (world == null) {
+                return null;
+            }
             return "Velocity: " + player.getVelocity();
         });
         setDebugValue(() -> {
-            if (world == null) return null;
+            if (world == null) {
+                return null;
+            }
             return "PlayerHp: " + player.getHp();
         });
 
         setDebugValue(() -> {
-            if (world == null) return null;
+            if (world == null) {
+                return null;
+            }
             var mouseBlockPos = (input.mouseBlockPos());
             var mouseBlock = world.getBlock(mouseBlockPos.x, mouseBlockPos.y);
             return "MouseBlock: " + mouseBlockPos + " " + (mouseBlock != null ? mouseBlock.id + " (NID: " + Global.content.blocksRegistry.idByType(mouseBlock) + ")" : "<void>");
         });
         setDebugValue(() -> {
-            if (world == null) return null;
+            if (world == null) {
+                return null;
+            }
             var mouseBlockPos = (input.mouseBlockPos());
             return "BlockHp: " + world.getHp(mouseBlockPos.x, mouseBlockPos.y);
         });
@@ -313,6 +335,7 @@ public class Debug {
         Inventory.addItemStack(itemStack(content.itemById("redHammer"), n));
         Inventory.addItemStack(itemStack(content.itemById("grass"), n));
         Inventory.addItemStack(itemStack(content.itemById("workbenchSmall"), n));
+        Inventory.addItemStack(itemStack(content.itemById("workbenchMedium"), n));
         Inventory.addItemStack(itemStack(content.itemById("smallStone"), n));
         Inventory.addItemStack(itemStack(content.itemById("stoneOven"), n));
     }
@@ -347,11 +370,15 @@ public class Debug {
             return;
         }
 
-        if (input.justPressed(GLFW_KEY_F1)) app.setFramerate(60);
-        if (input.justPressed(GLFW_KEY_F2)) app.setFramerate(1000);
-        if (input.justClicked(GLFW_MOUSE_BUTTON_RIGHT)) setStructureUnderMouse();
+        if (input.justPressed(GLFW_KEY_F1)) {
+            app.setFramerate(60);
+        }
+        if (input.justPressed(GLFW_KEY_F2)) {
+            app.setFramerate(1000);
+        }
+        //if (input.justClicked(GLFW_MOUSE_BUTTON_RIGHT)) setStructureUnderMouse();
         // if (input.justPressed(GLFW_KEY_F3)) serializeWorld();
-        if (input.justPressed(GLFW_KEY_F4)) deserializeWorld();
+        //if (input.justPressed(GLFW_KEY_F4)) deserializeWorld();
         // if (input.justClicked(GLFW_MOUSE_BUTTON_RIGHT)) serializeTargetBlock();
         debugUIHotkeys();
     }
@@ -372,9 +399,15 @@ public class Debug {
     }
 
     static void debugUIHotkeys() {
-        if (input.justPressed(GLFW_KEY_F9)) uiScene.toggleDebug();
-        if (input.justPressed(GLFW_KEY_F10)) uiScene.debug();
-        if (input.justPressed(GLFW_KEY_M)) debugMesh = !debugMesh;
+        if (input.justPressed(GLFW_KEY_F9)) {
+            uiScene.toggleDebug();
+        }
+        if (input.justPressed(GLFW_KEY_F10)) {
+            uiScene.debug();
+        }
+        if (input.justPressed(GLFW_KEY_M)) {
+            debugMesh = !debugMesh;
+        }
     }
 
     static final class DebugBox extends TextArea {
@@ -392,7 +425,7 @@ public class Debug {
 
     ///фактически можно вызывать откуда угодно, но рекомендуется ставить в DebugTools.initDebugValuesGame() или DebugTools.initDebugValuesMenu()
     public static void setDebugValue(Supplier<String> format) {
-        if (Debug.debugLevel <= 0) {
+        if (Debug.debugLevel <= 0 || format == null) {
             return;
         }
 

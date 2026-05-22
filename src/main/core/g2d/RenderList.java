@@ -8,8 +8,10 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 
-import static core.g2d.Render.*;
-import static core.g2d.RenderQueue.*;
+import static core.g2d.Render.PRIMITIVE_TYPE_TRIANGLE_STRIP;
+import static core.g2d.Render.queue;
+import static core.g2d.RenderQueue.USE_INDEXES;
+import static core.g2d.RenderQueue.log;
 import static core.g2d.StackfulRender.defaultShader;
 import static core.util.Color.toGLBits;
 import static java.lang.Math.max;
@@ -234,7 +236,8 @@ public final class RenderList implements Disposable, Poolable {
     @Override
     public void reset() {
         clear();
-        for (var it = next; it != null; it = it.next)
+        for (var it = next; it != null; it = it.next) {
             it.clear();
+        }
     }
 }
