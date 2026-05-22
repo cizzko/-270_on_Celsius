@@ -54,7 +54,7 @@ public final class TextureHandler extends AssetHandler<Texture, TextureHandler.P
         }
 
         glBindTexture(glTarget, 0);
-        Texture texture = new Texture(glHandle, w, h, 0, 0, 1, 1);
+        Texture texture = new Texture(glHandle, w, h, (short) 0, (short) 0, (short) 1, (short) 1);
         ResourceCache.texturesById.put(glHandle, texture);
         return texture;
     }

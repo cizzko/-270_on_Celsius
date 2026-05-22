@@ -5,6 +5,7 @@ import core.EventHandling.Config;
 import core.assets.AssetHandler;
 import core.assets.AssetReleaser;
 import core.assets.AssetResolver;
+import core.math.MathUtil;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -38,8 +39,8 @@ public final class AtlasHandler extends AssetHandler<Atlas, Void, AtlasHandler.S
             var tmpRegions = new HashMap<String, Atlas.Region>();
             meta.required("regions").forEachEntry((regionName, regMeta) -> {
                 var regionObject = (ObjectNode) regMeta;
-                int x = regionObject.required("x").asInt();
-                int y = regionObject.required("y").asInt();
+                short x = MathUtil.toShortExact(regionObject.required("x").asInt());
+                short y = MathUtil.toShortExact(regionObject.required("y").asInt());
                 short width = toShortExact(regionObject.required("width").asInt());
                 short height = toShortExact(regionObject.required("height").asInt());
                 tmpRegions.put(regionName, new Atlas.Region(atlas, regionName, x, y, width, height));

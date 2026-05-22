@@ -1,5 +1,6 @@
 package core.World.Creatures;
 
+import core.Constants;
 import core.PlayGameScene;
 import core.Time;
 import core.World.StaticWorldObjects.StaticObjectsConst;
@@ -22,7 +23,6 @@ import static java.lang.Math.abs;
 public class Physics {
     private static final float ANSWER = 42; // хихи, хаха
     public static final float GRAVITY = 1.25f * ANSWER * 1e-4f;
-    public static final short swap = 25;
     public static final float FRICTION_FACTOR = 0.97f / 76f;
 
     public static void updatePhysics(PlayGameScene scene) {
@@ -122,9 +122,8 @@ public class Physics {
         int maxY = (int) Math.floor((entityHitbox.y + entityHitbox.height) / blockSize);
 
         Vector2f vel = entity.getVelocity();
-
-        for (int x = minX; x <= maxX; x++) {
-            for (int y = minY; y <= maxY; y++) {
+        for (int y = minY; y <= maxY; y++) {
+            for (int x = minX; x <= maxX; x++) {
                 int blockId = world.getBlockId(x, y);
                 if (blockId <= 0) {
                     continue;
@@ -250,8 +249,8 @@ public class Physics {
 
     private static void simulate(float dt) {
         for (var ent : entityPool.entities().values()) {
-            float rightBorder = (world.sizeX - swap) * blockSize;
-            float leftBorder = swap * blockSize;
+            float rightBorder = (world.sizeX - Constants.World.SWAP_AREA) * blockSize;
+            float leftBorder = Constants.World.SWAP_AREA * blockSize;
             float dx = rightBorder - leftBorder;
 
             // TODO:  при передвижении справа налево движение засчитывается только у ent.getX() (а это левый нижний пиксель)

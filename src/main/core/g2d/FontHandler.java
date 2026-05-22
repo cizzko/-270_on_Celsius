@@ -5,6 +5,7 @@ import core.assets.AssetReleaser;
 import core.assets.AssetResolver;
 import core.graphic.RectanglePacker;
 import core.math.MathUtil;
+import it.unimi.dsi.fastutil.chars.Char2ObjectAVLTreeMap;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -45,7 +46,7 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
             awtFont = awtFont.deriveFont(java.awt.Font.PLAIN, (float) (fontSize * Toolkit.getDefaultToolkit().getScreenResolution() / 72.0));
 
             Font fnt = new Font();
-            HashMap<Character, Font.Glyph> glyphTableTmp = new HashMap<>();
+            var glyphTable = new Char2ObjectAVLTreeMap<Font.Glyph>();
 
             BufferedImage tmp = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
             Graphics2D tmpg = tmp.createGraphics();
@@ -95,7 +96,7 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
                 Font.Glyph ch = new Font.Glyph(fnt, c, width, height);
 
                 glyphs.add(new GlyphAndImage(ch, image));
-                glyphTableTmp.put(c, ch);
+                glyphTable.put(c, ch);
             }
 
             for (GlyphAndImage image : glyphs) {
@@ -113,8 +114,8 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
                         packer.resize(packer.w, MathUtil.ceilNextPowerOfTwo(packer.h + 1));
                     }
                 }
-                gl.x = pos.x;
-                gl.y = pos.y;
+                gl.x = MathUtil.toShortExact(pos.x);
+                gl.y = MathUtil.toShortExact(pos.y);
             }
 
             BufferedImage atlasImage = new BufferedImage(packer.w, packer.h, BufferedImage.TYPE_INT_ARGB);
@@ -124,8 +125,9 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
                 gr.drawImage(p.image, gl.x, gl.y, null);
             }
             gr.dispose();
+
             // Копирование необходимо, чтобы ужать хеш-таблицу до оптимального размера
-            return new FontData(fnt, atlasImage, Map.copyOf(glyphTableTmp));
+            return new FontData(fnt, atlasImage, glyphTable);
         });
     }
 
@@ -135,10 +137,11 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
         res.checkIfFailed();
 
         var fnt = glyphData.fnt;
-        fnt.texture = Texture.load(glyphData.atlas, GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, 0, 0, 1, 1);
+        fnt.texture = Texture.load(glyphData.atlas, GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, (short) 0, (short) 0, (short) 1, (short) 1);
 
         fnt.glyphTable = glyphData.glyphTable;
         fnt.unknownGlyph = fnt.glyphTable.get('?');
+        fnt.glyphTable.defaultReturnValue(fnt.unknownGlyph);
 
         for (Font.Glyph glyph : glyphData.glyphTable.values()) {
             glyph.computeTextureCoordinates();
@@ -160,7 +163,7 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
         private Future<FontData> texture;
     }
 
-    public record FontData(Font fnt, BufferedImage atlas, Map<Character, Font.Glyph> glyphTable) {
+    public record FontData(Font fnt, BufferedImage atlas, Char2ObjectAVLTreeMap<Font.Glyph> glyphTable) {
 
     }
 }

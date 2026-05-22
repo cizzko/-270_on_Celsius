@@ -13,6 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import core.Application;
+import core.Constants;
 import core.GameState;
 import core.Global;
 import core.World.StaticWorldObjects.StaticObjectsConst;
@@ -32,8 +33,16 @@ import java.io.UncheckedIOException;
 import java.util.Objects;
 import java.util.concurrent.ForkJoinPool;
 
-import static core.Constants.World.availableProcessors;
+import static core.Constants.availableProcessors;
 
+/// Для кеш-локальности мира обходить его построчно, то есть:
+/// ```
+/// for (int y = 0; y < world.sizeY; y++) {
+///     for (int x = 0; x < world.sizeX; x++) {
+///
+///     }
+/// }
+/// ```
 @JsonSerialize(using = World.WorldSerializer.class)
 public final class World {
     public final ForkJoinPool genPool = new ForkJoinPool(availableProcessors);
@@ -54,6 +63,21 @@ public final class World {
     public final Biomes[] biomes;
 
     public final Meta meta;
+
+    public boolean getRootBlockPosTo(Point2i pos, Point2i out) { return getRootBlockPosTo(pos.x, pos.y, out); }
+
+    public boolean getRootBlockPosTo(int x, int y, Point2i out) {
+        if (getData(x, y) instanceof TileData.MultiblockPart part) {
+            out.set(x - part.rootOffsetX, y - part.rootOffsetY);
+            return true;
+        }
+        var block = getBlock(x, y);
+        if (block != null && block.isMultiblock()) {
+            out.set(x, y); // Корень
+            return true;
+        }
+        return false;
+    }
 
     public static final class Meta {
         public final int sizeX, sizeY;
@@ -129,8 +153,8 @@ public final class World {
             try {
                 entity.update();
             } catch (Exception e) {
-                Application.log.error("Failed to update block entity at ({}. {})",
-                        entity.blockX(), entity.blockY(), e);
+                Application.log.error("Failed to update block entity {} at ({}. {})",
+                        entity, entity.blockX(), entity.blockY(), e);
             }
         }
     }
@@ -165,10 +189,10 @@ public final class World {
         setImpls(x, y, object, followingRules);
 
         if (Global.gameState == GameState.PLAYING) {
-            if (x < WorldGenerator.copySize) {
-                copyFromTo(x, y, sizeX - WorldGenerator.copySize + x, y, object, followingRules);
-            } else if (x > sizeX - WorldGenerator.copySize) {
-                copyFromTo(x, y, x - (sizeX - WorldGenerator.copySize), y, object, followingRules);
+            if (x < Constants.World.COPY_SIZE) {
+                copyFromTo(x, y, sizeX - Constants.World.COPY_SIZE + x, y, object, followingRules);
+            } else if (x > sizeX - Constants.World.COPY_SIZE) {
+                copyFromTo(x, y, x - (sizeX - Constants.World.COPY_SIZE), y, object, followingRules);
             }
         }
     }
@@ -226,6 +250,8 @@ public final class World {
         return Global.content.blocksRegistry.typeById(blockId);
     }
 
+    public StaticObjectsConst getBlock(Point2i pos) { return getBlock(pos.x, pos.y); }
+
     /// @return {@code -1} в случае выхода за границу. В остальных случаях здоровье в отрезке `[0, 255]`
     public int getHp(int x, int y) {
         // Global.app.ensureMainThread();
@@ -233,7 +259,7 @@ public final class World {
     }
 
     /// @param newHp новое значение здоровья блока. Должно быть в отрезке `[0, 255]`
-    public void setHp(int x, int y, int newHp) {
+    public void setHp(int x, int y, /* unsigned byte */ int newHp) {
         // Global.app.ensureMainThread();
         if (newHp < 0 || newHp >= (1 << 8)) {
             throw new IllegalArgumentException("HP out of range: [0, 255]");
@@ -245,8 +271,8 @@ public final class World {
             if (root != null) {
                 var rootBlock = getBlock(root.x, root.y);
 
-                for (int blockX = 0; blockX < rootBlock.tileCountX; blockX++) {
-                    for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
+                for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
+                    for (int blockX = 0; blockX < rootBlock.tileCountX; blockX++) {
                         hp[pos2index(x + blockX, y + blockY)] = (byte) newHp;
                     }
                 }
@@ -284,8 +310,8 @@ public final class World {
         setHp(x, y, object.maxHp);
 
         if (object.isMultiblock()) {
-            for (int currentX = 0; currentX < object.tileCountX; currentX++) {
-                for (int currentY = 0; currentY < object.tileCountY; currentY++) {
+            for (int currentY = 0; currentY < object.tileCountY; currentY++) {
+                for (int currentX = 0; currentX < object.tileCountX; currentX++) {
                     int partX = x + currentX, partY = y + currentY;
 
                     setImpl(partX, partY, object, followingRules);
@@ -338,8 +364,8 @@ public final class World {
         deleteEntity(x, y);
         data.remove(pos2index(x, y));
 
-        for (int blockX = 0; blockX < rootBlock.tileCountX; blockX++) {
-            for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
+        for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
+            for (int blockX = 0; blockX < rootBlock.tileCountX; blockX++) {
                 int idx = pos2index(x + blockX, y + blockY);
                 tiles[idx] = 0;
                 hp[idx] = 0;
@@ -349,17 +375,12 @@ public final class World {
         ShadowMap.update();
     }
 
+    @Deprecated(forRemoval = true)
     public Point2i getRootBlockPos(int x, int y) {
-        if (getData(x, y) instanceof TileData.MultiblockPart part) {
-            return new Point2i(x - part.rootOffsetX, y - part.rootOffsetY);
-        } else {
-            var block = getBlock(x, y);
-            if (block != null && block.isMultiblock()) {
-                return new Point2i(x, y); // Корень
-            } else {
-                return null;
-            }
-        }
+        Point2i p = new Point2i(x, y);
+        if (getRootBlockPosTo(x, y, p))
+            return p;
+        return null;
     }
 
     public boolean checkPlaceRules(int x, int y, StaticObjectsConst root) {
@@ -369,17 +390,20 @@ public final class World {
         }
 
         if (root.isMultiblock()) {
+            // под этим y есть твёрдые блоки
             for (int xBlock = 0; xBlock < root.tileCountX; xBlock++) {
                 var underBlock = getBlock(x + xBlock, y - 1);
 
-                // под нижними блоками есть твёрдые блоки
                 if (underBlock == null || underBlock.type != StaticObjectsConst.Type.SOLID) {
                     return false;
                 }
-                // площадь не занята
-                for (int yBlock = 0; yBlock < root.tileCountY; yBlock++) {
-                    var block = getBlock(x + xBlock, y);
-                    if (block != StaticObjectsConst.AIR) {
+            }
+
+            for (int yBlock = 0; yBlock < root.tileCountY; yBlock++) {
+                for (int xBlock = 0; xBlock < root.tileCountX; xBlock++) {
+                    var block = getBlockId(x + xBlock, y + yBlock);
+
+                    if (block != 0) {
                         return false;
                     }
                 }
@@ -393,16 +417,15 @@ public final class World {
                 return !anyCollision;
             }
         } else {
-            //todo загадочно сломано
-//            if (root.type == StaticObjectsConst.Type.SOLID) {
-//                boolean anyCollision = Global.entityPool.worldIndex().any(
-//                        x * TextureDrawing.blockSize, y * TextureDrawing.blockSize,
-//                        root.texture.width(), root.texture.height()
-//                );
-//                if (anyCollision) {
-//                    return false;
-//                }
-//            }
+            if (root.type == StaticObjectsConst.Type.SOLID) {
+                boolean anyCollision = Global.entityPool.worldIndex().any(
+                        x * TextureDrawing.blockSize, y * TextureDrawing.blockSize,
+                        root.texture.width(), root.texture.height()
+                );
+                if (anyCollision) {
+                    return false;
+                }
+            }
 
             // рядышком есть твёрдый блок
             for (Point2i d : MathUtil.CROSS_OFFSETS) {

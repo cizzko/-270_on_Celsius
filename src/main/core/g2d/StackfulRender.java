@@ -11,7 +11,7 @@ import org.intellij.lang.annotations.MagicConstant;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 
-import static core.World.Textures.TextureDrawing.blockSize;
+import static core.World.Textures.TextureDrawing.*;
 import static core.g2d.Render.*;
 
 public final class StackfulRender {
@@ -34,10 +34,15 @@ public final class StackfulRender {
         float x2 = x1 + bw * blockSize;
         float y2 = y1 + bh * blockSize;
 
+        float u1 = BytePack.fromB16toFloat32(texture.u);
+        float v1 = BytePack.fromB16toFloat32(texture.v);
+        float u2 = BytePack.fromB16toFloat32(texture.u2);
+        float v2 = BytePack.fromB16toFloat32(texture.v2);
+
         var ublockObj = queue.uniformBuffer().allocate();
         ublockObj.push(Uniform.of("u_proj", state.transform));
-        ublockObj.push(Uniform.of("u_reg_uv", texture.u(), texture.v()));
-        ublockObj.push(Uniform.of("u_reg_size", texture.u2()-texture.u(), texture.v2()-texture.v()));
+        ublockObj.push(Uniform.of("u_reg_uv", u1, v1));
+        ublockObj.push(Uniform.of("u_reg_size", u2 - u1, v2 - v1 ));
 
         int ublock = queue.uniformBuffer().push(ublockObj);
 

@@ -8,10 +8,8 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
 
-import static core.g2d.Render.PRIMITIVE_TYPE_TRIANGLE_STRIP;
-import static core.g2d.Render.queue;
-import static core.g2d.RenderQueue.USE_INDEXES;
-import static core.g2d.RenderQueue.log;
+import static core.g2d.Render.*;
+import static core.g2d.RenderQueue.*;
 import static core.g2d.StackfulRender.defaultShader;
 import static core.util.Color.toGLBits;
 import static java.lang.Math.max;
@@ -207,8 +205,7 @@ public final class RenderList implements Disposable, Poolable {
         va.put(x);
         va.put(y);
         va.put(color);
-        va.put(u);
-        va.put(v);
+        va.put(BytePack.packB16toFloat32((short) u, (short) v));
     }
 
     public void addVertex(float x, float y, float u, float v, float color) {

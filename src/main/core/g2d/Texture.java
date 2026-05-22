@@ -14,22 +14,22 @@ public final class Texture implements Drawable, Disposable {
     final short glHandle;
 
     private final int width, height;
-    private final float u, v, u2, v2;
+    private final short u, v, u2, v2;
 
-    Texture(short glHandle, int width, int height, float u, float v, float u2, float v2) {
+    Texture(short glHandle, int width, int height, short u, short v, short u2, short v2) {
         this.glHandle = glHandle;
         this.width = width;
         this.height = height;
-        this.u = u;
-        this.v = v;
-        this.u2 = u2;
-        this.v2 = v2;
+        this.u = BytePack.toB16(u);
+        this.v = BytePack.toB16(v);
+        this.u2 = BytePack.toB16(u2);
+        this.v2 = BytePack.toB16(v2);
     }
 
     static Texture load(BufferedImage bufferedImage,
                         int glTarget,
                         int glClamp,
-                        float u, float v, float u2, float v2) {
+                        short u, short v, short u2, short v2) {
         var image = decodeImage(bufferedImage);
         return load(image, glTarget, glClamp, u, v, u2, v2);
     }
@@ -44,7 +44,7 @@ public final class Texture implements Drawable, Disposable {
 
     static Texture load(BitMap img,
                         int glTarget, int glClamp,
-                        float u, float v, float u2, float v2) {
+                        short u, short v, short u2, short v2) {
         short glHandle = genId();
 
         glBindTexture(glTarget, glHandle);

@@ -1,5 +1,6 @@
 package core.World.Textures;
 
+import core.Constants;
 import core.Global;
 import core.UI.Styles;
 import core.Window;
@@ -14,16 +15,18 @@ import core.g2d.*;
 import core.math.Point2i;
 import core.math.Rectangle;
 import core.util.Color;
+import core.util.FixedBitset;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static core.Constants.World.SWAP_AREA;
 import static core.Global.*;
-import static core.World.Creatures.Physics.swap;
 import static core.World.Creatures.Player.Inventory.Inventory.drawBuildGrid;
 import static core.g2d.StackfulRender.*;
+import static core.util.FixedBitset.*;
 
 public class TextureDrawing {
     // Размер блока в пикселях (базовый),
@@ -70,7 +73,6 @@ public class TextureDrawing {
 
             float uiScale = item.item().uiScale();
             var tex = item.item().texture;
-            scale(uiScale);
             draw(tex, (x + (i * 54)) + playerSize + 5, y + 15,
                     tex.width() * uiScale, tex.height() * uiScale);
         }
@@ -140,55 +142,30 @@ public class TextureDrawing {
         private boolean drawStateChanged;
         private int lastPreviewBlocks;
         private final Rectangle lastBounds = new Rectangle();
+        private final Point2i pos = new Point2i();
 
         static final int MARGIN = 2;
 
-        public static class Block {
-            int blockId;
-            int shadowRgba8888;
-            int y1, x1;
-            int y2, x2;
-
-            public Block(int blockId,
-                         int shadowRgba8888,
-                         int y1, int x1,
-                         int y2, int x2) {
-                this.blockId = blockId;
-                this.shadowRgba8888 = shadowRgba8888;
-                this.y1 = y1;
-                this.x1 = x1;
-                this.y2 = y2;
-                this.x2 = x2;
-            }
-
-            int w() {
-                return (x2 - x1 + 1);
-            }
-
-            int h() {
-                return (y2 - y1 + 1);
-            }
-
-            @Override
-            public String toString() {
-                return "{" +
-                       "x1=" + y1 +
-                       ", x1=" + x1 +
-                       ", y2=" + y2 +
-                       ", x2=" + x2 +
-                       '}';
-            }
-        }
+        record MergedTile(short blockId, int shadowRgba8888, int x, int y, short w, short h) {}
 
         int rows, cols;
         int minX, minY;
         int maxX, maxY;
-        boolean[][] processed;
-        boolean[][] merged;
-        final Short2ObjectOpenHashMap<ArrayList<Block>> rects = new Short2ObjectOpenHashMap<ArrayList<Block>>();
+        long[] processed;
+        long[] merged;
+
+        final Short2ObjectOpenHashMap<ArrayList<MergedTile>> rects = new Short2ObjectOpenHashMap<ArrayList<MergedTile>>();
+
+        int pos2index(int x, int y) {
+            return (x - minX) + (maxX - minX + 1) * (y - minY);
+        }
+
+        boolean isProcessed(int x, int y) {
+            return isSet(processed, pos2index(x, y));
+        }
 
         boolean isSame(int x1, int y1, int x2, int y2) {
-            return !processed[y2 - minY][x2 - minX] &&
+            return !isProcessed(x2, y2) &&
                    world.getBlockId(x1, y1) == world.getBlockId(x2, y2)
                    && isSameShadowAndTemp(x1, y1, x2, y2)
                     ;
@@ -202,20 +179,14 @@ public class TextureDrawing {
             maxX2 = bx;
 
             int cmx = bx;
-            while (cmx <= maxX && isSame(bx, by, cmx, by)) {
-                cmx++;
-            }
+            while (cmx <= maxX && isSame(bx, by, cmx, by)) cmx++;
             cmx--;
 
             for (int y = by; y <= maxY; y++) {
-                if (!isSame(bx, by, bx, y)) {
-                    break;
-                }
+                if (!isSame(bx, by, bx, y)) break;
 
                 int x = bx;
-                while (x <= cmx && isSame(bx, by, x, y)) {
-                    x++;
-                }
+                while (x <= cmx && isSame(bx, by, x, y)) x++;
                 int validWidth = x - bx;
                 if (validWidth == 0) {
                     break;
@@ -233,58 +204,75 @@ public class TextureDrawing {
         }
 
         private void mergeTiles() {
-            minX = -MARGIN + (int) Math.floor(viewport.x / blockSize);
-            maxX = MARGIN + (int) Math.ceil((viewport.x + viewport.width) / blockSize);
-            minY = -MARGIN + (int) Math.floor(viewport.y / blockSize);
-            maxY = MARGIN + (int) Math.ceil((viewport.y + viewport.height) / blockSize);
+            minX = Math.max(0, -MARGIN + (int) Math.floor(viewport.x / blockSize));
+            minY = Math.max(0, -MARGIN + (int) Math.floor(viewport.y / blockSize));
+            maxX = Math.min(world.sizeX, MARGIN + (int) Math.ceil((viewport.x + viewport.width) / blockSize));
+            maxY = Math.min(world.sizeY, MARGIN + (int) Math.ceil((viewport.y + viewport.height) / blockSize));
 
             int newRows = maxY - minY + 1;
             int newCols = maxX - minX + 1;
 
-            if (newRows != rows || newCols != cols) {
-                processed = new boolean[newRows][newCols];
-                merged = new boolean[newRows][newCols];
+            if ((newRows*newCols) != (rows*cols)) {
+                processed = createBitSet(newRows * newCols);
+                merged = createBitSet(newRows * newCols);
             } else {
-                for (boolean[] b : merged) {
-                    Arrays.fill(b, false);
-                }
-                for (boolean[] b : processed) {
-                    Arrays.fill(b, false);
-                }
+                Arrays.fill(merged, 0);
+                Arrays.fill(processed, 0);
             }
             rows = newRows;
             cols = newCols;
-
 
             rects.clear();
 
             for (int y = minY; y < maxY; y++) {
                 for (int x = minX; x <= maxX; x++) {
-                    int lx = x - minX;
-                    int ly = y - minY;
-                    if (processed[ly][lx]) {
-                        continue;
-                    }
-
                     int value = world.getBlockId(x, y);
                     if (value <= 0) {
-                        processed[ly][lx] = true;
+                        setBit(processed, pos2index(x, y));
                         continue;
                     }
+                    if (!world.getRootBlockPosTo(x, y, pos)) {
+                        continue;
+                    }
+                    var bl = content.blocksRegistry.typeById(value);
 
+                    int rx = pos.x;
+                    int ry = pos.y;
+
+                    int tx = rx + bl.tileCountX;
+                    int ty = ry + bl.tileCountY;
+
+                    for (int i = y; i < ty; i++) {
+                        int start = pos2index(x, i);
+                        int end = pos2index(tx, i);
+                        FixedBitset.setRange(processed, start, end);
+                    }
+                }
+            }
+
+            for (int y = minY; y < maxY; y++) {
+                for (int x = minX; x <= maxX; x++) {
+                    if (isProcessed(x, y)) continue;
+
+                    short value = (short) world.getBlockId(x, y);
                     findMaxRectangleFrom(x, y);
-                    if (maxArea > 1) {
-                        int shadow = colorFor(x, y).rgba8888();
-                        short blockId = (short) world.getBlockId(x, y);
-                        var blocks = rects.computeIfAbsent(blockId, k -> new ArrayList<>());
-                        Block e = new Block(blockId, shadow, y, x, maxY2, maxX2);
-                        blocks.add(e);
+                    if (maxArea <= 1) {
+                        continue;
+                    }
+                    int shadow = colorFor(x, y).rgba8888();
+                    var blocks = rects.computeIfAbsent(value, k -> new ArrayList<>());
 
-                        for (int i = y; i <= maxY2; i++) {
-                            for (int j = x; j <= maxX2; j++) {
-                                processed[i - minY][j - minX] = merged[i - minY][j - minX] = true;
-                            }
-                        }
+                    short w = (short)(maxX2 - x + 1);
+                    short h = (short)(maxY2 - y + 1);
+
+                    blocks.add(new MergedTile(value, shadow, x, y, w, h));
+
+                    for (int i = y; i <= maxY2; i++) {
+                        int start = pos2index(x, i);
+                        int end = pos2index(maxX2, i) + 1; // не включается
+
+                        FixedBitset.setRange(processed, start, end);
+                        FixedBitset.setRange(merged, start, end);
                     }
                 }
             }
@@ -294,20 +282,20 @@ public class TextureDrawing {
                 rects.forEach((tileId, tiles) -> {
                     var obj = content.blocksRegistry.typeById(tileId);
                     var tex = obj.texture;
+
                     for (var tr : tiles) {
                         color(tr.shadowRgba8888);
-                        drawRepeated(tex, tr.x1, tr.y1, tr.w(), tr.h());
+                        drawRepeated(tex, tr.x, tr.y, tr.w, tr.h);
                     }
                 });
+                // скидываем всё что ранее подготовили
                 pushRenderList();
                 flush();
             });
 
             for (int y = minY; y <= maxY; y++) {
                 for (int x = minX; x <= maxX; x++) {
-                    int localX = x - minX;
-                    int localY = y - minY;
-                    if (!merged[localY][localX] && world.getBlockId(x, y) > 0) {
+                    if (!isSet(merged, pos2index(x, y)) && world.getBlockId(x, y) > 0) {
                         var obj = world.getBlock(x, y);
                         int hp = world.getHp(x, y);
                         drawBlock(x, y, obj, hp);
@@ -415,10 +403,6 @@ public class TextureDrawing {
 
             int c1 = colorFor(x, y).rgba8888();
             int c2 = colorFor(ox, oy).rgba8888();
-            if (Math.abs(c1 - c2) < 300) {
-                // return true;
-                // System.out.println("c1 = " + c1 + " c2 = " + c2);
-            }
             return c1 == c2;
         }
 
@@ -490,8 +474,8 @@ public class TextureDrawing {
                 if (ent == player) {
                     d.draw(player.x());
                 } else {
-                    float rightBorder = (world.sizeX - swap) * blockSize;
-                    float leftBorder = swap * blockSize;
+                    float rightBorder = (world.sizeX - SWAP_AREA) * blockSize;
+                    float leftBorder = SWAP_AREA * blockSize;
                     float dx = rightBorder - leftBorder;
 
 
@@ -502,10 +486,10 @@ public class TextureDrawing {
                     // ^ rightBorder - swap*blockSize
 
                     float rightmostX = ent.x() + hitbox.width;
-                    if (rightmostX >= (rightBorder - Physics.swap * blockSize) && rightmostX <= (rightBorder + Physics.swap * blockSize) &&
+                    if (rightmostX >= (rightBorder - SWAP_AREA * blockSize) && rightmostX <= (rightBorder + SWAP_AREA * blockSize) &&
                         !viewport.overlaps(ent.x(), ent.y(), hitbox.width, hitbox.height)) {
                         drawX -= dx;
-                    } else if (ent.x() >= (leftBorder - Physics.swap * blockSize) && ent.x() <= (leftBorder + Physics.swap * blockSize) &&
+                    } else if (ent.x() >= (leftBorder - SWAP_AREA * blockSize) && ent.x() <= (leftBorder + SWAP_AREA * blockSize) &&
                                !viewport.overlaps(ent.x(), ent.y(), hitbox.width, hitbox.height)) {
                         drawX += dx;
                     }

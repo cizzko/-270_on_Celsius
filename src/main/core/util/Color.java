@@ -1,5 +1,7 @@
 package core.util;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import static core.util.Colorf.clamp;
 
 public final class Color {
@@ -9,6 +11,7 @@ public final class Color {
 
     public static final int white = rgba8888(255, 255, 255, 255);
     public static final int black = rgba8888(0, 0, 0, 255);
+    public static final int clear = rgba8888(0, 0, 0, 0);
 
     public static final Color WHITE = new Color(0xFFFFFFFF);
     public static final Color BLACK = new Color(0x000000FF);
@@ -53,6 +56,14 @@ public final class Color {
         return "0".repeat(zeros / 4) + Integer.toHexString(rgba8888);
     }
 
+    public static int random() {
+        return rgba8888(
+                ThreadLocalRandom.current().nextInt(0, 255),
+                ThreadLocalRandom.current().nextInt(0, 255),
+                ThreadLocalRandom.current().nextInt(0, 255),
+                255);
+    }
+
     public float toGLBits() { return toGLBits(rgba8888); }
     public int rgba8888() { return rgba8888; }
 
@@ -82,14 +93,15 @@ public final class Color {
     public void mul(Color color) { this.rgba8888 = rgba8888(r() * color.r(), g() * color.g(), b() * color.b(), a() * color.a()); }
     public void div(Color color) { this.rgba8888 = rgba8888(r() / color.r(), g() / color.g(), b() / color.b(), a() / color.a()); }
 
-    static int toInt(float c) { return (int) (clamp(c) / 255); }
+    static int toInt(float c) { return (int) (clamp(c) * 255); }
     public void rf(float r) { this.rgba8888 = rgba8888(toInt(r), g(), b(), a()); }
     public void gf(float g) { this.rgba8888 = rgba8888(r(), toInt(g), b(), a()); }
     public void bf(float b) { this.rgba8888 = rgba8888(r(), g(), toInt(b), a()); }
     public void af(float a) { this.rgba8888 = rgba8888(r(), g(), b(), toInt(a)); }
 
-    public Colorf copy() { return new Colorf(this); }
-    public Color copyi() { return new Color(this); }
+    public Colorf copyf() { return new Colorf(this); }
+    public Color  copyi() { return new Color(this); }
+    public Color  copy() { return new Color(this); }
 
     public boolean equals(Color o) { return rgba8888 == o.rgba8888; }
 

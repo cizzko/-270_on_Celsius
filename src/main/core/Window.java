@@ -31,6 +31,8 @@ public final class Window extends Application {
     private static final Logger lwjglLogger = LogManager.getLogger("org.lwjgl.LWJGL");
 
     public static int defaultWidth = 1920, defaultHeight = 1080;
+    public static boolean defaultFullscreen = true;
+
     public static boolean windowFocused = true;
     public static long glfwWindow;
     public static Font defaultFont;
@@ -101,7 +103,8 @@ public final class Window extends Application {
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         }
 
-        glfwWindow = glfwCreateWindow(defaultWidth, defaultHeight, "-270 on Celsius", /* 0 для оконного */ glfwGetPrimaryMonitor(), MemoryUtil.NULL);
+        glfwWindow = glfwCreateWindow(defaultWidth, defaultHeight, "-270 on Celsius",
+                defaultFullscreen ? glfwGetPrimaryMonitor() : MemoryUtil.NULL, MemoryUtil.NULL);
         if (glfwWindow == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create window");
         }

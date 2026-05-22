@@ -1,6 +1,6 @@
 package core.g2d;
 
-import java.util.Map;
+import it.unimi.dsi.fastutil.chars.Char2ObjectAVLTreeMap;
 
 public final class Font {
     public static final int fontSize = 18;
@@ -9,16 +9,16 @@ public final class Font {
     static final int PIXEL_GAP = 1;
 
     Texture texture;
-    Map<Character, Glyph> glyphTable;
+    Char2ObjectAVLTreeMap<Glyph> glyphTable;
     Glyph unknownGlyph;
 
     Font() {}
 
     public Glyph getGlyph(char ch) {
-        return glyphTable.getOrDefault(ch, unknownGlyph);
+        return glyphTable.get(ch);
     }
 
-    public Texture getTexture() {
+    public Texture texture() {
         return texture;
     }
 
@@ -27,8 +27,8 @@ public final class Font {
         private final char ch;
         private final byte width, height;
 
-        int x, y;
-        private float u, v, u2, v2;
+        short x, y;
+        private short u, v, u2, v2;
 
         public Glyph(Font font, char ch,
                      byte width, byte height) {
@@ -39,10 +39,10 @@ public final class Font {
         }
 
         void computeTextureCoordinates() {
-            this.u = x / (float) font.texture.width();
-            this.v = y / (float) font.texture.height();
-            this.u2 = (x + width) / (float) font.texture.width();
-            this.v2 = (y + height) / (float) font.texture.height();
+            this.u  = BytePack.toB16((x + 0.5f) / font.texture.width());
+            this.v  = BytePack.toB16((y + 0.5f) / font.texture.height());
+            this.u2 = BytePack.toB16((1f * x + width) / font.texture.width());
+            this.v2 = BytePack.toB16((1f * y + height) / font.texture.height());
         }
 
         @Override
@@ -57,11 +57,11 @@ public final class Font {
         } // TODO должно быть в идеале codepoint
 
         public int x() {
-            return x;
+            return Short.toUnsignedInt(x);
         }
 
         public int y() {
-            return y;
+            return Short.toUnsignedInt(y);
         }
 
         @Override

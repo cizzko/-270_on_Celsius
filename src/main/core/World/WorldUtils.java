@@ -1,6 +1,7 @@
 package core.World;
 
 import core.Application;
+import core.Constants;
 import core.EventHandling.Config;
 import core.Global;
 import core.World.Creatures.Physics;
@@ -23,8 +24,8 @@ import static core.World.Textures.TextureDrawing.blockSize;
 public class WorldUtils {
 
     public static int mirrorPos(int x) {
-        int rightBorder = (world.sizeX - COPY_SIZE);
-        int leftBorder = COPY_SIZE;
+        int rightBorder = (world.sizeX - Constants.World.COPY_SIZE);
+        int leftBorder = Constants.World.COPY_SIZE;
         int dx = rightBorder - leftBorder;
 
         if (x > rightBorder) {

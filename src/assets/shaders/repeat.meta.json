@@ -11,7 +11,7 @@
       "format": "NORMALIZED"
     },
     "a_uv": {
-      "size": 2,
+      "size": 1,
       "type": "FLOAT",
       "format": "DIRECT"
     }

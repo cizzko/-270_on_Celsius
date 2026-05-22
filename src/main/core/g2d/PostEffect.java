@@ -25,7 +25,7 @@ public final class PostEffect implements Disposable {
     public boolean use;
 
     public PostEffect(int width, int height, Shader shader) {
-        screenTexture = new Texture(Texture.genId(), width, height, 0, 0, 1, 1);
+        screenTexture = new Texture(Texture.genId(), width, height, (short) 0, (short) 0, (short) 1, (short) 1);
         frameBufferId = glGenFramebuffers();
         glBindTexture(GL_TEXTURE_2D, screenTexture.id());
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, MemoryUtil.NULL);
@@ -37,11 +37,6 @@ public final class PostEffect implements Disposable {
 
         glBindFramebuffer(GL_FRAMEBUFFER, frameBufferId);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenTexture.id(), 0);
-
-        // Проверяем, что framebuffer корректен
-        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-            System.err.println("Framebuffer не завершён!");
-        }
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 

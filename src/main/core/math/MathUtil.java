@@ -1,5 +1,7 @@
 package core.math;
 
+import static java.lang.Byte.toUnsignedInt;
+
 public final class MathUtil {
     private MathUtil() {
     }
@@ -10,6 +12,9 @@ public final class MathUtil {
             new Point2i(-1, 0),
             new Point2i(+1, 0),
     };
+
+    public static final float FLOAT_EPSILON = Math.ulp(1f);
+    public static final float EPSILON       = 1e-5f;
 
     public static int ceilNextPowerOfTwo(int v) {
         v--;
@@ -24,6 +29,10 @@ public final class MathUtil {
 
     public static float len(float x, float y) {
         return (float) Math.sqrt(x*x + y*y);
+    }
+
+    public static float len2(float x, float y) {
+        return x * x + y * y;
     }
 
     public static float lerp(float a, float b, float progress) {
@@ -44,7 +53,29 @@ public final class MathUtil {
         return (short)value;
     }
 
+    public static boolean equalsEps(float a, float b) {
+        return equalsEps(a, b, EPSILON);
+    }
+
     public static boolean equalsEps(float a, float b, float eps) {
-        return Math.abs(a - b) < eps;
+        return Math.abs(a - b) <= eps;
+    }
+
+    public static byte incrementExact(byte b) {
+        if (b == Byte.MAX_VALUE) {
+            throw new ArithmeticException("integer overflow");
+        }
+        return (byte)(b + 1);
+    }
+
+    public static byte decrementExact(byte b) {
+        if (b == Byte.MIN_VALUE) {
+            throw new ArithmeticException("integer overflow");
+        }
+        return (byte)(b - 1);
+    }
+
+    public static byte addExact(byte a, byte b) {
+        return toByteExact(Math.addExact(toUnsignedInt(a), toUnsignedInt(b)));
     }
 }

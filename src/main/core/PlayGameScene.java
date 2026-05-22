@@ -116,9 +116,6 @@ public final class PlayGameScene extends GameScene {
             base = Math.min(1f, base);
             float alpha = 1 - (float)Math.pow(1 - base, Time.delta);
             camera.position.lerp(player.x() + 32, player.y() + 200, alpha);
-            // if (Float.isNaN(Global.camera.position.x) || Float.isNaN(Global.camera.position.y)) {
-            //     System.out.println("NAN CAM POS: x=" + player.getX() + " y=" + player.getY() + " v=" + player.getVelocity() + " base=" + base + " alpha=" + alpha);
-            // }
         } else {
             camera.position.set(player.x() + 32, player.y() + 200);
         }

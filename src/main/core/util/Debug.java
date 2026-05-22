@@ -1,9 +1,7 @@
 package core.util;
 
+import core.*;
 import core.EventHandling.Config;
-import core.Global;
-import core.PlayGameScene;
-import core.Time;
 import core.UI.Dialog;
 import core.UI.Styles;
 import core.UI.TextArea;
@@ -34,7 +32,6 @@ import java.util.function.Supplier;
 import static core.Application.log;
 import static core.EventHandling.Config.json;
 import static core.Global.*;
-import static core.World.Creatures.Physics.swap;
 import static core.World.Textures.TextureDrawing.blockSize;
 import static core.content.ItemStack.itemStack;
 import static core.content.entity.DrawComponent.GAP;
@@ -148,9 +145,7 @@ public class Debug {
 
 
         setDebugValue(() -> {
-            if (world == null) {
-                return null;
-            }
+            if (gameState != GameState.PLAYING) return null;
             if (gameScene instanceof PlayGameScene) {
                 Sun sun = ((PlayGameScene) gameScene).sun;
                 return "Sun y: " + (int) (sun.y * 100) / 100f;
@@ -158,37 +153,27 @@ public class Debug {
             return null;
         });
         setDebugValue(() -> {
-            if (world == null) {
-                return null;
-            }
+            if (gameState != GameState.PLAYING) return null;
             return "[Player] x: " + player.x() + ", y: " + player.y();
         });
         setDebugValue(() -> "Camera Pos: " + camera.position);
         setDebugValue(() ->{
-            if (world == null) {
-                return null;
-            }
+            if (gameState != GameState.PLAYING) return null;
             return "Velocity: " + player.getVelocity();
         });
         setDebugValue(() -> {
-            if (world == null) {
-                return null;
-            }
+            if (gameState != GameState.PLAYING) return null;
             return "PlayerHp: " + player.getHp();
         });
 
         setDebugValue(() -> {
-            if (world == null) {
-                return null;
-            }
+            if (gameState != GameState.PLAYING) return null;
             var mouseBlockPos = (input.mouseBlockPos());
             var mouseBlock = world.getBlock(mouseBlockPos.x, mouseBlockPos.y);
-            return "MouseBlock: " + mouseBlockPos + " " + (mouseBlock != null ? mouseBlock.id + " (NID: " + Global.content.blocksRegistry.idByType(mouseBlock) + ")" : "<void>");
+            return "MouseBlock: " + mouseBlockPos + " " + (mouseBlock != null ? mouseBlock.id + " (BID: " + Global.content.blocksRegistry.idByType(mouseBlock) + ")" : "<void>");
         });
         setDebugValue(() -> {
-            if (world == null) {
-                return null;
-            }
+            if (gameState != GameState.PLAYING) return null;
             var mouseBlockPos = (input.mouseBlockPos());
             return "BlockHp: " + world.getHp(mouseBlockPos.x, mouseBlockPos.y);
         });
@@ -240,8 +225,8 @@ public class Debug {
                 4,
                 red);
         Fill.line(
-                (world.sizeX - swap) * blockSize, rect.y,
-                (world.sizeX - swap) * blockSize, rect.y + rect.height,
+                (world.sizeX - Constants.World.SWAP_AREA) * blockSize, rect.y,
+                (world.sizeX - Constants.World.SWAP_AREA) * blockSize, rect.y + rect.height,
                 4,
                 black);
         // левая граница
@@ -251,8 +236,8 @@ public class Debug {
                 4,
                 blue);
         Fill.line(
-                swap * blockSize, rect.y,
-                swap * blockSize, rect.y + rect.height,
+                Constants.World.SWAP_AREA * blockSize, rect.y,
+                Constants.World.SWAP_AREA * blockSize, rect.y + rect.height,
                 4,
                 black);
 
@@ -425,7 +410,7 @@ public class Debug {
 
     ///фактически можно вызывать откуда угодно, но рекомендуется ставить в DebugTools.initDebugValuesGame() или DebugTools.initDebugValuesMenu()
     public static void setDebugValue(Supplier<String> format) {
-        if (Debug.debugLevel <= 0 || format == null) {
+        if (Debug.debugLevel <= 0) {
             return;
         }
 

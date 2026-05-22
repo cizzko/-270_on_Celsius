@@ -12,8 +12,8 @@
     },
     "a_uv": {
       "size": 2,
-      "type": "FLOAT",
-      "format": "DIRECT"
+      "type": "UNSIGNED_SHORT",
+      "format": "NORMALIZED"
     }
   },
   "uniforms": {

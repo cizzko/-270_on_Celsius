@@ -51,13 +51,13 @@ public final class Atlas {
     public static final class Region implements Drawable {
         private final Atlas atlas;
         private final String name;
-        private final int x, y;
+        private final short x, y;
         private final short width, height;
 
-        private float u, v;
-        private float u2, v2;
+        public short u, v;
+        public short u2, v2;
 
-        Region(Atlas atlas, String name, int x, int y, short width, short height) {
+        Region(Atlas atlas, String name, short x, short y, short width, short height) {
             this.atlas = atlas;
             this.name = name;
             this.x = x;
@@ -67,10 +67,10 @@ public final class Atlas {
         }
 
         void computeTextureCoordinates() {
-            this.u  = (x + 0.5f) / (float) atlas.texture.width();
-            this.v  = (y + 0.5f) / (float) atlas.texture.height();
-            this.u2 = (x + width) / (float) atlas.texture.width();
-            this.v2 = (y + height) / (float) atlas.texture.height();
+            this.u  = BytePack.toB16((x + 0.5f) / atlas.texture.width());
+            this.v  = BytePack.toB16((y + 0.5f) / atlas.texture.height());
+            this.u2 = BytePack.toB16((1f * x + width) / atlas.texture.width());
+            this.v2 = BytePack.toB16((1f * y + height) / atlas.texture.height());
         }
 
         public Atlas atlas() {
@@ -82,11 +82,11 @@ public final class Atlas {
         }
 
         public int x() {
-            return x;
+            return Short.toUnsignedInt(x);
         }
 
         public int y() {
-            return y;
+            return Short.toUnsignedInt(y);
         }
 
         @Override
@@ -94,12 +94,12 @@ public final class Atlas {
 
         @Override
         public int width() {
-            return width;
+            return Short.toUnsignedInt(width);
         }
 
         @Override
         public int height() {
-            return height;
+            return Short.toUnsignedInt(height);
         }
 
         @Override
