@@ -29,10 +29,10 @@ public final class AtlasGenerator {
     // Сколько пикселей продублировать по краям
     // Это решает проблему кровоточащих текселей
     private static final int COPY_BORDER = 1;
-    // Максимальный размер по одной из осей для текстуры
-    public static int MAX_EXTENT = 1024;
+    // Большие текстуры в атласе это подозрительно
+    private static final int SOFT_MAX_EXTENT = 1024;
     // квадратные атласы причём грани степени двойки
-    public static boolean QUADRATIC = true;
+    private static boolean QUADRATIC = true;
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -163,6 +163,7 @@ public final class AtlasGenerator {
                 var currentFile = byRelPath.get(path);
                 if (currentFile == null || !Arrays.equals(oldHash, currentFile.hash)) {
                     allMatched = false;
+                    break;
                 }
             }
 
@@ -185,11 +186,16 @@ public final class AtlasGenerator {
             }
         }
 
-        for (Region reg : regionMap.values()) {
-            if (reg.ow() >= MAX_EXTENT || reg.oh() >= MAX_EXTENT) {
-                log("WARNING: '" + reg.path + "' is too big for packing");
+        regionMap.values().removeIf(reg -> {
+            if (reg.ow() > Atlas.Region.MAX_EXTENT || reg.oh() > Atlas.Region.MAX_EXTENT) {
+                log("WARNING: '" + reg.path + "' cannot be packed due to exceeding limits: " + reg.ow() + "x" + reg.oh());
+                return true; // игра физически не сможет обработать такие текстуры
             }
-        }
+            if (reg.ow() >= SOFT_MAX_EXTENT || reg.oh() >= SOFT_MAX_EXTENT) {
+                log("WARNING: '" + reg.path + "' big enough to be in an atlas: " + reg.ow() + "x" + reg.oh());
+            }
+            return false;
+        });
 
         ArrayList<Region> regions = new ArrayList<>(regionMap.values());
 
@@ -281,7 +287,7 @@ public final class AtlasGenerator {
         Files.createDirectories(outputDir);
 
         ImageIO.write(atlasImage, "png", atlasPath.toFile());
-        writeMetadata(atlasMetaPath, regions, errorRegion);
+        writeMetadata(atlasMetaPath, packer.w, packer.h, regions, errorRegion);
         writeHash(atlasHashPath, regions);
     }
 
@@ -295,10 +301,12 @@ public final class AtlasGenerator {
         }
     }
 
-    private static void writeMetadata(Path file, ArrayList<Region> regions, Region errorRegion) throws IOException {
+    private static void writeMetadata(Path file, int w, int h, ArrayList<Region> regions, Region errorRegion) throws IOException {
         try (var wr = MAPPER.createGenerator(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
             wr.writeStartObject();
 
+            wr.writeNumberField("width", w);
+            wr.writeNumberField("height", h);
             wr.writeStringField("error", errorRegion.name);
             {
                 wr.writeObjectFieldStart("regions");

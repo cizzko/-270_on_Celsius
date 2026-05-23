@@ -6,7 +6,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Textures.TextureDrawing;
+import core.graphic.GuiDrawing;
 import core.content.ItemGrid;
 import core.content.ItemStack;
 import core.content.entity.BaseBlockEntity;
@@ -14,12 +14,14 @@ import core.g2d.Atlas;
 import core.g2d.Render;
 import core.g2d.StackfulRender;
 import core.math.Point2i;
+import core.math.TmpShapes;
 import core.math.Vector2f;
 
 import java.io.IOException;
 
 import static core.Global.*;
-import static core.World.Textures.TextureDrawing.blockSize;
+import static core.WorldCoordinates.toPixels;
+import static core.WorldCoordinates.toWorld;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class ChestEntity extends BaseBlockEntity<Chest> {
@@ -60,49 +62,51 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
                 }
             }
 
-            if (!player.within(x, y, 3*blockSize)) {
+            if (!player.within(x, y, 3)) {
                 isClicked = false;
             }
         }
 
-        if (draggedCell == null) {
-            return;
-        }
-        if (input.clicked(GLFW_MOUSE_BUTTON_LEFT)) {
-            ItemStack item = getStorage()[draggedCell.x][draggedCell.y];
-            if (item != null) {
-                // TODO: ЗДЕСЬ НИКАКОГО РЕНДЕРА !!!! ДОЛЖЕН БЫТЬ СЛОТ "РУК" У ИГРОКА
-                Point2i mousePos = input.mousePos();
-                float uiScale = item.item().uiScale();
-                Atlas.Region tex = item.item().texture;
-                StackfulRender.draw(tex, mousePos.x - 15, mousePos.y - 15, tex.width() * uiScale, tex.height() * uiScale);
+        if (draggedCell != null) {
+            if (input.clicked(GLFW_MOUSE_BUTTON_LEFT)) {
+                ItemStack item = getStorage()[draggedCell.x][draggedCell.y];
+                if (item != null) {
+                    // TODO: ЗДЕСЬ НИКАКОГО РЕНДЕРА !!!! ДОЛЖЕН БЫТЬ СЛОТ "РУК" У ИГРОКА
+                    // Point2i mousePos = input.mousePos();
+                    // float uiScale = item.item().uiScale();
+                    // Atlas.Region tex = item.item().texture;
+                    // StackfulRender.draw(tex, mousePos.x - 15, mousePos.y - 15, tex.width() * uiScale, tex.height() * uiScale);
+                }
+            } else {
+                Point2i inventoryUMB = Inventory.getFocusedItemIdx();
+                if (inventoryUMB != null && player.getItem(inventoryUMB) == null) {
+                    ItemGrid.moveTo(getStorage(), player.items(), draggedCell, inventoryUMB);
+                }
+                draggedCell = null;
             }
-        } else {
-            Point2i inventoryUMB = Inventory.getFocusedItemIdx();
-            if (inventoryUMB != null && player.getItem(inventoryUMB) == null) {
-                ItemGrid.moveTo(getStorage(), player.items(), draggedCell, inventoryUMB);
-            }
-            draggedCell = null;
         }
+    }
 
+    @Override
+    public void drawGui() {
         if (!isClicked) {
             return;
         }
 
-
         StackfulRender.pushState(() -> {
-            float xPos = x - 61;
-            float yPos = y + 56;
+            Vector2f screenPos = TmpShapes.v1
+                    .set(x - toWorld(61), y + toWorld(56));
+            camera.project(screenPos);
 
             StackfulRender.z(Render.LAYER_GUI);
-            StackfulRender.draw(atlas.get("UI/GUI/inventory/chestInventory"), xPos, yPos);
+            StackfulRender.draw(atlas.get("UI/GUI/inventory/chestInventory"), screenPos.x, screenPos.y);
             var storage = getStorage();
             for (int x = 0; x < storage.length; x++) {
                 var line = storage[x];
                 for (int y = 0; y < line.length; y++) {
                     var itemStack = line[y];
                     if (itemStack != null) {
-                        TextureDrawing.drawItemStack(10 + xPos + x * 54, 10 + yPos + y * 54f, itemStack);
+                        GuiDrawing.drawItemStack(10 + screenPos.x + x * 54, 10 + screenPos.y + y * 54f, itemStack);
                     }
                 }
             }
@@ -150,5 +154,5 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
     }
 
     @Override
-    public final boolean drawStateChanged() { return false; }
+    public final boolean drawStateChanged() { return true; }
 }

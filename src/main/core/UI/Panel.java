@@ -1,10 +1,8 @@
 package core.UI;
 
 import core.g2d.Fill;
-import core.util.Color;
+import core.graphic.Color;
 import org.jetbrains.annotations.Nullable;
-
-import java.util.function.Consumer;
 
 public class Panel extends BaseGroup<Panel> {
     public final Style.Panel style;

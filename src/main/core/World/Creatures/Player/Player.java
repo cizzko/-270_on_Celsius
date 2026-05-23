@@ -3,19 +3,19 @@ package core.World.Creatures.Player;
 import core.EventHandling.Config;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.Textures.ShadowMap;
-import core.World.Textures.TextureDrawing;
+import core.graphic.ShadowMap;
 import core.World.WorldUtils;
 import core.content.ItemStack;
 import core.content.items.ItemBlock;
 import core.content.items.ItemTool;
 import core.content.items.data.ItemData;
 import core.g2d.Fill;
+import core.graphic.WorldDrawing;
 import core.math.Point2i;
-import core.util.Color;
+import core.math.TmpShapes;
+import core.graphic.Color;
 
 import static core.Global.*;
-import static core.World.Textures.TextureDrawing.toWorld;
 import static core.World.WorldUtils.getDistanceToMouse;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
@@ -47,14 +47,14 @@ public class Player {
             return;
         }
 
-        if (input.clicked(GLFW_MOUSE_BUTTON_LEFT) && item != null && item.item() instanceof ItemBlock itemBlock) {
+        if (input.clicked(GLFW_MOUSE_BUTTON_LEFT) && item.item() instanceof ItemBlock itemBlock) {
             if (input.mousePos().x > (Inventory.inventoryOpen ? 1487 : 1866)) {
                 if (input.mousePos().y > 756) {
                     return;
                 }
             }
             Point2i pointedBlock = input.mouseBlockPos();
-            var block = world.getBlock(pointedBlock.x, pointedBlock.y);
+            var block = world.getBlock(pointedBlock);
             if (block != null && block.type == StaticObjectsConst.Type.GAS && getDistanceToMouse() <= 9) {
                 updatePlaceableBlock(itemBlock.block, pointedBlock.x, pointedBlock.y);
             }
@@ -80,13 +80,13 @@ public class Player {
         ItemStack item = player.getItemInHand();
         if (item != null && item.item() instanceof ItemTool tool) {
             Point2i blockPos = input.mouseBlockPos();
-            int blockId = world.getBlockId(blockPos.x, blockPos.y);
+            int blockId = world.getBlockId(blockPos);
             if (blockId <= 0) {
                 return;
             }
 
             var data = item.getOrCreateData(ItemData.Tool::new);
-            var block = world.getBlock(blockPos.x, blockPos.y);
+            var block = world.getBlock(blockPos);
             if (block.isMultiblock()) {
                 updateMultiblockByTool(blockPos.x, blockPos.y, block, tool, data);
             } else {
@@ -100,37 +100,33 @@ public class Player {
         int hp = world.getHp(blockX, blockY);
 
         if ((getDistanceToMouse() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) || !breakRules) {
-            TextureDrawing.addBlockPreview(blockX, blockY, (short) blockId, (byte) hp, true);
+            WorldDrawing.addBlockPreview(blockX, blockY, (short) blockId, (byte) hp, true);
 
             long nowTime = System.currentTimeMillis();
             if (input.clicked(GLFW_MOUSE_BUTTON_LEFT) && nowTime - data.lastHitTime >= tool.secBetweenHits) {
                 data.lastHitTime = nowTime;
 
                 if (world.damage(blockX, blockY, tool.damage)) {
-                    WorldUtils.dropItem(new ItemStack(content.itemById(object)), toWorld(blockX), toWorld(blockY));
+                    WorldUtils.dropItem(new ItemStack(content.itemById(object)), blockX, blockY);
 
                     // трава, камешки
                     // Триггерит физ взаимодействие
                     var block = world.getBlock(blockX, blockY + 1);
                     if (block != null && block != StaticObjectsConst.AIR && block.maxHp <= 1 && world.damage(blockX, blockY + 1, 1)) {
-                        WorldUtils.dropItem(new ItemStack(content.itemById(block)), toWorld(blockX), toWorld(blockY + 1));
+                        WorldUtils.dropItem(new ItemStack(content.itemById(block)), blockX, blockY + 1);
                     }
                 }
             }
         } else {
-            TextureDrawing.addBlockPreview(blockX, blockY, (short) blockId, (byte) hp, false);
+            WorldDrawing.addBlockPreview(blockX, blockY, (short) blockId, (byte) hp, false);
         }
     }
 
     private static void updateMultiblockByTool(int blockX, int blockY, StaticObjectsConst object, ItemTool tool, ItemData.Tool data) {
-        Point2i root = world.getRootBlockPos(blockX, blockY);
-
-        assert root != null;
-
-        blockX = root.x;
-        blockY = root.y;
-
-        updateBlockByTool(blockX, blockY, object, tool, data);
+        Point2i p1 = TmpShapes.p1;
+        if (world.getRootBlockPosTo(blockX, blockY, p1)) {
+            updateBlockByTool(p1.x, p1.y, object, tool, data);
+        }
     }
 
     //todo место для вашего лечения

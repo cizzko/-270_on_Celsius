@@ -1,7 +1,7 @@
 package core.input;
 
 import core.Global;
-import core.World.Textures.TextureDrawing;
+import core.WorldCoordinates;
 import core.math.Point2i;
 import core.math.Vector2f;
 import org.apache.logging.log4j.LogManager;
@@ -184,7 +184,7 @@ public class InputHandler {
 
     public Point2i mouseBlockPos() {
         var world = mouseWorldPos();
-        mouseBlockPos.set((int) (world.x / TextureDrawing.blockSize), (int) (world.y / TextureDrawing.blockSize));
+        mouseBlockPos.set(WorldCoordinates.toBlock(world.x), WorldCoordinates.toBlock(world.y));
         return mouseBlockPos;
     }
 

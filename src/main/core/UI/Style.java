@@ -2,7 +2,7 @@ package core.UI;
 
 import core.g2d.Drawable;
 import core.g2d.Font;
-import core.util.Color;
+import core.graphic.Color;
 
 public abstract class Style {
 

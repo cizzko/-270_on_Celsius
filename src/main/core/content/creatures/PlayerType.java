@@ -4,7 +4,7 @@ import core.content.ContentLoader;
 
 public class PlayerType extends CreatureType {
 
-    public byte width, height;
+    public byte inventoryWidth, inventoryHeight;
 
     public PlayerType(String id) {
         super(id);
@@ -15,13 +15,13 @@ public class PlayerType extends CreatureType {
         super.load(cnt);
         var sizeNode = cnt.node().required("InventorySize");
 
-        width = (byte) sizeNode.required("Width").asInt();
-        if (width <= 0) {
+        inventoryWidth = (byte) sizeNode.required("Width").asInt();
+        if (inventoryWidth <= 0) {
             throw cnt.malformed("'Size.Width' must be greater than 0");
         }
 
-        height = (byte) sizeNode.required("Height").asInt();
-        if (height <= 0) {
+        inventoryHeight = (byte) sizeNode.required("Height").asInt();
+        if (inventoryHeight <= 0) {
             throw cnt.malformed("'Size.Height' must be greater than 0");
         }
     }

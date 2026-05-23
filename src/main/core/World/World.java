@@ -17,10 +17,8 @@ import core.Constants;
 import core.GameState;
 import core.Global;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.Textures.ShadowMap;
-import core.World.Textures.TextureDrawing;
+import core.graphic.ShadowMap;
 import core.World.WorldGenerator.Biomes;
-import core.World.WorldGenerator.WorldGenerator;
 import core.content.blocks.data.TileData;
 import core.content.entity.BlockEntity;
 import core.math.MathUtil;
@@ -154,7 +152,7 @@ public final class World {
                 entity.update();
             } catch (Exception e) {
                 Application.log.error("Failed to update block entity {} at ({}. {})",
-                        entity, entity.blockX(), entity.blockY(), e);
+                        entity, entity.x(), entity.y(), e);
             }
         }
     }
@@ -220,12 +218,22 @@ public final class World {
         return getEntity(pos.x, pos.y);
     }
 
+    private static final Point2i tmp = new Point2i();
+
     public @Nullable BlockEntity getEntity(int x, int y) {
-        var rootPos = getRootBlockPos(x, y);
-        if (rootPos != null) {
+        var block = getBlock(x, y);
+        if (block == null) {
+            return null;
+        }
+        if (!block.isMultiblock()) {
+            return entity.get(pos2index(x, y));
+        }
+        Point2i rootPos = tmp;
+        if (getRootBlockPosTo(x, y, rootPos)) {
             return entity.get(pos2index(rootPos.x, rootPos.y));
         }
-        return entity.get(pos2index(x, y));
+        // не должно приходить
+        return null;
     }
 
     public boolean inBounds(int x, int y) {
@@ -410,18 +418,12 @@ public final class World {
             }
 
             if (root.type == StaticObjectsConst.Type.SOLID) {
-                boolean anyCollision = Global.entityPool.worldIndex().any(
-                        x * TextureDrawing.blockSize, y * TextureDrawing.blockSize,
-                        root.texture.width(), root.texture.height()
-                );
+                boolean anyCollision = Global.entityPool.worldIndex().any(x, y, root.tileCountX, root.tileCountY);
                 return !anyCollision;
             }
         } else {
             if (root.type == StaticObjectsConst.Type.SOLID) {
-                boolean anyCollision = Global.entityPool.worldIndex().any(
-                        x * TextureDrawing.blockSize, y * TextureDrawing.blockSize,
-                        root.texture.width(), root.texture.height()
-                );
+                boolean anyCollision = Global.entityPool.worldIndex().any(x, y, root.tileCountX, root.tileCountY);
                 if (anyCollision) {
                     return false;
                 }

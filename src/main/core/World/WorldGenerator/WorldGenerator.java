@@ -5,12 +5,11 @@ import core.UI.menu.CreatePlanet;
 import core.World.PerlinNoiseGenerator;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticObjectsConst.Type;
-import core.World.StaticWorldObjects.Structures.Structures;
 import core.World.StaticWorldObjects.TemperatureMap;
-import core.World.Textures.ShadowMap;
-import core.World.Textures.TextureDrawing;
+import core.graphic.ShadowMap;
 import core.World.World;
 import core.World.WorldUtils;
+import core.math.MathUtil;
 import core.math.Point2i;
 import core.util.Debug;
 import core.util.FixedBitset;
@@ -21,22 +20,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
+import static core.Constants.World.COPY_SIZE;
 import static core.Global.*;
+import static core.WorldCoordinates.toBlock;
 
 public class WorldGenerator {
     private static final Logger log = LogManager.getLogger("WorldGen");
-
-    public static float intersDamageMultiplier = 40f, minVectorIntersDamage = 1.8f;
-    public static final int copySize = 50;
-
-    //для рисования
-    public static int findX(int x, int y) {
-        return ((x + world.sizeX * y) % world.sizeX) * TextureDrawing.blockSize;
-    }
-
-    public static int findY(int x, int y) {
-        return ((x + world.sizeX * y) / world.sizeX) * TextureDrawing.blockSize;
-    }
 
     public static void generateWorld(CreatePlanet.GenerationParameters params) {
         long startTime = System.currentTimeMillis();
@@ -45,7 +34,7 @@ public class WorldGenerator {
         World world = new World(
                 new World.Meta(sizeX, sizeY, params.seed, null, params.description,
                         System.currentTimeMillis()/1000, 0));
-        entityPool.worldIndex().bounds.set(0,0, sizeX*TextureDrawing.blockSize, sizeY*TextureDrawing.blockSize);
+        entityPool.worldIndex().bounds.set(0,0, sizeX, sizeY);
         Global.world = world;
 
         boolean simple = params.simple;
@@ -85,7 +74,7 @@ public class WorldGenerator {
                     })
                     .thenRun(() -> {
                         log("generating player " + (System.currentTimeMillis() - startTime) + "ms");
-                        Global.player = WorldUtils.spawn(content.creatureById("player"), true);
+                        player = WorldUtils.spawn(content.creatureById("player"), true);
                     })
                     .thenRun(() -> {
                         log("generating done! " + (System.currentTimeMillis() - startTime) + "ms");
@@ -132,11 +121,11 @@ public class WorldGenerator {
         int height = world.sizeY;
         int width = world.sizeX;
 
-        for (int x = 0; x < copySize; x++) {
+        for (int x = 0; x < COPY_SIZE; x++) {
             for (int y = 0; y < height; y++) {
                 var obj = world.getBlock(x, y);
                 if (obj != null) {
-                    world.copyFromTo(x, y, width - copySize + x, y, obj, false);
+                    world.copyFromTo(x, y, width - COPY_SIZE + x, y, obj, false);
                 }
             }
         }
@@ -158,8 +147,9 @@ public class WorldGenerator {
                 for (int x = startChunkX; x < endChunkX; x++) {
                     world.setBiomes(x, defaultBiome);
 
-                    for (int y = 0; y < world.sizeY / 2; y++) {
-                        int blockId = availableBlocks[Math.min(maxBlockIdx, world.sizeY / 2 - y - 1)];
+                    int endY = world.sizeY / 2;
+                    for (int y = 0; y < endY; y++) {
+                        int blockId = availableBlocks[Math.min(maxBlockIdx, endY - y - 1)];
                         world.set(x, y, content.blocksRegistry.typeById(blockId), false);
                     }
                 }
@@ -190,14 +180,15 @@ public class WorldGenerator {
         //todo динамически
         final int minSwapBiomes = 200;
 
+        var rnd = ThreadLocalRandom.current();
         do {
             angle = Math.clamp(
-                    angle + (ThreadLocalRandom.current().nextFloat() * blockGradient - blockGradient / 2f),
+                    angle + (rnd.nextFloat() * blockGradient - blockGradient / 2f),
                     Math.clamp(upperBorder + (lastY - world.sizeY / 2f), upperBorder, 90),
                     Math.clamp(bottomBorder - (world.sizeY / 2f - lastY), 90, bottomBorder)
             );
 
-            int iters = (int) (ThreadLocalRandom.current().nextFloat() * 150 / (90 - Math.abs(90 - angle)));
+            int iters = (int) (rnd.nextFloat() * 150 / (90 - Math.abs(90 - angle)));
             float deltaX = (float) (Math.sin(Math.toRadians(angle)));
             float deltaY = (float) (Math.cos(Math.toRadians(angle)));
 
@@ -211,7 +202,7 @@ public class WorldGenerator {
                     worldHeights[currentIntX] = lastY;
                     lastSwapBiomes++;
 
-                    if (lastSwapBiomes > minSwapBiomes && ThreadLocalRandom.current().nextFloat() * lastSwapBiomes - minSwapBiomes > 30) {
+                    if (lastSwapBiomes > minSwapBiomes && rnd.nextFloat() * lastSwapBiomes - minSwapBiomes > 30) {
                         lastBiomes = currentBiomes;
                         currentBiomes = Biomes.getRand();
                         lastSwapBiomes = 0;
@@ -220,7 +211,7 @@ public class WorldGenerator {
                         blockGradient = currentBiomes.getBlockGradientChance();
                     }
 
-                    if (lastSwapBiomes < 20 && ThreadLocalRandom.current().nextFloat() * lastSwapBiomes < 5) {
+                    if (lastSwapBiomes < 20 && rnd.nextFloat() * lastSwapBiomes < 5) {
                         FixedBitset.setBit(useLastBiomeFlag, currentIntX);
                     } else {
                         FixedBitset.unsetBit(useLastBiomeFlag, currentIntX);
@@ -229,7 +220,7 @@ public class WorldGenerator {
                     break;
                 }
             }
-        } while (!(lastX + copySize + 90 > world.sizeX));
+        } while (!(lastX + COPY_SIZE + 90 > world.sizeX));
 
         doItAgainToArrays(lastY, worldHeights);
 
@@ -270,12 +261,12 @@ public class WorldGenerator {
     }
 
     private static void doItAgainToArrays(float lastY, float[] worldHeights) {
-        float lastX = world.sizeX - copySize - 90;
-        double delta = 90;
-        double delt = worldHeights[0] - lastY;
-        float angle = (float) Math.toDegrees(Math.atan2(delta, delt));
-        float deltaX = (float) (Math.sin(Math.toRadians(angle)));
-        float deltaY = (float) (Math.cos(Math.toRadians(angle)));
+        float lastX = world.sizeX - COPY_SIZE - 90;
+        float delta = 90;
+        float delt = worldHeights[0] - lastY;
+        float angle = (float) Math.toDegrees(Math.atan2(delta, delt)); // хех, ладно
+        float deltaX = MathUtil.sin(Math.toRadians(angle));
+        float deltaY = MathUtil.cos(Math.toRadians(angle));
 
         do {
             for (int j = 0; j < 90; j++) {
@@ -288,7 +279,7 @@ public class WorldGenerator {
                     break;
                 }
             }
-        } while (!(lastX + copySize > world.sizeX));
+        } while (!(lastX + COPY_SIZE > world.sizeX));
     }
 
     private static void generateCaves() {
@@ -297,24 +288,27 @@ public class WorldGenerator {
 
         int upperX = 100;
         int downedX = 100;
-        int caves = (int) (world.sizeX / ((ThreadLocalRandom.current().nextDouble() * 30) + 50));
+        var rnd = ThreadLocalRandom.current();
+        int caves = (int) (world.sizeX / ((rnd.nextFloat() * 30) + 50));
 
         for (int b = 0; b < caves; b++) {
             int minRadius = 2;
             int maxRadius = 8;
-            int startRadius = Math.max(minRadius, ThreadLocalRandom.current().nextInt(maxRadius));
-            boolean isUpper = ThreadLocalRandom.current().nextDouble() * 1.4f > 1 || (upper < caves / 6);
+            int startRadius = Math.max(minRadius, rnd.nextInt(maxRadius));
+            boolean isUpper = rnd.nextFloat() * 1.4f > 1 || (upper < caves / 6);
 
             //за 0 градусов принята вертикаль
             if (isUpper) {
                 upper++;
                 //пещеры с выходом на поверхность
-                iters += generateCave(upperX, findTopmostSolidBlock(upperX, 5), startRadius, minRadius, maxRadius - 2, 100, 260, ThreadLocalRandom.current().nextInt(40, 170), 40, 200);
-                upperX += (int) ((ThreadLocalRandom.current().nextDouble() * (world.sizeX / (caves / 2f))) + (world.sizeX / (caves / 4f)));
+                iters += generateCave(upperX, findTopmostSolidBlock(upperX, 5),
+                        startRadius, minRadius, maxRadius - 2, 100, 260, rnd.nextInt(40, 170), 200);
+                upperX += (int) ((rnd.nextFloat() * (world.sizeX / (caves / 2f))) + (world.sizeX / (caves / 4f)));
             } else {
                 //пещеры в глубине
-                iters += generateCave(downedX, (int) (findTopmostSolidBlock(downedX, 3) - ThreadLocalRandom.current().nextDouble() * (world.sizeY / 2.4f)), startRadius, minRadius, maxRadius, 80, 280, ThreadLocalRandom.current().nextInt(360), 40, 240);
-                downedX += (int) ((ThreadLocalRandom.current().nextDouble() * (world.sizeX / (caves / 2f))) + (world.sizeX / (caves / 4f)));
+                iters += generateCave(downedX, (int) (findTopmostSolidBlock(downedX, 3) - rnd.nextFloat() * (world.sizeY / 2.4f)),
+                        startRadius, minRadius, maxRadius, 80, 280, rnd.nextInt(360), 240);
+                downedX += (int) ((rnd.nextFloat() * (world.sizeX / (caves / 2f))) + (world.sizeX / (caves / 4f)));
             }
         }
 
@@ -322,7 +316,10 @@ public class WorldGenerator {
         clearFloatingIslands(world.tiles, world.sizeX, world.sizeY, 50);
     }
 
-    private static int generateCave(float x, float y, float radius, int minRadius, int maxRadius, int minAngle, int maxAngle, int startAngle, int maxAngleChange, int shotChance) {
+    private static int generateCave(int bx, int by,
+                                    float radius, int minRadius, int maxRadius,
+                                    int minAngle, int maxAngle, int startAngle,
+                                    int shotChance) {
         if (minRadius < 1 || minRadius == maxRadius) {
             return 0;
         }
@@ -330,58 +327,86 @@ public class WorldGenerator {
         float angle = startAngle;
         int totalIters = 0;
 
+        var rnd = ThreadLocalRandom.current();
+        float wx = bx;
+        float wy = by;
+
         do {
-            maxAngleChange = Math.clamp((int) ((y / (float) world.sizeY) * 80), 10, 50);
-            if (ThreadLocalRandom.current().nextInt(25) < 1 || radius > maxRadius) {
-                radius = (int) Math.clamp(radius + ThreadLocalRandom.current().nextDouble(-1.0, 1.0), minRadius, maxRadius);
+            int maxAngleChange = Math.clamp((int) ((wy / (float) world.sizeY) * 80), 10, 50);
+            if (rnd.nextInt(25) < 1 || radius > maxRadius) {
+                radius = (int) Math.clamp(radius + rnd.nextFloat(-1f, 1f), minRadius, maxRadius);
             }
 
-            float iters = ThreadLocalRandom.current().nextInt(5);
-            angle = (float) Math.clamp(angle + ThreadLocalRandom.current().nextDouble(-maxAngleChange, maxAngleChange), minAngle, maxAngle);
-            float deltaY = (float) (Math.cos(Math.toRadians(angle)));
-            float deltaX = (float) (Math.sin(Math.toRadians(angle)));
+            int iters = rnd.nextInt(5);
+            angle = Math.clamp(angle + rnd.nextFloat(-maxAngleChange, maxAngleChange), minAngle, maxAngle);
+            float deltaY = MathUtil.cos(Math.toRadians(angle));
+            float deltaX = MathUtil.sin(Math.toRadians(angle));
 
             for (int j = 0; j < iters; j++) {
                 totalIters += iters;
-                y += deltaY;
-                x += deltaX;
-                destroyAround(x, y, radius);
+                wx += deltaX;
+                wy += deltaY;
+                destroyAround(toBlock(wx), toBlock(wy), toBlock(radius));
 
                 //пещера со случайным направлением
-                if (ThreadLocalRandom.current().nextDouble() * shotChance < 1) {
-                    shotChance *= (int) (ThreadLocalRandom.current().nextDouble(2.0, 2.8));
-                    int sAngle = (int) ((angle + ThreadLocalRandom.current().nextDouble(-45.0, 45.0)) % 360);
+                if (rnd.nextFloat() * shotChance < 1) {
+                    // TODO равносильно shotChance *= 2
+                    // shotChance *= (int) (rnd.nextFloat(2.0f, 2.8f));
+                    shotChance *= 2;
+                    int sAngle = (int) ((angle + rnd.nextFloat(-45f, 45f)) % 360);
 
-                    generateCave(x, y, radius - 1, minRadius, (int) radius, sAngle - 50, sAngle + 50, sAngle, 40, (int) Math.min(1200, shotChance)); //continue;
+                    generateCave(toBlock(wx), toBlock(wy), radius - 1, minRadius, (int) radius,
+                            sAngle - 50, sAngle + 50, sAngle, Math.min(1200, shotChance));
+                    //continue;
                 }
 
                 //вправо влево
-                if (ThreadLocalRandom.current().nextDouble() * (shotChance * 1.2f) < 1) {
-                    shotChance *= (int) (ThreadLocalRandom.current().nextDouble(2.0, 2.8));
-                    int sAngle = (int) ((angle + ThreadLocalRandom.current().nextDouble(-45.0, 45.0)) % 360);
-                    boolean left = ThreadLocalRandom.current().nextBoolean();
+                if (rnd.nextFloat() * (shotChance * 1.2f) < 1) {
+                    // TODO равносильно shotChance *= 2
+                    // shotChance *= (int) (rnd.nextFloat(2f, 2.8f));
+                    shotChance *= 2;
 
-                    generateCave(x, y, radius, minRadius, (int) radius, left ? 265 : 20, left ? 340 : 95, sAngle, 40, (int) Math.min(1500, shotChance));
+                    int sAngle = (int) ((angle + rnd.nextFloat(-45f, 45f)) % 360);
+                    boolean left = rnd.nextBoolean();
+
+                    generateCave(toBlock(wx), toBlock(wy), radius, minRadius, (int) radius, left ? 265 : 20, left ? 340 : 95,
+                            sAngle, Math.min(1500, shotChance));
                 }
             }
-        } while (world.inBounds((short) x, (short) (y - (ThreadLocalRandom.current().nextDouble() * (world.sizeY / 15f)))) &&
-                totalIters < 5000 && ThreadLocalRandom.current().nextDouble() * world.sizeY > totalIters / 200f);
+        } while (world.inBounds(toBlock(wx), toBlock(wy - (rnd.nextFloat() * (world.sizeY / 15f)))) &&
+                totalIters < 5000 && rnd.nextFloat() * world.sizeY > totalIters / 200f);
 
         return totalIters;
     }
 
-    private static void destroyAround(float x, float y, float radius) {
-        for (int i = (int) (x - radius); i <= x + radius; i++) {
-            for (int k = (int) (y - radius); k <= y + radius; k++) {
-                float dx = i - x;
-                float dy = k - y;
+    private static void destroyAround(int bx, int by, int radius) {
+        int beginX = bx - radius;
+        int beginY = by - radius;
+        if (beginX <= 0 || beginY <= 0) {
+            return;
+        }
 
-                if (i > 0 && k > 0 && (dx * dx + dy * dy <= radius * radius)) {
-                    world.destroy(i, k);
+        int endX = bx + radius;
+        int endY = by + radius;
+
+        for (int y = beginY; y <= endY; y++) {
+            for (int x = beginX; x <= endX; x++) {
+                float dx = x - bx;
+                float dy = y - by;
+
+                if ((dx * dx) + (dy * dy) <= (radius * radius)) {
+                    world.destroy(x, y);
                 }
             }
         }
     }
+
+    private static final int[][] directions = {
+            {0,  1}, { 0, -1},
+            {1,  0}, {-1,  0},
+            {1,  1}, {-1,  1},
+            {1, -1}, {-1, -1}
+    };
 
     public static void clearFloatingIslands(short[] tiles, int sizeX, int sizeY, int minSize) {
         int totalColumns = sizeX;
@@ -393,18 +418,17 @@ public class WorldGenerator {
                 int startChunkX = p * chunkSize;
                 int endChunkX = Math.min(sizeX, startChunkX + chunkSize);
 
-                boolean[] localVisited = new boolean[chunkSize * sizeY];
+                long[] localVisited = FixedBitset.createBitSet(chunkSize * sizeY);
                 int[] islandBuffer = new int[minSize + 1];
                 int[] localStack = new int[4096];
-                int[][] directions = {{0, 1}, {0, -1}, {1, 0}, {-1, 0}, {1, 1}, {-1, 1}, {1, -1}, {-1, -1}};
 
-                for (int x = startChunkX; x < endChunkX; x++) {
-                    int localX = x - startChunkX;
-                    for (int y = 0; y < sizeY; y++) {
+                for (int y = 0; y < sizeY; y++) {
+                    for (int x = startChunkX; x < endChunkX; x++) {
+                        int localX = x - startChunkX;
                         int globalIndex = x + sizeX * y;
                         int localIndex = localX + chunkSize * y;
 
-                        if (tiles[globalIndex] != 0 && !localVisited[localIndex]) {
+                        if (tiles[globalIndex] != 0 && !FixedBitset.isSet(localVisited, localIndex)) {
                             boolean hasNeighbors = false;
                             for (int[] dir : directions) {
                                 int nx = x + dir[0];
@@ -417,17 +441,16 @@ public class WorldGenerator {
                                 }
                             }
 
+                            FixedBitset.setBit(localVisited, localIndex);
                             if (!hasNeighbors) {
                                 tiles[globalIndex] = 0;
                                 world.destroy(x, y);
-                                localVisited[localIndex] = true;
                                 continue;
                             }
 
                             int islandSize = 0;
                             int stackPointer = 0;
                             localStack[stackPointer++] = globalIndex;
-                            localVisited[localIndex] = true;
 
                             boolean touchesBorder = false;
 
@@ -451,8 +474,8 @@ public class WorldGenerator {
                                     if (nx >= startChunkX && nx < endChunkX && ny >= 0 && ny < sizeY) {
                                         int nextIdx = nx + sizeX * ny;
                                         int nextLocalIdx = (nx - startChunkX) + chunkSize * ny;
-                                        if (tiles[nextIdx] != 0 && !localVisited[nextLocalIdx]) {
-                                            localVisited[nextLocalIdx] = true;
+                                        if (tiles[nextIdx] != 0 && !FixedBitset.isSet(localVisited, nextLocalIdx)) {
+                                            FixedBitset.setBit(localVisited, nextLocalIdx);
                                             if (stackPointer < localStack.length) {
                                                 localStack[stackPointer++] = nextIdx;
                                             }
@@ -483,7 +506,6 @@ public class WorldGenerator {
             generateTrees(world);
             generateDecorStones(world);
             generateHerb(world);
-            Structures.clearStructuresMap();
         });
     }
 
@@ -544,41 +566,6 @@ public class WorldGenerator {
                 }
             }
         }
-    }
-
-    //todo оно обязательно заработает..
-    private static boolean checkInterInsideSolid(int xCell, int yCell, String structName) {
-        Structures structure = Structures.getStructure(structName);
-        if (structure == null) {
-            return false;
-        }
-//        StaticObjectsConst_V2[][] objects = Structures.bindStructures(structure.blocks);
-//
-//        for (int x = xCell; x < xCell + objects.length; x++) {
-//            for (int y = yCell; y < yCell + objects[0].length; y++) {
-//                if (x > 0 && y > 0 && x < world.sizeX && y < world.sizeY) {
-//                    if (world.getBlock(x, y).type == Types.SOLID && objects[x - xCell][y - yCell].type == Types.SOLID) {
-//                        return true;
-//                    }
-//                }
-//            }
-//        }
-        return false;
-    }
-
-    private static boolean checkInterInsideSolid(int xCell, int yCell, StaticObjectsConst[][] blocks) {
-        for (int x = xCell; x < xCell + blocks.length; x++) {
-            for (int y = yCell; y < yCell + blocks[0].length; y++) {
-                if (x > 0 && y > 0 && x < world.sizeX && y < world.sizeY) {
-                    var block = world.getBlock(x, y);
-
-                    if (block != null && block.type == Type.SOLID && blocks[x - xCell][y - yCell].type == Type.SOLID) {
-                        return true;
-                    }
-                }
-            }
-        }
-        return false;
     }
 
     private static int findFreeVerticalCell(int x) {

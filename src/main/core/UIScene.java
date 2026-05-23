@@ -4,7 +4,7 @@ import core.UI.BaseGroup;
 import core.UI.Dialog;
 import core.UI.Element;
 import core.UI.Group;
-import core.World.Textures.TextureDrawing;
+import core.graphic.GuiDrawing;
 import core.g2d.Fill;
 import core.g2d.Render;
 import core.g2d.StackfulRender;
@@ -17,12 +17,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Predicate;
 
-import static core.util.Color.*;
+import static core.graphic.Color.*;
 
 public final class UIScene implements InputListener {
     public static final Logger log = LogManager.getLogger();
 
-    private final Camera2 view = new Camera2();
+    private final Camera2 view = new Camera2(1);
     private final Vector2f mouse = new Vector2f();
 
     private Element mouseOverElement;
@@ -46,6 +46,10 @@ public final class UIScene implements InputListener {
     public UIScene(int width, int height) {
         view.setToOrthographic(width, height);
         rootElement.setSize(width, height);
+    }
+
+    public Camera2 view() {
+        return view;
     }
 
     public Group root() { return rootElement; }
@@ -102,7 +106,7 @@ public final class UIScene implements InputListener {
         if (debugBorders) {
             StackfulRender.pushState(() -> {
                 StackfulRender.z(Render.LAYER_DEBUG);
-                TextureDrawing.drawText(mouse.x, mouse.y - 32, "Pos: " + mouse);
+                GuiDrawing.drawText(mouse.x, mouse.y - 32, "Pos: " + mouse);
                 debugBorders();
             });
         }
@@ -113,7 +117,7 @@ public final class UIScene implements InputListener {
         var touchAt = touchFocus;
         if (touchAt != null) {
             String shortIdentifier = toShortIdentifier(touchAt);
-            var size = TextureDrawing.calculateTextSize(shortIdentifier);
+            var size = GuiDrawing.calculateTextSize(shortIdentifier);
             Fill.rectangleBorder(touchAt.x(), touchAt.y(), touchAt.width(), touchAt.height(), red);
 
             float tx = touchAt.x() + touchAt.width()  - size.x;
@@ -134,7 +138,7 @@ public final class UIScene implements InputListener {
     private static void drawDebugText(float x, float y, String text) {
         StackfulRender.pushState(() -> {
             StackfulRender.z(Render.LAYER_DEBUG);
-            TextureDrawing.drawText(x, y, text, white);
+            GuiDrawing.drawText(x, y, text, white);
         });
     }
 

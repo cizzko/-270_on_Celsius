@@ -1,7 +1,7 @@
 package core.UI.animation;
 
 import core.math.MathUtil;
-import core.util.Color;
+import core.graphic.Color;
 
 ///управление прозрачностью
 public class AlphaAction<A extends AlphaAction.Colored> extends TemporalAction<A> {

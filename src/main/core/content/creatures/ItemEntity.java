@@ -1,25 +1,28 @@
 package core.content.creatures;
 
 import core.Time;
+import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.Textures.TextureDrawing;
+import core.graphic.GuiDrawing;
 import core.content.ItemStack;
 import core.content.entity.HitboxComponent;
 import core.content.entity.LivingEntity;
 import core.g2d.Atlas;
 import core.g2d.Fill;
 import core.g2d.StackfulRender;
+import core.graphic.WorldDrawing;
 import core.math.Rectangle;
+import core.math.TmpShapes;
 import core.math.Vector2f;
-import core.util.Color;
+import core.graphic.Color;
 
 import static core.Global.*;
-import static core.World.Textures.TextureDrawing.blockSize;
+import static core.WorldCoordinates.*;
 
 public class ItemEntity implements LivingEntity {
-    public static final int ITEM_DROPPED_SIZE = 32;
-    public static final int ITEM_DROPPED_HITBOX = ITEM_DROPPED_SIZE + 2;
+    public static final int ITEM_DROPPED_SIZE   = 32; // пиксели
+    public static final int MOVE_DST            = 3;  // блоки
 
     protected short id;
     protected float x, y;
@@ -28,50 +31,47 @@ public class ItemEntity implements LivingEntity {
     protected float hp, phase;
     protected boolean isUnbreakable, dead;
     protected Vector2f velocity = new Vector2f();
+    protected Vector2f acceleration = new Vector2f();
 
     public ItemEntity(ItemStack itemStack) {
         this.itemStack = itemStack;
     }
 
-    @Override
     public final short getId() {
         return id;
     }
 
-    @Override
     public final void setId(int id) {
         this.id = (short) id;
     }
 
-    @Override
     public final float x() { return x; }
 
-    @Override
     public final float y() { return y; }
 
-    @Override
     public final void setX(float x) { this.x = x; }
-    @Override
     public final void setY(float y) { this.y = y; }
 
-    @Override
     public final float getHp() { return hp; }
 
-    @Override
     public final void setPosition(float x, float y) { this.x = x; this.y = y; }
 
-    @Override
     public final float prevX() { return prevX; }
 
-    @Override
     public final float prevY() { return prevY; }
 
-    @Override
-    public void getHitboxTo(Rectangle out) {
-        out.set(x, y, ITEM_DROPPED_SIZE, ITEM_DROPPED_SIZE);
+    public float centerX() {
+        return x + toWorld(ITEM_DROPPED_SIZE)/2f;
     }
 
-    @Override
+    public float centerY() {
+        return y + toWorld(ITEM_DROPPED_SIZE)/2f;
+    }
+
+    public void getHitboxTo(Rectangle out) {
+        out.set(x, y, toWorld(ITEM_DROPPED_SIZE), toWorld(ITEM_DROPPED_SIZE));
+    }
+
     public CollisionResult onCollide(HitboxComponent them) {
         if (them instanceof PlayerEntity) {
             Inventory.addItemStack(itemStack);
@@ -89,30 +89,69 @@ public class ItemEntity implements LivingEntity {
         return CollisionResult.WALKTHROUGH;
     }
 
-    @Override
     public void update() {
-        final float STOP_DST = ITEM_DROPPED_HITBOX;
-        final float MOVE_DST = (3*ITEM_DROPPED_HITBOX);
+        var tmp = TmpShapes.r1;
+        player.getHitboxTo(tmp);
+        float pcx = tmp.x+tmp.width/2f;
+        float pcy = tmp.y;
 
-        float dstToPlayer = player.dst2(x, y);
-        var playerTex = player.creature.texture;
-        float pcx = player.x() + playerTex.width() / 4f;
-        float pcy = player.y() + playerTex.height() / 4f;
-
-        if (dstToPlayer <= STOP_DST*STOP_DST) {
-            // velocity.set(pcx - x, pcy - y);
-            velocity.lerp(pcx - x, pcy - y, 0.025f);
-            // velocity.lerpDeltaTime(pcx - x, pcy - y, 0.05f);
-        } else if (dstToPlayer <= MOVE_DST*MOVE_DST) {
-            float base = 0.0025f * getWeight();
-            float alpha = 1 - (float)Math.pow(1 - base, Time.delta);
-            velocity.lerp(pcx - x, pcy - y, alpha);
+        float dstToPlayer = (float) Math.sqrt(dst2(pcx, pcy));
+        if (dstToPlayer <= MOVE_DST && dstToPlayer > 0.01f &&
+                    raycastTo(player.blockX(), player.blockY(), (x, y) ->
+                            world.getBlockId(x, y) != 0)) {
+            float acceleration = Math.min(3,
+                    1.45f * (getWeight() * Physics.WEIGHT_FACTOR) * (1f - (dstToPlayer / MOVE_DST)));
+            var dir = TmpShapes.v1.set(pcx, pcy)
+                    .sub(x, y)
+                    .nor()
+                    .scale(acceleration * Time.delta);
+            velocity.add(dir);
         }
     }
 
-    @Override
+    interface RaycastChecker {
+        boolean check(int x, int y);
+    }
+
+    private boolean raycastTo(int x, int y, RaycastChecker checker) {
+        int x1 = blockX();
+        int y1 = blockY();
+
+        int x2 = x;
+        int y2 = y;
+
+        int dx = Math.abs(x2 - x1);
+        int dy = Math.abs(y2 - y1);
+
+        int sx = (x1 < x2) ? 1 : -1;
+        int sy = (y1 < y2) ? 1 : -1;
+
+        int err = dx - dy;
+
+        do {
+            int e2 = 2 * err;
+
+            if (e2 > -dy) {
+                err -= dy;
+                x1 += sx;
+            }
+
+            if (e2 < dx) {
+                err += dx;
+                y1 += sy;
+            }
+
+            if (x1 == x2 && y1 == y2) {
+                return true;
+            }
+            if (checker.check(x1, y1)) {
+                return false;
+            }
+        } while (true);
+    }
+
     public void draw(float drawX) {
-        float amplitude = blockSize / 4f;
+        float amplitude = 1 / 4f;
         float frequency = 0.45f;
         float periodTicks = Time.ONE_SECOND / frequency;
         phase = (phase + Time.delta) % periodTicks;
@@ -122,20 +161,19 @@ public class ItemEntity implements LivingEntity {
         }
         float tSeconds = phase / Time.ONE_SECOND;
         float yOffset = amplitude * 0.5f * (1f - (float)Math.cos(2f * Math.PI * frequency * tSeconds));
-        // System.out.println("phase = " + phase + " | " + phase + " | " + tSeconds + " | " + yOffset);
         Atlas.Region tex = itemStack.item().texture;
-        StackfulRender.draw(tex, drawX, y + yOffset, ITEM_DROPPED_SIZE, ITEM_DROPPED_SIZE);
-        Fill.rectangleBorder(drawX, y + yOffset, ITEM_DROPPED_SIZE, ITEM_DROPPED_SIZE, Color.WHITE);
+        StackfulRender.draw(tex, drawX, y + yOffset, toWorld(ITEM_DROPPED_SIZE), toWorld(ITEM_DROPPED_SIZE));
+        Fill.rectangleBorder(drawX, y + yOffset, toWorld(ITEM_DROPPED_SIZE), toWorld(ITEM_DROPPED_SIZE), toWorld(1), Color.white);
         if (itemStack.count() > 1) {
-            TextureDrawing.drawText(drawX, y+yOffset, String.valueOf(itemStack.count()), Color.WHITE);
+            // TODO выглядит всрато из-за не той матрицы
+            WorldDrawing.drawGameText(drawX, y + yOffset, String.valueOf(itemStack.count()), Color.white);
         }
     }
 
-    @Override
     public boolean hasFloor() {
-        int minX = (int) Math.floor(x / blockSize);
-        int maxX = (int) Math.floor((x + ITEM_DROPPED_SIZE - GAP) / blockSize);
-        int minY = (int) Math.floor((y - GAP) / blockSize);
+        int minX = toBlock(x - GAP);
+        int maxX = toBlock(x + toWorld(ITEM_DROPPED_SIZE) - GAP);
+        int minY = toBlock(y - GAP);
 
         for (int x = minX; x <= maxX; x++) {
             int blockId = world.getBlockId(x, minY);
@@ -153,22 +191,18 @@ public class ItemEntity implements LivingEntity {
         return false;
     }
 
-    @Override
     public float getMaxHp() {
         return 100;
     }
 
-    @Override
     public boolean isUnbreakable() {
         return isUnbreakable;
     }
 
-    @Override
     public boolean isDead() {
         return dead;
     }
 
-    @Override
     public void setHp(float hp) {
         this.hp = hp;
         if (hp <= 0) {
@@ -176,7 +210,6 @@ public class ItemEntity implements LivingEntity {
         }
     }
 
-    @Override
     public void damage(float d, DamageSource source) {
         if (source == DamageSource.FALL || dead) {
             return;
@@ -188,41 +221,32 @@ public class ItemEntity implements LivingEntity {
         }
     }
 
-    @Override
     public void setUnbreakable(boolean unbreakable) {
 
     }
 
-    @Override
-    public Vector2f getVelocity() {
+    public Vector2f velocity() {
         return velocity;
     }
 
     @Override
-    public void jump(float impulse) {
-
+    public Vector2f acceleration() {
+        return acceleration;
     }
 
-    @Override
-    public void moveAt(Vector2f vel) {
-
-    }
-
-    @Override
     public float getWeight() {
         return itemStack.item().weight;
     }
 
-    @Override
     public void remove() {
         LivingEntity.super.remove();
 
         dead = true;
         hp = 0;
         velocity.set(0, 0);
+        acceleration.set(0, 0);
     }
 
-    @Override
     public String toString() {
         return "Item[" + itemStack + "]#" + id;
     }

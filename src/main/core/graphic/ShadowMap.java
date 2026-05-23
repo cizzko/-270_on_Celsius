@@ -1,10 +1,10 @@
-package core.World.Textures;
+package core.graphic;
 
 import core.GameState;
 import core.UI.Styles;
 import core.World.StaticWorldObjects.StaticObjectsConst.Type;
 import core.content.entity.CreatureEntity;
-import core.util.Color;
+import core.content.entity.Hitbox;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -12,8 +12,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
 import static core.Global.*;
-import static core.World.Textures.TextureDrawing.blockSize;
-import static core.World.Textures.TextureDrawing.viewport;
+import static core.WorldCoordinates.toBlock;
+import static core.graphic.WorldDrawing.viewport;
 
 public class ShadowMap {
     private static int[] shadows;
@@ -89,8 +89,8 @@ public class ShadowMap {
                 int shadowDirtWhite = Color.rgba8888(85, 85, 85, 255);
                 int startChunkX = Math.max(1, p * chunkSize);
                 int endChunkX = Math.min(world.sizeX - 1, startChunkX + chunkSize);
-                for (int x = startChunkX; x < endChunkX; x++) {
-                    for (int y = 1; y < world.sizeY; y++) {
+                for (int y = 1; y < world.sizeY; y++) {
+                    for (int x = startChunkX; x < endChunkX; x++) {
                         if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
                             setShadow0(x, y, shadowDirtWhite);
                         }
@@ -120,25 +120,30 @@ public class ShadowMap {
         }
     }
 
+    private static final Hitbox hitbox = new Hitbox();
+
     private static void updateShadows() {
+
         camera.getBoundsTo(viewport);
-        int minX = Math.max(0, (int) Math.floor((viewport.x - blockSize) / blockSize));
-        int minY = Math.max(0, (int) Math.floor((viewport.y - blockSize) / blockSize));
-        int maxX = Math.min(world.sizeX,(int) Math.floor((viewport.x + viewport.width + blockSize) / blockSize));
-        int maxY = Math.min(world.sizeY, (int) Math.floor((viewport.y + viewport.height + blockSize) / blockSize));
+        int minX = Math.max(0, toBlock(viewport.x));
+        int minY = Math.max(0, toBlock(viewport.y));
+        int maxX = Math.min(world.sizeX - 1, toBlock(viewport.x + viewport.width));
+        int maxY = Math.min(world.sizeY - 1, toBlock(viewport.y + viewport.height));
 
         int c1 = Color.rgba8888(165, 165, 165, 255);
+        int c2 = Color.rgba8888(85, 85, 85, 255);
+        int c3 = Styles.DIRTY_BRIGHT_BLACK.rgba8888();
+
         for (int y = minY; y < maxY; y++) {
             for (int x = minX; x < maxX; x++) {
                 if (checkHasGasAround(x, y, 1)) {
-                    setShadow(x, y, c1);
+                    setShadow0(x, y, c1);
                 } else {
-                    setShadow(x, y, Color.white);
+                    setShadow0(x, y, Color.white);
                 }
             }
         }
 
-        int c2 = Color.rgba8888(85, 85, 85, 255);
         for (int y = minY; y < maxY; y++) {
             for (int x = minX; x < maxX; x++) {
                 if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
@@ -147,11 +152,10 @@ public class ShadowMap {
             }
         }
 
-        int dirtyBrightBlack = Styles.DIRTY_BRIGHT_BLACK.rgba8888();
         for (int y = minY; y < maxY; y++) {
             for (int x = minX; x < maxX; x++) {
                 if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
-                    setShadow0(x, y, dirtyBrightBlack);
+                    setShadow0(x, y, c3);
                 }
             }
         }

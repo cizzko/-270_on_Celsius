@@ -11,12 +11,16 @@ import core.World.Weather.Sun;
 import core.World.World;
 import core.World.WorldUtils;
 import core.content.blocks.data.TileData;
+import core.content.entity.Hitbox;
 import core.content.items.Item;
 import core.g2d.Fill;
 import core.g2d.Render;
 import core.g2d.StackfulRender;
+import core.graphic.GuiDrawing;
+import core.graphic.WorldDrawing;
 import core.math.Point2i;
 import core.math.Rectangle;
+import core.math.TmpShapes;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -32,10 +36,9 @@ import java.util.function.Supplier;
 import static core.Application.log;
 import static core.EventHandling.Config.json;
 import static core.Global.*;
-import static core.World.Textures.TextureDrawing.blockSize;
+import static core.WorldCoordinates.*;
 import static core.content.ItemStack.itemStack;
-import static core.content.entity.DrawComponent.GAP;
-import static core.util.Color.*;
+import static core.graphic.Color.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Debug {
@@ -44,6 +47,7 @@ public class Debug {
     public static final int debugLevel = Config.getInt("Debug");
 
     static final Rectangle rect = new Rectangle();
+    static final Hitbox hitbox = new Hitbox();
     static final int acid = 0x8ffe09ff;
 
     // Включается по нажатию M английской
@@ -159,7 +163,7 @@ public class Debug {
         setDebugValue(() -> "Camera Pos: " + camera.position);
         setDebugValue(() ->{
             if (gameState != GameState.PLAYING) return null;
-            return "Velocity: " + player.getVelocity();
+            return "Velocity: " + player.velocity();
         });
         setDebugValue(() -> {
             if (gameState != GameState.PLAYING) return null;
@@ -177,11 +181,8 @@ public class Debug {
             var mouseBlockPos = (input.mouseBlockPos());
             return "BlockHp: " + world.getHp(mouseBlockPos.x, mouseBlockPos.y);
         });
-        //setDebugValue(() -> "Current time: " + sun.currentTime);
     }
 
-    // public static int leftInt(long field) { return (int)(field >> 32); }
-    // public static int rightInt(long field) { return (int)(field); }
 
     public static void drawDebugBorders() {
         if (debugLevel < 2) {
@@ -192,122 +193,10 @@ public class Debug {
 
         entityPool.entities().values().forEach(e -> {
             e.getHitboxTo(rect);
-            Fill.rectangleBorder(rect.x, rect.y, rect.width, rect.height, red);
-            // TextureDrawing.drawText(rect.x, rect.y,
-            //         "HasFloor: " + e.hasFloor(), black);
+            var pos = camera.project(TmpShapes.v1.set(rect.x, rect.y));
+            GuiDrawing.drawText(pos.x, pos.y,
+                    "HasFloor: " + e.hasFloor(), black);
         });
-
-        if (debugLevel >= 3) {
-            // entityPool.worldIndex().eachNode(0, 0, camera.width(), camera.height(), e -> {
-            //     Fill.rectangleBorder(e.bounds.x, e.bounds.y, e.bounds.width, e.bounds.height, acid);
-            //     TextureDrawing.drawText(e.bounds.x, e.bounds.y, "GroupSize: " + e.objects.size());
-            // });
-
-
-            // var r = entityPool.worldIndex().resolution;
-            // var hashIndex = entityPool.worldIndex().hash;
-            // hashIndex.keySet().forEach(hash -> {
-            //     long key = HashCommon.invMix(hash);
-            //     float x = leftInt(key) * r;
-            //     float y = rightInt(key) * r;
-            //
-            //     Fill.rectangleBorder(x, y, r, r, acid);
-            //     var group = hashIndex.get(hash);
-            //     TextureDrawing.drawText(x, y, "GroupSize: " + group.size());
-            // });
-        }
-
-        camera.getBoundsTo(rect);
-        // правая граница
-        Fill.line(
-                (world.sizeX) * blockSize, rect.y,
-                (world.sizeX) * blockSize, rect.y + rect.height,
-                4,
-                red);
-        Fill.line(
-                (world.sizeX - Constants.World.SWAP_AREA) * blockSize, rect.y,
-                (world.sizeX - Constants.World.SWAP_AREA) * blockSize, rect.y + rect.height,
-                4,
-                black);
-        // левая граница
-        Fill.line(
-                0, rect.y,
-                0, rect.y + rect.height,
-                4,
-                blue);
-        Fill.line(
-                Constants.World.SWAP_AREA * blockSize, rect.y,
-                Constants.World.SWAP_AREA * blockSize, rect.y + rect.height,
-                4,
-                black);
-
-        if (!player.isDead()) {
-            player.getHitboxTo(rect);
-            { // Блоки интегрированной модели
-                int minX = (int) Math.floor(rect.x / blockSize);
-                int minY = (int) Math.floor(rect.y / blockSize);
-                int maxX = (int) Math.floor((rect.x + rect.width) / blockSize);
-                int maxY = (int) Math.floor((rect.y + rect.height) / blockSize);
-                for (int x = minX; x <= maxX; x++) {
-                    for (int y = minY; y <= maxY; y++) {
-                        Fill.rectangleBorder(x * blockSize, y * blockSize, blockSize, blockSize, white);
-                    }
-                }
-            }
-
-            // {
-            //     camera.getBoundsTo(viewport);
-            //     int minX = (int) Math.floor(viewport.x / blockSize);
-            //     int minY = (int) Math.floor(viewport.y / blockSize);
-            //     int maxX = (int) Math.floor((viewport.x + viewport.width) / blockSize);
-            //     int maxY = (int) Math.floor((viewport.y + viewport.height) / blockSize);
-            //     Fill.rectangleBorder(minX * blockSize + 5, minY * blockSize + 5, maxX * blockSize - 5, maxY * blockSize - 5, acid);
-            // }
-
-            { // Блоки которые считаются за пол. Черная обводка
-                int minX = (int) Math.floor(player.x() / blockSize);
-                int maxX = (int) Math.floor((player.x() + player.creature.texture.width() - GAP) / blockSize);
-                int minY = (int) Math.floor((player.y() - GAP) / blockSize);
-
-                for (int x = minX; x <= maxX; x++) {
-                    var block = world.getBlock(x, minY);
-                    if (block == null || block.type == StaticObjectsConst.Type.SOLID) {
-                        Fill.rectangleBorder(x*blockSize,minY*blockSize, blockSize, blockSize, BLACK);
-                    }
-                }
-            }
-        }
-
-        { // Корень красный, дочерние синие
-            camera.getBoundsTo(rect);
-            int minX = (int) Math.floor(rect.x / blockSize);
-            int maxX = (int) Math.floor((rect.x + rect.width) / blockSize);
-            int minY = (int) Math.floor(rect.y / blockSize);
-            int maxY = (int) Math.floor((rect.y + rect.height) / blockSize);
-
-            for (int x = minX; x <= maxX; x++) {
-                for (int y = minY; y <= maxY; y++) {
-                    if (!world.inBounds(x, y)) {
-                        continue;
-                    }
-
-                    var obj = world.getBlock(x, y);
-                    if (obj == null || obj == StaticObjectsConst.AIR) {
-                        continue;
-                    }
-
-                    var data = world.getData(x, y);
-                    if (data instanceof TileData.MultiblockPart) {
-                        Fill.rectangleBorder(x * blockSize, y * blockSize, blockSize, blockSize, blue);
-                    } else {
-                        var rootPos = world.getRootBlockPos(x, y);
-                        if (rootPos != null && rootPos.x == x && rootPos.y == y) {
-                            Fill.rectangleBorder(x * blockSize, y * blockSize, blockSize, blockSize, red);
-                        }
-                    }
-                }
-            }
-        }
     }
 
     public static void giveItems() {
@@ -393,6 +282,76 @@ public class Debug {
         if (input.justPressed(GLFW_KEY_M)) {
             debugMesh = !debugMesh;
         }
+    }
+
+    public static void drawPlayerBorders() {
+        if (debugLevel < 2) {
+            return;
+        }
+
+        StackfulRender.z(Render.LAYER_DEBUG);
+        Fill.lineWidth(toWorld(1));
+
+        camera.getBoundsTo(rect);
+
+        if (!player.isDead()) {
+            player.getHitboxTo(rect);
+            { // Блоки интегрированной модели
+                int minX = toBlock(rect.x);
+                int minY = toBlock(rect.y);
+                int maxX = minX + toBlock(rect.width);
+                int maxY = minY + toBlock(rect.height);
+
+                for (int x = minX; x <= maxX; x++) {
+                    for (int y = minY; y <= maxY; y++) {
+                        Fill.rectangleBorder(x, y, 1, 1, white);
+                    }
+                }
+            }
+
+            { // Блоки которые считаются за пол. Черная обводка
+                int minX = toBlock(player.x());
+                int maxX = toBlock(player.x() + toWorld(player.creature.texture.width()));
+                int minY = toBlock(player.y());
+
+                for (int x = minX; x <= maxX; x++) {
+                    var block = world.getBlock(x, minY);
+                    if (block == null) continue;
+                    if (block.type == StaticObjectsConst.Type.SOLID) {
+                        Fill.rectangleBorder(x, minY, block.tileCountX, block.tileCountY, black);
+                    }
+                }
+            }
+        }
+
+        { // Корень красный, дочерние синие
+            camera.getBoundsTo(rect);
+            hitbox.set(rect);
+            hitbox.clamp(world.sizeX, world.sizeY);
+
+            int minX = hitbox.minX;
+            int maxX = hitbox.maxX;
+            int minY = hitbox.minY;
+            int maxY = hitbox.maxY;
+
+            for (int x = minX; x <= maxX; x++) {
+                for (int y = minY; y <= maxY; y++) {
+                    var obj = world.getBlock(x, y);
+                    if (obj == null || obj == StaticObjectsConst.AIR) {
+                        continue;
+                    }
+
+                    var data = world.getData(x, y);
+                    if (data instanceof TileData.MultiblockPart) {
+                        Fill.rectangleBorder(x, y, 1, 1, blue);
+                    } else if (world.getRootBlockPosTo(x, y, TmpShapes.p1) && TmpShapes.p1.equals(x, y)) {
+                        Fill.rectangleBorder(x, y, 1, 1, red);
+                    }
+                }
+            }
+        }
+
+        Fill.resetLineWidth();
     }
 
     static final class DebugBox extends TextArea {

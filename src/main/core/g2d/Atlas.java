@@ -18,24 +18,7 @@ public final class Atlas {
         return regions.get(regionName);
     }
 
-    /// @deprecated рабочий, но делает много лишней работы.
-    /// Лучше если все текстуры буду корректно заданы изначально
-    @Deprecated
-    public Region byPath(String regionName) {
-        if (regionName == null) {
-            return errorRegion;
-        }
-        regionName = regionName.replace('\\', '/');
-
-        if (regionName.endsWith(".png")) {
-            regionName = regionName.substring(0, regionName.length() - ".png".length());
-        }
-        if (regionName.startsWith("/")) {
-            regionName = regionName.substring(1);
-        }
-        return regions.getOrDefault(regionName, errorRegion);
-    }
-
+    /// @param regionName Точное имя в атласе с юниксовым '/' вместо виндовского. Без расширения.
     public Region get(String regionName) {
         return regions.getOrDefault(regionName, errorRegion);
     }
@@ -49,28 +32,31 @@ public final class Atlas {
     }
 
     public static final class Region implements Drawable {
+        public static final int MAX_EXTENT = Short.MAX_VALUE;
+
         private final Atlas atlas;
         private final String name;
         private final short x, y;
         private final short width, height;
+        public final short u, v;
+        public final short u2, v2;
 
-        public short u, v;
-        public short u2, v2;
-
-        Region(Atlas atlas, String name, short x, short y, short width, short height) {
+        Region(Atlas atlas, String name,
+               short x, short y,
+               short width, short height,
+               int atlasWidth, int atlasHeight) {
             this.atlas = atlas;
             this.name = name;
             this.x = x;
             this.y = y;
             this.width = width;
             this.height = height;
-        }
 
-        void computeTextureCoordinates() {
-            this.u  = BytePack.toB16((x + 0.5f) / atlas.texture.width());
-            this.v  = BytePack.toB16((y + 0.5f) / atlas.texture.height());
-            this.u2 = BytePack.toB16((1f * x + width) / atlas.texture.width());
-            this.v2 = BytePack.toB16((1f * y + height) / atlas.texture.height());
+            // Чтение текстуры происходит асинхронно и поэтому atlas.texture.width() недоступен
+            this.u  = BytePack.toB16((x + 0.5f) / atlasWidth);
+            this.v  = BytePack.toB16((y + 0.5f) / atlasHeight);
+            this.u2 = BytePack.toB16((1f * x + width) / atlasWidth);
+            this.v2 = BytePack.toB16((1f * y + height) / atlasHeight);
         }
 
         public Atlas atlas() {

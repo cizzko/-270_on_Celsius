@@ -2,9 +2,7 @@ package core.World.Creatures.Player.Inventory;
 
 import core.Global;
 import core.UI.Sounds.Sound;
-import core.World.HitboxMap;
 import core.content.items.ItemWeapon;
-import core.World.Textures.TextureDrawing;
 import core.content.items.data.ItemData;
 import core.g2d.Atlas;
 import core.math.Point2i;
@@ -59,17 +57,16 @@ public class Bullets {
                 bullet.y += deltaY;
                 bullet.damage -= 0.01f;
 
-                Point2i staticPos = HitboxMap.checkIntersInside(x, y, 8, 8);
-
+                // Point2i staticPos = HitboxMap.checkIntersInside(x, y, 8, 8);
+                Point2i staticPos = null;
                 if (staticPos != null) {
                     var staticObject = world.getBlock(staticPos.x, staticPos.y);
-                    var dynamicObject = HitboxMap.checkIntersectionsDynamic(x, y, 8, 8);
 
                     if (staticObject != null) {
                         float hp = world.getHp(staticPos.x, staticPos.y);
                         world.damage(staticPos.x, staticPos.y, (int) bullet.damage);
                         bulletsIter.next().damage -= hp;
-                    } else if (dynamicObject != null) {
+                    } else /*if (dynamicObject != null)*/ {
                         // float hp = dynamicObject.getCurrentHP();
                         // dynamicObject.incrementCurrentHP(-bullet.damage);
                         // bullet.damage -= hp;
@@ -79,7 +76,7 @@ public class Bullets {
                         // }
                     }
                 }
-                if (bullet.damage <= 0 || bullet.x < 0 || bullet.y < 0 || bullet.x / TextureDrawing.blockSize > world.sizeX || bullet.y / TextureDrawing.blockSize > world.sizeY) {
+                if (bullet.damage <= 0 || bullet.x < 0 || bullet.y < 0 || bullet.x > world.sizeX || bullet.y > world.sizeY) {
                     bulletsIter.remove();
                 }
             }

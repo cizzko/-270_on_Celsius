@@ -1,7 +1,7 @@
 package core.UI;
 
 import core.g2d.Fill;
-import core.util.Color;
+import core.graphic.Color;
 
 import static core.Global.input;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;

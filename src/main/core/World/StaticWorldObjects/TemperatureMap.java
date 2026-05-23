@@ -1,13 +1,13 @@
 package core.World.StaticWorldObjects;
 
 import core.World.Weather.Sun;
+import core.WorldCoordinates;
 import core.math.Point2i;
 import core.util.Sized;
 
 import java.util.HashMap;
 
 import static core.Global.*;
-import static core.World.Textures.TextureDrawing.blockSize;
 
 public class TemperatureMap {
     private static HashMap<Point2i, Float> individualTemperature = new HashMap<>();
@@ -60,11 +60,11 @@ public class TemperatureMap {
         int count = 0;
         float totalTemp = 0;
 
-        int minX = (int) Math.floor(xPos / blockSize);
-        int minY = (int) Math.floor(yPos / blockSize);
+        int minX = WorldCoordinates.toBlock(xPos);
+        int minY = WorldCoordinates.toBlock(yPos);
 
-        int maxX = (int) Math.floor((xPos + size.width()) / blockSize);
-        int maxY = (int) Math.floor((yPos + size.height()) / blockSize);
+        int maxX = WorldCoordinates.toBlock((xPos + size.width()));
+        int maxY = WorldCoordinates.toBlock((yPos + size.height()));
 
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {

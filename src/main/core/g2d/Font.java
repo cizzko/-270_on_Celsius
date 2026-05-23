@@ -9,13 +9,13 @@ public final class Font {
     static final int PIXEL_GAP = 1;
 
     Texture texture;
-    Char2ObjectAVLTreeMap<Glyph> glyphTable;
+    Glyph[] glyphTable;
     Glyph unknownGlyph;
 
     Font() {}
 
     public Glyph getGlyph(char ch) {
-        return glyphTable.get(ch);
+        return glyphTable[ch];
     }
 
     public Texture texture() {
@@ -65,14 +65,10 @@ public final class Font {
         }
 
         @Override
-        public int width() {
-            return width;
-        }
+        public int width() { return Byte.toUnsignedInt(width); }
 
         @Override
-        public int height() {
-            return height;
-        }
+        public int height() { return Byte.toUnsignedInt(height); }
 
         @Override
         public float u() {

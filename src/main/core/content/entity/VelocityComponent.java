@@ -4,9 +4,7 @@ import core.math.Vector2f;
 
 public interface VelocityComponent {
 
-    Vector2f getVelocity();
+    Vector2f velocity();
 
-    void jump(float impulse);
-
-    void moveAt(Vector2f vel);
+    Vector2f acceleration();
 }

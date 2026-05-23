@@ -11,7 +11,7 @@ import java.nio.FloatBuffer;
 import static core.g2d.Render.*;
 import static core.g2d.RenderQueue.*;
 import static core.g2d.StackfulRender.defaultShader;
-import static core.util.Color.toGLBits;
+import static core.graphic.Color.toGLBits;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 

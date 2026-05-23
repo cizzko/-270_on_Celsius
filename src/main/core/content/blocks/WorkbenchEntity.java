@@ -14,13 +14,17 @@ import static core.Global.player;
 
 public class WorkbenchEntity extends BaseBlockEntity<Workbench> {
 
+    public static final float range = 1.15f;
+
     public WorkbenchEntity(Workbench workbench) {
         super(workbench);
     }
 
     @Override
     public void update() {
-        if (Math.abs(player.blockX() - blockX()) < 16) {
+        float cx = centerX() + (block.tileCountX-1)/2f;
+        float cy = centerY() + (block.tileCountY-1)/2f;
+        if (Math.abs(player.centerX() - cx) <= block.tileCountX / range && Math.abs(player.centerY() - cy) <= block.tileCountY / range) {
             WorkbenchLogic.nearbyWorkbench.put(block.tier, block);
         }
     }

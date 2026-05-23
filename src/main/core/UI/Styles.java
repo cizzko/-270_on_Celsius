@@ -2,7 +2,7 @@ package core.UI;
 
 import core.Global;
 import core.g2d.Font;
-import core.util.Color;
+import core.graphic.Color;
 
 import static core.Global.assets;
 
@@ -106,7 +106,7 @@ public class Styles {
     public static final Style.Text DEBUG_TEXT = new Style.Text() {
         @Override
         public void load() {
-            color = Styles.GRAY_BRIGHT;
+            color = Styles.DIRTY_BRIGHT_BLACK;
             font = assets.load(Font.class, "arial.ttf").resultNow();
         }
     };

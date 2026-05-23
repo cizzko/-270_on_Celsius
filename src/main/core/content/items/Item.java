@@ -13,7 +13,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-import static core.World.Textures.TextureDrawing.itemSize;
+import static core.graphic.GuiDrawing.itemSize;
 
 public sealed class Item implements ContentType permits ItemBlock, ItemTool, ItemUnresolved, ItemWeapon {
     public static final int DEFAULT_MAX_STACK_SIZE = 99;

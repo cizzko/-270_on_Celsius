@@ -1,6 +1,5 @@
 package core.graphic;
 
-import core.util.Color;
 import org.lwjgl.system.MemoryUtil;
 
 import java.awt.image.BufferedImage;

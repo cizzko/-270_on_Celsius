@@ -6,7 +6,7 @@ import core.g2d.Drawable;
 import core.g2d.Fill;
 import core.g2d.Font;
 import core.g2d.StackfulRender;
-import core.util.Color;
+import core.graphic.Color;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

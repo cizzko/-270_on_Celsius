@@ -5,15 +5,17 @@ import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Bullets;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
-import core.World.Textures.TextureDrawing;
+import core.graphic.GuiDrawing;
 import core.World.Weather.Sun;
 import core.g2d.StackfulRender;
+import core.graphic.WorldDrawing;
 import core.util.Commandline;
 import core.util.Debug;
 
 import static core.EventHandling.EventHandler.updateHotkeys;
 import static core.Global.*;
 import static core.World.Creatures.Player.Player.*;
+import static core.WorldCoordinates.toWorld;
 import static core.g2d.Render.*;
 
 public final class PlayGameScene extends GameScene {
@@ -79,10 +81,12 @@ public final class PlayGameScene extends GameScene {
         postEffect.draw();
         StackfulRender.z(LAYER_BLOCKS);
         StackfulRender.matrix(camera.projection); // Центрируем камеру на позицию игрока
-        TextureDrawing.drawBlocks();
+        WorldDrawing.drawBlocks();
         StackfulRender.z(LAYER_ENTITIES);
-        TextureDrawing.drawEntities();
+        WorldDrawing.drawEntities();
 
+        Debug.drawPlayerBorders();
+        GuiDrawing.drawBlocksGui();
         Debug.drawDebugBorders();
 
         uiScene.draw();
@@ -103,7 +107,7 @@ public final class PlayGameScene extends GameScene {
         player = null;
         world = null;
         entityPool.clear();
-        TextureDrawing.resetState();
+        WorldDrawing.resetState();
     }
 
     public static void updateCamera() {
@@ -111,13 +115,17 @@ public final class PlayGameScene extends GameScene {
             return;
         }
 
+        camera.updateLastPosition();
+
+        float ox = toWorld(32f);
+        float oy = toWorld(200f);
         if (smoothedCamera) {
-            float base = 0.08f * Math.max(1, player.getVelocity().len() / 4f);
+            float base = 0.08f * Math.max(1, player.velocity().len() / 4f);
             base = Math.min(1f, base);
             float alpha = 1 - (float)Math.pow(1 - base, Time.delta);
-            camera.position.lerp(player.x() + 32, player.y() + 200, alpha);
+            camera.position.lerp(player.x() + ox, player.y() + oy, alpha);
         } else {
-            camera.position.set(player.x() + 32, player.y() + 200);
+            camera.position.set(player.x() + ox, player.y() + oy);
         }
 
         camera.update();

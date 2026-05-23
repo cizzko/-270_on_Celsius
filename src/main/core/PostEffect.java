@@ -3,7 +3,7 @@ package core;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.g2d.StackfulRender;
 import core.g2d.Texture;
-import core.util.Color;
+import core.graphic.Color;
 
 import static core.Global.player;
 

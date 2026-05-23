@@ -37,13 +37,16 @@ public final class AtlasHandler extends AssetHandler<Atlas, Void, AtlasHandler.S
 
             var atlas = new Atlas();
             var tmpRegions = new HashMap<String, Atlas.Region>();
+            int atlasWidth = meta.required("width").asInt();
+            int atlasHeight = meta.required("height").asInt();
             meta.required("regions").forEachEntry((regionName, regMeta) -> {
                 var regionObject = (ObjectNode) regMeta;
-                short x = MathUtil.toShortExact(regionObject.required("x").asInt());
-                short y = MathUtil.toShortExact(regionObject.required("y").asInt());
+                short x = toShortExact(regionObject.required("x").asInt());
+                short y = toShortExact(regionObject.required("y").asInt());
                 short width = toShortExact(regionObject.required("width").asInt());
                 short height = toShortExact(regionObject.required("height").asInt());
-                tmpRegions.put(regionName, new Atlas.Region(atlas, regionName, x, y, width, height));
+                tmpRegions.put(regionName, new Atlas.Region(atlas, regionName, x, y, width, height,
+                        atlasWidth, atlasHeight));
             });
             String errorRegionName = meta.required("error").asText();
 
@@ -62,10 +65,6 @@ public final class AtlasHandler extends AssetHandler<Atlas, Void, AtlasHandler.S
         var atlas = res.join(state.meta);
         atlas.texture = res.join(state.texture);
         res.checkIfFailed();
-
-        for (Atlas.Region region : atlas.regions.values()) {
-            region.computeTextureCoordinates();
-        }
         return atlas;
     }
 

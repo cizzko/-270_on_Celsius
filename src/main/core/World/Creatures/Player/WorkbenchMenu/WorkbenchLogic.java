@@ -4,19 +4,19 @@ import core.EventHandling.EventHandler;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.content.items.Item;
 import core.content.items.ItemBlock;
-import core.World.Textures.TextureDrawing;
+import core.graphic.GuiDrawing;
 import core.content.blocks.Factory;
 import core.content.blocks.Workbench;
 import core.g2d.StackfulRender;
 import core.g2d.Fill;
 import core.math.Point2i;
-import core.util.Color;
+import core.graphic.Color;
 
 import java.util.EnumMap;
 import java.util.List;
 
 import static core.Global.*;
-import static core.World.Textures.TextureDrawing.drawObjects;
+import static core.graphic.GuiDrawing.drawObjects;
 
 public class WorkbenchLogic {
     public static EnumMap<Workbench.Tier, Workbench> nearbyWorkbench = new EnumMap<>(Workbench.Tier.class);
@@ -99,7 +99,7 @@ public class WorkbenchLogic {
                 float yCoord = 1000 + scroll + (y * 54f);
 
                 if (yCoord < 755) {
-                    TextureDrawing.drawItem(xCoord, yCoord, currentWorkbench.get(i));
+                    GuiDrawing.drawItem(xCoord, yCoord, currentWorkbench.get(i));
 
                     if (EventHandler.isMouseClickedIn((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
                         currentObject = new Point2i(x, y);
@@ -113,7 +113,7 @@ public class WorkbenchLogic {
 
             //todo описания
             if (currentObjectIdx != -1) {
-                TextureDrawing.drawText(menuXPos + 585, 703, currentWorkbench.get(currentObjectIdx).getName());
+                GuiDrawing.drawText(menuXPos + 585, 703, currentWorkbench.get(currentObjectIdx).getName());
                 drawRequirements(menuXPos + 590,  648);
                 StackfulRender.draw(atlas.get("UI/GUI/inventory/inventoryCurrent"), menuXPos + 62 + currentObject.x * 54, 986 + scroll + (currentObject.y * 54));
             }

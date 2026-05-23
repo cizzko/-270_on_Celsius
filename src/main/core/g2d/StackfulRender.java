@@ -4,14 +4,13 @@ import core.g2d.UniformBuffer.Uniform;
 import core.math.Mat3;
 import core.pool.Pool;
 import core.pool.Poolable;
-import core.util.Color;
+import core.graphic.Color;
 import core.util.Disposable;
 import org.intellij.lang.annotations.MagicConstant;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
 
-import static core.World.Textures.TextureDrawing.*;
 import static core.g2d.Render.*;
 
 public final class StackfulRender {
@@ -27,12 +26,12 @@ public final class StackfulRender {
 
     public static void drawRepeated(Atlas.Region texture,
                                     float bx, float by,
-                                    float bw, float bh) {
-        float x1 = bx * blockSize;
-        float y1 = by * blockSize;
+                                    float bw, float bh) {  // TODO не должно быть привязки к множителю (blocksize) в методе
+        float x1 = bx;
+        float y1 = by;
 
-        float x2 = x1 + bw * blockSize;
-        float y2 = y1 + bh * blockSize;
+        float x2 = x1 + bw;
+        float y2 = y1 + bh;
 
         float u1 = BytePack.fromB16toFloat32(texture.u);
         float v1 = BytePack.fromB16toFloat32(texture.v);
@@ -42,7 +41,7 @@ public final class StackfulRender {
         var ublockObj = queue.uniformBuffer().allocate();
         ublockObj.push(Uniform.of("u_proj", state.transform));
         ublockObj.push(Uniform.of("u_reg_uv", u1, v1));
-        ublockObj.push(Uniform.of("u_reg_size", u2 - u1, v2 - v1 ));
+        ublockObj.push(Uniform.of("u_reg_size", u2 - u1, v2 - v1));
 
         int ublock = queue.uniformBuffer().push(ublockObj);
 
@@ -237,6 +236,10 @@ public final class StackfulRender {
 
     public static void draw(Drawable tex, Color color, float x, float y) { draw(tex, color.rgba8888(), x, y); }
 
+    public static void draw(Drawable tex, Color color, float x, float y, float w, float h) {
+        draw(tex, color.rgba8888(), x, y, w, h);
+    }
+
     public static void draw(Drawable tex, int colorRgba8888, float x, float y, float w, float h) {
         draw(
                 state.rlist,
@@ -391,7 +394,6 @@ public final class StackfulRender {
     public static void resetColor() { state.colorRgba8888 = Color.white; }
 
     public static void matrix(Mat3 matrix) {
-        // System.out.println("matrix = " + matrix);
         state.transform.set(matrix);
         resetUniformBlock();
     }

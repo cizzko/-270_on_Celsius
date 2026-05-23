@@ -3,11 +3,11 @@ package core.UI;
 import core.g2d.Drawable;
 import core.g2d.StackfulRender;
 import core.g2d.Fill;
-import core.util.Color;
+import core.graphic.Color;
 import org.jetbrains.annotations.Nullable;
 
 import static core.Global.input;
-import static core.World.Textures.TextureDrawing.drawText;
+import static core.graphic.GuiDrawing.drawText;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 
 public class ToggleButton extends BaseButton<ToggleButton> {

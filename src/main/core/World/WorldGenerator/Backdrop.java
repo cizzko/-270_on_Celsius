@@ -4,7 +4,7 @@ import core.g2d.StackfulRender;
 import core.g2d.Render;
 
 import static core.Global.*;
-import static core.World.Textures.TextureDrawing.blockSize;
+import static core.graphic.GuiDrawing.blockSize;
 
 public class Backdrop {
     //todo привязка
@@ -19,7 +19,6 @@ public class Backdrop {
 
         if (currentBiome != lastBiome) {
             lastBiome = currentBiome;
-            //lastX = (int) DynamicObjects.getFirst().getX() / blockSize;
         }
 
         StackfulRender.pushState(() -> {

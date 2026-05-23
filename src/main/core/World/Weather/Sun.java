@@ -3,16 +3,15 @@ package core.World.Weather;
 import core.GameObject;
 import core.Load;
 import core.Time;
-import core.World.Textures.ShadowMap;
-import core.World.Textures.TextureDrawing;
 import core.g2d.StackfulRender;
 import core.g2d.Texture;
-import core.util.Color;
+import core.graphic.Color;
+import core.graphic.ShadowMap;
 
 import static core.Constants.World.COPY_SIZE;
 import static core.Global.player;
 import static core.Global.world;
-import static core.World.Textures.TextureDrawing.blockSize;
+import static core.WorldCoordinates.*;
 import static core.math.MathUtil.lerp;
 
 public class Sun extends GameObject {
@@ -36,10 +35,9 @@ public class Sun extends GameObject {
     private static final float TIME_SPEED = 0.1f;
 
     public void update() {
-        float blockSize = TextureDrawing.blockSize;
-        float effectiveWorldWidth = (world.sizeX - COPY_SIZE) * blockSize;
+        float effectiveWorldWidth = world.sizeX - COPY_SIZE;
 
-        globalTime += Time.delta * TIME_SPEED;
+        globalTime += Time.delta * TIME_SPEED / BLOCK_SIZE;
         if (globalTime >= effectiveWorldWidth) {
             globalTime -= effectiveWorldWidth;
         } else if (globalTime < 0) {
@@ -57,7 +55,7 @@ public class Sun extends GameObject {
         final int maxGreen = 255;
         float ratio = (maxGreen - minGreen) / 1200f;
         int green = (int) (minGreen + (this.currentTime * ratio));
-        green = Math.max(minGreen, Math.min(maxGreen, green));
+        green = Math.clamp(green, minGreen, maxGreen);
 
         sunColor.set(255, green, 40, 255);
 
@@ -65,9 +63,9 @@ public class Sun extends GameObject {
         updateNightBackground();
     }
 
-    private static float calculateTime(float worldPixelX) {
-        float effectiveWidth = (world.sizeX - COPY_SIZE) * blockSize;
-        float deltaX = globalTime - worldPixelX;
+    private static float calculateTime(float worldX) {
+        float effectiveWidth = world.sizeX - COPY_SIZE;
+        float deltaX = globalTime - worldX;
 
         double angle = (deltaX / effectiveWidth) * 2.0 * Math.PI;
         float cosFactor = (float) Math.cos(angle);
@@ -76,12 +74,8 @@ public class Sun extends GameObject {
         return (1.0f - angleFactor) * 1200f;
     }
 
-    public static float getTimeAtWorldX(int worldBlockX) {
-        return calculateTime(worldBlockX * blockSize);
-    }
-
-    public static float getTimeAtWorldX(float worldPixelX) {
-        return calculateTime(worldPixelX);
+    public static float getTimeAtWorldX(float worldX) {
+        return calculateTime(worldX);
     }
 
     //todo докалибровать
@@ -97,18 +91,18 @@ public class Sun extends GameObject {
         }
 
         int aGradient = (int) (250 * alpha);
-        aGradient = Math.max(0, Math.min(250, aGradient));
+        aGradient = Math.clamp(aGradient, 0, 250);
         sunsetColor.set(aGradient, 0, 20, aGradient);
     }
 
     private void updateNightBackground() {
         float progress = currentTime / 900f;
         float alpha = 1f - progress;
-        alpha = Math.max(0f, Math.min(1f, alpha));
+        alpha = Math.clamp(alpha, 0f, 1f);
 
         int aGradient = (int) (255 * alpha);
-        int deleteGradient = Math.max(0, Math.min(150, aGradient));
-        int backGradient = Math.max(0, Math.min(255, aGradient));
+        int deleteGradient = Math.clamp(aGradient, 0, 150);
+        int backGradient = Math.clamp(aGradient, 0, 255);
 
         Color color = Color.fromRgba8888(deleteGradient, deleteGradient, deleteGradient, 0);
         ShadowMap.deleteAllColor(color);

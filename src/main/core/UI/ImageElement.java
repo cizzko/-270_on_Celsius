@@ -2,7 +2,7 @@ package core.UI;
 
 import core.g2d.Drawable;
 import core.g2d.StackfulRender;
-import core.util.Color;
+import core.graphic.Color;
 
 public class ImageElement extends BaseElement<ImageElement> {
     private int color = Color.white;

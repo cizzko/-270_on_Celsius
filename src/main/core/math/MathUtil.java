@@ -78,4 +78,7 @@ public final class MathUtil {
     public static byte addExact(byte a, byte b) {
         return toByteExact(Math.addExact(toUnsignedInt(a), toUnsignedInt(b)));
     }
+
+    public static float cos(double v) { return (float) Math.cos(v); }
+    public static float sin(double v) { return (float) Math.sin(v); }
 }

@@ -4,13 +4,14 @@ import core.content.ContentLoader;
 import core.content.ContentResolver;
 import core.content.ContentType;
 import core.content.ItemStack;
-import core.World.Textures.TextureDrawing;
 import core.content.entity.BlockEntity;
 import core.g2d.Atlas;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
+
+import static core.WorldCoordinates.toWorld;
 
 public class StaticObjectsConst implements ContentType {
     public static StaticObjectsConst AIR;
@@ -38,8 +39,8 @@ public class StaticObjectsConst implements ContentType {
         this.texture = cnt.readTexture("Texture");
         this.requirements = cnt.readItemStacksUnresolved(cnt.node().path("Requirements"));
 
-        this.tileCountX = (byte) (texture.width() / TextureDrawing.blockSize);
-        this.tileCountY = (byte) (texture.height() / TextureDrawing.blockSize);
+        this.tileCountX = (byte) toWorld(texture.width());
+        this.tileCountY = (byte) toWorld(texture.height());
 
         String createWithId = cnt.node().path("CreateWith").asText(null);
         this.createWith = (createWithId == null || createWithId.equals("player")) ? null : cnt.readBlockUnresolved("CreateWith");
@@ -69,7 +70,7 @@ public class StaticObjectsConst implements ContentType {
     public @Nullable BlockEntity createEntity(int x, int y) {
         var ent = constructEntity();
         if (ent != null) {
-            ent.setPosition(x*TextureDrawing.blockSize, y*TextureDrawing.blockSize);
+            ent.setPosition(x, y);
             ent.init();
         }
         return ent;

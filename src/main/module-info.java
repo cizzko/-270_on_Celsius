@@ -46,8 +46,6 @@ open module core.main {
     exports core.World.Creatures.Player;
     exports core.World.WorldGenerator;
     exports core.World.StaticWorldObjects;
-    exports core.World.StaticWorldObjects.Structures;
-    exports core.World.Textures;
     exports core.World.Weather;
     exports core.content.blocks.data;
     exports core.content.items;

@@ -4,11 +4,11 @@ import core.g2d.Atlas;
 import core.g2d.StackfulRender;
 import core.g2d.Fill;
 import core.g2d.Font;
-import core.util.Color;
+import core.graphic.Color;
 
 import static core.Global.*;
-import static core.World.Textures.TextureDrawing.calculateTextSize;
-import static core.util.Color.*;
+import static core.graphic.GuiDrawing.calculateTextSize;
+import static core.graphic.Color.*;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 
 public class Slider extends BaseElement<Slider> {

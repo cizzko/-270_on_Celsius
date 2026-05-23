@@ -1,15 +1,12 @@
 package core.UI;
 
-import core.EventHandling.EventHandler;
-import core.World.Textures.TextureDrawing;
 import core.g2d.Font;
 import core.input.InputListener;
-import core.util.Color;
+import core.graphic.Color;
 
 import java.util.function.Consumer;
 
 import static core.EventHandling.Config.getBoolean;
-import static core.Global.input;
 
 public abstract class BaseButton<B extends BaseButton<B>> extends BaseElement<B> {
     public boolean isClickable = true, isClicked, oneShot; // TODO перевести на битовые флаги.

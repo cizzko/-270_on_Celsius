@@ -9,4 +9,6 @@ public interface BlockDrawComponent {
     boolean drawStateChanged();
 
     default void draw(RenderList rlist) {}
+
+    default void drawGui() {}
 }

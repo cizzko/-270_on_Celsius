@@ -2,6 +2,7 @@ package core.util;
 
 import java.util.Objects;
 
+// Адаптированный java.util.BitSet
 public class FixedBitset {
 
     private static final long WORD_MASK = 0xffffffffffffffffL;
@@ -26,25 +27,19 @@ public class FixedBitset {
         if (fromIndex == toIndex)
             return;
 
-        // Increase capacity if necessary
         int startWordIndex = wordIndex(fromIndex);
         int endWordIndex   = wordIndex(toIndex - 1);
 
         long firstWordMask = WORD_MASK << fromIndex;
         long lastWordMask  = WORD_MASK >>> -toIndex;
         if (startWordIndex == endWordIndex) {
-            // Case 1: One word
             bitset[startWordIndex] |= (firstWordMask & lastWordMask);
         } else {
-            // Case 2: Multiple words
-            // Handle first word
             bitset[startWordIndex] |= firstWordMask;
 
-            // Handle intermediate words, if any
             for (int i = startWordIndex+1; i < endWordIndex; i++)
                 bitset[i] = WORD_MASK;
 
-            // Handle last word (restores invariants)
             bitset[endWordIndex] |= lastWordMask;
         }
     }

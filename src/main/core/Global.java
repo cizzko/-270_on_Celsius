@@ -21,7 +21,7 @@ public final class Global {
     public static LangTranslation lang;
     public static EntityPool entityPool;
     public static PlayerEntity player;
-    public static final Camera2 camera = new Camera2();
+    public static final Camera2 camera = new Camera2(WorldCoordinates.BLOCK_SIZE);
 
     public static World world;
     public static GameState gameState = GameState.MENU;

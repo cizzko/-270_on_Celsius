@@ -108,6 +108,11 @@ public final class Vector2f {
         return velX * x + velY * y;
     }
 
+    public boolean equalsEps(Vector2f other, float eps) {
+        return MathUtil.equalsEps(x, other.x, eps) &&
+               MathUtil.equalsEps(y, other.y, eps);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

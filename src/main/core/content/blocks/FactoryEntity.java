@@ -7,21 +7,21 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.Time;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Textures.TextureDrawing;
+import core.graphic.GuiDrawing;
 import core.content.ItemGrid;
 import core.content.ItemStack;
 import core.content.entity.BaseBlockEntity;
 import core.content.entity.BlockItemStorage;
 import core.g2d.Fill;
-import core.g2d.RenderList;
+import core.math.TmpShapes;
+import core.math.Vector2f;
 import core.util.ArrayUtils;
+import core.graphic.Color;
 
 import java.io.IOException;
 
-import static core.Global.atlas;
-import static core.Global.player;
-import static core.World.Textures.TextureDrawing.blockSize;
-import static core.util.Color.rgba8888;
+import static core.Global.*;
+import static core.WorldCoordinates.toWorld;
 
 public class FactoryEntity extends BaseBlockEntity<Factory> {
     public boolean isSelected;
@@ -144,27 +144,28 @@ public class FactoryEntity extends BaseBlockEntity<Factory> {
     public final boolean drawStateChanged() { return false; }
 
     @Override
-    public void draw(RenderList rlist) {
-        if (isSelected) {
-            float addedX = block.texture.width();
-            float addedY = block.texture.height();
-            float x = this.x + addedX - (blockSize / 2f);
-            float y = this.y + addedY - (blockSize / 2f);
+    public void drawGui() {
+        if (!isSelected) {
+            return;
+        }
+        Vector2f pos = TmpShapes.v1
+                .set(x + toWorld(block.texture.width()) - .5f, y + toWorld(block.texture.height()) - .5f);
+        camera.project(pos);
 
-            int playerSize = Math.max(player.creature.texture.width(), player.creature.texture.height());
-            if (!input.isEmpty()) {
-                int width1 = input.items.length * 54 + playerSize;
+        int playerSize = Math.max(player.creature.texture.width(), player.creature.texture.height());
+        var backpanelColor = Color.rgba8888(40, 40, 40, 170);
+        int freeCell = ArrayUtils.findFreeCell(outputStored);
+        if (!input.isEmpty() && freeCell != -1) {
+            int w = input.items.length * 54 + playerSize;
+            Fill.rect(pos.x, pos.y, w, 64, backpanelColor);
+        }
 
-                Fill.rect(x, y, width1, 64, rgba8888(0, 0, 0, 170));
-                TextureDrawing.drawObjects(x, y, input.items, atlas.get("UI/GUI/buildMenu/factoryIn"));
-            }
-            if (ArrayUtils.findFreeCell(outputStored) != 0) {
-                x += (ArrayUtils.findFreeCell(outputStored) != 0 ? 78 : 0);
-                int width = ArrayUtils.findDistinctObjects(outputStored) * 54 + playerSize;
+        if (!input.isEmpty())
+            GuiDrawing.drawObjects(pos.x, pos.y, input.items, atlas.get("UI/GUI/buildMenu/factoryIn"));
 
-                Fill.rect(x, y, width, 64, rgba8888(0, 0, 0, 170));
-                TextureDrawing.drawObjects(x, y, outputStored, atlas.get("UI/GUI/buildMenu/factoryOut"));
-            }
+        if (outputStored != null && freeCell != 0) {
+            pos.x += 78;
+            GuiDrawing.drawObjects(pos.x, pos.y, outputStored, atlas.get("UI/GUI/buildMenu/factoryOut"));
         }
     }
 

@@ -42,11 +42,11 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
             try (var in = Files.newInputStream(dir.resolve(name))) {
                 awtFont = java.awt.Font.createFont(java.awt.Font.PLAIN, in);
             }
-            // default 12
             awtFont = awtFont.deriveFont(java.awt.Font.PLAIN, (float) (fontSize * Toolkit.getDefaultToolkit().getScreenResolution() / 72.0));
 
             Font fnt = new Font();
-            var glyphTable = new Char2ObjectAVLTreeMap<Font.Glyph>();
+            // TODO параметр tableSize
+            var glyphTable = new Font.Glyph[Character.MAX_VALUE];
 
             BufferedImage tmp = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
             Graphics2D tmpg = tmp.createGraphics();
@@ -93,11 +93,13 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
 
                 byte width = toByteExact(image.getWidth());
                 byte height = toByteExact(image.getHeight());
-                Font.Glyph ch = new Font.Glyph(fnt, c, width, height);
+                Font.Glyph glyph = new Font.Glyph(fnt, c, width, height);
 
-                glyphs.add(new GlyphAndImage(ch, image));
-                glyphTable.put(c, ch);
+                glyphs.add(new GlyphAndImage(glyph, image));
+                glyphTable[c] = glyph;
             }
+
+            System.out.println("glyphs.size() = " + glyphs.size());
 
             for (GlyphAndImage image : glyphs) {
                 Font.Glyph gl = image.glyph;
@@ -139,12 +141,17 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
         var fnt = glyphData.fnt;
         fnt.texture = Texture.load(glyphData.atlas, GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, (short) 0, (short) 0, (short) 1, (short) 1);
 
-        fnt.glyphTable = glyphData.glyphTable;
-        fnt.unknownGlyph = fnt.glyphTable.get('?');
-        fnt.glyphTable.defaultReturnValue(fnt.unknownGlyph);
-
-        for (Font.Glyph glyph : glyphData.glyphTable.values()) {
-            glyph.computeTextureCoordinates();
+        Font.Glyph[] glyphTable = glyphData.glyphTable;
+        fnt.glyphTable = glyphTable;
+        Font.Glyph unknownGlyph = glyphTable['?'];
+        fnt.unknownGlyph = unknownGlyph;
+        for (int i = 0; i < glyphTable.length; i++) {
+            Font.Glyph glyph = glyphTable[i];
+            if (glyph == null) {
+                glyphTable[i] = unknownGlyph;
+            } else {
+                glyph.computeTextureCoordinates();
+            }
         }
         return fnt;
     }
@@ -163,7 +170,7 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
         private Future<FontData> texture;
     }
 
-    public record FontData(Font fnt, BufferedImage atlas, Char2ObjectAVLTreeMap<Font.Glyph> glyphTable) {
+    public record FontData(Font fnt, BufferedImage atlas, Font.Glyph[] glyphTable) {
 
     }
 }

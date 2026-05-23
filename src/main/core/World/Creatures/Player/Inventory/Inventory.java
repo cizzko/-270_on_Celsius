@@ -5,19 +5,22 @@ import core.EventHandling.Config;
 import core.content.ItemStack;
 import core.content.items.Item;
 import core.content.items.ItemBlock;
-import core.World.WorldGenerator.WorldGenerator;
 import core.World.WorldUtils;
 import core.content.entity.InventoryComponent;
+import core.g2d.Atlas;
 import core.g2d.StackfulRender;
+import core.graphic.WorldDrawing;
 import core.math.Point2i;
 import core.math.Rectangle;
 import org.jetbrains.annotations.Nullable;
 
 import static core.Global.*;
-import static core.World.Textures.TextureDrawing.*;
+import static core.graphic.GuiDrawing.*;
 import static core.World.WorldUtils.getDistanceToMouse;
+import static core.WorldCoordinates.toBlock;
+import static core.WorldCoordinates.toWorld;
 import static core.content.creatures.ItemEntity.ITEM_DROPPED_SIZE;
-import static core.util.Color.*;
+import static core.graphic.Color.*;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Inventory {
@@ -86,7 +89,7 @@ public class Inventory {
             if (!player.hasDraggingItem() &&
                         !Rectangle.contains(1488, 756, 500, 500, input.mousePos())) {
                 boolean canBuild = getDistanceToMouse() < 8 && world.checkPlaceRules(blockPos.x, blockPos.y, b.block);
-                addBlockPreview(blockPos.x, blockPos.y, (short) content.blocksRegistry.idByType(b.block), (byte) b.block.maxHp, canBuild);
+                WorldDrawing.addBlockPreview(blockPos.x, blockPos.y, (short) content.blocksRegistry.idByType(b.block), (byte) b.block.maxHp, canBuild);
             }
         }
     }
@@ -97,9 +100,12 @@ public class Inventory {
         }
         var itemInHand = player.getItemInHand();
         if (itemInHand != null && itemInHand.item() instanceof ItemBlock) {
-            StackfulRender.draw(atlas.get("World/buildGrid"),
+            Atlas.Region tex = atlas.get("World/buildGrid");
+            float w = toWorld(tex.width());
+            float h = toWorld(tex.height());
+            StackfulRender.draw(tex,
                     rgba8888(230, 230, 230, 150),
-                    blockX*blockSize - 243f, blockY*blockSize - 244f);
+                    blockX - toWorld(243f), blockY - toWorld(244f), w, h);
         }
     }
 

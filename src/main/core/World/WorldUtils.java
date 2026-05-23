@@ -6,6 +6,7 @@ import core.EventHandling.Config;
 import core.Global;
 import core.World.Creatures.Physics;
 import core.World.WorldGenerator.WorldGenerator;
+import core.WorldCoordinates;
 import core.content.ItemStack;
 import core.content.creatures.CreatureType;
 import core.content.creatures.ItemEntity;
@@ -19,7 +20,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static core.Constants.World.COPY_SIZE;
 import static core.Global.*;
-import static core.World.Textures.TextureDrawing.blockSize;
 
 public class WorldUtils {
 
@@ -58,8 +58,8 @@ public class WorldUtils {
     }
 
     public static void dropItem(ItemStack itemStack, float x, float y) {
-        float rx = x + ThreadLocalRandom.current().nextFloat(0, blockSize/3f);
-        float ry = y + ThreadLocalRandom.current().nextFloat(0, blockSize/3f);
+        float rx = x + ThreadLocalRandom.current().nextFloat(0.3f, 0.7f);
+        float ry = y + ThreadLocalRandom.current().nextFloat(0.1f, 0.5f);
         spawnItemEntity(itemStack, rx, ry);
     }
 
@@ -75,17 +75,16 @@ public class WorldUtils {
         return ent;
     }
 
-    private static <E extends CreatureEntity> E spawn0(CreatureType entity, int bx) {
-        float wx = bx * blockSize;
-        float wy = (WorldGenerator.findTopmostSolidBlock(bx, 5) + 1) * blockSize;
+    private static <E extends CreatureEntity> E spawn0(CreatureType entity, float bx) {
+        float wy = WorldGenerator.findTopmostSolidBlock(WorldCoordinates.toBlock(bx), 5) + 1;
 
-        if (Physics.checkIntersection(wx, wy, entity.texture)) {
-            Application.log.warn("Unable spawning at: ({}, {})", wx, wy);
+        if (Physics.checkIntersection(bx, wy, entity.texture)) {
+            Application.log.warn("Unable spawning at: ({}, {})", bx, wy);
             return spawn0(entity, bx + 1);
         }
 
         @SuppressWarnings("unchecked")
-        var ent = (E) entity.create(wx, wy);
+        var ent = (E) entity.create(bx, wy);
         return ent;
     }
 

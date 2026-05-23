@@ -9,16 +9,24 @@ import core.World.StaticWorldObjects.StaticObjectsConst;
 
 import java.io.IOException;
 
-public interface BlockEntity extends BlockDrawComponent, PositionComponent {
+public interface BlockEntity extends BlockDrawComponent {
+
+    void setPosition(int x, int y);
+
+    int x();
+    int y();
+    default float centerX() { return x() + 0.5f; }
+    default float centerY() { return y() + 0.5f; }
 
     /** Вызывается при создании сущности на координатах */
     default void init() {}
     /** Вызывается при обновлении мира */
     default void update() {}
+
     /** Вызывается при уничтожении сущности */
     default void remove() {}
 
-    StaticObjectsConst getBlock();
+    StaticObjectsConst type();
 
     enum TransitionResult {
         /// Полное перемещение предмета с переходом владения объектом

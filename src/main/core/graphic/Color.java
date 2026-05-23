@@ -1,21 +1,21 @@
-package core.util;
+package core.graphic;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import static core.util.Colorf.clamp;
+import static core.graphic.Colorf.clamp;
 
 public final class Color {
-    public static final int red = rgba8888(255, 0, 0, 255);
-    public static final int green = rgba8888(0, 255, 0, 255);
-    public static final int blue = rgba8888(0, 0, 255, 255);
+    public static final int red   = 0xff0000ff;
+    public static final int green = 0x00ff00ff;
+    public static final int blue  = 0x0000ffff;
 
-    public static final int white = rgba8888(255, 255, 255, 255);
-    public static final int black = rgba8888(0, 0, 0, 255);
-    public static final int clear = rgba8888(0, 0, 0, 0);
+    public static final int white = 0xffffffff;
+    public static final int black = 0x000000ff;
+    public static final int clear = 0x00000000;
 
-    public static final Color WHITE = new Color(0xFFFFFFFF);
-    public static final Color BLACK = new Color(0x000000FF);
-    public static final Color CLEAR = new Color(0x00000000);
+    public static final Color WHITE = new Color(white);
+    public static final Color BLACK = new Color(black);
+    public static final Color CLEAR = new Color(clear);
 
     private int rgba8888;
 
@@ -71,6 +71,8 @@ public final class Color {
     public int g() { return rgba8888 >> 16 & 0xFF; }
     public int b() { return rgba8888 >> 8 & 0xFF; }
     public int a() { return rgba8888 & 0xFF; }
+
+    public int rgb() { return rgba8888 >> 8 & 0xFFFFFF; }
 
     public float rf() { return r() / 255f; }
     public float gf() { return g() / 255f; }

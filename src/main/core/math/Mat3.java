@@ -219,11 +219,9 @@ public final class Mat3 {
         return obj == this || (obj instanceof Mat3 m && equalsEps(m.val));
     }
 
-    static final float FLOAT_EPSILON = Math.ulp(1f);
-
     private boolean equalsEps(float[] other) {
         for (int i = 0; i < val.length; i++) {
-            if (!MathUtil.equalsEps(val[i], other[i], FLOAT_EPSILON)) {
+            if (!MathUtil.equalsEps(val[i], other[i])) {
                 return false;
             }
         }

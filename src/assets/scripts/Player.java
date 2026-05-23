@@ -1,6 +1,5 @@
 import core.Global;
 import core.World.Creatures.Player.Player;
-import core.World.Textures.TextureDrawing;
 import core.World.WorldUtils;
 
 import static core.Global.*;
@@ -55,5 +54,5 @@ void give(String itemId, int amount) {
 }
 
 void tpBlock(float x, float y) {
-    player.setPosition(x * TextureDrawing.blockSize, y * TextureDrawing.blockSize);
+    player.setPosition(x, y);
 }

@@ -3,7 +3,7 @@ package core.UI;
 import core.g2d.Font;
 import core.math.Rectangle;
 import core.pool.Poolable;
-import core.util.Color;
+import core.graphic.Color;
 import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
