@@ -1,5 +1,4 @@
 {
-  "Id": "smallStone",
   "ClassType": "block",
   "Resistance": 0,
   "Texture": "textures/blocks/smallStone",

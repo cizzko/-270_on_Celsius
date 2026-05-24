@@ -2,11 +2,8 @@ package core.content.items;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import core.Global;
-import core.content.ItemStack;
-import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.content.ContentLoader;
-import core.content.ContentResolver;
-import core.content.ContentType;
+import core.content.*;
+import core.content.blocks.Block;
 import core.g2d.Atlas;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
@@ -15,7 +12,8 @@ import java.util.Objects;
 
 import static core.graphic.GuiDrawing.itemSize;
 
-public sealed class Item implements ContentType permits ItemBlock, ItemTool, ItemUnresolved, ItemWeapon {
+public sealed class Item implements ContentType, Loadable
+        permits ItemBlock, ItemTool, ItemUnresolved, ItemWeapon {
     public static final int DEFAULT_MAX_STACK_SIZE = 99;
 
     public final String id;
@@ -25,7 +23,7 @@ public sealed class Item implements ContentType permits ItemBlock, ItemTool, Ite
     public float weight;
     public Atlas.Region texture;
     public ItemStack[] requirements;
-    public @Nullable StaticObjectsConst createWith; // null если доступно из кармана игрока
+    public @Nullable Block createWith; // null если доступно из кармана игрока
 
     @JsonCreator
     public static Item deserializer(String id) {

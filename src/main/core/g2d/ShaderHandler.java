@@ -29,40 +29,41 @@ public final class ShaderHandler extends AssetHandler<Shader, Void, ShaderHandle
         state.vertSource = res.fork(() -> Files.readString(dir.resolve(name + ".vert"), StandardCharsets.UTF_8));
         state.fragSource = res.fork(() -> Files.readString(dir.resolve(name + ".frag"), StandardCharsets.UTF_8));
         state.attributesSource = res.fork(() -> {
-            try (var reader = Files.newBufferedReader(dir.resolve(name + ".meta.json"))) {
-                var node = (ObjectNode) Config.json.readTree(reader);
-                var attributes = node.path("attributes");
-
-                var attributesList = new ArrayList<VertexAttribute>(attributes.size());
-                attributes.forEachEntry((key, value) -> {
-                    int size = value.required("size").asInt();
-                    var type = VertexAttribute.Type.valueOf(
-                            value.required("type").asText().toUpperCase(Locale.ROOT));
-
-
-                    var formatStr = value.required("format").asText().toUpperCase(Locale.ROOT);
-                    var format = switch (formatStr) {
-                        case "DIRECT" -> switch (type) {
-                            case FLOAT -> VertexAttribute.Format.DIRECT_FLOAT;
-                            case UNSIGNED_BYTE, BYTE, UNSIGNED_SHORT, SHORT, UNSIGNED_INT, INT ->
-                                    VertexAttribute.Format.INTEGRAL;
-                        };
-                        case "NORMALIZED" -> VertexAttribute.Format.NORMALIZED;
-                        default -> throw new IllegalArgumentException("Unknown format: '" + formatStr + "'");
-                    };
-                    attributesList.add(new VertexAttribute(size, type, format));
-                });
-                var uniforms = node.path("uniforms");
-                var uniformsMap = new HashMap<String, Shader.Uniform>();
-                uniforms.forEachEntry((key, value) -> {
-                    var type = Shader.Uniform.Type.valueOf(value.required("type").asText().toUpperCase(Locale.ROOT));
-                    uniformsMap.put(key, new Shader.Uniform(type));
-                });
-
-                return new Attributes(new VertexFormat(
-                        attributesList.toArray(new VertexAttribute[0])),
-                        uniformsMap);
+            ObjectNode node;
+            try (var is = Files.newInputStream(dir.resolve(name + ".meta.json"))) {
+                node = (ObjectNode) Config.json.readTree(is);
             }
+            var attributes = node.path("attributes");
+
+            var attributesList = new ArrayList<VertexAttribute>(attributes.size());
+            attributes.forEachEntry((key, value) -> {
+                int size = value.required("size").asInt();
+                var type = VertexAttribute.Type.valueOf(
+                        value.required("type").asText().toUpperCase(Locale.ROOT));
+
+
+                var formatStr = value.required("format").asText().toUpperCase(Locale.ROOT);
+                var format = switch (formatStr) {
+                    case "DIRECT" -> switch (type) {
+                        case FLOAT -> VertexAttribute.Format.DIRECT_FLOAT;
+                        case UNSIGNED_BYTE, BYTE, UNSIGNED_SHORT, SHORT, UNSIGNED_INT, INT ->
+                                VertexAttribute.Format.INTEGRAL;
+                    };
+                    case "NORMALIZED" -> VertexAttribute.Format.NORMALIZED;
+                    default -> throw new IllegalArgumentException("Unknown format: '" + formatStr + "'");
+                };
+                attributesList.add(new VertexAttribute(size, type, format));
+            });
+            var uniforms = node.path("uniforms");
+            var uniformsMap = new HashMap<String, Shader.Uniform>();
+            uniforms.forEachEntry((key, value) -> {
+                var type = Shader.Uniform.Type.valueOf(value.required("type").asText().toUpperCase(Locale.ROOT));
+                uniformsMap.put(key, new Shader.Uniform(type));
+            });
+
+            return new Attributes(new VertexFormat(
+                    attributesList.toArray(new VertexAttribute[0])),
+                    uniformsMap);
         });
     }
 

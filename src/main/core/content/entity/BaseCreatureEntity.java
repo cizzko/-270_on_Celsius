@@ -1,7 +1,7 @@
 package core.content.entity;
 
-import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.content.creatures.CreatureType;
+import core.content.blocks.Block;
+import core.content.creatures.Creature;
 import core.g2d.Atlas;
 import core.g2d.StackfulRender;
 import core.math.Rectangle;
@@ -13,7 +13,7 @@ import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import static core.Global.world;
 import static core.WorldCoordinates.*;
 
-public abstract class BaseCreatureEntity<C extends CreatureType> implements CreatureEntity {
+public abstract class BaseCreatureEntity<C extends Creature> implements CreatureEntity {
     public short id;
     public final C creature;
 
@@ -28,7 +28,7 @@ public abstract class BaseCreatureEntity<C extends CreatureType> implements Crea
         this.creature = creature;
     }
 
-    public final short getId() {
+    public final short id() {
         return id;
     }
 
@@ -151,7 +151,7 @@ public abstract class BaseCreatureEntity<C extends CreatureType> implements Crea
 
         for (int x = minX; x <= maxX; x++) {
             var block = world.getBlock(x, minY);
-            if (block == null || block.type == StaticObjectsConst.Type.SOLID) {
+            if (block == null || block.type == Block.Type.SOLID) {
                 return true;
             }
         }

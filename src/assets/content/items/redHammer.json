@@ -1,5 +1,4 @@
 {
-  "Id": "redHammer",
   "ClassType": "tool",
   "Texture": "textures/items/hammer",
   "MaxHp": 100,

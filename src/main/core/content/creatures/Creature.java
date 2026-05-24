@@ -3,10 +3,11 @@ package core.content.creatures;
 import core.Global;
 import core.content.ContentLoader;
 import core.content.ContentType;
+import core.content.Loadable;
 import core.content.entity.CreatureEntity;
 import core.g2d.Atlas;
 
-public abstract class CreatureType implements ContentType {
+public abstract class Creature implements ContentType, Loadable {
     public final String id;
 
     public float weight;
@@ -14,7 +15,7 @@ public abstract class CreatureType implements ContentType {
     public Atlas.Region texture;
     public boolean hasGravity;
 
-    protected CreatureType(String id) {
+    protected Creature(String id) {
         this.id = id;
     }
 
@@ -50,7 +51,7 @@ public abstract class CreatureType implements ContentType {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof CreatureType that)) {
+        if (!(o instanceof Creature that)) {
             return false;
         }
         return id.equals(that.id);

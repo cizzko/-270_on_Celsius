@@ -1,5 +1,4 @@
 {
-  "Id": "woodenPlatform",
   "ClassType": "block",
   "Resistance": 100,
   "Texture": "textures/blocks/woodenPlatform",

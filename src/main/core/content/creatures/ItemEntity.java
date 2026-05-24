@@ -3,8 +3,7 @@ package core.content.creatures;
 import core.Time;
 import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.graphic.GuiDrawing;
+import core.content.blocks.Block;
 import core.content.ItemStack;
 import core.content.entity.HitboxComponent;
 import core.content.entity.LivingEntity;
@@ -37,7 +36,7 @@ public class ItemEntity implements LivingEntity {
         this.itemStack = itemStack;
     }
 
-    public final short getId() {
+    public final short id() {
         return id;
     }
 
@@ -184,7 +183,7 @@ public class ItemEntity implements LivingEntity {
                 continue;
             }
             var block = content.blocksRegistry.typeById(blockId);
-            if (block.type == StaticObjectsConst.Type.SOLID) {
+            if (block.type == Block.Type.SOLID) {
                 return true;
             }
         }

@@ -1,17 +1,17 @@
 package core.content;
 
 import core.content.blocks.BlockUnresolved;
-import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.content.blocks.Block;
 import core.content.items.Item;
 import core.content.items.ItemUnresolved;
+import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 
-import java.util.EnumMap;
 import java.util.HashMap;
 
 public class ContentResolver {
-    private final EnumMap<ContentManager.Type, HashMap<String, ContentType>> contentMap;
+    private final Reference2ObjectOpenHashMap<Class<? extends ContentType>, HashMap<String, ContentType>> contentMap;
 
-    public ContentResolver(EnumMap<ContentManager.Type, HashMap<String, ContentType>> contentMap) {
+    public ContentResolver(Reference2ObjectOpenHashMap<Class<? extends ContentType>, HashMap<String, ContentType>> contentMap) {
         this.contentMap = contentMap;
     }
 
@@ -24,15 +24,15 @@ public class ContentResolver {
                 continue;
             }
             if (itemStack.item() instanceof ItemUnresolved r) {
-                itemStack.setItem((Item) contentMap.get(ContentManager.Type.ITEM).get(r.id()));
+                itemStack.setItem(ContentManager.content(contentMap, Item.class).get(r.id()));
             }
         }
         return itemStacks;
     }
 
-    public StaticObjectsConst resolveBlock(StaticObjectsConst block) {
+    public Block resolveBlock(Block block) {
         if (block instanceof BlockUnresolved) {
-            return (StaticObjectsConst) contentMap.get(ContentManager.Type.BLOCK).get(block.id());
+            return ContentManager.content(contentMap, Block.class).get(block.id());
         }
         return block;
     }

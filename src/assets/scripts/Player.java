@@ -20,7 +20,7 @@ boolean kill(int id) {
     var entity = Global.entityPool.getEntity(id);
     if (entity != null) {
         entity.remove();
-        Application.log.info("Killed entity {} ({})", entity.getId(), entity);
+        Application.log.info("Killed entity {} ({})", entity.id(), entity);
         return true;
     }
     return false;

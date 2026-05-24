@@ -3,8 +3,8 @@ package core.World.Creatures;
 import core.Constants;
 import core.PlayGameScene;
 import core.Time;
-import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.content.entity.DrawComponent;
+import core.content.blocks.Block;
+import core.content.entity.Entity;
 import core.graphic.ShadowMap;
 import core.content.entity.HealthComponent;
 import core.content.entity.LivingEntity;
@@ -53,8 +53,8 @@ public class Physics {
                     return;
                 }
 
-                var meColId   = combine(me.getId(), them.getId());
-                var themColId = combine(them.getId(), me.getId());
+                var meColId   = combine(me.id(), them.id());
+                var themColId = combine(them.id(), me.id());
                 if (completedCollisions.contains(meColId) || completedCollisions.contains(themColId)) {
                     return;
                 }
@@ -131,7 +131,7 @@ public class Physics {
                     continue;
                 }
                 var block = content.blocksRegistry.typeById(blockId);
-                if (block.type != StaticObjectsConst.Type.SOLID) {
+                if (block.type != Block.Type.SOLID) {
                     continue;
                 }
                 blockHitbox.set(x, y, block.tileCountX, block.tileCountY);
@@ -175,58 +175,60 @@ public class Physics {
     static final float MOVE_THRESHOLD = 1e-6f;
 
     private static void simulate(float dt) {
-        for (var ent : entityPool.entities().values()) {
-            float rightBorder = (world.sizeX - Constants.World.SWAP_AREA);
-            float leftBorder = Constants.World.SWAP_AREA;
-            float dx = rightBorder - leftBorder;
+        entityPool.entities().values().forEach(ent -> simulateEntity(dt, ent));
+    }
 
-            // TODO:  при передвижении справа налево движение засчитывается только у ent.getX() (а это левый нижний пиксель)
-            //        Логично что касание должно быть от ent.getX()+hitbox.width
-            if (ent.x() >= rightBorder) {
-                ent.setX(ent.x() - dx);
-                if (player == ent) {
-                    camera.updateLastPosition();
-                    camera.position.x -= dx;
-                    ShadowMap.update();
-                }
-            } else if (ent.x() <= leftBorder) {
-                ent.setX(ent.x() + dx);
-                if (player == ent) {
-                    camera.updateLastPosition();
-                    camera.position.x += dx;
-                    ShadowMap.update();
-                }
-            }
+    private static void simulateEntity(float dt, Entity ent) {
+        float rightBorder = (world.sizeX - Constants.World.SWAP_AREA);
+        float leftBorder = Constants.World.SWAP_AREA;
+        float dx = rightBorder - leftBorder;
 
-            if (ent == player && noClip) {
-                continue;
+        // TODO:  при передвижении справа налево движение засчитывается только у ent.getX() (а это левый нижний пиксель)
+        //        Логично что касание должно быть от ent.getX()+hitbox.width
+        if (ent.x() >= rightBorder) {
+            ent.setX(ent.x() - dx);
+            if (player == ent) {
+                camera.updateLastPosition();
+                camera.position.x -= dx;
+                ShadowMap.update();
             }
+        } else if (ent.x() <= leftBorder) {
+            ent.setX(ent.x() + dx);
+            if (player == ent) {
+                camera.updateLastPosition();
+                camera.position.x += dx;
+                ShadowMap.update();
+            }
+        }
 
-            if (!(ent instanceof LivingEntity livingEntity)) {
-                continue;
-            }
+        if (ent == player && noClip) {
+            return;
+        }
 
-            boolean hasFloor = ent.hasFloor();
-            Vector2f vel = livingEntity.velocity();
-            if (!hasFloor) {
-                vel.y -= (livingEntity.getWeight() * WEIGHT_FACTOR) * GRAVITY * dt;
-            }
+        if (!(ent instanceof LivingEntity livingEntity)) {
+            return;
+        }
 
-            float k = calculateFriction(livingEntity);
-            float frictionCoefficient = k * livingEntity.getWeight() * FRICTION_FACTOR;
-            vel.x *= (float) Math.exp(-frictionCoefficient * dt);
+        boolean hasFloor = ent.hasFloor();
+        Vector2f vel = livingEntity.velocity();
+        if (!hasFloor) {
+            vel.y -= (livingEntity.getWeight() * WEIGHT_FACTOR) * GRAVITY * dt;
+        }
 
-            if (abs(vel.x) >= MAX_SPEED) {
-                vel.x = Math.signum(vel.x) * MAX_SPEED;
-            }
-            if (abs(vel.y) >= MAX_SPEED) {
-                vel.y = Math.signum(vel.y) * MAX_SPEED;
-            }
-            move(livingEntity, dt);
+        float k = calculateFriction(livingEntity);
+        float frictionCoefficient = k * livingEntity.getWeight() * FRICTION_FACTOR;
+        vel.x *= (float) Math.exp(-frictionCoefficient * dt);
 
-            if (Math.abs(vel.x) <= MathUtil.EPSILON) {
-                vel.x = 0;
-            }
+        if (abs(vel.x) >= MAX_SPEED) {
+            vel.x = Math.signum(vel.x) * MAX_SPEED;
+        }
+        if (abs(vel.y) >= MAX_SPEED) {
+            vel.y = Math.signum(vel.y) * MAX_SPEED;
+        }
+        move(livingEntity, dt);
+
+        if (Math.abs(vel.x) <= MathUtil.EPSILON) {
+            vel.x = 0;
         }
     }
 
@@ -327,7 +329,7 @@ public class Physics {
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
                 var block = world.getBlock(x, y);
-                if (block == null || block.type == StaticObjectsConst.Type.SOLID) {
+                if (block == null || block.type == Block.Type.SOLID) {
                     return true;
                 }
             }

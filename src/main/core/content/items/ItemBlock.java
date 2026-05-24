@@ -1,12 +1,12 @@
 package core.content.items;
 
-import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.content.blocks.Block;
 import core.content.ContentLoader;
 import core.content.ContentResolver;
 
 public non-sealed class ItemBlock extends Item {
     // То, что можно поставить
-    public StaticObjectsConst block;
+    public Block block;
 
     public ItemBlock(String id) {
         super(id);

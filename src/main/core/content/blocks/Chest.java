@@ -1,10 +1,9 @@
 package core.content.blocks;
 
 import core.content.ContentLoader;
-import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.content.entity.BlockEntity;
 
-public class Chest extends StaticObjectsConst {
+public class Chest extends Block {
     public int width, height;
 
     public Chest(String id) {

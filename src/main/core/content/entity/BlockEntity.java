@@ -5,7 +5,7 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.content.ItemStack;
-import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.content.blocks.Block;
 
 import java.io.IOException;
 
@@ -26,7 +26,7 @@ public interface BlockEntity extends BlockDrawComponent {
     /** Вызывается при уничтожении сущности */
     default void remove() {}
 
-    StaticObjectsConst type();
+    Block type();
 
     enum TransitionResult {
         /// Полное перемещение предмета с переходом владения объектом

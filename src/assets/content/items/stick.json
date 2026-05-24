@@ -1,5 +1,4 @@
 {
-  "Id": "stick",
   "ClassType": "tool",
   "Texture": "textures/items/stick",
   "MaxHp": 100,

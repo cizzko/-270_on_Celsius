@@ -1,5 +1,4 @@
 {
-  "Id": "simpleHeatInsulator",
   "ClassType": "block",
   "Resistance": 85,
   "Texture": "textures/blocks/simpleHeatInsulator",

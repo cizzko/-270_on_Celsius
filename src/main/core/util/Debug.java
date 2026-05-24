@@ -6,18 +6,18 @@ import core.UI.Dialog;
 import core.UI.Styles;
 import core.UI.TextArea;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.content.blocks.Block;
 import core.World.Weather.Sun;
 import core.World.World;
 import core.World.WorldUtils;
 import core.content.blocks.data.TileData;
+import core.content.entity.Entity;
 import core.content.entity.Hitbox;
 import core.content.items.Item;
 import core.g2d.Fill;
 import core.g2d.Render;
 import core.g2d.StackfulRender;
 import core.graphic.GuiDrawing;
-import core.graphic.WorldDrawing;
 import core.math.Point2i;
 import core.math.Rectangle;
 import core.math.TmpShapes;
@@ -191,12 +191,12 @@ public class Debug {
 
         StackfulRender.z(Render.LAYER_DEBUG);
 
-        entityPool.entities().values().forEach(e -> {
-            e.getHitboxTo(rect);
+        for (Entity ent : entityPool.entities().values()) {
+            ent.getHitboxTo(rect);
             var pos = camera.project(TmpShapes.v1.set(rect.x, rect.y));
             GuiDrawing.drawText(pos.x, pos.y,
-                    "HasFloor: " + e.hasFloor(), black);
-        });
+                    "HasFloor: " + ent.hasFloor(), black);
+        }
     }
 
     public static void giveItems() {
@@ -317,7 +317,7 @@ public class Debug {
                 for (int x = minX; x <= maxX; x++) {
                     var block = world.getBlock(x, minY);
                     if (block == null) continue;
-                    if (block.type == StaticObjectsConst.Type.SOLID) {
+                    if (block.type == Block.Type.SOLID) {
                         Fill.rectangleBorder(x, minY, block.tileCountX, block.tileCountY, black);
                     }
                 }
@@ -337,7 +337,7 @@ public class Debug {
             for (int x = minX; x <= maxX; x++) {
                 for (int y = minY; y <= maxY; y++) {
                     var obj = world.getBlock(x, y);
-                    if (obj == null || obj == StaticObjectsConst.AIR) {
+                    if (obj == null || obj == Block.AIR) {
                         continue;
                     }
 

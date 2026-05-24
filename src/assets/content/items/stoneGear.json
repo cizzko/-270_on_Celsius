@@ -1,5 +1,4 @@
 {
-  "Id": "stoneGear",
   "ClassType": "item",
   "Texture": "textures/items/stoneGear",
   "Requirements": {

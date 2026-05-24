@@ -21,4 +21,9 @@ public final class Constants {
         /* В какой области с концов мира нас телепортирует на другую сторону */
         public static final int SWAP_AREA = COPY_SIZE / 2;
     }
+
+    public static final class Entity {
+        /* Максимальное количество сущности в мире единовременно существующих */
+        public static final int MAX_COUNT = Short.MAX_VALUE;
+    }
 }

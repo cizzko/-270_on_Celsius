@@ -8,7 +8,7 @@ import core.World.Creatures.Physics;
 import core.World.WorldGenerator.WorldGenerator;
 import core.WorldCoordinates;
 import core.content.ItemStack;
-import core.content.creatures.CreatureType;
+import core.content.creatures.Creature;
 import core.content.creatures.ItemEntity;
 import core.content.entity.CreatureEntity;
 import core.content.strctures.Structure;
@@ -47,7 +47,7 @@ public class WorldUtils {
     }
 
     /// @param spawnRules предохраняет от спавна в потенциально опасном для логики отрезке COPY_SIZE*2
-    public static <E extends CreatureEntity> E spawn(CreatureType entity, boolean spawnRules) {
+    public static <E extends CreatureEntity> E spawn(Creature entity, boolean spawnRules) {
         int bx;
         if (!spawnRules) {
             bx = ThreadLocalRandom.current().nextInt(0, world.sizeX);
@@ -75,7 +75,7 @@ public class WorldUtils {
         return ent;
     }
 
-    private static <E extends CreatureEntity> E spawn0(CreatureType entity, float bx) {
+    private static <E extends CreatureEntity> E spawn0(Creature entity, float bx) {
         float wy = WorldGenerator.findTopmostSolidBlock(WorldCoordinates.toBlock(bx), 5) + 1;
 
         if (Physics.checkIntersection(bx, wy, entity.texture)) {

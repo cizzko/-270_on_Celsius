@@ -6,7 +6,7 @@ import core.EventHandling.Config;
 import core.Global;
 import core.content.ContentManager.Type;
 import core.content.blocks.BlockUnresolved;
-import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.content.blocks.Block;
 import core.content.blocks.Factory;
 import core.content.creatures.PlayerType;
 import core.content.blocks.Chest;
@@ -20,7 +20,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
 
 import static core.Global.assets;
@@ -33,7 +32,7 @@ public class ContentLoader {
         ctor(Type.ITEM, "tool", ItemTool::new);
         ctor(Type.ITEM, "block", ItemBlock::new);
 
-        ctor(Type.BLOCK, "block", StaticObjectsConst::new);
+        ctor(Type.BLOCK, "block", Block::new);
         ctor(Type.BLOCK, "workbench", Workbench::new);
         ctor(Type.BLOCK, "chest", Chest::new);
         ctor(Type.BLOCK, "factory", Factory::new);
@@ -48,7 +47,7 @@ public class ContentLoader {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends ContentType> T createContent(Type type, String classType, String id) {
+    private <T extends ContentType & Loadable> T createContent(Type type, String classType, String id) {
         var typeTable = constructors.get(type);
         var constr = typeTable.get(classType);
         if (constr == null) {
@@ -63,7 +62,7 @@ public class ContentLoader {
         return cont;
     }
 
-    public <T extends ContentType> T readContent() {
+    public <T extends ContentType & Loadable> T readContent() {
         String classType = node.required("ClassType").asText(null);
         T content = createContent(type, classType, id);
         content.load(this);
@@ -80,19 +79,25 @@ public class ContentLoader {
         this.type = type;
         this.path = path;
         ObjectNode node;
-        try (var reader = Files.newInputStream(path)) {
-            node = (ObjectNode) Config.json.readTree(reader);
+        try (var is = Files.newInputStream(path)) {
+            node = (ObjectNode) Config.json.readTree(is);
         } catch (IOException e) {
             throw exception("Exception while reading json '" + path + "'", e);
         }
         this.node = node;
-        if (!node.path("Id").isTextual()) {
-            throw malformed("'Id' property must be specified as string");
-        }
-        this.id = node.path("Id").asText();
+        this.id = pathToId(path);
         if (!node.path("ClassType").isTextual()) {
             throw malformed("'ClassType' property must be specified as string");
         }
+    }
+
+    static String pathToId(Path path) {
+        var fileName = path.getFileName().toString();
+        if (fileName.endsWith(".json")) {
+            return fileName.substring(0, fileName.length() - 5);
+        }
+        assert false : fileName + " without extension";
+        return fileName;
     }
 
     public ObjectNode node() {
@@ -134,7 +139,7 @@ public class ContentLoader {
         return Global.atlas.get(node.path(propName).asText(null));
     }
 
-    public StaticObjectsConst readBlockUnresolved(String propName) {
+    public Block readBlockUnresolved(String propName) {
         return new BlockUnresolved(node.path(propName).asText(null));
     }
 }

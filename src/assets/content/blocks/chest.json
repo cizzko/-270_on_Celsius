@@ -1,5 +1,4 @@
 {
-  "Id": "chest",
   "ClassType": "chest",
   "Resistance": 100,
   "Texture": "textures/blocks/chest",

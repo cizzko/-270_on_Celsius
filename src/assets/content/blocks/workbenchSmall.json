@@ -1,5 +1,4 @@
 {
-  "Id": "workbenchSmall",
   "ClassType": "workbench",
   "Resistance": 95,
   "Texture": "textures/blocks/workbenchSmall",

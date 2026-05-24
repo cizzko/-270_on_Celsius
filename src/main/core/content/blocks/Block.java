@@ -1,9 +1,6 @@
-package core.World.StaticWorldObjects;
+package core.content.blocks;
 
-import core.content.ContentLoader;
-import core.content.ContentResolver;
-import core.content.ContentType;
-import core.content.ItemStack;
+import core.content.*;
 import core.content.entity.BlockEntity;
 import core.g2d.Atlas;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
@@ -13,8 +10,8 @@ import java.util.Locale;
 
 import static core.WorldCoordinates.toWorld;
 
-public class StaticObjectsConst implements ContentType {
-    public static StaticObjectsConst AIR;
+public class Block implements ContentType, Loadable {
+    public static Block AIR;
 
     public final String id;
 
@@ -25,10 +22,10 @@ public class StaticObjectsConst implements ContentType {
     public int lightTransmission;
     public Atlas.Region texture;
     public ItemStack[] requirements;
-    public @Nullable StaticObjectsConst createWith;
+    public @Nullable Block createWith;
     public Type type;
 
-    public StaticObjectsConst(String id) {
+    public Block(String id) {
         this.id = id;
     }
 
@@ -83,7 +80,7 @@ public class StaticObjectsConst implements ContentType {
         if (this == o) {
             return true;
         }
-        if (!(o instanceof StaticObjectsConst that)) {
+        if (!(o instanceof Block that)) {
             return false;
         }
         return id.equals(that.id);

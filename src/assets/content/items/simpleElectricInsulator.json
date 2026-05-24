@@ -1,5 +1,4 @@
 {
-  "Id": "simpleElectricInsulator",
   "ClassType": "item",
   "Texture": "textures/items/simpleElectricInsulator"
 }

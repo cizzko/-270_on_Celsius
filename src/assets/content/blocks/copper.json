@@ -1,5 +1,4 @@
 {
-  "Id": "copper",
   "ClassType": "block",
   "Resistance": 100,
   "Texture": "textures/blocks/copper",

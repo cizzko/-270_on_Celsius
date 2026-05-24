@@ -1,5 +1,6 @@
 package core.content.creatures;
 
+import core.GameState;
 import core.Global;
 import core.Time;
 import core.World.Creatures.Physics;
@@ -72,6 +73,7 @@ public class PlayerEntity
         lastDamageTime = 0;
 
         scheduler.post(() -> {
+            if (gameState == GameState.PLAYING) return;
             Global.player = WorldUtils.spawn(creature, true);
             camera.position.set(player.x() + CAMERA_OFFSET_X, player.y() + CAMERA_OFFSET_Y);
             camera.update();

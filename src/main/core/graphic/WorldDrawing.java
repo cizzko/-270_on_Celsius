@@ -2,7 +2,7 @@ package core.graphic;
 
 import core.Global;
 import core.Window;
-import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.content.blocks.Block;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.content.blocks.data.TileData;
 import core.content.entity.DrawComponent;
@@ -98,7 +98,7 @@ public final class WorldDrawing {
         }
     }
 
-    private static void drawDamage(StaticObjectsConst obj, int hp, int bx, int by) {
+    private static void drawDamage(Block obj, int hp, int bx, int by) {
         if (hp > obj.maxHp / 1.5f) {
             // ???
         } else if (hp < obj.maxHp / 3) {
@@ -273,7 +273,7 @@ public final class WorldDrawing {
 
         }
 
-        private void drawBlock(int x, int y, StaticObjectsConst obj, int hp) {
+        private void drawBlock(int x, int y, Block obj, int hp) {
             if (world.getData(x, y) instanceof TileData.MultiblockPart part) {
                 drawDamage(obj, hp, x, y);
                 // TODO drawPart ?
@@ -282,7 +282,7 @@ public final class WorldDrawing {
             }
         }
 
-        private void drawBlock0(int x, int y, StaticObjectsConst obj, int hp) {
+        private void drawBlock0(int x, int y, Block obj, int hp) {
             Color color = colorFor(x, y);
 
             StackfulRender.draw(obj.texture, color.rgba8888(), x, y, obj.tileCountX, obj.tileCountY);
@@ -390,7 +390,7 @@ public final class WorldDrawing {
     public static void drawEntities() {
         camera.getBoundsTo(viewport);
         var hitbox = TmpShapes.r1;
-        for (var ent : entityPool.entities().values()) {
+        entityPool.entities().values().forEach(ent -> {
             if (ent instanceof DrawComponent d) {
                 ent.getHitboxTo(hitbox);
 
@@ -421,7 +421,7 @@ public final class WorldDrawing {
                     }
                 }
             }
-        }
+        });
     }
     // endregion
 }

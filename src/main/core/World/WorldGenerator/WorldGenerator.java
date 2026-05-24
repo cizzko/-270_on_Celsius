@@ -3,8 +3,8 @@ package core.World.WorldGenerator;
 import core.*;
 import core.UI.menu.CreatePlanet;
 import core.World.PerlinNoiseGenerator;
-import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.World.StaticWorldObjects.StaticObjectsConst.Type;
+import core.content.blocks.Block;
+import core.content.blocks.Block.Type;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.graphic.ShadowMap;
 import core.World.World;
@@ -515,7 +515,7 @@ public class WorldGenerator {
     }
 
     private static void generateDecorStones(World world) {
-        var smallStone = Global.content.getConstById("smallStone");
+        var smallStone = Global.content.blockById("smallStone");
         float chance = 40;
 
         for (int x = 0; x < world.sizeX; x++) {
@@ -560,7 +560,7 @@ public class WorldGenerator {
                     int yStruct = findFreeVerticalCell(x + (i * distance));
 
                     if (xStruct > 0 && yStruct > 0 && xStruct < forests.length) {
-                        StaticObjectsConst object = Global.content.getConstById(name);
+                        Block object = Global.content.blockById(name);
                         world.set(xStruct, yStruct, object, true);
                     }
                 }
@@ -573,7 +573,7 @@ public class WorldGenerator {
             return -1;
         }
         for (int y = 0; y < world.sizeY; y++) {
-            StaticObjectsConst block = world.getBlock(x, y);
+            Block block = world.getBlock(x, y);
 
             if (block == null || block.type == Type.GAS) {
                 return y;
@@ -584,7 +584,7 @@ public class WorldGenerator {
 
     private static void generateResources() {
         //вынес для удобства
-        StaticObjectsConst obj = Global.content.getConstById("aluminium");
+        Block obj = Global.content.blockById("aluminium");
 
         for (int i = 0; i < Math.random() * ((world.sizeX + world.sizeY) / 100f); i++) {
 

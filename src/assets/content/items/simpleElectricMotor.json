@@ -1,5 +1,4 @@
 {
-  "Id": "simpleElectricMotor",
   "ClassType": "item",
   "Texture": "textures/items/simpleElectricMotor"
 }

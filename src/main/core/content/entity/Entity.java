@@ -6,7 +6,7 @@ import static core.Global.entityPool;
 
 public interface Entity extends HitboxComponent {
 
-    short getId();
+    short id();
     void setId(int id);
 
     /** Вызывается при создании сущности на координатах */
@@ -19,5 +19,5 @@ public interface Entity extends HitboxComponent {
         entityPool.releaseId(this);
     }
 
-    default boolean isRemoved() { return entityPool.getEntity(getId()) == null; }
+    default boolean isRemoved() { return entityPool.getEntity(id()) == null; }
 }

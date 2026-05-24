@@ -2,7 +2,7 @@ package core.graphic;
 
 import core.GameState;
 import core.UI.Styles;
-import core.World.StaticWorldObjects.StaticObjectsConst.Type;
+import core.content.blocks.Block.Type;
 import core.content.entity.CreatureEntity;
 import core.content.entity.Hitbox;
 

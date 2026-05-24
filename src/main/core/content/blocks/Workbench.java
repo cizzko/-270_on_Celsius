@@ -1,11 +1,10 @@
 package core.content.blocks;
 
 import core.content.ContentLoader;
-import core.World.StaticWorldObjects.StaticObjectsConst;
 
 import java.util.Locale;
 
-public class Workbench extends StaticObjectsConst {
+public class Workbench extends Block {
 
     public Tier tier;
 

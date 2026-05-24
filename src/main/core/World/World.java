@@ -16,7 +16,7 @@ import core.Application;
 import core.Constants;
 import core.GameState;
 import core.Global;
-import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.content.blocks.Block;
 import core.graphic.ShadowMap;
 import core.World.WorldGenerator.Biomes;
 import core.content.blocks.data.TileData;
@@ -180,9 +180,9 @@ public final class World {
         set(x, y, null, false);
     }
 
-    public void set(int x, int y, @Nullable StaticObjectsConst object, boolean followingRules) {
+    public void set(int x, int y, @Nullable Block object, boolean followingRules) {
         if (object == null)
-            object = StaticObjectsConst.AIR;
+            object = Block.AIR;
 
         setImpls(x, y, object, followingRules);
 
@@ -195,7 +195,7 @@ public final class World {
         }
     }
 
-    public void copyFromTo(int fromX, int fromY, int toX, int toY, StaticObjectsConst object, boolean followingRules) {
+    public void copyFromTo(int fromX, int fromY, int toX, int toY, Block object, boolean followingRules) {
         setImpls(toX, toY, object, followingRules);
         setHp(toX, toY, getHp(fromX, fromY));
         var fromData = getData(fromX, fromY);
@@ -248,8 +248,8 @@ public final class World {
         return biomes[x];
     }
 
-    /// @return {@code null} в случае выхода за границу. Если это воздух, то возвращается {@link StaticObjectsConst#AIR}
-    public StaticObjectsConst getBlock(int x, int y) {
+    /// @return {@code null} в случае выхода за границу. Если это воздух, то возвращается {@link Block#AIR}
+    public Block getBlock(int x, int y) {
         // Global.app.ensureMainThread();
         if (!inBounds(x, y)) {
             return null;
@@ -258,7 +258,7 @@ public final class World {
         return Global.content.blocksRegistry.typeById(blockId);
     }
 
-    public StaticObjectsConst getBlock(Point2i pos) { return getBlock(pos.x, pos.y); }
+    public Block getBlock(Point2i pos) { return getBlock(pos.x, pos.y); }
 
     /// @return {@code -1} в случае выхода за границу. В остальных случаях здоровье в отрезке `[0, 255]`
     public int getHp(int x, int y) {
@@ -304,9 +304,9 @@ public final class World {
     public int index2x(int index)      { return index % sizeX; }
     public int index2y(int index)      { return index / sizeX; }
 
-    private void setImpls(int x, int y, StaticObjectsConst object, boolean followingRules) {
+    private void setImpls(int x, int y, Block object, boolean followingRules) {
         destroyBlock(x, y);
-        if (object == StaticObjectsConst.AIR) {
+        if (object == Block.AIR) {
             return;
         }
 
@@ -353,7 +353,7 @@ public final class World {
         }
     }
 
-    private void setImpl(int x, int y, StaticObjectsConst block, boolean followingRules) {
+    private void setImpl(int x, int y, Block block, boolean followingRules) {
         if (!followingRules || checkPlaceRules(x, y, block)) {
             tiles[pos2index(x, y)] = (short) Global.content.blocksRegistry.idByType(block);
         }
@@ -391,9 +391,9 @@ public final class World {
         return null;
     }
 
-    public boolean checkPlaceRules(int x, int y, StaticObjectsConst root) {
+    public boolean checkPlaceRules(int x, int y, Block root) {
         var currentBlock = getBlock(x, y);
-        if (currentBlock != StaticObjectsConst.AIR) {
+        if (currentBlock != Block.AIR) {
             return false;
         }
 
@@ -402,7 +402,7 @@ public final class World {
             for (int xBlock = 0; xBlock < root.tileCountX; xBlock++) {
                 var underBlock = getBlock(x + xBlock, y - 1);
 
-                if (underBlock == null || underBlock.type != StaticObjectsConst.Type.SOLID) {
+                if (underBlock == null || underBlock.type != Block.Type.SOLID) {
                     return false;
                 }
             }
@@ -417,12 +417,12 @@ public final class World {
                 }
             }
 
-            if (root.type == StaticObjectsConst.Type.SOLID) {
+            if (root.type == Block.Type.SOLID) {
                 boolean anyCollision = Global.entityPool.worldIndex().any(x, y, root.tileCountX, root.tileCountY);
                 return !anyCollision;
             }
         } else {
-            if (root.type == StaticObjectsConst.Type.SOLID) {
+            if (root.type == Block.Type.SOLID) {
                 boolean anyCollision = Global.entityPool.worldIndex().any(x, y, root.tileCountX, root.tileCountY);
                 if (anyCollision) {
                     return false;
@@ -432,7 +432,7 @@ public final class World {
             // рядышком есть твёрдый блок
             for (Point2i d : MathUtil.CROSS_OFFSETS) {
                 var block = getBlock(x + d.x, y + d.y);
-                if (block == null || block.type == StaticObjectsConst.Type.SOLID) {
+                if (block == null || block.type == Block.Type.SOLID) {
                     return true;
                 }
             }

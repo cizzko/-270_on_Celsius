@@ -1,5 +1,4 @@
 {
-  "Id": "snow",
   "ClassType": "block",
   "Resistance": 95,
   "Texture": "textures/blocks/snow",
