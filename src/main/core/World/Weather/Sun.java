@@ -9,8 +9,10 @@ import core.g2d.StackfulRender;
 import core.g2d.Texture;
 import core.util.Color;
 
+import static core.Constants.World.COPY_SIZE;
 import static core.Global.player;
 import static core.Global.world;
+import static core.World.Textures.TextureDrawing.blockSize;
 import static core.math.MathUtil.lerp;
 
 public class Sun extends GameObject {
@@ -35,17 +37,16 @@ public class Sun extends GameObject {
 
     public void update() {
         float blockSize = TextureDrawing.blockSize;
-        float totalWorldWidth = world.sizeX * blockSize;
+        float effectiveWorldWidth = (world.sizeX - COPY_SIZE) * blockSize;
 
         globalTime += Time.delta * TIME_SPEED;
-        if (globalTime >= totalWorldWidth) {
-            globalTime -= totalWorldWidth;
+        if (globalTime >= effectiveWorldWidth) {
+            globalTime -= effectiveWorldWidth;
         } else if (globalTime < 0) {
-            globalTime += totalWorldWidth;
+            globalTime += effectiveWorldWidth;
         }
 
         this.currentTime = getTimeAtWorldX(player.x());
-
         float timeFactor = this.currentTime / 1200f;
 
         float nightY = -2000f;
@@ -64,35 +65,23 @@ public class Sun extends GameObject {
         updateNightBackground();
     }
 
-    public static float getTimeAtWorldX(int worldBlockX) {
-        float blockSize = TextureDrawing.blockSize;
-        float totalWorldWidth = world.sizeX * blockSize;
-
-        float worldPixelX = worldBlockX * blockSize;
+    private static float calculateTime(float worldPixelX) {
+        float effectiveWidth = (world.sizeX - COPY_SIZE) * blockSize;
         float deltaX = globalTime - worldPixelX;
 
-        double angleRad = (deltaX / totalWorldWidth) * 2.0 * Math.PI;
-        float cosFactor = (float) Math.cos(angleRad);
-
+        double angle = (deltaX / effectiveWidth) * 2.0 * Math.PI;
+        float cosFactor = (float) Math.cos(angle);
         float angleFactor = (float) (Math.acos(cosFactor) / Math.PI);
-        float distanceFactor = 1.0f - angleFactor;
 
-        return distanceFactor * 1200f;
+        return (1.0f - angleFactor) * 1200f;
+    }
+
+    public static float getTimeAtWorldX(int worldBlockX) {
+        return calculateTime(worldBlockX * blockSize);
     }
 
     public static float getTimeAtWorldX(float worldPixelX) {
-        float blockSize = TextureDrawing.blockSize;
-        float totalWorldWidth = world.sizeX * blockSize;
-
-        float deltaX = globalTime - worldPixelX;
-
-        double angleRad = (deltaX / totalWorldWidth) * 2.0 * Math.PI;
-        float cosFactor = (float) Math.cos(angleRad);
-
-        float angleFactor = (float) (Math.acos(cosFactor) / Math.PI);
-        float distanceFactor = 1.0f - angleFactor;
-
-        return distanceFactor * 1200f;
+        return calculateTime(worldPixelX);
     }
 
     //todo докалибровать

@@ -59,8 +59,8 @@ public class WorldGenerator {
 
         gameScene.addPreload(playGameScene);
 
+        log("generating relief " + (System.currentTimeMillis() - startTime) + "ms");
         if (!simple) {
-            log("generating relief " + (System.currentTimeMillis() - startTime) + "ms");
             CompletableFuture.runAsync(() -> generateRelief(world))
                     .thenCompose(__ -> {
                         log("generating environment " + (System.currentTimeMillis() - startTime) + "ms");
@@ -98,7 +98,6 @@ public class WorldGenerator {
                         }
                     });
         } else {
-            log("generating relief " + (System.currentTimeMillis() - startTime) + "ms");
             CompletableFuture.runAsync(() -> generateFlatWorld(world))
                     .thenRun(() -> {
                         log("regenerating shadow map " + (System.currentTimeMillis() - startTime) + "ms");
