@@ -1,6 +1,6 @@
 package core.g2d;
 
-import it.unimi.dsi.fastutil.chars.Char2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.chars.Char2ObjectOpenHashMap;
 
 public final class Font {
     public static final int fontSize = 18;
@@ -9,13 +9,13 @@ public final class Font {
     static final int PIXEL_GAP = 1;
 
     Texture texture;
-    Glyph[] glyphTable;
+    Char2ObjectOpenHashMap<Glyph> glyphTable;
     Glyph unknownGlyph;
 
     Font() {}
 
     public Glyph getGlyph(char ch) {
-        return glyphTable[ch];
+        return glyphTable.get(ch);
     }
 
     public Texture texture() {
@@ -23,46 +23,24 @@ public final class Font {
     }
 
     public static final class Glyph implements Drawable {
-        private final Font font;
-        private final char ch;
+        private final short fontTexId;
         private final byte width, height;
+        private final short u, v, u2, v2;
 
-        short x, y;
-        private short u, v, u2, v2;
-
-        public Glyph(Font font, char ch,
-                     byte width, byte height) {
-            this.font = font;
-            this.ch = ch;
+        public Glyph(Font font, byte width, byte height, short x, short y) {
+            Texture tex = font.texture;
+            this.fontTexId = tex.glHandle;
             this.width = width;
             this.height = height;
-        }
 
-        void computeTextureCoordinates() {
-            this.u  = BytePack.toB16((x + 0.5f) / font.texture.width());
-            this.v  = BytePack.toB16((y + 0.5f) / font.texture.height());
-            this.u2 = BytePack.toB16((1f * x + width) / font.texture.width());
-            this.v2 = BytePack.toB16((1f * y + height) / font.texture.height());
+            this.u  = BytePack.toB16((x + 0.5f) / tex.width());
+            this.v  = BytePack.toB16((y + 0.5f) / tex.height());
+            this.u2 = BytePack.toB16((1f * x + width) / tex.width());
+            this.v2 = BytePack.toB16((1f * y + height) / tex.height());
         }
 
         @Override
-        public short id() { return font.texture.id(); }
-
-        public Font font() {
-            return font;
-        }
-
-        public char ch() {
-            return ch;
-        } // TODO должно быть в идеале codepoint
-
-        public int x() {
-            return Short.toUnsignedInt(x);
-        }
-
-        public int y() {
-            return Short.toUnsignedInt(y);
-        }
+        public short id() { return fontTexId; }
 
         @Override
         public int width() { return Byte.toUnsignedInt(width); }
@@ -92,7 +70,7 @@ public final class Font {
 
         @Override
         public String toString() {
-            return "Glyph{'" + ch + "'}";
+            return "Glyph{glHandle=" + fontTexId + "}";
         }
     }
 }

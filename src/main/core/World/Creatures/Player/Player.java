@@ -25,8 +25,6 @@ public class Player {
 
     private static int transparencyHPline = Config.getBoolean("AlwaysOnPlayerHPLine") ? 220 : 0;
 
-    public static float lastDamage = 0;
-    public static long lastDamageTime = System.currentTimeMillis();
     private static long
             lastChangeTransparency = System.currentTimeMillis(),
             lastChangeLengthDamage = System.currentTimeMillis(),
@@ -142,15 +140,15 @@ public class Player {
                 transparencyHPline--;
             }
         }
-        if (lastDamage > 0) {
+        if (player.lastDamage > 0) {
             transparencyHPline = 220;
         }
 
-        if (lastDamage > 0 && nowTime - lastChangeLengthDamage >= 15 && nowTime - lastDamageTime >= 700) {
+        if (player.lastDamage > 0 && nowTime - lastChangeLengthDamage >= 15 && nowTime - player.lastDamageTime >= 700) {
             lastChangeLengthDamage = nowTime;
-            lastDamage--;
+            player.lastDamage--;
 
-            if (lastDamage == 0) {
+            if (player.lastDamage == 0) {
                 timeFromZero = System.currentTimeMillis();
             }
         }
@@ -166,9 +164,9 @@ public class Player {
                 Fill.rect(31, 31, Math.max(0, currentHp * 2 - 2), 33, Color.rgba8888(150, 0, 20, transparencyHPline));
             }
 
-            if (lastDamage > 0) {
+            if (player.lastDamage > 0) {
                 //желтая полоска дамага
-                Fill.rect(31 + currentHp * 2 - 2, 31, Math.clamp(lastDamage * 2, 0, 200), 33, Color.rgba8888(252, 161, 3, transparencyHPline));
+                Fill.rect(31 + currentHp * 2 - 2, 31, Math.clamp(player.lastDamage * 2, 0, 200), 33, Color.rgba8888(252, 161, 3, transparencyHPline));
             }
         }
     }

@@ -11,7 +11,7 @@ import java.util.*;
 import static core.Global.lang;
 
 public final class LangTranslation {
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LogManager.getLogger("Lang");
 
     public static final String TRANSLATE_JSONC = "langs/Translate.jsonc";
     private static final String REFERENCE_LOCALE = "en";
@@ -75,6 +75,7 @@ public final class LangTranslation {
     public String get(String key) {
         String val = map.get(key);
         if (val == null) {
+            map.put(key, key);
             log.warn("[Lang] Lang: '{}', key: '{}' not found", language, key);
             return key;
         }

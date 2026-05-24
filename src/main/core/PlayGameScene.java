@@ -110,6 +110,9 @@ public final class PlayGameScene extends GameScene {
         WorldDrawing.resetState();
     }
 
+    public static final float CAMERA_OFFSET_X = toWorld(32f);
+    public static final float CAMERA_OFFSET_Y = toWorld(200f);
+
     public static void updateCamera() {
         if (player.isDead()) {
             return;
@@ -117,15 +120,13 @@ public final class PlayGameScene extends GameScene {
 
         camera.updateLastPosition();
 
-        float ox = toWorld(32f);
-        float oy = toWorld(200f);
         if (smoothedCamera) {
             float base = 0.08f * Math.max(1, player.velocity().len() / 4f);
             base = Math.min(1f, base);
             float alpha = 1 - (float)Math.pow(1 - base, Time.delta);
-            camera.position.lerp(player.x() + ox, player.y() + oy, alpha);
+            camera.position.lerp(player.x() + CAMERA_OFFSET_X, player.y() + CAMERA_OFFSET_Y, alpha);
         } else {
-            camera.position.set(player.x() + ox, player.y() + oy);
+            camera.position.set(player.x() + CAMERA_OFFSET_Y, player.y() + CAMERA_OFFSET_Y);
         }
 
         camera.update();

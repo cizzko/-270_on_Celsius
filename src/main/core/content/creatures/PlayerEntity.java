@@ -3,6 +3,8 @@ package core.content.creatures;
 import core.Global;
 import core.Time;
 import core.World.Creatures.Physics;
+import core.World.Creatures.Player.Inventory.Inventory;
+import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
 import core.World.WorldUtils;
 import core.WorldCoordinates;
 import core.content.ItemGrid;
@@ -17,6 +19,8 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 
 import static core.Global.*;
+import static core.PlayGameScene.CAMERA_OFFSET_X;
+import static core.PlayGameScene.CAMERA_OFFSET_Y;
 import static core.World.Creatures.Physics.WEIGHT_FACTOR;
 import static core.World.Creatures.Player.Player.*;
 import static core.WorldCoordinates.*;
@@ -32,6 +36,9 @@ public class PlayerEntity
 
     private float jumpedTicks; // откат прыжка
     private final ObjectArrayList<ObjectArrayList<@Nullable ItemStack>> items;
+
+    public float lastDamage = 0;
+    public long lastDamageTime = 0;
 
     protected PlayerEntity(PlayerType creature) {
         super(creature);
@@ -66,6 +73,8 @@ public class PlayerEntity
 
         scheduler.post(() -> {
             Global.player = WorldUtils.spawn(creature, true);
+            camera.position.set(player.x() + CAMERA_OFFSET_X, player.y() + CAMERA_OFFSET_Y);
+            camera.update();
         }, Time.ONE_SECOND * 5);
     }
 
@@ -78,6 +87,9 @@ public class PlayerEntity
 
         if (input.justPressed(GLFW_KEY_Q)) {
             player.resetItemInHand();
+        }
+        if (input.justPressed(GLFW_KEY_B)) {
+            WorkbenchLogic.toggleBuildMenu();
         }
 
         float speed = noClip ? 2f : 1.65f;
@@ -102,7 +114,9 @@ public class PlayerEntity
         }
 
         if (jumpedTicks > 0) {
-            jumpedTicks = Math.max(jumpedTicks - Time.delta, 0);
+            jumpedTicks -= Time.delta;
+            if (jumpedTicks < 0)
+                jumpedTicks = 0;
         } else {
             if (hasFloor() && Math.abs(velocity.y) <= GAP && input.pressed(GLFW_KEY_SPACE)) {
                 tmp.y += (float)Math.sqrt(2 * Physics.GRAVITY * (getWeight() * WEIGHT_FACTOR) * 1.5f);

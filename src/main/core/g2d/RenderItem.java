@@ -25,6 +25,7 @@ public final class RenderItem implements Poolable {
     public String toString() {
         return "RenderItem{" +
                "sortKey=" + Long.toUnsignedString(sortKey, 16) +
+               ", primitiveType=" + Render.getPrimitiveType(sortKey) +
                ", layer=" + Render.getLayer(sortKey) +
                ", blending=" + Render.getBlending(sortKey) +
                ", textureId=" + Render.getTextureId(sortKey) +

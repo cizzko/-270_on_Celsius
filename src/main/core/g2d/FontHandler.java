@@ -5,22 +5,18 @@ import core.assets.AssetReleaser;
 import core.assets.AssetResolver;
 import core.graphic.RectanglePacker;
 import core.math.MathUtil;
-import it.unimi.dsi.fastutil.chars.Char2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.chars.Char2ObjectOpenHashMap;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Future;
 
 import static core.g2d.Font.PIXEL_GAP;
 import static core.g2d.Font.fontSize;
 import static core.math.MathUtil.toByteExact;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_S;
-import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_T;
 import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
 
 public final class FontHandler extends AssetHandler<Font, Void, FontHandler.State> {
@@ -45,8 +41,6 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
             awtFont = awtFont.deriveFont(java.awt.Font.PLAIN, (float) (fontSize * Toolkit.getDefaultToolkit().getScreenResolution() / 72.0));
 
             Font fnt = new Font();
-            // TODO параметр tableSize
-            var glyphTable = new Font.Glyph[Character.MAX_VALUE];
 
             BufferedImage tmp = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
             Graphics2D tmpg = tmp.createGraphics();
@@ -58,8 +52,6 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
             }
             FontMetrics metrics = tmpg.getFontMetrics();
 
-            record GlyphAndImage(Font.Glyph glyph, BufferedImage image) {}
-
             // TODO:
             // Мне не понравилось работать с java.awt.Font
             // Совершенно нет идей как делать отрисовку глифов других параметров (italic, bold, другой размер и т.д.)
@@ -70,7 +62,7 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
 
             RectanglePacker packer = new RectanglePacker(64, 64);
 
-            ArrayList<GlyphAndImage> glyphs = new ArrayList<>();
+            ArrayList<GlyphPacked> glyphs = new ArrayList<>();
 
             int guessedHeight = metrics.getHeight();
             for (char c = Character.MIN_VALUE; c < Character.MAX_VALUE; c++) {
@@ -91,46 +83,46 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
                 g2.drawString(Character.toString(c), 0, metrics.getAscent());
                 g2.dispose();
 
-                byte width = toByteExact(image.getWidth());
-                byte height = toByteExact(image.getHeight());
-                Font.Glyph glyph = new Font.Glyph(fnt, c, width, height);
-
-                glyphs.add(new GlyphAndImage(glyph, image));
-                glyphTable[c] = glyph;
+                glyphs.add(new GlyphPacked(c, image));
             }
 
-            System.out.println("glyphs.size() = " + glyphs.size());
-
-            for (GlyphAndImage image : glyphs) {
-                Font.Glyph gl = image.glyph;
+            for (var packed : glyphs) {
 
                 RectanglePacker.Position pos;
-                while ((pos = packer.pack(gl.width(), gl.height(), PIXEL_GAP)).isInvalid()) {
-                    boolean increaseW = packer.w <= packer.h;
-                    // if (packer.w >= maxTexSize && increaseW) {
-                    //     throw new IllegalArgumentException();
-                    // }
-                    if (increaseW) {
+                while ((pos = packer.pack(packed.w, packed.h, PIXEL_GAP)).isInvalid()) {
+                    if (packer.w <= packer.h) {
                         packer.resize(MathUtil.ceilNextPowerOfTwo(packer.w + 1), packer.h);
                     } else {
                         packer.resize(packer.w, MathUtil.ceilNextPowerOfTwo(packer.h + 1));
                     }
                 }
-                gl.x = MathUtil.toShortExact(pos.x);
-                gl.y = MathUtil.toShortExact(pos.y);
+                packed.x = MathUtil.toShortExact(pos.x);
+                packed.y = MathUtil.toShortExact(pos.y);
             }
 
             BufferedImage atlasImage = new BufferedImage(packer.w, packer.h, BufferedImage.TYPE_INT_ARGB);
             Graphics2D gr = atlasImage.createGraphics();
-            for (GlyphAndImage p : glyphs) {
-                Font.Glyph gl = p.glyph;
-                gr.drawImage(p.image, gl.x, gl.y, null);
+            for (var p : glyphs) {
+                gr.drawImage(p.image, p.x, p.y, null);
             }
             gr.dispose();
 
-            // Копирование необходимо, чтобы ужать хеш-таблицу до оптимального размера
-            return new FontData(fnt, atlasImage, glyphTable);
+            return new FontData(fnt, atlasImage, glyphs);
         });
+    }
+
+    static final class GlyphPacked {
+        BufferedImage image;
+        short x, y;
+        byte w, h;
+        char ch;
+
+        GlyphPacked(char ch, BufferedImage image) {
+            this.ch = ch;
+            this.image = image;
+            this.w = toByteExact(image.getWidth());
+            this.h = toByteExact(image.getHeight());
+        }
     }
 
     @Override
@@ -141,18 +133,17 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
         var fnt = glyphData.fnt;
         fnt.texture = Texture.load(glyphData.atlas, GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, (short) 0, (short) 0, (short) 1, (short) 1);
 
-        Font.Glyph[] glyphTable = glyphData.glyphTable;
-        fnt.glyphTable = glyphTable;
-        Font.Glyph unknownGlyph = glyphTable['?'];
-        fnt.unknownGlyph = unknownGlyph;
-        for (int i = 0; i < glyphTable.length; i++) {
-            Font.Glyph glyph = glyphTable[i];
-            if (glyph == null) {
-                glyphTable[i] = unknownGlyph;
-            } else {
-                glyph.computeTextureCoordinates();
-            }
+        var glyphs = glyphData.glyphs;
+        var glyphTable = new Char2ObjectOpenHashMap<Font.Glyph>(glyphs.size());
+        for (GlyphPacked glyph : glyphs) {
+            glyphTable.put(glyph.ch, new Font.Glyph(fnt, glyph.w, glyph.h, glyph.x, glyph.y));
         }
+        glyphTable.trim();
+
+        fnt.glyphTable = glyphTable;
+        Font.Glyph unknownGlyph = glyphTable.get('?');
+        glyphTable.defaultReturnValue(unknownGlyph);
+        fnt.unknownGlyph = unknownGlyph;
         return fnt;
     }
 
@@ -170,7 +161,7 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
         private Future<FontData> texture;
     }
 
-    public record FontData(Font fnt, BufferedImage atlas, Font.Glyph[] glyphTable) {
+    public record FontData(Font fnt, BufferedImage atlas, ArrayList<GlyphPacked> glyphs) {
 
     }
 }

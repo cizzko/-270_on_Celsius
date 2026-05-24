@@ -53,23 +53,23 @@ public class WorkbenchLogic {
 
         if (EventHandler.isMouseClickedIn(menuXPos + 8, 580, menuXPos + 54, 626)) {
             //todo некрасиво
-            currentObject = null;
+            resetObject();
             current = 0;
         }
         if (!nearbyWorkbench.isEmpty()) {
             if (EventHandler.isMouseClickedIn(menuXPos + 8, 634, menuXPos + 54, 682) &&
                 nearbyWorkbench.containsKey(Workbench.Tier.LARGE)) {
-                currentObject = null;
+                resetObject();
                 current = 1;
             }
             if (EventHandler.isMouseClickedIn(menuXPos + 8, 688, menuXPos + 54, 734) &&
                 nearbyWorkbench.containsKey(Workbench.Tier.MEDIUM)) {
-                currentObject = null;
+                resetObject();
                 current = 2;
             }
             if (EventHandler.isMouseClickedIn(menuXPos + 8, 742, menuXPos + 54, 788) &&
                 nearbyWorkbench.containsKey(Workbench.Tier.SMALL)) {
-                currentObject = null;
+                resetObject();
                 current = 3;
             }
         }
@@ -95,18 +95,18 @@ public class WorkbenchLogic {
                 int x = i % IN_ROW;
 
                 float xCoord = menuXPos + 70 + x * 54;
-                //float yCoord = 57 + scroll + (smallWorkbenchItems[x][y].type.ordinal() * 20) + y * 54f;
-                float yCoord = 1000 + scroll + (y * 54f);
+                float yCoord = 1000 + scroll - (y * 54f);
 
-                if (yCoord < 755) {
+                if (yCoord < 755)
+                {
                     GuiDrawing.drawItem(xCoord, yCoord, currentWorkbench.get(i));
 
-                    if (EventHandler.isMouseClickedIn((int) xCoord, (int) yCoord, (int) (xCoord + 46), (int) (yCoord + 46))) {
+                    if (EventHandler.isMouseClickedIn(xCoord, yCoord, xCoord + 46, yCoord + 46)) {
                         currentObject = new Point2i(x, y);
                         currentObjectIdx = i;
                     }
                 }
-                if (x == 0) {
+                if (x == 0 && i > 0) {
                     y++;
                 }
             }
@@ -122,6 +122,11 @@ public class WorkbenchLogic {
             //Color color = Color.fromRgba8888(0, 0, 0, 200);
             //Fill.rect(1915, (int) Math.abs(scroll / 2f) - 5, 4, 20, color);
         }
+    }
+
+    private static void resetObject() {
+        currentObject = null;
+        currentObjectIdx = -1;
     }
 
     private static List<Item> getCurrentItems() {
