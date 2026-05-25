@@ -2,15 +2,15 @@ package core.World.Creatures.Player.WorkbenchMenu;
 
 import core.EventHandling.EventHandler;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.content.items.Item;
-import core.content.items.ItemBlock;
-import core.graphic.GuiDrawing;
 import core.content.blocks.Factory;
 import core.content.blocks.Workbench;
-import core.g2d.StackfulRender;
+import core.content.items.Item;
+import core.content.items.ItemBlock;
 import core.g2d.Fill;
-import core.math.Point2i;
+import core.g2d.StackfulRender;
 import core.graphic.Color;
+import core.graphic.GuiDrawing;
+import core.math.Point2i;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -50,13 +50,19 @@ public class WorkbenchLogic {
     }
 
     public static void draw() {
-
-        if (EventHandler.isMouseClickedIn(menuXPos + 8, 580, menuXPos + 54, 626)) {
-            //todo некрасиво
-            resetObject();
+        //чем дальше в лес иф елс иф елс иф елс
+        if (nearbyWorkbench.isEmpty()) {
+            if (current != 0) {
+                resetObject();
+            }
             current = 0;
-        }
-        if (!nearbyWorkbench.isEmpty()) {
+        } else {
+            //некрасиво
+            if (EventHandler.isMouseClickedIn(menuXPos + 8, 580, menuXPos + 54, 626)) {
+                currentObject = null;
+                resetObject();
+                current = 0;
+            }
             if (EventHandler.isMouseClickedIn(menuXPos + 8, 634, menuXPos + 54, 682) &&
                 nearbyWorkbench.containsKey(Workbench.Tier.LARGE)) {
                 resetObject();
@@ -94,11 +100,10 @@ public class WorkbenchLogic {
             for (int i = 0, y = 0; i < currentWorkbench.size(); i++) {
                 int x = i % IN_ROW;
 
-                float xCoord = menuXPos + 70 + x * 54;
-                float yCoord = 1000 + scroll - (y * 54f);
+                float xCoord = menuXPos + 72 + x * 54;
+                float yCoord = 982 + scroll - (y * 54f);
 
-                if (yCoord < 755)
-                {
+                if (yCoord < 741) {
                     GuiDrawing.drawItem(xCoord, yCoord, currentWorkbench.get(i));
 
                     if (EventHandler.isMouseClickedIn(xCoord, yCoord, xCoord + 46, yCoord + 46)) {
@@ -112,15 +117,16 @@ public class WorkbenchLogic {
             }
 
             //todo описания
-            if (currentObjectIdx != -1) {
+            //todo перенести все в гуи!! но позже
+            if (currentObjectIdx != -1 && 986 + scroll + (currentObject.y * 54) < 741) {
                 GuiDrawing.drawText(menuXPos + 585, 703, currentWorkbench.get(currentObjectIdx).getName());
                 drawRequirements(menuXPos + 590,  648);
-                StackfulRender.draw(atlas.get("UI/GUI/inventory/inventoryCurrent"), menuXPos + 62 + currentObject.x * 54, 986 + scroll + (currentObject.y * 54));
+                StackfulRender.draw(atlas.get("UI/GUI/inventory/inventoryCurrent"), menuXPos + 62 + currentObject.x * 54, 972 + scroll + (currentObject.y * 54));
             }
 
             // scrollbar
-            //Color color = Color.fromRgba8888(0, 0, 0, 200);
-            //Fill.rect(1915, (int) Math.abs(scroll / 2f) - 5, 4, 20, color);
+            Color color = Color.fromRgba8888(0, 0, 0, 200);
+            Fill.rect(1915, (int) Math.abs(scroll / 2f) - 5, 4, 20, color);
         }
     }
 
@@ -167,7 +173,6 @@ public class WorkbenchLogic {
         if (currentObjectIdx == -1) {
             return null;
         }
-
 
         var currentItems = getCurrentItems();
 
