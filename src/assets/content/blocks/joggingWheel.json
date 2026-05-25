@@ -1,10 +1,18 @@
 {
   "Id": "joggingWheel",
   "ClassType": "block",
-  "Resistance": 0,
+  "Resistance": 90,
   "Texture": "textures/blocks/joggingWheel",
-  "Type": "SOLID",
+  "Type": "WALKABLE",
   "MaxHp": 100,
   "Density": 1,
-  "LightTransmission": 80
+  "LightTransmission": 80,
+  "Requirements": {
+    "copperWire": 3,
+    "aluminumPipe": 1,
+    "stick": 10,
+    "simpleElectricMotor": 1,
+    "simpleElectricInsulator": 2
+  },
+  "CreateWith": "workbenchMedium"
 }

@@ -1,0 +1,10 @@
+{
+  "Id": "woodenPlatform",
+  "ClassType": "block",
+  "Resistance": 100,
+  "Texture": "textures/blocks/woodenPlatform",
+  "Type": "SOLID",
+  "MaxHp": 40,
+  "Density": 1,
+  "LightTransmission": 100
+}

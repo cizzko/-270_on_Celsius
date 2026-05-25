@@ -1,0 +1,9 @@
+{
+  "Id": "copperWire",
+  "ClassType": "item",
+  "Texture": "textures/items/copperWire",
+  "Requirements": {
+    "copperIngot": 1
+  },
+  "CreateWith": "workbenchMedium"
+}

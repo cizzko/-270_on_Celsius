@@ -8,8 +8,9 @@
   },
   "MaxHp": 100,
   "Requirements": {
-    "smallStone": 2,
-    "trunk": 1
+    "stoneGear": 2,
+    "trunk": 4,
+    "stick": 2
   },
   "ProductionSpeed": 0.25,
   "NeedEnergy": 0,

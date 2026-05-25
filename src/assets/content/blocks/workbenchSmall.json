@@ -7,7 +7,9 @@
   "MaxHp": 100,
   "Tier": "SMALL",
   "Requirements": {
-    "smallStone": 2
+    "trunk": 4,
+    "stick": 2,
+    "stickRope": 2
   },
   "Density": 1,
   "CreateWith": "player",

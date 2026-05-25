@@ -8,12 +8,12 @@
   },
   "MaxHp": 100,
   "Requirements": {
-    "smallStone": 2
+    "smallStone": 8
   },
   "Fuel": {
     "stick": 2
   },
-  "ProductionSpeed": 200,
+  "ProductionSpeed": 800,
   "CreateWith": "workbenchSmall",
   "MaxStoredObjects": 10,
   "Output": {

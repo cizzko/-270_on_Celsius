@@ -1,0 +1,10 @@
+{
+  "Id": "copper",
+  "ClassType": "block",
+  "Resistance": 100,
+  "Texture": "textures/blocks/copper",
+  "Type": "SOLID",
+  "MaxHp": 100,
+  "Density": 1,
+  "LightTransmission": 80
+}

@@ -1,10 +1,16 @@
 {
   "Id": "electricPole",
   "ClassType": "block",
-  "Resistance": 0,
+  "Resistance": 95,
   "Texture": "textures/blocks/electricPole",
-  "Type": "SOLID",
-  "MaxHp": 70,
+  "Type": "WALKABLE",
+  "MaxHp": 30,
   "Density": 1,
-  "LightTransmission": 100
+  "LightTransmission": 100,
+  "Requirements": {
+    "trunk": 2,
+    "stickRope": 2,
+    "simpleElectricInsulator": 2
+  },
+  "CreateWith": "workbenchMedium"
 }

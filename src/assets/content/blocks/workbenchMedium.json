@@ -7,9 +7,12 @@
   "MaxHp": 100,
   "Tier": "MEDIUM",
   "Requirements": {
-    "smallStone": 2
+    "trunk": 4,
+    "stick": 8,
+    "stickRope": 4,
+    "glassLens": 6
   },
   "Density": 1,
-  "CreateWith": "player",
+  "CreateWith": "workbenchSmall",
   "LightTransmission": 100
 }
