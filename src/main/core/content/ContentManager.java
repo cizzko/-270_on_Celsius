@@ -58,8 +58,8 @@ public final class ContentManager {
             try (var dirstr = Files.newDirectoryStream(source.dir, file -> file.getFileName().toString().endsWith(".json"))) {
                 var index = contentMap.computeIfAbsent(source.type, k -> new HashMap<>());
                 for (Path file : dirstr) {
-                    loader.init(source.type, file);
                     try {
+                        loader.init(source.type, file);
                         var cont = loader.readContent();
                         index.put(cont.id(), cont);
                     } catch (Exception e) {
