@@ -22,13 +22,24 @@ import static core.Global.*;
 import static core.World.Creatures.Player.Player.noClip;
 import static core.WorldCoordinates.*;
 import static core.WorldCoordinates.toWorld;
+import static java.lang.Math.*;
 import static java.lang.Math.abs;
 
 public class Physics {
+    // Для какого веса считались коэффициенты физики. Проверяли на игроке. Меньше весит - меньше влияет вес
     public static final float WEIGHT_FACTOR   = 1f / 80;
-    // 7 блока / секунда² = 7 блока / 60² такт
-    public static final float GRAVITY         = 30f / (float)Math.pow(60, 2);
-    public static final float FRICTION_FACTOR = 1f / 3.85f;
+    // 44 блока / секунда²
+    public static final float GRAVITY         = 2f * 2f / (float)pow(18, 2);
+    public static final float FRICTION_FACTOR = 0.250f;
+    // Ле, куда летишь?
+    public static final float MAX_SPEED = 10000f;
+    // Минимальное смещение, при котором происходит движение. Не вижу смысла сжигать процессор ради меньших значений
+    private static final float MOVE_THRESHOLD = 1e-6f;
+
+    // Скорость, которая набирается при падении ровно с 5 блоков (при GRAVITY = 0.0123f)
+    private static final float FALL_DAMAGE_SPEED_THRESHOLD = 0.35f; // sqrt(2 * GRAVITY * 5)
+    // Множитель, гарантирующий ровно 10 ХП урона при падении с 5 блоков для сущности с массой 1.0
+    private static final float FALL_DAMAGE_MULTIPLIER = 10f / (FALL_DAMAGE_SPEED_THRESHOLD*FALL_DAMAGE_SPEED_THRESHOLD);
 
     public static void updatePhysics(PlayGameScene scene) {
         if (scene.isPaused()) {
@@ -42,6 +53,12 @@ public class Physics {
     static final Rectangle entityHitbox = new Rectangle();
     static final Rectangle blockHitbox = new Rectangle();
     static final Vector2f tmp1 = new Vector2f();
+
+    static final IntOpenHashSet completedCollisions = new IntOpenHashSet();
+
+    static int combine(short a, short b) {
+        return HashCommon.mix(a << 16 | b & 0xffff);
+    }
 
     private static void processCollisions() {
         completedCollisions.clear();
@@ -68,12 +85,6 @@ public class Physics {
                 completedCollisions.add(themColId);
             });
         });
-    }
-
-    static final IntOpenHashSet completedCollisions = new IntOpenHashSet();
-
-    static int combine(short a, short b) {
-        return HashCommon.mix(a << 16 | b & 0xffff);
     }
 
     private static void updateEntities() {
@@ -109,7 +120,7 @@ public class Physics {
             }
         }
 
-        float m = Math.max(penetration, 0.0f);
+        float m = max(penetration, 0.0f);
         return tmp1.scale(-m);
     }
 
@@ -123,6 +134,7 @@ public class Physics {
         int minY = toBlock(entityHitbox.y);
         int maxX = toBlock(entityHitbox.x + entityHitbox.width);
         int maxY = toBlock(entityHitbox.y + entityHitbox.height);
+        boolean collided = false;
 
         for (int y = minY; y <= maxY; y++) {
             for (int x = minX; x <= maxX; x++) {
@@ -136,12 +148,24 @@ public class Physics {
                 }
                 blockHitbox.set(x, y, block.tileCountX, block.tileCountY);
 
-                if (blockHitbox.overlaps(entityHitbox)) {
+                if (blockHitbox.contains(entityHitbox)) {
+                    // TODO при горизонтальных столкновениях сбрасывать скорость / начислять урон
                     var offsetVec = overlap(entityHitbox, blockHitbox);
 
                     entityHitbox.x += offsetVec.x;
                     entityHitbox.y += offsetVec.y;
+                    collided = true;
                 }
+            }
+        }
+
+
+        if (collided) {
+            var vel = entity.velocity();
+            if (abs(deltaX) > 0) {
+                vel.x = 0;
+            } else if (abs(deltaY) > 0) {
+                vel.y = 0;
             }
         }
 
@@ -160,6 +184,18 @@ public class Physics {
 
         // Физика не будет оставаться на главном потоке, но пока это прототип.
 
+        entityPool.entities().values().forEach(ent -> {
+            if (ent instanceof LivingEntity livingEntity) {
+                Vector2f vel = livingEntity.velocity();
+                Vector2f acc = livingEntity.acceleration();
+
+                vel.x += acc.x * Time.delta;
+                vel.y += acc.y * Time.delta;
+
+                acc.set(0, 0);
+            }
+        });
+
         float dt = Time.delta;
         while (dt >= STEPS) {
             simulate(STEPS);
@@ -168,11 +204,6 @@ public class Physics {
 
         simulate(dt);
     }
-
-    // Ле, куда летишь?
-    static final float MAX_SPEED = 10f;
-    // Минимальное смещение, при котором происходит движение. Не вижу смысла сжигать процессор ради меньших значений
-    static final float MOVE_THRESHOLD = 1e-6f;
 
     private static void simulate(float dt) {
         entityPool.entities().values().forEach(ent -> simulateEntity(dt, ent));
@@ -215,21 +246,29 @@ public class Physics {
             vel.y -= (livingEntity.getWeight() * WEIGHT_FACTOR) * GRAVITY * dt;
         }
 
-        float k = calculateFriction(livingEntity);
-        float frictionCoefficient = k * livingEntity.getWeight() * FRICTION_FACTOR;
-        vel.x *= (float) Math.exp(-frictionCoefficient * dt);
+        if (hasFloor) {
+            float k = calculateFriction(livingEntity);
+            float frictionCoefficient = k * livingEntity.getWeight() * WEIGHT_FACTOR * FRICTION_FACTOR;
+            vel.x *= (float) Math.exp(-frictionCoefficient * dt);
+        } else {
+            // TODO по сути это сопротивление в газах (воздух в т.ч.)
+            float k = 1f/8;
+            float drag = k * Math.abs(vel.x) * dt;
+            if (drag > 1) {
+                drag = 1;
+            }
+            vel.x -= vel.x * drag;
+        }
 
         if (abs(vel.x) >= MAX_SPEED) {
-            vel.x = Math.signum(vel.x) * MAX_SPEED;
+            vel.x = signum(vel.x) * MAX_SPEED;
         }
         if (abs(vel.y) >= MAX_SPEED) {
-            vel.y = Math.signum(vel.y) * MAX_SPEED;
+            vel.y = signum(vel.y) * MAX_SPEED;
         }
         move(livingEntity, dt);
 
-        if (Math.abs(vel.x) <= MathUtil.EPSILON) {
-            vel.x = 0;
-        }
+        if (abs(vel.x) <= MathUtil.EPSILON) vel.x = 0;
     }
 
     private static void move(LivingEntity ent, float dt) {
@@ -237,25 +276,21 @@ public class Physics {
         float dx = vel.x * dt;
         float dy = vel.y * dt;
 
-        if (Math.abs(dx) > MOVE_THRESHOLD)
+        if (abs(dx) > MOVE_THRESHOLD)
             moveDelta(ent, dx, 0);
-        if (Math.abs(dy) > MOVE_THRESHOLD) {
+        if (abs(dy) > MOVE_THRESHOLD) {
             moveDelta(ent, 0, dy);
             entityFall(ent);
         }
     }
 
     private static void entityFall(LivingEntity ent) {
-        // С высоты 5 блоков с ускорением свободного падения
-        final float FALL_DAMAGE_SPEED_THRESHOLD = 0.285f;
-        // 10 хп с 5 блоков
-        final float FALL_DAMAGE_MULTIPLIER = 19f / (FALL_DAMAGE_SPEED_THRESHOLD*FALL_DAMAGE_SPEED_THRESHOLD);
 
         var vel = ent.velocity();
         boolean hasFloor = ent.hasFloor();
         if (vel.y < -FALL_DAMAGE_SPEED_THRESHOLD && hasFloor) {
             float impact = (ent.getWeight() * WEIGHT_FACTOR) * (vel.y*vel.y)/2f;
-            int damage = (int) Math.floor(impact * FALL_DAMAGE_MULTIPLIER);
+            int damage = (int) floor(impact * FALL_DAMAGE_MULTIPLIER);
 
             // TODO: Необходимо что-то придумать с распределением урона по площади контакта
             //       Это явно не будет сделано здесь из-за направления обхода и применения урона
@@ -264,14 +299,8 @@ public class Physics {
                 // world.damage(x, y, damage);
             }
         }
-
         if (hasFloor)
             vel.y = 0;
-
-        // if (!MathUtil.equalsEps(vel.y, 0, 1e4f) && ent.hasFloor()) {
-        //     ent.setY((float) Math.floor(ent.y() * 1e4f) / 1e4f);
-        //     ent.setY(toBlock(ent.y()));
-        // }
     }
 
     private static long[] resistanceSet;
@@ -303,7 +332,7 @@ public class Physics {
                         if (!FixedBitset.isSet(resistanceSet, blockId)) {
                             FixedBitset.setBit(resistanceSet, blockId);
 
-                            resistance = Math.max(resistance, block.resistance);
+                            resistance = max(resistance, block.resistance);
                         }
                     }
                 }

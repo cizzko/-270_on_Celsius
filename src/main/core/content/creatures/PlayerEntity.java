@@ -13,15 +13,19 @@ import core.content.ItemStack;
 import core.content.entity.BaseCreatureEntity;
 import core.content.entity.HitboxComponent;
 import core.content.entity.InventoryComponent;
+import core.math.MathUtil;
 import core.math.Point2i;
 import core.math.Vector2f;
 import core.util.Debug;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.concurrent.ThreadLocalRandom;
+
 import static core.Global.*;
 import static core.PlayGameScene.CAMERA_OFFSET_X;
 import static core.PlayGameScene.CAMERA_OFFSET_Y;
+import static core.World.Creatures.Physics.GRAVITY;
 import static core.World.Creatures.Physics.WEIGHT_FACTOR;
 import static core.World.Creatures.Player.Player.*;
 import static core.WorldCoordinates.*;
@@ -32,6 +36,7 @@ public class PlayerEntity
         implements InventoryComponent {
 
     private static final Vector2f tmp = new Vector2f();
+    private static final Vector2f direction = new Vector2f();
 
     public final Point2i itemInHandIdx = new Point2i(), draggingItemIdx = new Point2i();
 
@@ -73,7 +78,7 @@ public class PlayerEntity
         lastDamageTime = 0;
 
         scheduler.post(() -> {
-            if (gameState == GameState.PLAYING) return;
+            if (player != null) return;
             Global.player = WorldUtils.spawn(creature, true);
             camera.position.set(player.x() + CAMERA_OFFSET_X, player.y() + CAMERA_OFFSET_Y);
             camera.update();
@@ -94,9 +99,9 @@ public class PlayerEntity
             WorkbenchLogic.toggleBuildMenu();
         }
 
-        float speed = noClip ? 2f : 1.65f;
+        float speed = noClip ? 2f : (1.25f / Time.ONE_SECOND);
         if (input.pressed(GLFW_KEY_LEFT_SHIFT) || input.pressed(GLFW_KEY_RIGHT_SHIFT)) {
-            speed *= 1.55f;
+            speed *= 1.5f;
         }
 
         if (noClip) {
@@ -106,27 +111,51 @@ public class PlayerEntity
         int xf = input.axis(GLFW_KEY_A, GLFW_KEY_D);
 
         if (!noClip) {
-            tmp.set(xf, 0).scale(speed * Time.delta);
+            direction.set(xf, 0);
         } else {
             velocity.set(0, 0);
 
-            setX(x() + speed * xf);
             int yf = input.axis(GLFW_KEY_S, GLFW_KEY_W);
+            setX(x() + speed * xf);
             setY(y() + speed * yf);
         }
 
+        boolean hasFloor = hasFloor();
         if (jumpedTicks > 0) {
             jumpedTicks -= Time.delta;
             if (jumpedTicks < 0)
                 jumpedTicks = 0;
         } else {
-            if (hasFloor() && Math.abs(velocity.y) <= GAP && input.pressed(GLFW_KEY_SPACE)) {
-                tmp.y += (float)Math.sqrt(2 * Physics.GRAVITY * (getWeight() * WEIGHT_FACTOR) * 1.5f);
-                jumpedTicks = 1 * Math.max(Time.delta, 0.01f);
+            if (hasFloor && Math.abs(velocity.y) <= GAP && input.pressed(GLFW_KEY_SPACE)) {
+                acceleration.y += 18f * GRAVITY;
+                jumpedTicks = 2.5f * Math.max(Time.delta, 0.01f);
             }
         }
 
-        velocity.add(tmp);
+        if (hasFloor) {
+            tmp.set(direction).scale(speed);
+            acceleration.add(tmp);
+        } else if (direction.x != 0) {
+            float wishX = Math.signum(direction.x);
+            float currentSpeedInWishDir = velocity.x * wishX;
+
+            // Лимит воздушной скорости за один кадр.
+            // 95% от обычной скорости
+            float airSpeedCap = 0.95f * speed;
+
+            float d = airSpeedCap - currentSpeedInWishDir;
+            if (d > 0) {
+                // Коэффициент отзывчивости управления в воздухе за кадр.
+                // 0.1f означает, что лимит наберется примерно за 10 кадров.
+                float airAcceleration = 0.45f * speed;
+                if (airAcceleration > d) {
+                    airAcceleration = d;
+                }
+
+                // избегаем накопление скорости при применении ускорения
+                velocity.x += wishX * airAcceleration;
+            }
+        }
 
         Point2i blockPos = Global.input.mouseBlockPos();
         if (world.getBlockId(blockPos) <= 0) {

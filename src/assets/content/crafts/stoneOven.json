@@ -1,0 +1,16 @@
+{
+  "ClassType": "craft",
+  "Entries": [
+    {
+      "Input": {
+        "smallStone": 1
+      },
+      "Fuel": {
+        "stick": 2
+      },
+      "Output": {
+        "trunk": 1
+      }
+    }
+  ]
+}

@@ -86,7 +86,7 @@ public class ContentLoader {
         }
         this.node = node;
         this.id = pathToId(path);
-        if (!node.path("ClassType").isTextual()) {
+        if (!node.required("ClassType").isTextual()) {
             throw malformed("'ClassType' property must be specified as string");
         }
     }

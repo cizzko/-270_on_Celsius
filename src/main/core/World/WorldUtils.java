@@ -57,10 +57,10 @@ public class WorldUtils {
         return spawn0(entity, bx);
     }
 
-    public static void dropItem(ItemStack itemStack, float x, float y) {
+    public static ItemEntity dropItem(ItemStack itemStack, float x, float y) {
         float rx = x + ThreadLocalRandom.current().nextFloat(0.3f, 0.7f);
         float ry = y + ThreadLocalRandom.current().nextFloat(0.1f, 0.5f);
-        spawnItemEntity(itemStack, rx, ry);
+        return spawnItemEntity(itemStack, rx, ry);
     }
 
     public static ItemEntity spawnItemEntity(ItemStack itemStack, float x, float y) {

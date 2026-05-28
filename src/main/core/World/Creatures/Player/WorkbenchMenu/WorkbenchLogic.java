@@ -207,8 +207,9 @@ public class WorkbenchLogic {
         var currentItems = getCurrentItems();
         var stack = currentItems.get(currentObjectIdx);
         if (stack instanceof ItemBlock itemBlock && itemBlock.block instanceof Factory factory) {
-            drawObjects(x, y - 41, factory.input, atlas.get("UI/GUI/buildMenu/factoryIn"));
-            drawObjects(x, y - 82, factory.output, atlas.get("UI/GUI/buildMenu/factoryOut"));
+            // TODO
+            // drawObjects(x, y - 41, factory.input, atlas.get("UI/GUI/buildMenu/factoryIn"));
+            // drawObjects(x, y - 82, factory.output, atlas.get("UI/GUI/buildMenu/factoryOut"));
         }
         drawObjects(x, y, stack.requirements, atlas.get("UI/GUI/buildMenu/build"));
     }

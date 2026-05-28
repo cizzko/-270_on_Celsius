@@ -21,7 +21,10 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
     protected float prevX, prevY;
     protected float hp;
     public boolean hasGravity, isUnbreakable, dead;
+
+    // Блоков / такт
     protected Vector2f velocity = new Vector2f();
+    // Блоков / такт²
     protected Vector2f acceleration = new Vector2f();
 
     protected BaseCreatureEntity(C creature) {
