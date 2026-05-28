@@ -14,7 +14,7 @@
   "ProductionSpeed": 0.25,
   "NeedEnergy": 0,
   "CreateWith": "workbenchSmall",
-  "MaxInputCapacity": 10,
+  "MaxStoredObjects": 10,
   "Output": {
     "smallStone": 1,
     "aluminumPiece": 1
