@@ -104,7 +104,6 @@ public final class ItemStack {
 
     @CheckReturnValue
     public boolean decrement(int d) {
-        assert (count - d) >= 0;
         count = Math.max(0, count - d);
         return count == 0;
     }
@@ -161,6 +160,8 @@ public final class ItemStack {
         }
         return h;
     }
+
+    public ItemStack asCount(int amount) { return new ItemStack(item, amount); }
 
     public static class ItemStackGridSerializer extends StdSerializer<ItemStack[][]> {
 

@@ -171,10 +171,7 @@ public final class Shader implements Disposable {
 
     private int uniformLocation(String name) {
         Uniform uniform = uniforms.get(name);
-        if (uniform == null) {
-            //Render.queue().uniformBuffer().debug();
-        }
-        Objects.requireNonNull(uniform, () -> "Invalid uniform name: '" + name + "' in " + toString());
+        Objects.requireNonNull(uniform, () -> "Invalid uniform name: '" + name + "' in " + this);
         return uniform.position;
     }
 

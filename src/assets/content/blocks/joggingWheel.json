@@ -1,5 +1,4 @@
 {
-  "Id": "joggingWheel",
   "ClassType": "block",
   "Resistance": 90,
   "Texture": "textures/blocks/joggingWheel",

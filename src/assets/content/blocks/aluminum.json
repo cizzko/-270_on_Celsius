@@ -1,5 +1,4 @@
 {
-  "Id": "aluminum",
   "ClassType": "block",
   "Resistance": 100,
   "Texture": "textures/blocks/aluminum",

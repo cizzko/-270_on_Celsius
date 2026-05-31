@@ -1,14 +1,15 @@
 package core.content.strctures;
 
-import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.content.blocks.Block;
 import core.content.ContentLoader;
 import core.content.ContentResolver;
 import core.content.ContentType;
+import core.content.Loadable;
 import core.content.blocks.BlockUnresolved;
 
 import java.util.ArrayList;
 
-public class Structure implements ContentType {
+public class Structure implements ContentType, Loadable {
 
     public final String id;
 
@@ -21,15 +22,15 @@ public class Structure implements ContentType {
     public static class Part implements Comparable<Part> {
         public final int offsetX;
         public final int offsetY;
-        StaticObjectsConst block;
+        Block block;
 
-        public Part(int offsetX, int offsetY, StaticObjectsConst block) {
+        public Part(int offsetX, int offsetY, Block block) {
             this.offsetX = offsetX;
             this.offsetY = offsetY;
             this.block = block;
         }
 
-        public StaticObjectsConst block() {
+        public Block block() {
             return block;
         }
 

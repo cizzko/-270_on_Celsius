@@ -1,5 +1,4 @@
 {
-  "Id": "foliage",
   "ClassType": "block",
   "Resistance": 5,
   "Texture": "textures/blocks/foliage",

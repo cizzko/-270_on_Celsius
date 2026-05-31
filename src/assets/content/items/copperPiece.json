@@ -1,5 +1,4 @@
 {
-  "Id": "copperPiece",
   "ClassType": "item",
   "Texture": "textures/items/copperPiece"
 }

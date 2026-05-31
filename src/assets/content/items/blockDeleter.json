@@ -1,5 +1,4 @@
 {
-  "Id": "blockDeleter",
   "ClassType": "tool",
   "Texture": "UI/GUI/checkMarkFalse",
   "MaxHp": 100,

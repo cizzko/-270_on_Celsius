@@ -1,8 +1,8 @@
 package core.content.entity;
 
-import core.content.creatures.CreatureType;
+import core.content.creatures.Creature;
 
 public interface CreatureEntity extends LivingEntity {
 
-    CreatureType getCreature();
+    Creature getCreature();
 }

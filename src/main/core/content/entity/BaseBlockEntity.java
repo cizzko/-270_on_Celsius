@@ -1,8 +1,8 @@
 package core.content.entity;
 
-import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.content.blocks.Block;
 
-public abstract class BaseBlockEntity<B extends StaticObjectsConst> implements BlockEntity {
+public abstract class BaseBlockEntity<B extends Block> implements BlockEntity {
 
     protected int x, y;
     protected final B block;

@@ -2,7 +2,7 @@ package core.content.creatures;
 
 import core.content.ContentLoader;
 
-public class PlayerType extends CreatureType {
+public class PlayerType extends Creature {
 
     public byte inventoryWidth, inventoryHeight;
 

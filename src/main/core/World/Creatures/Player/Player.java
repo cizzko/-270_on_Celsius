@@ -2,7 +2,7 @@ package core.World.Creatures.Player;
 
 import core.EventHandling.Config;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.StaticWorldObjects.StaticObjectsConst;
+import core.content.blocks.Block;
 import core.graphic.ShadowMap;
 import core.World.WorldUtils;
 import core.content.ItemStack;
@@ -53,13 +53,13 @@ public class Player {
             }
             Point2i pointedBlock = input.mouseBlockPos();
             var block = world.getBlock(pointedBlock);
-            if (block != null && block.type == StaticObjectsConst.Type.GAS && getDistanceToMouse() <= 9) {
+            if (block != null && block.type == Block.Type.GAS && getDistanceToMouse() <= 9) {
                 updatePlaceableBlock(itemBlock.block, pointedBlock.x, pointedBlock.y);
             }
         }
     }
 
-    private static void updatePlaceableBlock(StaticObjectsConst placeable, int blockX, int blockY) {
+    private static void updatePlaceableBlock(Block placeable, int blockX, int blockY) {
         if (!placeRules || world.checkPlaceRules(blockX, blockY, placeable)) {
             player.takeItemFromHand(1);
             world.set(blockX, blockY, placeable, false);
@@ -93,7 +93,7 @@ public class Player {
         }
     }
 
-    private static void updateBlockByTool(int blockX, int blockY, StaticObjectsConst object, ItemTool tool, ItemData.Tool data) {
+    private static void updateBlockByTool(int blockX, int blockY, Block object, ItemTool tool, ItemData.Tool data) {
         int blockId = world.getBlockId(blockX, blockY);
         int hp = world.getHp(blockX, blockY);
 
@@ -110,7 +110,7 @@ public class Player {
                     // трава, камешки
                     // Триггерит физ взаимодействие
                     var block = world.getBlock(blockX, blockY + 1);
-                    if (block != null && block != StaticObjectsConst.AIR && block.maxHp <= 1 && world.damage(blockX, blockY + 1, 1)) {
+                    if (block != null && block != Block.AIR && block.maxHp <= 1 && world.damage(blockX, blockY + 1, 1)) {
                         WorldUtils.dropItem(new ItemStack(content.itemById(block)), blockX, blockY + 1);
                     }
                 }
@@ -120,7 +120,7 @@ public class Player {
         }
     }
 
-    private static void updateMultiblockByTool(int blockX, int blockY, StaticObjectsConst object, ItemTool tool, ItemData.Tool data) {
+    private static void updateMultiblockByTool(int blockX, int blockY, Block object, ItemTool tool, ItemData.Tool data) {
         Point2i p1 = TmpShapes.p1;
         if (world.getRootBlockPosTo(blockX, blockY, p1)) {
             updateBlockByTool(p1.x, p1.y, object, tool, data);

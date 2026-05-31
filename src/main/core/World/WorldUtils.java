@@ -5,9 +5,10 @@ import core.Constants;
 import core.EventHandling.Config;
 import core.Global;
 import core.World.Creatures.Physics;
+import core.World.WorldGenerator.WorldGenerator;
 import core.WorldCoordinates;
 import core.content.ItemStack;
-import core.content.creatures.CreatureType;
+import core.content.creatures.Creature;
 import core.content.creatures.ItemEntity;
 import core.content.entity.CreatureEntity;
 import core.content.strctures.Structure;
@@ -19,7 +20,6 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static core.Constants.World.COPY_SIZE;
 import static core.Global.*;
-import static core.World.World.findTopmostSolidBlock;
 
 public class WorldUtils {
 
@@ -47,7 +47,7 @@ public class WorldUtils {
     }
 
     /// @param spawnRules предохраняет от спавна в потенциально опасном для логики отрезке COPY_SIZE*2
-    public static <E extends CreatureEntity> E spawn(CreatureType entity, boolean spawnRules) {
+    public static <E extends CreatureEntity> E spawn(Creature entity, boolean spawnRules) {
         int bx;
         if (!spawnRules) {
             bx = ThreadLocalRandom.current().nextInt(0, world.sizeX);
@@ -57,14 +57,10 @@ public class WorldUtils {
         return spawn0(entity, bx);
     }
 
-    public static <E extends CreatureEntity> E spawn(CreatureType entity, int x, boolean spawnRules) {
-        return spawn0(entity, x);
-    }
-
-    public static void dropItem(ItemStack itemStack, float x, float y) {
+    public static ItemEntity dropItem(ItemStack itemStack, float x, float y) {
         float rx = x + ThreadLocalRandom.current().nextFloat(0.3f, 0.7f);
         float ry = y + ThreadLocalRandom.current().nextFloat(0.1f, 0.5f);
-        spawnItemEntity(itemStack, rx, ry);
+        return spawnItemEntity(itemStack, rx, ry);
     }
 
     public static ItemEntity spawnItemEntity(ItemStack itemStack, float x, float y) {
@@ -79,11 +75,11 @@ public class WorldUtils {
         return ent;
     }
 
-    private static <E extends CreatureEntity> E spawn0(CreatureType entity, float bx) {
-        float wy = findTopmostSolidBlock(WorldCoordinates.toBlock(bx), 3) + 1;
+    private static <E extends CreatureEntity> E spawn0(Creature entity, float bx) {
+        float wy = WorldGenerator.findTopmostSolidBlock(WorldCoordinates.toBlock(bx), 5) + 1;
 
         if (Physics.checkIntersection(bx, wy, entity.texture)) {
-            Application.log.warn("Unable spawning at: ({}, {})", bx, wy + 1);
+            Application.log.warn("Unable spawning at: ({}, {})", bx, wy);
             return spawn0(entity, bx + 1);
         }
 

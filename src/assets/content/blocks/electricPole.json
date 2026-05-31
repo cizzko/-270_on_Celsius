@@ -1,5 +1,4 @@
 {
-  "Id": "electricPole",
   "ClassType": "block",
   "Resistance": 95,
   "Texture": "textures/blocks/electricPole",

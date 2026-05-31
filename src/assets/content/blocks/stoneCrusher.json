@@ -1,5 +1,4 @@
 {
-  "Id": "stoneCrusher",
   "ClassType": "block",
   "Type": "WALKABLE",
   "Texture": "textures/blocks/stoneCrusher",

@@ -31,8 +31,8 @@ public final class AtlasHandler extends AssetHandler<Atlas, Void, AtlasHandler.S
         state.texture = res.load(Texture.class, name + ATLAS_EXT);
         state.meta = res.fork(() -> {
             ObjectNode meta;
-            try (var reader = Files.newBufferedReader(dir.resolve(name + META_EXT), StandardCharsets.UTF_8)) {
-                meta = (ObjectNode) Config.json.readTree(reader);
+            try (var is = Files.newInputStream(dir.resolve(name + META_EXT))) {
+                meta = (ObjectNode) Config.json.readTree(is);
             }
 
             var atlas = new Atlas();

@@ -3,12 +3,11 @@ package core.content.blocks;
 import core.content.ContentLoader;
 import core.content.ContentResolver;
 import core.content.ItemStack;
-import core.World.StaticWorldObjects.StaticObjectsConst;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
-public class Factory extends StaticObjectsConst {
+public class Factory extends Block {
     public float maxHp;
     public float productionSpeed; // За сколько 1 предмет производится в мс
     public int maxItemCapacity;

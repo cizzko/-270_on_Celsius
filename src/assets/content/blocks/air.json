@@ -1,5 +1,4 @@
 {
-  "Id": "air",
   "ClassType": "block",
   "Texture": "textures/blocks/air",
   "Resistance": 90,

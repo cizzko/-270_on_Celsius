@@ -3,12 +3,12 @@ package core.content;
 import core.math.Rectangle;
 import core.content.entity.Entity;
 import core.util.QuadTree;
-import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;
 import org.jetbrains.annotations.Nullable;
 
 public class EntityPool {
-    private final Int2ObjectAVLTreeMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
+    private final Int2ObjectOpenHashMap<Entity> entities = new Int2ObjectOpenHashMap<>();
     private final QuadTree<Entity> worldIndex = new QuadTree<>(new Rectangle());
     private final IntArrayFIFOQueue freeIds = new IntArrayFIFOQueue();
     private final int maxCreatureCount;
@@ -27,11 +27,11 @@ public class EntityPool {
     }
 
     public void add(Entity ent) {
-        entities.put(ent.getId(), ent);
+        entities.put(ent.id(), ent);
         needIndexRebuild = true;
     }
 
-    public Int2ObjectAVLTreeMap<Entity> entities() { return entities; }
+    public Int2ObjectOpenHashMap<Entity> entities() { return entities; }
 
     public @Nullable Entity getEntity(int id) {
         return entities.get(id);
@@ -39,7 +39,7 @@ public class EntityPool {
 
     public int acquireId() {
         if (freeIds.isEmpty()) {
-            if (idCounter > maxCreatureCount) {
+            if (idCounter >= maxCreatureCount) {
                 throw new IllegalStateException("Maximum number of creatures exceeded");
             }
             return idCounter++;
@@ -55,8 +55,8 @@ public class EntityPool {
     }
 
     public void releaseId(Entity creature) {
-        freeIds.enqueue(creature.getId());
-        entities.remove(creature.getId());
+        freeIds.enqueue(creature.id());
+        entities.remove(creature.id());
         needIndexRebuild = true;
     }
 

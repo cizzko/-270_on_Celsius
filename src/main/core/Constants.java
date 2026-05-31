@@ -25,4 +25,9 @@ public final class Constants {
         для сглаживания перепад высот между ними      */
         public static final int INTERPOLATE_SIZE = 90;
     }
+
+    public static final class Entity {
+        /* Максимальное количество сущности в мире единовременно существующих */
+        public static final int MAX_COUNT = Short.MAX_VALUE;
+    }
 }

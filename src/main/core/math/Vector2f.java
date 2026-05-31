@@ -113,6 +113,11 @@ public final class Vector2f {
                MathUtil.equalsEps(y, other.y, eps);
     }
 
+    public boolean isZeroEps(float eps) {
+        return MathUtil.equalsEps(x, 0, eps) &&
+               MathUtil.equalsEps(y, 0, eps);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

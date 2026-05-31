@@ -181,7 +181,7 @@ public final class Window extends Application {
         lang = new LangTranslation();
         lang.load(); // TODO придумать как загружать и перезагружать
 
-        entityPool = new EntityPool(Short.MAX_VALUE);
+        entityPool = new EntityPool(Constants.Entity.MAX_COUNT);
 
         Debug.initDebugValuesMenu();
 

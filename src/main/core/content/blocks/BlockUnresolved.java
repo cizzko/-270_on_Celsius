@@ -1,6 +1,5 @@
 package core.content.blocks;
 
-import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.content.ContentLoader;
 import core.content.ContentResolver;
 
@@ -10,7 +9,7 @@ import core.content.ContentResolver;
  * Во второй фазе загрузки все заглушки должны быть заменены на настоящие блоки.
  * В противном случае выводится диагностическое сообщение
  */
-public final class BlockUnresolved extends StaticObjectsConst {
+public final class BlockUnresolved extends Block {
     public BlockUnresolved(String id) {
         super(id);
     }

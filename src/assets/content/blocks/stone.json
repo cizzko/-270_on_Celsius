@@ -1,5 +1,4 @@
 {
-  "Id": "stone",
   "ClassType": "block",
   "Resistance": 95,
   "Texture": "textures/blocks/stone",

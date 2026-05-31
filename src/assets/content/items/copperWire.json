@@ -1,5 +1,4 @@
 {
-  "Id": "copperWire",
   "ClassType": "item",
   "Texture": "textures/items/copperWire",
   "Requirements": {
