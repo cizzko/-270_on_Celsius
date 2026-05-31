@@ -9,16 +9,20 @@ public final class Constants {
 
     public static final String link = "https://discord.gg/gUS9X6exAQ";
 
-    public static final int availableProcessors = Runtime.getRuntime().availableProcessors();
+    //нельзя брать вообще все, иначе звуки и гуи самой ос начинают лагать
+    public static final int availableProcessors = Runtime.getRuntime().availableProcessors() - 1;
 
     public static final class World {
         /* Минимальный размер мира в блоках */
         public static final int MIN_WORLD_SIZE = 500;
         /* Максимальный размер мира в блоках */
-        public static final int MAX_WORLD_SIZE = 15000;
+        public static final int MAX_WORLD_SIZE = 30000;
         /* Сколько блоков копируем по краям */
         public static final int COPY_SIZE = 50;
         /* В какой области с концов мира нас телепортирует на другую сторону */
         public static final int SWAP_AREA = COPY_SIZE / 2;
+        /* между миром и скопированным куском 90 блоков,
+        для сглаживания перепад высот между ними      */
+        public static final int INTERPOLATE_SIZE = 90;
     }
 }

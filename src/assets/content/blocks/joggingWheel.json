@@ -10,7 +10,7 @@
   "Requirements": {
     "copperWire": 3,
     "aluminumPipe": 1,
-    "stick": 10,
+    "stick": 8,
     "simpleElectricMotor": 1,
     "simpleElectricInsulator": 2
   },

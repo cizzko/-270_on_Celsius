@@ -10,7 +10,8 @@
     "trunk": 4,
     "stick": 8,
     "stickRope": 4,
-    "glassLens": 6
+    "glassLens": 4,
+    "aluminumPipe": 2
   },
   "Density": 1,
   "CreateWith": "workbenchSmall",

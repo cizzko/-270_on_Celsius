@@ -17,10 +17,10 @@ import core.Constants;
 import core.GameState;
 import core.Global;
 import core.World.StaticWorldObjects.StaticObjectsConst;
-import core.graphic.ShadowMap;
 import core.World.WorldGenerator.Biomes;
 import core.content.blocks.data.TileData;
 import core.content.entity.BlockEntity;
+import core.graphic.ShadowMap;
 import core.math.MathUtil;
 import core.math.Point2i;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -32,6 +32,7 @@ import java.util.Objects;
 import java.util.concurrent.ForkJoinPool;
 
 import static core.Constants.availableProcessors;
+import static core.Global.world;
 
 /// Для кеш-локальности мира обходить его построчно, то есть:
 /// ```
@@ -181,9 +182,9 @@ public final class World {
     }
 
     public void set(int x, int y, @Nullable StaticObjectsConst object, boolean followingRules) {
-        if (object == null)
+        if (object == null) {
             object = StaticObjectsConst.AIR;
-
+        }
         setImpls(x, y, object, followingRules);
 
         if (Global.gameState == GameState.PLAYING) {
@@ -577,5 +578,37 @@ public final class World {
 
             gen.writeEndObject();
         }
+    }
+
+    /**
+     * Ищет координату самого верхнего твердого блока в вертикальном столбце
+     * <p>
+     * Проверяет блоки с шагом в {@code period}, если обнаружен твердый блок,
+     * стартует быстрая точечная проверка нахождения воздуха,
+     * увеличивает скорость поиска в {@code period} раз, пропорционально снижает
+     * шанс обнаружить одиночные (висящие в воздухе) блоки
+     * </p>
+     * @param cellX координата {@code x}
+     * @param period шаг поиска
+     * @return {@code y} самого верхнего твердого блока либо {@code -1} если не найдена
+     */
+    public static int findTopmostSolidBlock(int cellX, int period) {
+        for (int y = world.sizeY - 1; y > 0; y -= period) {
+            var block = world.getBlock(cellX, y);
+
+            if (block != null && block.type == StaticObjectsConst.Type.SOLID) {
+                int maxSearchY = Math.min(world.sizeY - 1, y + period + 1);
+
+                for (int i = y; i < maxSearchY; i++) {
+                    var current = world.getBlock(cellX, i);
+                    var upper = world.getBlock(cellX, i + 1);
+
+                    if (current != null && current.type == StaticObjectsConst.Type.SOLID && upper != null && upper.type == StaticObjectsConst.Type.GAS) {
+                        return i;
+                    }
+                }
+            }
+        }
+        return -1;
     }
 }

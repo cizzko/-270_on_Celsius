@@ -1,5 +1,9 @@
 {
   "Id": "aluminumPipe",
   "ClassType": "item",
-  "Texture": "textures/items/aluminumPipe"
+  "Texture": "textures/items/aluminumPipe",
+  "Requirements": {
+    "aluminumIngot": 1
+  },
+  "CreateWith": "workbenchSmall"
 }

@@ -5,7 +5,6 @@ import core.Constants;
 import core.EventHandling.Config;
 import core.Global;
 import core.World.Creatures.Physics;
-import core.World.WorldGenerator.WorldGenerator;
 import core.WorldCoordinates;
 import core.content.ItemStack;
 import core.content.creatures.CreatureType;
@@ -20,6 +19,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import static core.Constants.World.COPY_SIZE;
 import static core.Global.*;
+import static core.World.World.findTopmostSolidBlock;
 
 public class WorldUtils {
 
@@ -57,6 +57,10 @@ public class WorldUtils {
         return spawn0(entity, bx);
     }
 
+    public static <E extends CreatureEntity> E spawn(CreatureType entity, int x, boolean spawnRules) {
+        return spawn0(entity, x);
+    }
+
     public static void dropItem(ItemStack itemStack, float x, float y) {
         float rx = x + ThreadLocalRandom.current().nextFloat(0.3f, 0.7f);
         float ry = y + ThreadLocalRandom.current().nextFloat(0.1f, 0.5f);
@@ -76,10 +80,10 @@ public class WorldUtils {
     }
 
     private static <E extends CreatureEntity> E spawn0(CreatureType entity, float bx) {
-        float wy = WorldGenerator.findTopmostSolidBlock(WorldCoordinates.toBlock(bx), 5) + 1;
+        float wy = findTopmostSolidBlock(WorldCoordinates.toBlock(bx), 3) + 1;
 
         if (Physics.checkIntersection(bx, wy, entity.texture)) {
-            Application.log.warn("Unable spawning at: ({}, {})", bx, wy);
+            Application.log.warn("Unable spawning at: ({}, {})", bx, wy + 1);
             return spawn0(entity, bx + 1);
         }
 

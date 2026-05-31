@@ -149,6 +149,7 @@ application {
 
 jlink {
     mainClass = MAIN_CLASS
+    moduleName = MAIN_MODULE
 
     mergedModule {
         requires("java.desktop")

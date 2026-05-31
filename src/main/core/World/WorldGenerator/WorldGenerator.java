@@ -6,9 +6,9 @@ import core.World.PerlinNoiseGenerator;
 import core.World.StaticWorldObjects.StaticObjectsConst;
 import core.World.StaticWorldObjects.StaticObjectsConst.Type;
 import core.World.StaticWorldObjects.TemperatureMap;
-import core.graphic.ShadowMap;
 import core.World.World;
 import core.World.WorldUtils;
+import core.graphic.ShadowMap;
 import core.math.MathUtil;
 import core.math.Point2i;
 import core.util.Debug;
@@ -21,13 +21,21 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
 import static core.Constants.World.COPY_SIZE;
+import static core.Constants.World.INTERPOLATE_SIZE;
 import static core.Global.*;
+import static core.World.World.findTopmostSolidBlock;
 import static core.WorldCoordinates.toBlock;
 
 public class WorldGenerator {
     private static final Logger log = LogManager.getLogger("WorldGen");
+    public static boolean useExpGen = false;
 
     public static void generateWorld(CreatePlanet.GenerationParameters params) {
+        if (useExpGen) {
+            WorldGeneratorTMP.generateWorld(params);
+            return;
+        }
+
         long startTime = System.currentTimeMillis();
         int sizeX = params.sizeX;
         int sizeY = params.sizeY;
@@ -38,8 +46,6 @@ public class WorldGenerator {
         Global.world = world;
 
         boolean simple = params.simple;
-        boolean randomSpawn = params.randomSpawn;
-        boolean creatures = params.creatures;
 
         log("version: 2.2");
         log("World generator: starting generating world with size: " + world.sizeX + "x" + world.sizeY);
@@ -220,7 +226,7 @@ public class WorldGenerator {
                     break;
                 }
             }
-        } while (!(lastX + COPY_SIZE + 90 > world.sizeX));
+        } while (!(lastX + COPY_SIZE + INTERPOLATE_SIZE > world.sizeX));
 
         doItAgainToArrays(lastY, worldHeights);
 
@@ -261,7 +267,7 @@ public class WorldGenerator {
     }
 
     private static void doItAgainToArrays(float lastY, float[] worldHeights) {
-        float lastX = world.sizeX - COPY_SIZE - 90;
+        float lastX = world.sizeX - COPY_SIZE - INTERPOLATE_SIZE;
         float delta = 90;
         float delt = worldHeights[0] - lastY;
         float angle = (float) Math.toDegrees(Math.atan2(delta, delt)); // хех, ладно
@@ -311,9 +317,9 @@ public class WorldGenerator {
                 downedX += (int) ((rnd.nextFloat() * (world.sizeX / (caves / 2f))) + (world.sizeX / (caves / 4f)));
             }
         }
-
         log.debug("spawned {} caves with {} iters", caves, iters);
-        clearFloatingIslands(world.tiles, world.sizeX, world.sizeY, 50);
+
+        clearFloatingIslands(world.tiles, world.sizeX, world.sizeY, 100);
     }
 
     private static int generateCave(int bx, int by,
@@ -357,7 +363,6 @@ public class WorldGenerator {
 
                     generateCave(toBlock(wx), toBlock(wy), radius - 1, minRadius, (int) radius,
                             sAngle - 50, sAngle + 50, sAngle, Math.min(1200, shotChance));
-                    //continue;
                 }
 
                 //вправо влево
@@ -500,7 +505,6 @@ public class WorldGenerator {
         }).join();
     }
 
-
     private static CompletableFuture<Void> generateEnvironments(World world) {
         return CompletableFuture.runAsync(() -> {
             generateTrees(world);
@@ -599,27 +603,6 @@ public class WorldGenerator {
                 }
             }
         }
-    }
-
-    // jabadoc
-    // Looks for the topmost solid block in the strip.
-    // Checks each `period` block, and if it is solid, searches for air above it.
-    // This increases the search speed by a factor of `period`,
-    // but decreases the chance of finding single blocks in the strip by the same amount
-    // return -1 if not found
-    public static int findTopmostSolidBlock(int cellX, int period) {
-        for (int y = world.sizeY; y > 0; y -= period) {
-            var block = world.getBlock(cellX, y);
-
-            if (block != null && block.type == Type.SOLID) {
-                for (int i = y; i < y + period; i++) {
-                    if (world.getBlock(cellX, i + 1).type == Type.GAS && world.getBlock(cellX, i).type == Type.SOLID) {
-                        return i;
-                    }
-                }
-            }
-        }
-        return -1;
     }
 
     private static void startGame(PlayGameScene playGameScene) {
