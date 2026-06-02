@@ -8,10 +8,10 @@ import core.g2d.Texture;
 import core.graphic.Color;
 import core.graphic.ShadowMap;
 
-import static core.Constants.World.COPY_SIZE;
 import static core.Global.player;
 import static core.Global.world;
-import static core.WorldCoordinates.*;
+import static core.World.WorldGenerator.WorldGeneratorConstants.COPY_SIZE;
+import static core.WorldCoordinates.BLOCK_SIZE;
 import static core.math.MathUtil.lerp;
 
 public class Sun extends GameObject {

@@ -2,18 +2,18 @@ package core.World.Creatures.Player;
 
 import core.EventHandling.Config;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.content.blocks.Block;
-import core.graphic.ShadowMap;
 import core.World.WorldUtils;
 import core.content.ItemStack;
+import core.content.blocks.Block;
 import core.content.items.ItemBlock;
 import core.content.items.ItemTool;
 import core.content.items.data.ItemData;
 import core.g2d.Fill;
+import core.graphic.Color;
+import core.graphic.ShadowMap;
 import core.graphic.WorldDrawing;
 import core.math.Point2i;
 import core.math.TmpShapes;
-import core.graphic.Color;
 
 import static core.Global.*;
 import static core.World.WorldUtils.getDistanceToMouse;

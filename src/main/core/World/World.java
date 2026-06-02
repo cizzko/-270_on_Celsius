@@ -13,14 +13,13 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import core.Application;
-import core.Constants;
 import core.GameState;
 import core.Global;
-import core.content.blocks.Block;
-import core.graphic.ShadowMap;
 import core.World.WorldGenerator.Biomes;
+import core.content.blocks.Block;
 import core.content.blocks.data.TileData;
 import core.content.entity.BlockEntity;
+import core.graphic.ShadowMap;
 import core.math.MathUtil;
 import core.math.Point2i;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -32,6 +31,8 @@ import java.util.Objects;
 import java.util.concurrent.ForkJoinPool;
 
 import static core.Constants.availableProcessors;
+import static core.Global.world;
+import static core.World.WorldGenerator.WorldGeneratorConstants.COPY_SIZE;
 
 /// Для кеш-локальности мира обходить его построчно, то есть:
 /// ```
@@ -43,6 +44,8 @@ import static core.Constants.availableProcessors;
 /// ```
 @JsonSerialize(using = World.WorldSerializer.class)
 public final class World {
+    static int lastId = -1;
+    static Block lastBlock = null;
     public final ForkJoinPool genPool = new ForkJoinPool(availableProcessors);
 
     public final int sizeX, sizeY;
@@ -187,10 +190,10 @@ public final class World {
         setImpls(x, y, object, followingRules);
 
         if (Global.gameState == GameState.PLAYING) {
-            if (x < Constants.World.COPY_SIZE) {
-                copyFromTo(x, y, sizeX - Constants.World.COPY_SIZE + x, y, object, followingRules);
-            } else if (x > sizeX - Constants.World.COPY_SIZE) {
-                copyFromTo(x, y, x - (sizeX - Constants.World.COPY_SIZE), y, object, followingRules);
+            if (x < COPY_SIZE) {
+                copyFromTo(x, y, sizeX - COPY_SIZE + x, y, object, followingRules);
+            } else if (x > sizeX - COPY_SIZE) {
+                copyFromTo(x, y, x - (sizeX - COPY_SIZE), y, object, followingRules);
             }
         }
     }
@@ -254,8 +257,15 @@ public final class World {
         if (!inBounds(x, y)) {
             return null;
         }
-        int blockId = Short.toUnsignedInt(tiles[pos2index(x, y)]);
-        return Global.content.blocksRegistry.typeById(blockId);
+        int blockId = tiles[pos2index(x, y)];
+
+        //прикольно бустит скорость но надо потестить получше
+        if (lastId != blockId) {
+            lastId = blockId;
+            return lastBlock = Global.content.blocksRegistry.typeById(Short.toUnsignedInt((short) blockId));
+        }
+
+        return lastBlock;
     }
 
     public Block getBlock(Point2i pos) { return getBlock(pos.x, pos.y); }
@@ -336,19 +346,26 @@ public final class World {
     }
 
     private void destroyBlock(int x, int y) {
-        var old = getBlock(x, y);
-        if (old == null) {
+        int old = getBlockId(x, y);
+        if (old <= 0) {
             return;
         }
-        var root = getRootBlockPos(x, y);
-        if (root != null)  {
-            deleteMultiblockFromRoot(root.x, root.y);
+        int idx = pos2index(x, y);
+        var block = Global.content.blocksRegistry.typeById(old);
+        if (block.isMultiblock()) {
+            int dx, dy;
+            if (data.remove(idx) instanceof TileData.MultiblockPart part) {
+                dx = part.rootOffsetX;
+                dy = part.rootOffsetY;
+            } else {
+                dx = dy = 0;
+            }
+            deleteMultiblockFromRoot(x - dx, y - dy);
         } else {
             deleteEntity(x, y);
-            int idx = pos2index(x, y);
             data.remove(idx);
             tiles[idx] = 0;
-            setHp(x, y, 0);
+            hp[idx] = 0;
             ShadowMap.update();
         }
     }
@@ -370,7 +387,6 @@ public final class World {
         var rootBlock = getBlock(x, y);
         assert rootBlock != null;
         deleteEntity(x, y);
-        data.remove(pos2index(x, y));
 
         for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
             for (int blockX = 0; blockX < rootBlock.tileCountX; blockX++) {
@@ -595,14 +611,14 @@ public final class World {
         for (int y = world.sizeY - 1; y > 0; y -= period) {
             var block = world.getBlock(cellX, y);
 
-            if (block != null && block.type == StaticObjectsConst.Type.SOLID) {
+            if (block != null && block.type == Block.Type.SOLID) {
                 int maxSearchY = Math.min(world.sizeY - 1, y + period + 1);
 
                 for (int i = y; i < maxSearchY; i++) {
                     var current = world.getBlock(cellX, i);
                     var upper = world.getBlock(cellX, i + 1);
 
-                    if (current != null && current.type == StaticObjectsConst.Type.SOLID && upper != null && upper.type == StaticObjectsConst.Type.GAS) {
+                    if (current != null && current.type == Block.Type.SOLID && upper != null && upper.type == Block.Type.GAS) {
                         return i;
                     }
                 }

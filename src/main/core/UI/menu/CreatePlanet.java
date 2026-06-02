@@ -71,15 +71,14 @@ public class CreatePlanet extends Dialog {
         basicParameters = background.add(new Dialog() {{
             setId("basicParameters");
             toggleDialog(this, true);
-            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> parameters.creatures = !parameters.creatures)
+            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> WorldGenerator.useExpGen = !WorldGenerator.useExpGen)
                     .setPosition(70, 890)
-                    .setName(Global.lang.get("GenerateCreatures"));
-            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> parameters.randomSpawn = !parameters.randomSpawn)
-                    .setPosition(70, 820)
-                    .setName(Global.lang.get("RandomSpawn"));
+                    .setName(Global.lang.get("ExpGenWorld"));
         }}).set(40, 270, 1360, 950 - 270);
         generationParameters = background.add(new Dialog() {{
             setId("generationParameters");
+
+            //todo устарело флатворлд для игрока не нужен перенесу куда нить
             toggleDialog(this, false);
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> parameters.simple = !parameters.simple)
                     .setPosition(70, 890)

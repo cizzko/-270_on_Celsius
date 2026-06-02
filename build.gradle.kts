@@ -26,6 +26,9 @@ sourceSets {
 }
 
 tasks.withType<JavaExec> {
+    //для профайлинга
+//    jvmArgs("-XX:+UnlockDiagnosticVMOptions", "-XX:+DebugNonSafepoints", "-XX:+ShowHiddenFrames")
+
     if (name.startsWith(MAIN_CLASS)) {
         // core.Main.main()
         jvmArguments.add("--enable-native-access=org.lwjgl")
@@ -45,6 +48,10 @@ tasks.withType<JavaExec> {
         }
     }
 }
+//для профайлинга
+//tasks.withType<JavaCompile>().configureEach {
+//    options.compilerArgs.add("-g")
+//}
 
 tasks.named<JavaCompile>("compileToolsJava") {
     dependsOn(tasks.compileJava)
