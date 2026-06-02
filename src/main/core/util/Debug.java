@@ -1,15 +1,18 @@
 package core.util;
 
-import core.*;
 import core.EventHandling.Config;
+import core.GameState;
+import core.Global;
+import core.PlayGameScene;
+import core.Time;
 import core.UI.Dialog;
 import core.UI.Styles;
 import core.UI.TextArea;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.content.blocks.Block;
 import core.World.Weather.Sun;
 import core.World.World;
 import core.World.WorldUtils;
+import core.content.blocks.Block;
 import core.content.blocks.data.TileData;
 import core.content.entity.Entity;
 import core.content.entity.Hitbox;
@@ -36,7 +39,8 @@ import java.util.function.Supplier;
 import static core.Application.log;
 import static core.EventHandling.Config.json;
 import static core.Global.*;
-import static core.WorldCoordinates.*;
+import static core.WorldCoordinates.toBlock;
+import static core.WorldCoordinates.toWorld;
 import static core.content.ItemStack.itemStack;
 import static core.graphic.Color.*;
 import static org.lwjgl.glfw.GLFW.*;
@@ -218,6 +222,8 @@ public class Debug {
         if (debugLevel < 2) {
             return;
         }
+        log.debug("Saving world image..");
+
         Thread.startVirtualThread(() -> {
             BufferedImage image = new BufferedImage(world.sizeX, world.sizeY, BufferedImage.TYPE_INT_RGB);
             Path path = assets.workingDir().resolve("worldImage.png");
@@ -233,6 +239,7 @@ public class Debug {
             }
             try {
                 ImageIO.write(image, "png", path.toFile());
+                log.debug("Saving world image done");
             } catch (IOException e) {
                 log.error("", e);
             }

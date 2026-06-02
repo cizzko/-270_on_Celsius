@@ -381,7 +381,7 @@ public class WorldGeneratorTMP {
 
                 //todo тут потенциальное место для проверки глубины пещеры, чтоб на поверхности не бывало каши
                 //пещера в рандомном направлении
-                if (rnd.nextFloat() * shotChance < 1 && lastShot > CAVE_EVERY_MIN_ITERS) {
+                if (rnd.nextFloat() * (shotChance * CAVES_EVERY_CHANCE) < 1 && lastShot > CAVE_EVERY_MIN_ITERS) {
                     shotChance *= rnd.nextFloat(CAVE_SHOT_MULT_MIN, CAVE_SHOT_MULT_MAX);
                     int sAngle = (int) ((angle + rnd.nextFloat(CAVE_SHOT_ANGLE_MIN, CAVE_SHOT_ANGLE_MAX)) % 360);
 
@@ -390,7 +390,7 @@ public class WorldGeneratorTMP {
                 }
 
                 //пещера влево вправо
-                if (rnd.nextFloat() * (shotChance * CAVES_UPPER_CHANCE) < 1 && lastShot > CAVE_LR_MIN_ITERS) {
+                if (rnd.nextFloat() * (shotChance * CAVES_LR_CHANCE) < 1 && lastShot > CAVE_LR_MIN_ITERS) {
                     shotChance *= (int) (rnd.nextFloat(CAVE_SHOT_MULT_MIN, CAVE_SHOT_MULT_MAX));
 
                     int sAngle = (int) ((angle + rnd.nextFloat(CAVE_SHOT_ANGLE_MIN, CAVE_SHOT_ANGLE_MAX)) % 360);

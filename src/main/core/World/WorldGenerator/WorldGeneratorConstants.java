@@ -32,7 +32,7 @@ public class WorldGeneratorConstants {
     public static final int CAVES_INITIAL_X = INTERPOLATE_SIZE + COPY_SIZE;
     /** Случайный множитель расстояния между пещерами */
     public static final float CAVES_COUNT_RAND_MULT = 40f;
-    /** Минимальное расстояние между пещерами пещер */
+    /** Минимальное расстояние между пещерами */
     public static final float CAVES_COUNT_BASE = 50f;
     /** Минимальный радиус генерируемой пещеры */
     public static final int CAVES_MIN_RADIUS = 2;
@@ -40,6 +40,10 @@ public class WorldGeneratorConstants {
     public static final int CAVES_MAX_RADIUS = 8;
     /** Шанс генерации пещеры сверху (после минимального количества) */
     public static final float CAVES_UPPER_CHANCE = 1.2f;
+    /** Шанс генерации пещеры идущей влево или вправо */
+    public static final float CAVES_LR_CHANCE = 0.9f;
+    /** Шанс генерации пещеры идущей в случайное направление */
+    public static final float CAVES_EVERY_CHANCE = 1.5f;
     /** Минимальное количество пещер сверху (от общего колва пещер) */
     public static final int CAVES_UPPER_DIVISOR = 12;
     /** Максимальная глубина (от world.sizeY / 2) пещер в земле */
@@ -59,7 +63,7 @@ public class WorldGeneratorConstants {
     public static final int CAVE_UPPER_START_MIN = 40;
     /** Максимальный стартовый угол для верхних пещер */
     public static final int CAVE_UPPER_START_MAX = 170;
-    /** Базовый шанс ответвления для верхних пещер */
+    /** Базовый шанс ответвления для верхних пещер (отростки отростков) */
     public static final int CAVE_UPPER_SHOT_CHANCE = 200;
 
     /** Минимальный угол генерации для нижних пещер */
@@ -68,7 +72,7 @@ public class WorldGeneratorConstants {
     public static final int CAVE_DOWNED_MAX_ANGLE = 265;
     /** Случайный стартовый угол для нижних пещер */
     public static final int CAVE_DOWNED_START_ANGLE = 360;
-    /** Базовый шанс ответвления для нижних пещер */
+    /** Базовый шанс ответвления для нижних пещер (отростки отростков) */
     public static final int CAVE_DOWNED_SHOT_CHANCE = 200;
 
     /** Множитель изменения угла пещеры в зависимости от глубины */
@@ -89,13 +93,13 @@ public class WorldGeneratorConstants {
     public static final int CAVE_EVERY_MIN_ITERS = 30;
     /** Минимально итерсов от прошлого отростка для пещер влево||вправо */
     public static final int CAVE_LR_MIN_ITERS = 20;
-    /** Шанс появления отростка от отростка возрастает на от CAVE_SHOT_MULT_MIN до CAVE_SHOT_MULT_MAX */
+    /** Шанс появления отростка от отростка уменьшается на от CAVE_SHOT_MULT_MIN до CAVE_SHOT_MULT_MAX */
     public static final float CAVE_SHOT_MULT_MIN = 1.8f;
-    /** Шанс появления отростка от отростка возрастает на от CAVE_SHOT_MULT_MIN до CAVE_SHOT_MULT_MAX */
+    /** Шанс появления отростка от отростка уменьшается на от CAVE_SHOT_MULT_MIN до CAVE_SHOT_MULT_MAX */
     public static final float CAVE_SHOT_MULT_MAX = 2.3f;
-    /** Угол для пещер в случайном направлении задается начальный + ранд от CAVE_SHOT_ANGLE_MIN до CAVE_SHOT_ANGLE_MAX */
+    /** Угол для пещер задается начальный + ранд от CAVE_SHOT_ANGLE_MIN до CAVE_SHOT_ANGLE_MAX */
     public static final float CAVE_SHOT_ANGLE_MIN = -45f;
-    /** Угол для пещер в случайном направлении задается начальный + ранд от CAVE_SHOT_ANGLE_MIN до CAVE_SHOT_ANGLE_MAX */
+    /** Угол для пещер задается начальный + ранд от CAVE_SHOT_ANGLE_MIN до CAVE_SHOT_ANGLE_MAX */
     public static final float CAVE_SHOT_ANGLE_MAX = 45f;
     /** Поскольку шанс отростка увеличивается нелинейно (*), нужен ограничитель чтоб он не был слишком малым */
     public static final int CAVE_EVERY_CHANCE_SHOT_MAX = 1200;
