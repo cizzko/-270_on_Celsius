@@ -588,38 +588,35 @@ public final class World {
                 });
                 gen.writeEndObject();
             }
-
-            // public final Biomes[] biomes;
-
             gen.writeEndObject();
         }
     }
 
     /**
-     * Ищет координату самого верхнего твердого блока в вертикальном столбце
+     * Ищет {@code y} первого свободного блока (воздуха) в конкретном {@code x}
      * <p>
-     * Проверяет блоки с шагом в {@code period}, если обнаружен твердый блок,
-     * стартует быстрая точечная проверка нахождения воздуха,
-     * увеличивает скорость поиска в {@code period} раз, пропорционально снижает
-     * шанс обнаружить одиночные (висящие в воздухе) блоки
+     * Проверяет {@code x} с шагом {@code period}, при нахождении твердого блока
+     * запускает точечную проверку для поиска точной позиции. Скорость работы увеличивается в {@code period} раз,
+     * во столько же снижается точность нахождения одиночных блоков. При {@code period} = 1 поиск становится последовательным
      * </p>
      * @param cellX координата {@code x}
      * @param period шаг поиска
-     * @return {@code y} самого верхнего твердого блока либо {@code -1} если не найдена
+     * @return {@code y} координата воздуха над самым верхним твердым блоком, либо {@code -1}, если земля не найдена
      */
-    public static int findTopmostSolidBlock(int cellX, int period) {
+
+    //впр можно хранить карту высот, но поиск нужен не так часто, чтоб это дало желаемый профит
+    //todo @test возможно, последовательный обход будет быстрее работать в силу отсутствия кешмиссов
+    public static int findSurfaceY(int cellX, int period) {
         for (int y = world.sizeY - 1; y > 0; y -= period) {
             var block = world.getBlock(cellX, y);
 
             if (block != null && block.type == Block.Type.SOLID) {
-                int maxSearchY = Math.min(world.sizeY - 1, y + period + 1);
-
-                for (int i = y; i < maxSearchY; i++) {
+                for (int i = y + period; i > y - 1; i--) {
                     var current = world.getBlock(cellX, i);
-                    var upper = world.getBlock(cellX, i + 1);
 
-                    if (current != null && current.type == Block.Type.SOLID && upper != null && upper.type == Block.Type.GAS) {
-                        return i;
+                    //если сверху вниз, то первый блок и будет солид, нет смысла проверять над ним
+                    if (current != null && current.type == Block.Type.SOLID) {
+                        return i + 1;
                     }
                 }
             }

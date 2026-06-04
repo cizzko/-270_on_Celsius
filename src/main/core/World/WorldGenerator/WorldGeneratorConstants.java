@@ -11,7 +11,7 @@ public class WorldGeneratorConstants {
 
     /** Стартовый угол генерации рельефа в градусах */
     public static final float RELIEF_START_ANGLE = 90f;
-    /** Множитель для расчета итераций шага рельефа */
+    /** Прижимает угол генерации к горизонтали (не позволяет миру быть как пила) */
     public static final float RELIEF_ITERS_MULTIPLIER = 150f;
     /** Максимальный базовый угол для рельефа */
     public static final float RELIEF_BASE_ANGLE = 90f;

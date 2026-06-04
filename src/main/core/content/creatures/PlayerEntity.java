@@ -1,34 +1,26 @@
 package core.content.creatures;
 
-import core.GameState;
 import core.Global;
 import core.Time;
-import core.World.Creatures.Physics;
-import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
 import core.World.WorldUtils;
-import core.WorldCoordinates;
 import core.content.ItemGrid;
 import core.content.ItemStack;
 import core.content.entity.BaseCreatureEntity;
 import core.content.entity.HitboxComponent;
 import core.content.entity.InventoryComponent;
-import core.math.MathUtil;
 import core.math.Point2i;
 import core.math.Vector2f;
 import core.util.Debug;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.concurrent.ThreadLocalRandom;
-
 import static core.Global.*;
 import static core.PlayGameScene.CAMERA_OFFSET_X;
 import static core.PlayGameScene.CAMERA_OFFSET_Y;
 import static core.World.Creatures.Physics.GRAVITY;
-import static core.World.Creatures.Physics.WEIGHT_FACTOR;
-import static core.World.Creatures.Player.Player.*;
-import static core.WorldCoordinates.*;
+import static core.World.Creatures.Player.Player.noClip;
+import static core.WorldCoordinates.toWorld;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class PlayerEntity
@@ -140,8 +132,8 @@ public class PlayerEntity
             float currentSpeedInWishDir = velocity.x * wishX;
 
             // Лимит воздушной скорости за один кадр.
-            // 95% от обычной скорости
-            float airSpeedCap = 0.95f * speed;
+            // 99% от обычной скорости
+            float airSpeedCap = 0.99f * speed;
 
             float d = airSpeedCap - currentSpeedInWishDir;
             if (d > 0) {

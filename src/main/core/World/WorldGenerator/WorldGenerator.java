@@ -21,7 +21,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.IntStream;
 
 import static core.Global.*;
-import static core.World.World.findTopmostSolidBlock;
+import static core.World.World.findSurfaceY;
 import static core.World.WorldGenerator.WorldGeneratorConstants.COPY_SIZE;
 import static core.World.WorldGenerator.WorldGeneratorConstants.INTERPOLATE_SIZE;
 import static core.WorldCoordinates.toBlock;
@@ -307,12 +307,12 @@ public class WorldGenerator {
             if (isUpper) {
                 upper++;
                 //пещеры с выходом на поверхность
-                iters += generateCave(upperX, findTopmostSolidBlock(upperX, 5),
+                iters += generateCave(upperX, findSurfaceY(upperX, 5),
                         startRadius, minRadius, maxRadius - 2, 100, 260, rnd.nextInt(40, 170), 200);
                 upperX += (int) ((rnd.nextFloat() * (world.sizeX / (caves / 2f))) + (world.sizeX / (caves / 4f)));
             } else {
                 //пещеры в глубине
-                iters += generateCave(downedX, (int) (findTopmostSolidBlock(downedX, 3) - rnd.nextFloat() * (world.sizeY / 2.4f)),
+                iters += generateCave(downedX, (int) (findSurfaceY(downedX, 3) - rnd.nextFloat() * (world.sizeY / 2.4f)),
                         startRadius, minRadius, maxRadius, 80, 280, rnd.nextInt(360), 240);
                 downedX += (int) ((rnd.nextFloat() * (world.sizeX / (caves / 2f))) + (world.sizeX / (caves / 4f)));
             }

@@ -12,7 +12,6 @@ import core.graphic.ShadowMap;
 import core.math.MathUtil;
 import core.math.Point2i;
 import core.util.Debug;
-import core.util.FixedBitset;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,13 +23,17 @@ import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import static core.Global.*;
-import static core.World.World.findTopmostSolidBlock;
+import static core.World.World.findSurfaceY;
 import static core.World.WorldGenerator.WorldGeneratorConstants.*;
 import static core.WorldCoordinates.toBlock;
 
 public class WorldGeneratorTMP {
     private static final Logger log = LogManager.getLogger("WorldGen");
 
+    /**
+     * Запускает генерацию мира
+     * @param params параметры генерации
+     */
     public static void generateWorld(CreatePlanet.GenerationParameters params) {
         int sizeX = params.sizeX;
         int sizeY = params.sizeY;
@@ -71,7 +74,7 @@ public class WorldGeneratorTMP {
                             () -> TemperatureMap.create()))
                     .thenRun(
                             timedRun("generating player",
-                             () -> player = WorldUtils.spawn(content.creatureById("player"), true)))
+                            () -> player = WorldUtils.spawn(content.creatureById("player"), true)))
                     .thenRun(() -> {
                         log("generating done! Total time: " + (System.currentTimeMillis() - totalStartTime) + "ms");
                         Debug.saveWorldImage();
@@ -106,6 +109,12 @@ public class WorldGeneratorTMP {
         }
     }
 
+    /**
+     * Обертка для замера времени куска генерации
+     * @param stepName этап
+     * @param task таск
+     * @return {@code Runnable} с временем
+     */
     private static Runnable timedRun(String stepName, Runnable task) {
         return () -> {
             long stepStart = System.currentTimeMillis();
@@ -114,6 +123,16 @@ public class WorldGeneratorTMP {
         };
     }
 
+    /**
+     * Обертка для замера времени асинхронной таски генерации
+     * <p>
+     * То же что {@link #timedRun} но для {@code CompletableFuture}.
+     * </p>
+     * @param stepName этап
+     * @param taskSupplier таск
+     * @param <T> тип
+     * @return фьючр для цепочки
+     */
     private static <T> Function<T, CompletableFuture<Void>> timedCompose(String stepName, Supplier<CompletableFuture<Void>> taskSupplier) {
         return __ -> {
             long stepStart = System.currentTimeMillis();
@@ -123,11 +142,22 @@ public class WorldGeneratorTMP {
         };
     }
 
+    /**
+     * лог в инфо и в консоль
+     * @param text сообщение
+     */
     private static void log(String text) {
         log.info(text);
         scheduler.post(() -> UIMenus.createPlanet().appendText(text), Time.ONE_SECOND);
     }
 
+    /**
+     * Склеивает края мира для бесшовности
+     * <p>
+     * Отражает левый кусок мира от {@code 0} до {@link WorldGeneratorConstants#COPY_SIZE COPY_SIZE}
+     * в промежуток от {@link World#sizeX world.sizeX} - {@link WorldGeneratorConstants#COPY_SIZE COPY_SIZE} до {@link World#sizeX world.sizeX}
+     * </p>
+     */
     private static void copy() {
         int height = world.sizeY;
         int width = world.sizeX;
@@ -142,6 +172,10 @@ public class WorldGeneratorTMP {
         }
     }
 
+    /**
+     * Генерирует плоский мир без всего для отладки
+     * @param world мир
+     */
     private static void generateFlatWorld(World world) {
         Biomes defaultBiome = Biomes.getDefault();
         short[] availableBlocks = defaultBiome.getBlocks();
@@ -168,21 +202,33 @@ public class WorldGeneratorTMP {
         }).join();
     }
 
-    //todo оптимально раскидать на динамическую генерацию, но так лень этим заниматься
+    /**
+     * Генерирует рельеф блуждающей точкой (с учетом параметров биома)
+     * <p>
+     * <ul>
+     * <li>Угол наклона случайно меняется, но ограничен в рамках текущего биома</li>
+     * <li>Чем больше отклонение {@code angle} от {@code 90}, тем меньше он может продолжаться (защита от пилообразного мира)</li>
+     * </ul>
+     * После прохождения {@link WorldGeneratorConstants#MIN_SWAP_BIOMES MIN_SWAP_BIOMES} биом меняется на {@link Biomes#getRand()},
+     * В конце вызывается {@link #doItAgainToArrays} для сглаживания высот
+     * </p>
+     * @param world мир
+     */
+
     private static void generateRelief(World world) {
         int worldWidth = world.sizeX;
         //карта высот
-        float[] worldHeights = new float[world.sizeX];
+        float[] worldHeights = new float[worldWidth];
         //карта биомов
-        Biomes[] worldXBiomes = new Biomes[world.sizeX];
+        Biomes[] worldXBiomes = new Biomes[worldWidth];
         //карта смешиваний
-        long[] useLastBiomeFlag = FixedBitset.createBitSet(world.sizeX);
+        Biomes[] blendBiomes = new Biomes[worldWidth];
 
         Biomes lastBiomes = Biomes.getDefault();
         Biomes currentBiomes = Biomes.getRand();
 
         float lastX = 0;
-        float lastY = world.sizeY / 2;
+        float lastY = world.sizeY / 2f;
         float angle = RELIEF_START_ANGLE;
 
         int upperBorder = currentBiomes.getUpperBorder();
@@ -194,14 +240,23 @@ public class WorldGeneratorTMP {
         var rnd = ThreadLocalRandom.current();
         do {
             angle = Math.clamp(
-                    angle + (rnd.nextFloat() * blockGradient - blockGradient / 2),
-                    Math.clamp(upperBorder + (lastY - world.sizeY / 2), upperBorder, RELIEF_BASE_ANGLE),
-                    Math.clamp(bottomBorder - (world.sizeY / 2 - lastY), RELIEF_BASE_ANGLE, bottomBorder)
+                    angle + (rnd.nextFloat() * blockGradient - blockGradient / 2f),
+                    Math.clamp(upperBorder + (lastY - world.sizeY / 2f), upperBorder, RELIEF_BASE_ANGLE),
+                    Math.clamp(bottomBorder - (world.sizeY / 2f - lastY), RELIEF_BASE_ANGLE, bottomBorder)
             );
 
-            int iters = (int) (rnd.nextFloat() * RELIEF_ITERS_MULTIPLIER / (RELIEF_BASE_ANGLE - Math.abs(RELIEF_BASE_ANGLE - angle)));
-            float deltaX = (float) (Math.sin(Math.toRadians(angle)));
-            float deltaY = (float) (Math.cos(Math.toRadians(angle)));
+            float denominator = RELIEF_BASE_ANGLE - Math.abs(RELIEF_BASE_ANGLE - angle);
+            //чтоб не было приколов если угол вылетит 0
+            if (denominator == 0) {
+                denominator = 0.01f;
+            }
+
+            //todo RELIEF_ITERS_MULTIPLIER динамически
+            int iters = (int) (rnd.nextFloat() * RELIEF_ITERS_MULTIPLIER / denominator);
+
+            double rad = Math.toRadians(angle);
+            float deltaX = (float) Math.sin(rad);
+            float deltaY = (float) Math.cos(rad);
 
             int currentIntX = (int) lastX;
 
@@ -209,12 +264,13 @@ public class WorldGeneratorTMP {
                 lastY += deltaY;
                 lastX += deltaX;
 
-                if ((int) lastX == currentIntX) {
+                int intX = (int) lastX;
+                if (intX == currentIntX) {
                     continue;
                 }
-                currentIntX = (int) lastX;
+                currentIntX = intX;
 
-                if (currentIntX < worldWidth && lastY > 0) {
+                if (currentIntX >= 0 && currentIntX < worldWidth && lastY > 0) {
                     worldXBiomes[currentIntX] = currentBiomes;
                     worldHeights[currentIntX] = lastY;
                     lastSwapBiomes++;
@@ -229,21 +285,18 @@ public class WorldGeneratorTMP {
                     }
 
                     if (lastSwapBiomes < BIOME_SWAP_MAX_THRESHOLD && rnd.nextFloat() * lastSwapBiomes < BIOME_SWAP_CHANCE) {
-                        FixedBitset.setBit(useLastBiomeFlag, currentIntX);
-                    } else {
-                        FixedBitset.unsetBit(useLastBiomeFlag, currentIntX);
+                        blendBiomes[currentIntX] = lastBiomes;
                     }
-                } else {
+                } else if (currentIntX >= worldWidth) {
                     break;
                 }
             }
-        } while (!(lastX + COPY_SIZE + INTERPOLATE_SIZE > world.sizeX));
+        } while (lastX + COPY_SIZE + INTERPOLATE_SIZE <= world.sizeX);
 
         doItAgainToArrays(lastY, worldHeights);
 
         int cores = Runtime.getRuntime().availableProcessors();
         int chunkSize = (worldWidth / cores) + 1;
-        final Biomes finalLastBiomes = lastBiomes;
 
         world.genPool.submit(() -> {
             IntStream.range(0, cores).parallel().forEach(p -> {
@@ -262,14 +315,34 @@ public class WorldGeneratorTMP {
                         blockBiome = defaultBiome;
                     }
 
-                    short[] availableBlocks = blockBiome.getBlocks();
                     world.setBiomes(x, blockBiome);
 
-                    short[] activeBlocksSet = FixedBitset.isSet(useLastBiomeFlag, x) ? finalLastBiomes.getBlocks() : availableBlocks;
+                    //плавное смешивание биома
+                    Biomes blend = blendBiomes[x];
+                    short[] activeBlocksSet = (blend != null) ? blend.getBlocks() : blockBiome.getBlocks();
                     int maxBlockIdx = activeBlocksSet.length - 1;
 
-                    for (int y = 0; y < targetY; y++) {
-                        int blockId = activeBlocksSet[Math.min(maxBlockIdx, (int) targetY - y)];
+                    int totalHeight = (int) targetY;
+                    if (totalHeight < targetY) {
+                        totalHeight++;
+                    }
+
+                    //зона перехода (когда уникальные блоки биома кончились)
+                    int transitionZone = totalHeight - maxBlockIdx;
+                    //ставит блоки биома (напр: слой травы, грязи, итд)
+                    if (transitionZone > 0) {
+                        var fillerBlock = content.blocksRegistry.typeById(activeBlocksSet[maxBlockIdx]);
+                        for (int y = 0; y < transitionZone; y++) {
+                            world.set(x, y, fillerBlock, false);
+                        }
+                    }
+
+                    //просто полоска камня вниз когда блоки кончились
+                    int startSurfaceY = Math.max(0, transitionZone);
+                    for (int y = startSurfaceY; y < totalHeight; y++) {
+                        int blockIdx = Math.max(0, Math.min(maxBlockIdx, (int) targetY - y));
+                        short blockId = activeBlocksSet[blockIdx];
+
                         world.set(x, y, content.blocksRegistry.typeById(blockId), false);
                     }
                 }
@@ -277,6 +350,15 @@ public class WorldGeneratorTMP {
         }).join();
     }
 
+    /**
+     * Сглаживает перепад высот между краями мира
+     * <p>
+     * Поскольку левый край мира копируется в правый, между частью справа и скопированной частью может быть огромный перепад высот,
+     * метод считает угол от {@link World#sizeX world.sizeX} - {@link WorldGeneratorConstants#COPY_SIZE COPY_SIZE} - {@link WorldGeneratorConstants#INTERPOLATE_SIZE INTERPOLATE_SIZE}
+     * до {@link World#sizeX world.sizeX} - {@link WorldGeneratorConstants#COPY_SIZE COPY_SIZE} и заполняет блоками
+     * @param lastY последняя высота
+     * @param worldHeights карта высот
+     */
     private static void doItAgainToArrays(float lastY, float[] worldHeights) {
         float lastX = world.sizeX - COPY_SIZE - INTERPOLATE_SIZE;
         float delta = DO_IT_AGAIN_DELTA;
@@ -299,6 +381,14 @@ public class WorldGeneratorTMP {
         } while (!(lastX + COPY_SIZE > world.sizeX));
     }
 
+    /**
+     * Создает точки пещер
+     * <p>
+     * Делит пещеры на поверхностные (генерируются от поверхности) и глубокие, вызывает метод генерации пещер,
+     * пещера станет поверхностной если их количество меньше {@code caves} / {@link WorldGeneratorConstants#CAVES_UPPER_DIVISOR CAVES_UPPER_DIVISOR},
+     * далее с вероятностью {@code rnd.nextFloat()} * {@link WorldGeneratorConstants#CAVES_UPPER_CHANCE CAVES_UPPER_CHANCE} > 1 (при 1.2 это ~16%).
+     * </p>
+     */
     private static void generateCaves() {
         int upper = 0;
         int upperX = CAVES_INITIAL_X;
@@ -315,13 +405,19 @@ public class WorldGeneratorTMP {
             if (isUpper) {
                 upper++;
                 //пещеры с выходом на поверхность
-                generateCave(upperX, findTopmostSolidBlock(upperX, 3),
-                        startRadius, minRadius, maxRadius - 2, CAVE_UPPER_MIN_ANGLE, CAVE_UPPER_MAX_ANGLE, rnd.nextInt(CAVE_UPPER_START_MIN, CAVE_UPPER_START_MAX), CAVE_UPPER_SHOT_CHANCE);
+                generateCave(upperX, findSurfaceY(upperX, 3),
+                        startRadius, minRadius, maxRadius - 2,
+                        CAVE_UPPER_MIN_ANGLE, CAVE_UPPER_MAX_ANGLE,
+                        rnd.nextInt(CAVE_UPPER_START_MIN, CAVE_UPPER_START_MAX),
+                        CAVE_UPPER_SHOT_CHANCE);
                 upperX += (int) ((rnd.nextFloat() * (world.sizeX / (caves / CAVES_X_DIVISOR_UPPER))) + (world.sizeX / (caves / CAVES_X_DIVISOR_UPPER)));
             } else {
                 //пещеры в глубине
-                generateCave(downedX, (int) (findTopmostSolidBlock(downedX, 3) - rnd.nextFloat() * (world.sizeY / CAVES_DOWNED_Y_DIVISOR)),
-                        startRadius, minRadius, maxRadius, CAVE_DOWNED_MIN_ANGLE, CAVE_DOWNED_MAX_ANGLE, rnd.nextInt(CAVE_DOWNED_START_ANGLE), CAVE_DOWNED_SHOT_CHANCE);
+                generateCave(downedX, (int) (findSurfaceY(downedX, 3) - rnd.nextFloat() * (world.sizeY / CAVES_DOWNED_Y_DIVISOR)),
+                        startRadius, minRadius, maxRadius,
+                        CAVE_DOWNED_MIN_ANGLE, CAVE_DOWNED_MAX_ANGLE,
+                        rnd.nextInt(CAVE_DOWNED_START_ANGLE),
+                        CAVE_DOWNED_SHOT_CHANCE);
                 downedX += (int) ((rnd.nextFloat() * (world.sizeX / (caves / CAVES_X_DIVISOR_DOWNED))) + (world.sizeX / (caves / (CAVES_X_DIVISOR_DOWNED * 2))));
             }
         }
@@ -330,12 +426,29 @@ public class WorldGeneratorTMP {
         clearFloatingIslands(world.tiles, world.sizeX, world.sizeY, ISLAND_MAXSIZE_CLEAR_SIZE);
     }
 
-    private static int generateCave(int bx, int by,
-                                    float radius, int minRadius, int maxRadius,
-                                    int minAngle, int maxAngle, int startAngle,
-                                    float shotChance) {
+    /**
+     * Генерирует (копает) пещеру из точки
+     * <p>
+     * Шатается, меняет радиус и пускает новые отростки в рандомных направлениях
+     * </p>
+     * <p>
+     * @param bx стартовый {@code x}
+     * @param by стартовый {@code y}
+     * @param radius стартовый радиус пещеры
+     * @param minRadius минимальный радиус пещеры
+     * @param maxRadius максимальный радиус пещеры
+     * @param minAngle минимальный угол куда может пойти
+     * @param maxAngle максимальный угол куда может пойти
+     * @param startAngle стартовый угол копания
+     * @param shotChance шанс отростка. Чем больше это значение,
+     * тем меньше итоговый шанс, каждый новый отросток текущей пещеры
+     * уменьшает итоговый шанс
+     */
+    private static void generateCave(int bx, int by, float radius, int minRadius, int maxRadius,
+                                    int minAngle, int maxAngle, int startAngle, float shotChance) {
+
         if (minRadius < 1 || minRadius == maxRadius) {
-            return 0;
+            return;
         }
 
         float angle = startAngle;
@@ -385,7 +498,9 @@ public class WorldGeneratorTMP {
                     shotChance *= rnd.nextFloat(CAVE_SHOT_MULT_MIN, CAVE_SHOT_MULT_MAX);
                     int sAngle = (int) ((angle + rnd.nextFloat(CAVE_SHOT_ANGLE_MIN, CAVE_SHOT_ANGLE_MAX)) % 360);
 
-                    generateCave(toBlock(wx), toBlock(wy), radius - 1, minRadius, (int) radius, sAngle - CAVE_EVERY_ANGLE_OFFSET, sAngle + CAVE_EVERY_ANGLE_OFFSET, sAngle, Math.min(CAVE_EVERY_CHANCE_SHOT_MAX, shotChance));
+                    generateCave(toBlock(wx), toBlock(wy), radius - 1, minRadius, (int) radius,
+                            sAngle - CAVE_EVERY_ANGLE_OFFSET, sAngle + CAVE_EVERY_ANGLE_OFFSET,
+                            sAngle, Math.min(CAVE_EVERY_CHANCE_SHOT_MAX, shotChance));
                     lastShot = 0;
                 }
 
@@ -396,16 +511,23 @@ public class WorldGeneratorTMP {
                     int sAngle = (int) ((angle + rnd.nextFloat(CAVE_SHOT_ANGLE_MIN, CAVE_SHOT_ANGLE_MAX)) % 360);
                     boolean left = rnd.nextBoolean();
 
-                    generateCave(toBlock(wx), toBlock(wy), radius, minRadius, (int) radius, left ? CAVE_BRANCH_LEFT_MIN_ANGLE : CAVE_BRANCH_RIGHT_MIN_ANGLE, left ? CAVE_BRANCH_LEFT_MAX_ANGLE : CAVE_BRANCH_RIGHT_MAX_ANGLE, sAngle, Math.min(CAVE_LR_CHANCE_SHOT_MAX, shotChance));
+                    generateCave(toBlock(wx), toBlock(wy), radius, minRadius, (int) radius,
+                            left ? CAVE_BRANCH_LEFT_MIN_ANGLE : CAVE_BRANCH_RIGHT_MIN_ANGLE,
+                            left ? CAVE_BRANCH_LEFT_MAX_ANGLE : CAVE_BRANCH_RIGHT_MAX_ANGLE,
+                            sAngle, Math.min(CAVE_LR_CHANCE_SHOT_MAX, shotChance));
                     lastShot = 0;
                 }
             }
         } while (world.inBounds(toBlock(wx), toBlock(wy - (rnd.nextFloat() * (world.sizeY / CAVE_Y_BOUND_DIVISOR)))) &&
                 totalIters < CAVE_TOTAL_ITERS_MAX && rnd.nextFloat() * world.sizeY > totalIters / CAVE_TOTAL_ITERS_DIVISOR);
-
-        return totalIters;
     }
 
+    /**
+     * Убирает блоки в заданной точке с заданным радиусом
+     * @param bx точка {@code x}
+     * @param by точка {@code y}
+     * @param radius радиус
+     */
     private static void destroyAround(int bx, int by, int radius) {
         int beginX = bx - radius;
         int beginY = by - radius;
@@ -433,8 +555,17 @@ public class WorldGeneratorTMP {
             {1, 0}, {-1, 0}
     };
 
-    //какая то сложнючая но быстрая дичь которую наверняка можно сделать лучше/красивее
+    /**
+     * Проверяет мир на наличие летающих островов, убирает слишком больше
+     * @param tiles блоки
+     * @param sizeX ширина карты
+     * @param sizeY высота карты
+     * @param minSize минимально блоков в острове, при котором он имеет право на жизнь
+     */
+
     public static void clearFloatingIslands(short[] tiles, int sizeX, int sizeY, int minSize) {
+        //Какая то сложнючая но быстрая дичь которую наверняка можно сделать лучше/красивее
+
         int totalColumns = sizeX;
         int cores = Runtime.getRuntime().availableProcessors();
         int chunkSize = (totalColumns / cores) + 1;
@@ -538,11 +669,18 @@ public class WorldGeneratorTMP {
         }).join();
     }
 
+    /**
+     * Обертка для спавна всякой растительности
+     * <p>
+     * Вызывает посадку деревьев, травы и камешков
+     * </p>
+     * @param world мир
+     */
     private static CompletableFuture<Void> generateEnvironments(World world) {
         return CompletableFuture.runAsync(() -> {
             generateTrees(world);
             generateDecorStones(world);
-            generateHerb(world);
+            generateHerb();
         });
     }
 
@@ -551,13 +689,19 @@ public class WorldGeneratorTMP {
         //generateForest(80, 2, 20, 4, 8, "tree0", "tree1");
     }
 
+    /**
+     * Разбрасывает мелкие декоративные камни с шансом {@code Math.random()} * {@link WorldGeneratorConstants#DECOR_STONE_SPAWN_CHANCE DECOR_STONE_SPAWN_CHANCE} < 1
+     * @param world мир
+     */
+
+    //todo а почему тут кстати не генератефорсет
     private static void generateDecorStones(World world) {
         var smallStone = Global.content.blockById("smallStone");
         float chance = DECOR_STONE_SPAWN_CHANCE;
 
         for (int x = 0; x < world.sizeX; x++) {
             if (Math.random() * chance < 1) {
-                int y = findTopmostSolidBlock(x, 3);
+                int y = findSurfaceY(x, 3);
                 if (y - 1 > 0) {
                     var block = world.getBlock(x, y - 1);
                     if (block != null && block.type == Type.SOLID) {
@@ -568,10 +712,29 @@ public class WorldGeneratorTMP {
         }
     }
 
-    private static void generateHerb(World world) {
-        generateForest(HERB_SPAWN_CHANCE, HERB_MIN_FOREST_SIZE, HERB_MAX_FOREST_SIZE, HERB_MIN_SPAWN_DIST, HERB_MAX_SPAWN_DIST, "herb");
+    /**
+     * Засаживает траву
+     */
+    private static void generateHerb() {
+        generateForest(HERB_SPAWN_CHANCE,
+                HERB_MIN_FOREST_SIZE, HERB_MAX_FOREST_SIZE,
+                HERB_MIN_SPAWN_DIST, HERB_MAX_SPAWN_DIST,
+                "herb");
     }
 
+    /**
+     * Универсальная штука для сажания всякого
+     * <p>
+     * Работает в два этапа: сначала раскидывает точки будущих лесов, чтоб они не лезли друг на друга,
+     * а потом садит блоки
+     * </p>
+     * @param chance шанс появления леса
+     * @param minForestSize минимальный размер леса
+     * @param maxForestSize максимальный размер леса
+     * @param minSpawnDistance минимальное расстояние
+     * @param maxSpawnDistance максимальное расстояние
+     * @param structuresName название структур (или блоков), сажаемое выбирается рандомно из данных
+     */
     private static void generateForest(int chance, int minForestSize, int maxForestSize, int minSpawnDistance, int maxSpawnDistance, String... structuresName) {
         byte[] forests = new byte[world.sizeX];
         float lastForest = 0;
@@ -594,7 +757,7 @@ public class WorldGeneratorTMP {
                     String name = structuresName[(int) (Math.random() * structuresName.length)];
                     int distance = (int) (Math.random() * (maxSpawnDistance - minSpawnDistance)) + minSpawnDistance;
                     int xStruct = x + (i * distance);
-                    int yStruct = findTopmostSolidBlock(x + (i * distance), 3);
+                    int yStruct = findSurfaceY(x + (i * distance), 3);
 
                     if (xStruct > 0 && yStruct > 0 && xStruct < forests.length) {
                         Block object = Global.content.blockById(name);
@@ -623,6 +786,10 @@ public class WorldGeneratorTMP {
         }
     }
 
+    /**
+     * Стартует сцену игры (под игрой подразумевается то, что открывается после конца генерации мира)
+     * @param playGameScene сцена игры
+     */
     private static void startGame(PlayGameScene playGameScene) {
         gameScene.onPreloadCompletion(() -> {
             UIMenus.createPlanet().hide();
@@ -632,15 +799,13 @@ public class WorldGeneratorTMP {
         });
     }
 
+    /**
+     * @return случайная точка {@code Point2i} в мире на поверхности
+     */
     private static Point2i randAtGround() {
         var rnd = ThreadLocalRandom.current();
         int randX = rnd.nextInt(0, world.sizeX);
 
-        for (int i = world.sizeY; i > 0; i--) {
-            if (world.getBlock(randX, i).type == Type.SOLID) {
-                return new Point2i(randX, rnd.nextInt(i, world.sizeY));
-            }
-        }
-        return null;
+        return new Point2i(randX, World.findSurfaceY(randX, 2));
     }
 }

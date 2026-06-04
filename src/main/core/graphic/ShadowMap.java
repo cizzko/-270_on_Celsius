@@ -6,7 +6,6 @@ import core.content.blocks.Block.Type;
 import core.content.entity.CreatureEntity;
 import core.content.entity.Hitbox;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
@@ -16,19 +15,26 @@ import static core.WorldCoordinates.toBlock;
 import static core.graphic.WorldDrawing.viewport;
 
 public class ShadowMap {
-    private static int[] shadows;
+    private static byte[] shadows;
     private static HashMap<CreatureEntity, Color> shadowsDynamic = new HashMap<>();
     private static Color deletedColor = Color.CLEAR, deletedColorDynamic = Color.CLEAR, addedColor = Color.CLEAR, addedColorDynamic = Color.CLEAR;
-
     private static final Color tmp = new Color();
+    private final static Color white = new Color(255, 255, 255, 255),
+            brightDirty = new Color(165, 165, 165, 255),
+            dirty = new Color(85, 85, 85, 255),
+            blackDirty = Styles.DIRTY_BRIGHT_BLACK.copy();
+
 
     // todo переписать генерацию и обновление теней
 
     public static void getShadowTo(int x, int y, Color out) {
-        if (x >= 0 && y >= 0 && x < world.sizeX && y < world.sizeY) {
-            out.setRgba8888(shadows[x + world.sizeX * y]);
-        } else {
-            out.set(Color.CLEAR);
+        if (world.inBounds(x, y)) {
+            switch (shadows[x + world.sizeX * y]) {
+                case 0 -> out.set(white);
+                case 1 -> out.set(brightDirty);
+                case 2 -> out.set(dirty);
+                case 3 -> out.set(blackDirty);
+            }
         }
     }
 
@@ -41,26 +47,24 @@ public class ShadowMap {
     }
 
     public static void setShadow(int x, int y, int rgba8888) {
-        if (x < 0 || y < 0 || x >= world.sizeX || y >= world.sizeY) {
-            return;
+        if (world.inBounds(x, y)) {
+            setShadow0(x, y, rgba8888);
         }
-        setShadow0(x, y, rgba8888);
     }
 
     private static void setShadow0(int x, int y, int rgba8888) {
-        shadows[x + world.sizeX * y] = rgba8888;
+        shadows[x + world.sizeX * y] = (byte) rgba8888;
     }
 
     public static int getDegree(int x, int y) {
-        getShadowTo(x, y, tmp);
-        int rgb = tmp.r() + tmp.g() + tmp.b();
-        return (int) Math.abs(Math.ceil(rgb / 198f - 4));
+        if (world.inBounds(x, y)) {
+            return shadows[x + world.sizeX * y];
+        }
+        return 0;
     }
 
     public static CompletableFuture<Void> generate() {
-        shadows = new int[world.sizeX * world.sizeY];
-        Arrays.fill(shadows, Color.white);
-
+        shadows = new byte[world.sizeX * world.sizeY];
         return generateShadows();
     }
 
@@ -71,28 +75,24 @@ public class ShadowMap {
             int chunkSize = (totalColumns / cores) + 1;
 
             world.genPool.submit(() -> IntStream.range(0, cores).parallel().forEach(p -> {
-                int shadowWhite = Color.rgba8888(165, 165, 165, 255);
                 int startChunkX = Math.max(1, p * chunkSize);
                 int endChunkX = Math.min(world.sizeX - 1, startChunkX + chunkSize);
                 for (int y = 1; y < world.sizeY; y++) {
                     for (int x = startChunkX; x < endChunkX; x++) {
                         if (checkHasGasAround(x, y, 1)) {
-                            setShadow0(x, y, shadowWhite);
-                        } else {
-                            setShadow0(x, y, Color.white);
+                            setShadow0(x, y, 1);
                         }
                     }
                 }
             })).join();
 
             world.genPool.submit(() -> IntStream.range(0, cores).parallel().forEach(p -> {
-                int shadowDirtWhite = Color.rgba8888(85, 85, 85, 255);
                 int startChunkX = Math.max(1, p * chunkSize);
                 int endChunkX = Math.min(world.sizeX - 1, startChunkX + chunkSize);
                 for (int y = 1; y < world.sizeY; y++) {
                     for (int x = startChunkX; x < endChunkX; x++) {
                         if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
-                            setShadow0(x, y, shadowDirtWhite);
+                            setShadow0(x, y, 2);
                         }
                     }
                 }
@@ -101,11 +101,10 @@ public class ShadowMap {
             world.genPool.submit(() -> IntStream.range(0, cores).parallel().forEach(p -> {
                 int startChunkX = Math.max(2, p * chunkSize);
                 int endChunkX = Math.min(world.sizeX - 2, startChunkX + chunkSize);
-                int dirtyBrightBlack = Styles.DIRTY_BRIGHT_BLACK.rgba8888();
                 for (int y = 2; y < world.sizeY; y++) {
                     for (int x = startChunkX; x < endChunkX; x++) {
                         if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
-                            setShadow0(x, y, dirtyBrightBlack);
+                            setShadow0(x, y, 3);
                         }
                     }
                 }
@@ -123,23 +122,18 @@ public class ShadowMap {
     private static final Hitbox hitbox = new Hitbox();
 
     private static void updateShadows() {
-
         camera.getBoundsTo(viewport);
         int minX = Math.max(0, toBlock(viewport.x));
         int minY = Math.max(0, toBlock(viewport.y));
         int maxX = Math.min(world.sizeX - 1, toBlock(viewport.x + viewport.width));
         int maxY = Math.min(world.sizeY - 1, toBlock(viewport.y + viewport.height));
 
-        int c1 = Color.rgba8888(165, 165, 165, 255);
-        int c2 = Color.rgba8888(85, 85, 85, 255);
-        int c3 = Styles.DIRTY_BRIGHT_BLACK.rgba8888();
-
         for (int y = minY; y < maxY; y++) {
             for (int x = minX; x < maxX; x++) {
                 if (checkHasGasAround(x, y, 1)) {
-                    setShadow0(x, y, c1);
+                    setShadow0(x, y, 1);
                 } else {
-                    setShadow0(x, y, Color.white);
+                    setShadow0(x, y, 0);
                 }
             }
         }
@@ -147,7 +141,7 @@ public class ShadowMap {
         for (int y = minY; y < maxY; y++) {
             for (int x = minX; x < maxX; x++) {
                 if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
-                    setShadow0(x, y, c2);
+                    setShadow0(x, y, 2);
                 }
             }
         }
@@ -155,7 +149,7 @@ public class ShadowMap {
         for (int y = minY; y < maxY; y++) {
             for (int x = minX; x < maxX; x++) {
                 if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
-                    setShadow0(x, y, c3);
+                    setShadow0(x, y, 3);
                 }
             }
         }

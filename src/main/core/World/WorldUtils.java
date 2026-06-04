@@ -17,7 +17,7 @@ import java.nio.file.Path;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static core.Global.*;
-import static core.World.World.findTopmostSolidBlock;
+import static core.World.World.findSurfaceY;
 import static core.World.WorldGenerator.WorldGeneratorConstants.COPY_SIZE;
 
 public class WorldUtils {
@@ -75,7 +75,7 @@ public class WorldUtils {
     }
 
     private static <E extends CreatureEntity> E spawn0(Creature entity, float bx) {
-        float wy = findTopmostSolidBlock(WorldCoordinates.toBlock(bx), 5) + 1;
+        float wy = findSurfaceY(WorldCoordinates.toBlock(bx), 5) + 1;
 
         if (Physics.checkIntersection(bx, wy, entity.texture)) {
             Application.log.warn("Unable spawning at: ({}, {})", bx, wy);
