@@ -257,8 +257,7 @@ public class WorldGeneratorTMP {
             double rad = Math.toRadians(angle);
             float deltaX = (float) Math.sin(rad);
             float deltaY = (float) Math.cos(rad);
-
-            int currentIntX = (int) lastX;
+            int currentIntX = -1;
 
             for (int j = 0; j < iters; j++) {
                 lastY += deltaY;
@@ -287,11 +286,11 @@ public class WorldGeneratorTMP {
                     if (lastSwapBiomes < BIOME_SWAP_MAX_THRESHOLD && rnd.nextFloat() * lastSwapBiomes < BIOME_SWAP_CHANCE) {
                         blendBiomes[currentIntX] = lastBiomes;
                     }
-                } else if (currentIntX >= worldWidth) {
+                } else if (currentIntX > worldWidth) {
                     break;
                 }
             }
-        } while (lastX + COPY_SIZE + INTERPOLATE_SIZE <= world.sizeX);
+        } while (lastX + COPY_SIZE + INTERPOLATE_SIZE < world.sizeX);
 
         doItAgainToArrays(lastY, worldHeights);
 
@@ -306,9 +305,6 @@ public class WorldGeneratorTMP {
 
                 for (int x = startChunkX; x < endChunkX; x++) {
                     float targetY = worldHeights[x];
-                    if (targetY <= 0) {
-                        continue;
-                    }
 
                     Biomes blockBiome = worldXBiomes[x];
                     if (blockBiome == null) {
@@ -322,13 +318,8 @@ public class WorldGeneratorTMP {
                     short[] activeBlocksSet = (blend != null) ? blend.getBlocks() : blockBiome.getBlocks();
                     int maxBlockIdx = activeBlocksSet.length - 1;
 
-                    int totalHeight = (int) targetY;
-                    if (totalHeight < targetY) {
-                        totalHeight++;
-                    }
-
                     //зона перехода (когда уникальные блоки биома кончились)
-                    int transitionZone = totalHeight - maxBlockIdx;
+                    int transitionZone = (int) (targetY - maxBlockIdx);
                     //ставит блоки биома (напр: слой травы, грязи, итд)
                     if (transitionZone > 0) {
                         var fillerBlock = content.blocksRegistry.typeById(activeBlocksSet[maxBlockIdx]);
@@ -339,7 +330,7 @@ public class WorldGeneratorTMP {
 
                     //просто полоска камня вниз когда блоки кончились
                     int startSurfaceY = Math.max(0, transitionZone);
-                    for (int y = startSurfaceY; y < totalHeight; y++) {
+                    for (int y = startSurfaceY; y < targetY; y++) {
                         int blockIdx = Math.max(0, Math.min(maxBlockIdx, (int) targetY - y));
                         short blockId = activeBlocksSet[blockIdx];
 
@@ -359,7 +350,10 @@ public class WorldGeneratorTMP {
      * @param lastY последняя высота
      * @param worldHeights карта высот
      */
+
+    //todo переименовать
     private static void doItAgainToArrays(float lastY, float[] worldHeights) {
+        //todo INTERPOLATE_SIZE динамически от размера перепада
         float lastX = world.sizeX - COPY_SIZE - INTERPOLATE_SIZE;
         float delta = DO_IT_AGAIN_DELTA;
         float delt = worldHeights[0] - lastY;
@@ -367,18 +361,19 @@ public class WorldGeneratorTMP {
         float deltaX = MathUtil.sin(Math.toRadians(angle));
         float deltaY = MathUtil.cos(Math.toRadians(angle));
 
+        int lastSpawnedX = -1;
+        int lastSpawnedY = -1;
         do {
-            for (int j = 0; j < DO_IT_AGAIN_ITERS; j++) {
-                lastY += deltaY;
-                lastX += deltaX;
-                int currentIntX = Math.max((int) lastX - 1, 0);
-                if (currentIntX < world.sizeX && lastY > 0) {
-                    worldHeights[currentIntX] = lastY;
-                } else {
-                    break;
-                }
+            lastY += deltaY;
+            lastX += deltaX;
+
+            if ((int) lastX != lastSpawnedX || (int) lastY != lastSpawnedY) {
+                lastSpawnedX = (int) lastX;
+                lastSpawnedY = (int) lastY;
+
+                worldHeights[lastSpawnedX] = lastY;
             }
-        } while (!(lastX + COPY_SIZE > world.sizeX));
+        } while ((int) lastX < world.sizeX - COPY_SIZE);
     }
 
     /**
@@ -402,6 +397,10 @@ public class WorldGeneratorTMP {
             int startRadius = Math.max(minRadius, rnd.nextInt(maxRadius));
             boolean isUpper = rnd.nextFloat() * CAVES_UPPER_CHANCE > 1 || (upper < caves / CAVES_UPPER_DIVISOR);
 
+            //todo есть смысл потыкать положение пещер
+            //потому что сейчас все верхние спавнятся в начале мира +-
+            //остальной мир пустует на верхние
+            //todo и убрать умножение в константах, это для тестов
             if (isUpper) {
                 upper++;
                 //пещеры с выходом на поверхность
@@ -410,7 +409,8 @@ public class WorldGeneratorTMP {
                         CAVE_UPPER_MIN_ANGLE, CAVE_UPPER_MAX_ANGLE,
                         rnd.nextInt(CAVE_UPPER_START_MIN, CAVE_UPPER_START_MAX),
                         CAVE_UPPER_SHOT_CHANCE);
-                upperX += (int) ((rnd.nextFloat() * (world.sizeX / (caves / CAVES_X_DIVISOR_UPPER))) + (world.sizeX / (caves / CAVES_X_DIVISOR_UPPER)));
+                //первое меняет случайный разброс, второе минимальное расстояние
+                upperX += (int) ((rnd.nextFloat() * (world.sizeX / (caves / (CAVES_X_DIVISOR_UPPER * 4))) + (world.sizeX / (caves / (CAVES_X_DIVISOR_UPPER / 2)))));
             } else {
                 //пещеры в глубине
                 generateCave(downedX, (int) (findSurfaceY(downedX, 3) - rnd.nextFloat() * (world.sizeY / CAVES_DOWNED_Y_DIVISOR)),
@@ -418,7 +418,7 @@ public class WorldGeneratorTMP {
                         CAVE_DOWNED_MIN_ANGLE, CAVE_DOWNED_MAX_ANGLE,
                         rnd.nextInt(CAVE_DOWNED_START_ANGLE),
                         CAVE_DOWNED_SHOT_CHANCE);
-                downedX += (int) ((rnd.nextFloat() * (world.sizeX / (caves / CAVES_X_DIVISOR_DOWNED))) + (world.sizeX / (caves / (CAVES_X_DIVISOR_DOWNED * 2))));
+                downedX += (int) ((rnd.nextFloat() * (world.sizeX / (caves / (CAVES_X_DIVISOR_DOWNED * 2)))) + (world.sizeX / (caves / CAVES_X_DIVISOR_DOWNED)));
             }
         }
         log.debug("spawned {} caves", caves);
@@ -506,7 +506,7 @@ public class WorldGeneratorTMP {
 
                 //пещера влево вправо
                 if (rnd.nextFloat() * (shotChance * CAVES_LR_CHANCE) < 1 && lastShot > CAVE_LR_MIN_ITERS) {
-                    shotChance *= (int) (rnd.nextFloat(CAVE_SHOT_MULT_MIN, CAVE_SHOT_MULT_MAX));
+                    shotChance *= (rnd.nextFloat(CAVE_SHOT_MULT_MIN, CAVE_SHOT_MULT_MAX));
 
                     int sAngle = (int) ((angle + rnd.nextFloat(CAVE_SHOT_ANGLE_MIN, CAVE_SHOT_ANGLE_MAX)) % 360);
                     boolean left = rnd.nextBoolean();
