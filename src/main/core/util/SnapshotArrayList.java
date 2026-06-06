@@ -228,4 +228,11 @@ public class SnapshotArrayList<T> extends ObjectArrayList<T> {
         modified();
         super.unstableSort(comp);
     }
+
+    public void removeAt(int i) {
+        modified();
+        size--;
+        a[i] = a[size];
+        a[size] = null;
+    }
 }

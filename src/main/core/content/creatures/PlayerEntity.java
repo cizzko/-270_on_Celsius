@@ -70,7 +70,6 @@ public class PlayerEntity
         lastDamageTime = 0;
 
         scheduler.post(() -> {
-            if (player != null) return;
             Global.player = WorldUtils.spawn(creature, true);
             camera.position.set(player.x() + CAMERA_OFFSET_X, player.y() + CAMERA_OFFSET_Y);
             camera.update();
@@ -119,8 +118,8 @@ public class PlayerEntity
                 jumpedTicks = 0;
         } else {
             if (hasFloor && Math.abs(velocity.y) <= GAP && input.pressed(GLFW_KEY_SPACE)) {
-                acceleration.y += 18f * GRAVITY;
-                jumpedTicks = 2.5f * Math.max(Time.delta, 0.01f);
+                velocity.y += 18.35f * GRAVITY;
+                jumpedTicks = 2.5f / Time.ONE_SECOND;
             }
         }
 
@@ -165,10 +164,6 @@ public class PlayerEntity
 
     public CollisionResult onCollide(HitboxComponent them) {
         return CollisionResult.WALKTHROUGH;
-    }
-
-    public String toString() {
-        return "Player#" + id;
     }
 
     public boolean hasDraggingItem() {

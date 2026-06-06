@@ -8,7 +8,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
+import static core.WorldCoordinates.toBlock;
 import static core.WorldCoordinates.toWorld;
+import static core.math.MathUtil.toByteExact;
 
 public class Block implements ContentType, Loadable {
     public static Block AIR;
@@ -36,8 +38,8 @@ public class Block implements ContentType, Loadable {
         this.texture = cnt.readTexture("Texture");
         this.requirements = cnt.readItemStacksUnresolved(cnt.node().path("Requirements"));
 
-        this.tileCountX = (byte) toWorld(texture.width());
-        this.tileCountY = (byte) toWorld(texture.height());
+        this.tileCountX = toByteExact(toBlock(toWorld(texture.width())));
+        this.tileCountY = toByteExact(toBlock(toWorld(texture.height())));
 
         String createWithId = cnt.node().path("CreateWith").asText(null);
         this.createWith = (createWithId == null || createWithId.equals("player")) ? null : cnt.readBlockUnresolved("CreateWith");
@@ -92,8 +94,8 @@ public class Block implements ContentType, Loadable {
     }
 
     @Override
-    public String toString() {
-        return "StaticObjectsConst['" + id + "']";
+    public final String toString() {
+        return getClass().getSimpleName() + "['" + id + "']";
     }
 
     public enum Type {

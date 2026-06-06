@@ -28,7 +28,7 @@ import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;
 
 public final class Window extends Application {
-    private static final Logger lwjglLogger = LogManager.getLogger("org.lwjgl.LWJGL");
+    private static final Logger lwjglLogger = LogManager.getLogger("LWJGL");
 
     public static int defaultWidth = 1920, defaultHeight = 1080;
     public static boolean defaultFullscreen = true;
@@ -59,7 +59,7 @@ public final class Window extends Application {
             Configuration.DEBUG_STACK.set(true);
         }
 
-       glfwSetErrorCallback(Global.app.keep(new GLFWErrorCallback() {
+       glfwSetErrorCallback(keep(new GLFWErrorCallback() {
            private final Marker GLFW = MarkerManager.getMarker("GLFW");
            private final Int2ObjectOpenHashMap<String> ERROR_CODES;
            {
@@ -152,13 +152,13 @@ public final class Window extends Application {
         input.init();
         input.addListener(uiScene);
 
-        glfwSetWindowFocusCallback(glfwWindow, Global.app.keep(new GLFWWindowFocusCallback() {
+        glfwSetWindowFocusCallback(glfwWindow, keep(new GLFWWindowFocusCallback() {
             @Override
             public void invoke(long window, boolean focused) {
                 windowFocused = focused;
             }
         }));
-        glfwSetWindowCloseCallback(glfwWindow, Global.app.keep(new GLFWWindowCloseCallback() {
+        glfwSetWindowCloseCallback(glfwWindow, keep(new GLFWWindowCloseCallback() {
             @Override
             public void invoke(long window) {
                 quit();
@@ -166,17 +166,13 @@ public final class Window extends Application {
         }));
 
         assets.load(Atlas.class, "sprites", AssetsManager.LoadType.SYNC);
-        Shaders.repeat = FutureUtil.join(Global.assets.load(Shader.class, "repeat", AssetsManager.LoadType.SYNC));
-        StackfulRender.defaultShader = FutureUtil.join(Global.assets.load(Shader.class, "default", AssetsManager.LoadType.SYNC));
+        Shaders.repeat = FutureUtil.join(assets.load(Shader.class, "repeat", AssetsManager.LoadType.SYNC));
+        StackfulRender.defaultShader = FutureUtil.join(assets.load(Shader.class, "default", AssetsManager.LoadType.SYNC));
         Render.init();
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
 
         glfwShowWindow(glfwWindow);
-        // int[] w = new int[1], h = new int[1];
-        // glfwGetFramebufferSize(glfwWindow, w, h);
-
-        // postEffect = new PostEffect(w[0], h[0], );
 
         lang = new LangTranslation();
         lang.load(); // TODO придумать как загружать и перезагружать
@@ -203,9 +199,6 @@ public final class Window extends Application {
 
                 log.info("Screen resolution: {}x{}", w, h);
             }
-        } else {
-            // у меня на wayland такое возможно
-            // не хочу это сейчас исправлять, поскольку есть планы как вывести тут важную информацию
         }
 
         // Это интел-специфичная штука
@@ -229,8 +222,6 @@ public final class Window extends Application {
         // 5) Обновление мира
         //    1) Обновление статических объектов
         //    2) Обновление динамических объектов
-        // TODO Почему порядок именно такой? Если думать о мире, как об объекте
-        //   с которым динамические сущности взаимодействуют, то разве не должен быть обратным порядок?
         // 6) Отрисовка мира в порядке отображения
         updateTime();
 
@@ -240,11 +231,14 @@ public final class Window extends Application {
         gameScene.loop();
         StackfulRender.pushRenderList();
         rq.endFrame();
-
-        glfwSwapBuffers(glfwWindow);
-        glClear(GL_COLOR_BUFFER_BIT);
+        swapBuffers();
 
         nextFrame();
+    }
+
+    private void swapBuffers() {
+        glfwSwapBuffers(glfwWindow);
+        glClear(GL_COLOR_BUFFER_BIT);
     }
 
     @Override

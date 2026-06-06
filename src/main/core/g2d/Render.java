@@ -2,6 +2,9 @@ package core.g2d;
 
 import org.intellij.lang.annotations.MagicConstant;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+
 import static org.lwjgl.opengl.GL11.*;
 
 public final class Render {
@@ -14,6 +17,18 @@ public final class Render {
     public static final byte PRIMITIVE_TYPE_LINES          = 2; // GL_LINES
     public static final byte PRIMITIVE_TYPE_LINE_STRIP     = 3; // GL_LINE_STRIP
 
+    @Retention(RetentionPolicy.SOURCE)
+    @MagicConstant(intValues = {PRIMITIVE_TYPE_TRIANGLES, PRIMITIVE_TYPE_TRIANGLE_STRIP, PRIMITIVE_TYPE_LINES, PRIMITIVE_TYPE_LINE_STRIP})
+    public @interface PrimitiveType {}
+
+    @Retention(RetentionPolicy.SOURCE)
+    @MagicConstant(intValues = {LAYER_BACKGROUND, LAYER_BLOCKS, LAYER_ENTITIES, LAYER_GUI, LAYER_DEBUG})
+    public @interface Layer {}
+
+    @Retention(RetentionPolicy.SOURCE)
+    @MagicConstant(intValues = {BLENDING_NORMAL, BLENDING_PREMUL, BLENDING_DISABLE})
+    public @interface Blending {}
+
     // Всего: 1 << 3
     public static final byte LAYER_BACKGROUND = 0;
     public static final byte LAYER_BLOCKS     = 1;
@@ -23,6 +38,8 @@ public final class Render {
 
     // Всего: 1 << 3
     public static final byte BLENDING_NORMAL  = 0;
+    public static final byte BLENDING_PREMUL  = 1;
+    public static final byte BLENDING_DISABLE = 2;
 
     // SortKey:
     // [ 63..62 | 61..59  | 58..56  | 55..40    | 39..32   | 31..24 |  23..0   ]
@@ -44,7 +61,7 @@ public final class Render {
     private static final int   UBLOCK_MASK = (byte) 0xFF;         // 8 битов
     private static final int   INDEX_MASK = 0xFFFFFF;             // 24 бита
 
-    public static int toGlType(@MagicConstant(intValues = {PRIMITIVE_TYPE_TRIANGLES, PRIMITIVE_TYPE_TRIANGLE_STRIP, PRIMITIVE_TYPE_LINES, PRIMITIVE_TYPE_LINE_STRIP}) int primitiveType) {
+    public static int toGlType(@PrimitiveType int primitiveType) {
         return switch (primitiveType) {
             case -1 -> -1; // забавно
             case PRIMITIVE_TYPE_TRIANGLES -> GL_TRIANGLES;
@@ -55,17 +72,17 @@ public final class Render {
         };
     }
 
-    @MagicConstant(intValues = {PRIMITIVE_TYPE_TRIANGLES, PRIMITIVE_TYPE_TRIANGLE_STRIP, PRIMITIVE_TYPE_LINES, PRIMITIVE_TYPE_LINE_STRIP})
+    @PrimitiveType
     public static byte getPrimitiveType(long sortKey) {
         return (byte) ((sortKey >>> PRIMITIVE_TYPE_SHIFT) & PRIMITIVE_TYPE_MASK);
     }
 
-    @MagicConstant(intValues = {LAYER_BLOCKS})
+    @Layer
     public static byte getLayer(long sortKey) {
         return (byte) ((sortKey >>> LAYER_SHIFT) & LAYER_MASK);
     }
 
-    @MagicConstant(intValues = {BLENDING_NORMAL})
+    @Blending
     public static byte getBlending(long sortKey) {
         return (byte) ((sortKey >>> BLEND_SHIFT) & BLEND_MASK);
     }
@@ -87,9 +104,9 @@ public final class Render {
     }
 
     public static long makeSortKey(
-            byte primitiveType,
-            byte layer,
-            byte blending,
+            @PrimitiveType byte primitiveType,
+            @Layer byte layer,
+            @Blending byte blending,
             short texture,
             byte shader,
             int ublock,

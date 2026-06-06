@@ -36,9 +36,9 @@ public class Physics {
     // Минимальное смещение, при котором происходит движение. Не вижу смысла сжигать процессор ради меньших значений
     private static final float MOVE_THRESHOLD = 1e-6f;
 
-    // Скорость, которая набирается при падении ровно с 5 блоков (при GRAVITY = 0.0123f)
+    // Скорость, которая набирается при падении ровно с 5 блоков
     private static final float FALL_DAMAGE_SPEED_THRESHOLD = 0.35f; // sqrt(2 * GRAVITY * 5)
-    // Множитель, гарантирующий ровно 10 ХП урона при падении с 5 блоков для сущности с массой 1.0
+    // Множитель, гарантирующий ровно 10 ХП урона при падении с 5 блоков для сущности с массой 1.0 (эталон - игрок)
     private static final float FALL_DAMAGE_MULTIPLIER = 10f / (FALL_DAMAGE_SPEED_THRESHOLD*FALL_DAMAGE_SPEED_THRESHOLD);
 
     public static void updatePhysics(PlayGameScene scene) {

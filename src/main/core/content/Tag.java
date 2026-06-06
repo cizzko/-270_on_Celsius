@@ -3,7 +3,7 @@ package core.content;
 import java.util.List;
 import java.util.Set;
 
-public class Tag<C extends ContentType> implements ContentType {
+public final class Tag<C extends ContentType> implements ContentType {
     private final String id;
     private final Class<C> type;
     private final Set<String> ids;
@@ -28,7 +28,13 @@ public class Tag<C extends ContentType> implements ContentType {
 
     public List<C> elements() { return elements; }
 
-    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        return o instanceof Tag<?> tag && id.equals(tag.id);
+    }
+
+    public int hashCode() { return id.hashCode(); }
+
     public String toString() {
         return "Tag<" + type.getSimpleName() + ">['" + id + "']";
     }

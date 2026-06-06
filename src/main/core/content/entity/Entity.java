@@ -6,6 +6,7 @@ import static core.Global.entityPool;
 
 public interface Entity extends HitboxComponent {
 
+    // TODO unsigned short внутри
     short id();
     void setId(int id);
 
@@ -19,5 +20,5 @@ public interface Entity extends HitboxComponent {
         entityPool.releaseId(this);
     }
 
-    default boolean isRemoved() { return entityPool.getEntity(id()) == null; }
+    default boolean isRemoved() { return !entityPool.exists(id()); }
 }

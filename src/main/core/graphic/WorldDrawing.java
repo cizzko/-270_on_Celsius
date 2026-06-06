@@ -109,11 +109,6 @@ public final class WorldDrawing {
     }
 
     private static class Chunk {
-        private final RenderList renderList = Render.queue().allocRList(RenderList.KIND_STATIC);
-
-        private boolean drawStateChanged;
-        private int lastPreviewBlocks;
-        private final Rectangle lastBounds = new Rectangle();
         private final Point2i pos = new Point2i();
 
         static final int MARGIN = 2;
@@ -289,13 +284,12 @@ public final class WorldDrawing {
             drawDamage(obj, hp, x, y);
 
             var blockEntity = world.getEntity(x, y);
-            if (blockEntity != null && blockEntity.drawStateChanged()) {
-                drawStateChanged = true;
-                blockEntity.draw(renderList);
+            if (blockEntity != null) {
+                blockEntity.draw();
             }
         }
 
-        boolean USE_DEFAULT = true;
+        boolean USE_DEFAULT = false;
 
         void draw() {
             if (Global.input.justPressed(GLFW.GLFW_KEY_L)) {
@@ -310,37 +304,9 @@ public final class WorldDrawing {
 
             if (USE_DEFAULT) {
                 notMergingDraw();
-                return;
-            }
-
-            // StackfulRender.pushRList();
-            // Render.queue().flush();
-
-            if (drawStateChanged()) {
-                lastBounds.set(viewport);
-                lastPreviewBlocks = WorldDrawing.PREVIEW_BLOCKS.size();
-                drawStateChanged = false;
-
-                // renderList.setDirty(true);
-                // renderList.clear();
-
-                // renderList.begin();
-
-                // StackfulRender.rlist(renderList);
-                mergingDraw();
-                // renderList.end();
             } else {
-                // renderList.setDirty(false);
+                mergingDraw();
             }
-            // Render.queue().push(renderList);
-            // Render.queue().flush();
-        }
-
-        private boolean drawStateChanged() {
-            return true ||
-                   drawStateChanged ||
-                   lastPreviewBlocks != WorldDrawing.PREVIEW_BLOCKS.size() ||
-                   !viewport.equalsEps(lastBounds, 1e-4f);
         }
 
         private void notMergingDraw() {

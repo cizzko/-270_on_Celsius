@@ -16,7 +16,7 @@ import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 public class JavaInterpreter {
-    private static final Logger log = LogManager.getLogger();
+    private static final Logger log = LogManager.getLogger("Console");
 
     public static JShell jshell;
 

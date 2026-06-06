@@ -9,9 +9,14 @@ public final class Fill {
     private Fill() {
     }
 
+    public static final String WHITE_RECT   = "World/white";
+    public static final String WHITE_CIRCLE = "World/circle";
+
     private static float lineWidth = 1f;
 
     private static float prevLineWidth = lineWidth;
+
+    public static final Drawable cachedRect = atlas.get(WHITE_RECT), cachedCircle = atlas.get(WHITE_CIRCLE);
 
     public static void lineWidth(float w) {
         prevLineWidth = lineWidth;
@@ -38,7 +43,7 @@ public final class Fill {
         float kx = dx / len * lineWidth;
         float ky = dy / len * lineWidth;
 
-        StackfulRender.rect(atlas.get("World/white"), rgba8888,
+        StackfulRender.rect(cachedRect, rgba8888,
                 x - ky, y + kx,
                 x + kx, y - kx,
                 x2 + kx, y2 - kx,
@@ -69,10 +74,10 @@ public final class Fill {
     }
 
     public static void rect(float x, float y, float width, float height, int rgba8888) {
-        StackfulRender.draw(atlas.get("World/white"), rgba8888, x, y, width, height);
+        StackfulRender.draw(cachedRect, rgba8888, x, y, width, height);
     }
 
     public static void circle(float x, float y, float radius, Color color) {
-        StackfulRender.draw(atlas.get("World/circle"), color.rgba8888(), x, y, radius, radius);
+        StackfulRender.draw(cachedCircle, color.rgba8888(), x, y, radius, radius);
     }
 }

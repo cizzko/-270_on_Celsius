@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.content.serialize.SerializableContent;
+import core.math.MathUtil;
 
 import java.io.IOException;
 
@@ -22,17 +23,10 @@ public abstract class TileData implements SerializableContent {
     public static class MultiblockPart extends TileData {
         public byte rootOffsetX, rootOffsetY;
 
-        static boolean isByte(int v) {
-            return v >= Byte.MIN_VALUE && v <= Byte.MAX_VALUE;
-        }
-
         public MultiblockPart(@JsonProperty("rootOffsetX") int rootOffsetX,
                               @JsonProperty("rootOffsetY") int rootOffsetY) {
-            if (!(isByte(rootOffsetX) && isByte(rootOffsetY))) {
-                throw new IllegalArgumentException();
-            }
-            this.rootOffsetX = (byte) rootOffsetX;
-            this.rootOffsetY = (byte) rootOffsetY;
+            this.rootOffsetX = MathUtil.toByteExact(rootOffsetX);
+            this.rootOffsetY = MathUtil.toByteExact(rootOffsetY);
         }
 
         @Override

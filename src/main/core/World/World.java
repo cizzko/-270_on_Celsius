@@ -44,17 +44,16 @@ import static core.World.WorldGenerator.WorldGeneratorConstants.COPY_SIZE;
 /// ```
 @JsonSerialize(using = World.WorldSerializer.class)
 public final class World {
-    static int lastId = -1;
+    static short lastId = -1;
     static Block lastBlock = null;
+    static final Point2i tmp = new Point2i();
+
     public final ForkJoinPool genPool = new ForkJoinPool(availableProcessors);
 
     public final int sizeX, sizeY;
     public final /* unsigned */ short[] tiles;
     public final /* unsigned */ byte[] hp;
 
-    // Будущее к которому стремимся:
-    // public final byte[] temperature;
-    // public final byte[] light;
     @JsonDeserialize(using = DataDeserializer.class)
     public final Int2ObjectOpenHashMap<TileData> data;
     @JsonDeserialize(using = EntityDeserializer.class)
@@ -145,7 +144,7 @@ public final class World {
         this.hp = new byte[sizeX * sizeY];
         this.biomes = new Biomes[sizeX];
         this.data = new Int2ObjectOpenHashMap<>();
-        this.entity = new  Int2ObjectOpenHashMap<>();
+        this.entity = new Int2ObjectOpenHashMap<>();
         this.meta = meta;
     }
 
@@ -209,7 +208,7 @@ public final class World {
     }
 
     public void setData(int x, int y, TileData data) {
-        Objects.requireNonNull(data);
+        // Objects.requireNonNull(data);
         this.data.put(pos2index(x, y), data);
     }
 
@@ -220,8 +219,6 @@ public final class World {
     public @Nullable BlockEntity getEntity(Point2i pos) {
         return getEntity(pos.x, pos.y);
     }
-
-    private static final Point2i tmp = new Point2i();
 
     public @Nullable BlockEntity getEntity(int x, int y) {
         var block = getBlock(x, y);
@@ -257,18 +254,20 @@ public final class World {
         if (!inBounds(x, y)) {
             return null;
         }
-        int blockId = tiles[pos2index(x, y)];
+        short blockId = tiles[pos2index(x, y)];
 
         //прикольно бустит скорость но надо потестить получше
         if (lastId != blockId) {
             lastId = blockId;
-            return lastBlock = Global.content.blocksRegistry.typeById(Short.toUnsignedInt((short) blockId));
+            return lastBlock = Global.content.blocksRegistry.typeById(Short.toUnsignedInt(blockId));
         }
 
         return lastBlock;
     }
 
     public Block getBlock(Point2i pos) { return getBlock(pos.x, pos.y); }
+
+    public int getHp(Point2i pos) { return getHp(pos.x, pos.y); }
 
     /// @return {@code -1} в случае выхода за границу. В остальных случаях здоровье в отрезке `[0, 255]`
     public int getHp(int x, int y) {
@@ -277,7 +276,7 @@ public final class World {
     }
 
     /// @param newHp новое значение здоровья блока. Должно быть в отрезке `[0, 255]`
-    public void setHp(int x, int y, /* unsigned byte */ int newHp) {
+    public void setHp(int x, int y, @MathUtil.UnsignedByte int newHp) {
         // Global.app.ensureMainThread();
         if (newHp < 0 || newHp >= (1 << 8)) {
             throw new IllegalArgumentException("HP out of range: [0, 255]");
@@ -291,13 +290,17 @@ public final class World {
 
                 for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
                     for (int blockX = 0; blockX < rootBlock.tileCountX; blockX++) {
-                        hp[pos2index(x + blockX, y + blockY)] = (byte) newHp;
+                        setHpImpl(x + blockX, y + blockY, newHp);
                     }
                 }
             } else {
-                hp[pos2index(x, y)] = (byte) newHp;
+                setHpImpl(x, y, newHp);
             }
         }
+    }
+
+    private void setHpImpl(int x, int y, int newHp) {
+        hp[pos2index(x, y)] = (byte) newHp;
     }
 
     public int getBlockId(Point2i pos) { return getBlockId(pos.x, pos.y); }

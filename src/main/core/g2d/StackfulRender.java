@@ -13,6 +13,10 @@ import java.util.Arrays;
 
 import static core.g2d.Render.*;
 
+/// Удобная несинхронизированная оболочка над [RenderList],
+/// которая рассматривает параметры как состояние _фрейма_,
+/// который в свою очередь можно модифицировать путём Copy-On-Write
+/// через углубление по стеку
 public final class StackfulRender {
     private StackfulRender() {}
 
@@ -94,12 +98,9 @@ public final class StackfulRender {
         public static final int UBLOCK_UNSET = -1;
 
         public RenderList rlist;
-        @MagicConstant(intValues = {PRIMITIVE_TYPE_TRIANGLES, PRIMITIVE_TYPE_TRIANGLE_STRIP, PRIMITIVE_TYPE_LINES, PRIMITIVE_TYPE_LINE_STRIP})
-        public byte primitiveType;
-        @MagicConstant(intValues = {LAYER_BACKGROUND, LAYER_BLOCKS, LAYER_ENTITIES, LAYER_GUI, LAYER_DEBUG})
-        public byte layer;
-        @MagicConstant(intValues = {BLENDING_NORMAL})
-        public byte blending;
+        public @PrimitiveType byte primitiveType;
+        public @Layer byte layer;
+        public @Blending byte blending;
 
         public Shader shader;
 
@@ -263,12 +264,9 @@ public final class StackfulRender {
 
     public static void draw(
             RenderList rlist,
-            @MagicConstant(intValues = {PRIMITIVE_TYPE_TRIANGLES, PRIMITIVE_TYPE_TRIANGLE_STRIP, PRIMITIVE_TYPE_LINES, PRIMITIVE_TYPE_LINE_STRIP})
-            byte primitiveType,
-            @MagicConstant(intValues = {LAYER_BACKGROUND, LAYER_BLOCKS, LAYER_ENTITIES, LAYER_GUI, LAYER_DEBUG})
-            byte layer,
-            @MagicConstant(intValues = {BLENDING_NORMAL})
-            byte blending,
+            @PrimitiveType byte primitiveType,
+            @Layer byte layer,
+            @Blending byte blending,
             short texId,
             byte shader,
             int ublock,
@@ -313,12 +311,9 @@ public final class StackfulRender {
 
     public static void draw(
             RenderList rlist,
-            @MagicConstant(intValues = {PRIMITIVE_TYPE_TRIANGLES, PRIMITIVE_TYPE_TRIANGLE_STRIP, PRIMITIVE_TYPE_LINES, PRIMITIVE_TYPE_LINE_STRIP})
-            byte primitiveType,
-            @MagicConstant(intValues = {LAYER_BACKGROUND, LAYER_BLOCKS, LAYER_ENTITIES, LAYER_GUI, LAYER_DEBUG})
-            byte layer,
-            @MagicConstant(intValues = {BLENDING_NORMAL})
-            byte blending,
+            @PrimitiveType byte primitiveType,
+            @Layer byte layer,
+            @Blending byte blending,
             short texId,
             byte shaderId,
             int ublock,
@@ -372,11 +367,11 @@ public final class StackfulRender {
         );
     }
 
-    public static void z(@MagicConstant(intValues = {LAYER_BACKGROUND, LAYER_BLOCKS, LAYER_ENTITIES, LAYER_GUI, LAYER_DEBUG}) byte z) {
+    public static void z(@Layer byte z) {
         state.layer = z;
     }
 
-    public static void blending(@MagicConstant(intValues = {BLENDING_NORMAL}) byte blending) {
+    public static void blending(@Blending byte blending) {
         state.blending = blending;
     }
 
@@ -414,9 +409,7 @@ public final class StackfulRender {
         state.rlist = renderList;
     }
 
-    public static void primitiveType(
-            @MagicConstant(intValues = {PRIMITIVE_TYPE_TRIANGLES, PRIMITIVE_TYPE_TRIANGLE_STRIP, PRIMITIVE_TYPE_LINES, PRIMITIVE_TYPE_LINE_STRIP})
-            byte primitiveType) {
+    public static void primitiveType(@PrimitiveType byte primitiveType) {
         state.primitiveType = primitiveType;
     }
 }

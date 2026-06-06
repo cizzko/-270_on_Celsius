@@ -50,7 +50,7 @@ public final class LangTranslation {
     }
 
     private void loadFile() throws IOException {
-        try (var reader = Global.assets.resourceReader(TRANSLATE_JSONC)) {
+        try (var reader = Global.assets.resourceStream(TRANSLATE_JSONC)) {
             var deserialized = Config.json.readValue(reader, new TypeReference<Map<String, Map<String, String>>>() {});
             loadLanguages(deserialized);
             var langMap = deserialized.get(language);

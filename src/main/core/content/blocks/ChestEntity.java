@@ -152,7 +152,4 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
                 (int) ((worldPos.x - (x - 61)) / 54),
                 (int) ((worldPos.y - (y + 56)) / 54));
     }
-
-    @Override
-    public final boolean drawStateChanged() { return true; }
 }

@@ -4,11 +4,11 @@ import core.Global;
 import core.WorldCoordinates;
 import core.math.Point2i;
 import core.math.Vector2f;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.glfw.*;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import static core.Window.glfwWindow;
@@ -24,7 +24,7 @@ public class InputHandler {
 
     private final long[] pressed, clicked, repeated;
     private final long[] justPressed, justClicked;
-    private final ArrayList<InputListener> listeners = new ArrayList<>();
+    private final ObjectArrayList<InputListener> listeners = new ObjectArrayList<>();
     private final Point2i mousePos = new Point2i();
     private final Point2i mouseBlockPos = new Point2i();
     private final Vector2f mouseWorldPos = new Vector2f();
@@ -116,9 +116,11 @@ public class InputHandler {
         glfwSetScrollCallback(glfwWindow, Global.app.keep(new GLFWScrollCallback() {
             @Override
             public void invoke(long window, double xoffset, double yoffset) {
-                scrollOffset = Math.clamp((float)yoffset + scrollOffset, 0, 50);
-                scrollChange = (float) yoffset;
-                onScroll((float) xoffset, (float) yoffset);
+                float xoffsetf = (float) xoffset;
+                float yoffsetf = (float) yoffset;
+                scrollOffset = Math.clamp(yoffsetf + scrollOffset, 0, 50);
+                scrollChange = yoffsetf;
+                onScroll(xoffsetf, yoffsetf);
             }
         }));
         glfwSetWindowSizeCallback(glfwWindow, Global.app.keep(new GLFWWindowSizeCallback() {
@@ -133,7 +135,6 @@ public class InputHandler {
         glfwSetCharCallback(glfwWindow, Global.app.keep(new GLFWCharCallback() {
             @Override
             public void invoke(long window, int codepoint) {
-                var c = Character.toChars(codepoint);
                 onCodepoint(codepoint);
             }
         }));
@@ -155,10 +156,6 @@ public class InputHandler {
     }
 
     // region InputListener
-
-    private void onResize(int w, int h) {
-        listeners.forEach(i -> i.onResize(w, h));
-    }
 
     // endregion
     // region Public API
@@ -239,6 +236,10 @@ public class InputHandler {
     }
 
     // endregion
+
+    private void onResize(int w, int h) {
+        listeners.forEach(i -> i.onResize(w, h));
+    }
 
     private static void setBit(long[] bits, int i) {
         int idx = i >> 6;

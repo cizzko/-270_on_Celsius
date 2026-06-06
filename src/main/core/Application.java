@@ -133,12 +133,8 @@ public class Application {
         prevSwapTime = System.nanoTime();
     }
 
-    public final int getFps() {
+    public final int fps() {
         return fps;
-    }
-
-    public final int getFpsMeasurement() {
-        return fpsMeasurement;
     }
 
     public static void open(String uri) {

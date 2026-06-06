@@ -33,6 +33,8 @@ public class EntityPool {
 
     public Int2ObjectOpenHashMap<Entity> entities() { return entities; }
 
+    public boolean exists(int id) { return entities.containsKey(id); }
+
     public @Nullable Entity getEntity(int id) {
         return entities.get(id);
     }

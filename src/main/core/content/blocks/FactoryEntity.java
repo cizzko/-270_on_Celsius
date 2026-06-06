@@ -57,7 +57,7 @@ public class FactoryEntity extends BaseBlockEntity<Factory> {
         }
 
         if (input.hasRequired() && fuel.hasRequired() && block.malfunction != Factory.Malfunction.CRITICAL) {
-            progress += Time.MS_PER_TICK * Time.delta;
+            progress += Time.ONE_MILLISECOND * Time.delta;
 
             while (progress >= block.productionSpeed) {
                 produceItem();
@@ -76,7 +76,6 @@ public class FactoryEntity extends BaseBlockEntity<Factory> {
                     fuel.removeFirst();
                     input.removeFirst();
                 }
-                // Sound.playSound(block.sound, Sound.types.EFFECT, false);
             }
         }
     }
@@ -139,9 +138,6 @@ public class FactoryEntity extends BaseBlockEntity<Factory> {
 
         assert p.currentToken() == JsonToken.END_OBJECT;
     }
-
-    @Override
-    public final boolean drawStateChanged() { return false; }
 
     @Override
     public void drawGui() {

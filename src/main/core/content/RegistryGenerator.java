@@ -2,12 +2,13 @@ package core.content;
 
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectAVLTreeMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import java.lang.reflect.Array;
 
 final class RegistryGenerator<C extends ContentType> {
     final Class<C> type;
-    final Object2ObjectAVLTreeMap<String, C> name2Type = new Object2ObjectAVLTreeMap<>();
+    final Object2ObjectOpenHashMap<String, C> name2Type = new Object2ObjectOpenHashMap<>();
     final Object2IntOpenHashMap<C> type2Id = new Object2IntOpenHashMap<>();
     final C[] id2Type;
     int id;

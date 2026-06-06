@@ -6,6 +6,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.intellij.lang.annotations.MagicConstant;
+import org.jetbrains.annotations.Debug;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 
@@ -27,7 +28,6 @@ public final class RenderQueue implements Disposable {
     public static final int VERTEX_PER_TRIANGLE = 6;
 
     public static final boolean USE_INDEXES = true;
-    private static int MAX_ITEMS;
 
     final Pool<RenderItem> ritemAlloc;
     final Pool<RenderList> rlistAlloc;
@@ -74,9 +74,7 @@ public final class RenderQueue implements Disposable {
 
     public RenderItem allocItem() { return ritemAlloc.obtain(); }
 
-    public int getVertexCountPerQuad(
-            @MagicConstant(intValues = {PRIMITIVE_TYPE_TRIANGLES, PRIMITIVE_TYPE_TRIANGLE_STRIP, PRIMITIVE_TYPE_LINES, PRIMITIVE_TYPE_LINE_STRIP})
-            byte primitiveType) {
+    public int getVertexCountPerQuad(@PrimitiveType byte primitiveType) {
         return switch (primitiveType) {
             case PRIMITIVE_TYPE_TRIANGLE_STRIP -> 4;
             case PRIMITIVE_TYPE_TRIANGLES -> USE_INDEXES ? 4 : 6;
@@ -140,8 +138,6 @@ public final class RenderQueue implements Disposable {
 
         var items = rlist.items;
 
-        MAX_ITEMS = max(MAX_ITEMS, items.size());
-
         Arrays.parallelSort(items.elements(), 0, items.size(), RenderItem.Comparator.INSTANCE);
 
         var vertices = rlist.vertices;
@@ -165,6 +161,7 @@ public final class RenderQueue implements Disposable {
 
         VertexFormat currentVertexFormat = defaultShader.vertexFormat();
 
+        //noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < items.size(); ++i) {
             var item = items.get(i);
 
@@ -200,7 +197,8 @@ public final class RenderQueue implements Disposable {
                 }
 
                 var shader = ResourceCache.shadersById.get(shaderId);
-                Objects.requireNonNull(shader, ResourceCache.shadersById::toString);
+                Objects.requireNonNull(shader);
+
                 if (currentShaderId != shaderId) {
                     shader.use();
                     mesh.bindVao();
@@ -212,8 +210,7 @@ public final class RenderQueue implements Disposable {
                     block.setTo(shader);
                 }
 
-                if (currentTextureId != textureId) // TODO ubo?
-                {
+                if (currentTextureId != textureId) {
                     shader.setUniformTexture2d("u_texture", textureId, 0);
                 }
 
@@ -254,6 +251,14 @@ public final class RenderQueue implements Disposable {
             case BLENDING_NORMAL -> {
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            }
+            case BLENDING_PREMUL -> {
+                glEnable(GL_BLEND);
+                glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA,
+                                    GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+            }
+            case BLENDING_DISABLE -> {
+                glDisable(GL_BLEND);
             }
             default -> throw new IllegalStateException("Unknown blending " + blending);
         }

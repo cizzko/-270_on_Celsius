@@ -39,10 +39,6 @@ public final class UniformBuffer {
         return block.id;
     }
 
-    public void free(Block block) {
-        // todo хз когда
-    }
-
     public void clear() {
         hash2blocks.clear();
         id2blocks.clear();

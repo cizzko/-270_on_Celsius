@@ -10,6 +10,7 @@ import core.util.JavaInterpreter;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.Platform;
 
 import java.io.BufferedReader;
@@ -50,11 +51,11 @@ public final class AssetsManager {
             case WINDOWS -> Path.of(System.getenv("AppData"), appName).toAbsolutePath();
             case MACOSX -> workingDir; // TODO дарвин
             case LINUX -> {
-                String userHome = System.getProperty("user.home");
                 String xdgDataHome = System.getenv("XDG_DATA_HOME");
                 if (xdgDataHome != null) {
                     yield Path.of(xdgDataHome, appName).toAbsolutePath();
                 }
+                String userHome = System.getProperty("user.home");
                 yield Path.of(userHome,  "/.local/share/", appName).toAbsolutePath();
             }
             default -> throw new IllegalStateException("Unexpected value: " + Platform.get());
@@ -151,18 +152,10 @@ public final class AssetsManager {
         return assetsDir;
     }
 
-    public InputStream resourceStream(String path) throws IOException {
+    public @Nullable InputStream resourceStream(String path) throws IOException {
         Path resolve = assetsDir.resolve(path);
         if (Files.isRegularFile(resolve)) {
             return Files.newInputStream(resolve);
-        }
-        return null;
-    }
-
-    public BufferedReader resourceReader(String path) throws IOException {
-        Path resolve = assetsDir.resolve(path);
-        if (Files.isRegularFile(resolve)) {
-            return Files.newBufferedReader(resolve, StandardCharsets.UTF_8);
         }
         return null;
     }
@@ -259,8 +252,8 @@ public final class AssetsManager {
 
     void unloadInternal(Asset<?> assetRef) {
 
-        Set<Asset<?>> visited = Collections.newSetFromMap(new IdentityHashMap<>());
-        ArrayDeque<Asset<?>> queue = new ArrayDeque<>();
+        var visited = new ReferenceOpenHashSet<Asset<?>>();
+        var queue = new ArrayDeque<Asset<?>>();
         queue.add(assetRef);
         Asset<?> dep;
         while (!queue.isEmpty()) {

@@ -40,7 +40,4 @@ public class WorkbenchEntity extends BaseBlockEntity<Workbench> {
         assert p.currentToken() == JsonToken.START_OBJECT;
         assert p.nextToken() == JsonToken.END_OBJECT;
     }
-
-    @Override
-    public final boolean drawStateChanged() { return false; }
 }

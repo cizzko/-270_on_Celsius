@@ -106,7 +106,7 @@ public class Styles {
     public static final Style.Text DEBUG_TEXT = new Style.Text() {
         @Override
         public void load() {
-            color = Styles.DIRTY_BRIGHT_BLACK;
+            color = Styles.DIRTY_BRIGHT_WHITE;
             font = assets.load(Font.class, "arial.ttf").resultNow();
         }
     };

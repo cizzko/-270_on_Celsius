@@ -32,7 +32,7 @@ public final class AtlasGenerator {
     // Большие текстуры в атласе это подозрительно
     private static final int SOFT_MAX_EXTENT = 1024;
     // квадратные атласы причём грани степени двойки
-    private static boolean QUADRATIC = true;
+    private static final boolean QUADRATIC = false;
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
 
@@ -292,7 +292,7 @@ public final class AtlasGenerator {
     }
 
     private static void writeHash(Path file, ArrayList<Region> regions) throws IOException {
-        try (var wr = MAPPER.createGenerator(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
+        try (var wr = MAPPER.createGenerator(Files.newOutputStream(file))) {
             wr.writeStartObject();
             for (Region region : regions) {
                 wr.writeStringField(region.path.toString(), HexFormat.of().formatHex(region.hash));
@@ -302,7 +302,7 @@ public final class AtlasGenerator {
     }
 
     private static void writeMetadata(Path file, int w, int h, ArrayList<Region> regions, Region errorRegion) throws IOException {
-        try (var wr = MAPPER.createGenerator(Files.newBufferedWriter(file, StandardCharsets.UTF_8))) {
+        try (var wr = MAPPER.createGenerator(Files.newOutputStream(file))) {
             wr.writeStartObject();
 
             wr.writeNumberField("width", w);

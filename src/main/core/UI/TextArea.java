@@ -8,7 +8,7 @@ import java.util.Objects;
 public class TextArea extends BaseElement<TextArea> {
     private static final int FLAG_TRANSLATION = ELEMENT_LAST_FLAG << 1;
 
-    private final GlyphCache cache = new GlyphCache();
+    protected final GlyphCache cache = new GlyphCache();
 
     public String text;
     public Style.Text style;

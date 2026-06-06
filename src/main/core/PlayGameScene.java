@@ -126,7 +126,7 @@ public final class PlayGameScene extends GameScene {
             float alpha = 1 - (float)Math.pow(1 - base, Time.delta);
             camera.position.lerp(player.x() + CAMERA_OFFSET_X, player.y() + CAMERA_OFFSET_Y, alpha);
         } else {
-            camera.position.set(player.x() + CAMERA_OFFSET_Y, player.y() + CAMERA_OFFSET_Y);
+            camera.position.set(player.x() + CAMERA_OFFSET_X, player.y() + CAMERA_OFFSET_Y);
         }
 
         camera.update();

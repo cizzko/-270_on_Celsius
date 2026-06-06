@@ -172,6 +172,10 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
     }
 
     public final int hashCode() {
-        return HashCommon.murmurHash3(id);
+        return id;
+    }
+
+    public String toString() {
+        return getClass().getSimpleName() + "#" + id;
     }
 }

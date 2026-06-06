@@ -53,28 +53,4 @@ public class Factory extends Block {
         AVERAGE_MISWORKING, // misworking
         CRITICAL // full stop working, need rebuild
     }
-
-    /*
-
-    public void breakFactory(Malfunction breakingType) {
-        this.breakingType = breakingType;
-
-        switch (breakingType) {
-            case WEAK_SLOW -> maxProductionProgress *= (int) ((Math.random() * 4) + 1);
-            case AVERAGE_STOP -> maxProductionProgress = Integer.MAX_VALUE;
-            case AVERAGE_MISWORKING -> System.arraycopy(outputObjects, 0, outputObjects, 0, outputObjects.length - 1);
-            case WEAK_OVERCONSUMPTION -> needEnergy *= (float) ((Math.random() * 4) + 1);
-        }
-    }
-
-    public void removeBreakEffect(Malfunction breakingType) {
-        this.breakingType = (breakingType == Malfunction.CRITICAL ? Malfunction.CRITICAL : null);
-
-        switch (breakingType) {
-            case WEAK_SLOW, AVERAGE_STOP -> maxProductionProgress = Integer.parseInt(Config.getProperties(path).get("ProductionSpeed"));
-            case AVERAGE_MISWORKING -> outputObjects = transformItemStack(Config.getProperties(path).get("OutputObjects"));
-            case WEAK_OVERCONSUMPTION -> needEnergy = Integer.parseInt(Config.getProperties(path).get("NeedEnergy"));
-        }
-    }
-    */
 }

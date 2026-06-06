@@ -1,5 +1,9 @@
 package core.math;
 
+import org.jetbrains.annotations.Range;
+
+import java.lang.annotation.*;
+
 import static java.lang.Byte.toUnsignedInt;
 
 public final class MathUtil {
@@ -63,14 +67,14 @@ public final class MathUtil {
 
     public static byte incrementExact(byte b) {
         if (b == Byte.MAX_VALUE) {
-            throw new ArithmeticException("integer overflow");
+            throw new ArithmeticException("byte overflow");
         }
         return (byte)(b + 1);
     }
 
     public static byte decrementExact(byte b) {
         if (b == Byte.MIN_VALUE) {
-            throw new ArithmeticException("integer overflow");
+            throw new ArithmeticException("byte overflow");
         }
         return (byte)(b - 1);
     }
@@ -81,4 +85,11 @@ public final class MathUtil {
 
     public static float cos(double v) { return (float) Math.cos(v); }
     public static float sin(double v) { return (float) Math.sin(v); }
+
+    @Retention(RetentionPolicy.CLASS)
+    @Target({ElementType.TYPE_USE})
+    @Range(from = 0, to = (1 << 8))
+    public @interface UnsignedByte {
+
+    }
 }
