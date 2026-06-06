@@ -1,15 +1,15 @@
 package core.g2d;
 
+import core.Global;
 import core.g2d.UniformBuffer.Uniform;
-import core.math.Mat3;
+import core.graphic.Camera2;
+import core.math.Vector2f;
 import core.pool.Pool;
 import core.pool.Poolable;
 import core.graphic.Color;
 import core.util.Disposable;
-import org.intellij.lang.annotations.MagicConstant;
 
 import java.util.ArrayDeque;
-import java.util.Arrays;
 
 import static core.g2d.Render.*;
 
@@ -43,7 +43,8 @@ public final class StackfulRender {
         float v2 = BytePack.fromB16toFloat32(texture.v2);
 
         var ublockObj = queue.uniformBuffer().allocate();
-        ublockObj.push(Uniform.of("u_proj", state.transform));
+        ublockObj.push(Uniform.of("u_logical_ratio", Global.camera.projectionScale));
+        ublockObj.push(Uniform.of("u_camera_pos", Global.camera.position));
         ublockObj.push(Uniform.of("u_reg_uv", u1, v1));
         ublockObj.push(Uniform.of("u_reg_size", u2 - u1, v2 - v1));
 
@@ -105,7 +106,8 @@ public final class StackfulRender {
         public Shader shader;
 
         public int ublock;
-        public final Mat3 transform = new Mat3();
+        public final Vector2f logicalRatio = new Vector2f();
+        public final Vector2f cameraPosition = new Vector2f();
 
         public int colorRgba8888;
         public float xScale, yScale;
@@ -121,7 +123,8 @@ public final class StackfulRender {
             this.blending = old.blending;
             this.shader = old.shader;
             this.ublock = old.ublock;
-            this.transform.set(old.transform);
+            this.logicalRatio.set(old.logicalRatio);
+            this.cameraPosition.set(old.cameraPosition);
             this.colorRgba8888 = old.colorRgba8888;
             this.xScale = old.xScale;
             this.yScale = old.yScale;
@@ -137,13 +140,15 @@ public final class StackfulRender {
             shader = defaultShader;
             colorRgba8888 = Color.white;
             xScale = yScale = 1;
-            Arrays.fill(transform.val, 0);
+            logicalRatio.set(0, 0);
+            cameraPosition.set(0, 0);
         }
 
         int ublock() {
             if (ublock == State.UBLOCK_UNSET) {
                 var block = queue.uniformBuffer().allocate();
-                block.push(Uniform.of("u_proj", transform));
+                block.push(Uniform.of("u_logical_ratio", logicalRatio));
+                block.push(Uniform.of("u_camera_pos", cameraPosition));
                 return queue.uniformBuffer().push(block);
             }
             return ublock;
@@ -158,7 +163,8 @@ public final class StackfulRender {
                    ", blending=" + blending +
                    ", shader=" + shader +
                    ", ublock=" + ublock +
-                   ", transform=" + transform +
+                   ", logicalRatio=" + logicalRatio +
+                   ", cameraPosition=" + cameraPosition +
                    ", colorRgba8888=" + colorRgba8888 +
                    ", xScale=" + xScale +
                    ", yScale=" + yScale +
@@ -388,8 +394,9 @@ public final class StackfulRender {
     public static void color(int rgba8888) { state.colorRgba8888 = rgba8888; }
     public static void resetColor() { state.colorRgba8888 = Color.white; }
 
-    public static void matrix(Mat3 matrix) {
-        state.transform.set(matrix);
+    public static void camera(Camera2 camera) {
+        state.logicalRatio.set(camera.projectionScale);
+        state.cameraPosition.set(camera.position);
         resetUniformBlock();
     }
 

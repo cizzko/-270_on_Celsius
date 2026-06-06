@@ -1,9 +1,6 @@
 package core;
 
-import core.UI.BaseGroup;
-import core.UI.Dialog;
-import core.UI.Element;
-import core.UI.Group;
+import core.UI.*;
 import core.graphic.GuiDrawing;
 import core.g2d.Fill;
 import core.g2d.Render;
@@ -99,7 +96,7 @@ public final class UIScene implements InputListener {
 
     public void draw() {
         StackfulRender.z(Render.LAYER_GUI);
-        StackfulRender.matrix(view.projection);
+        StackfulRender.camera(view);
 
         rootElement.draw();
 

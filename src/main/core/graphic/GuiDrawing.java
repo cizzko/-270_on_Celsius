@@ -3,7 +3,6 @@ package core.graphic;
 import core.UI.Styles;
 import core.Window;
 import core.content.ItemStack;
-import core.content.entity.Hitbox;
 import core.content.items.Item;
 import core.g2d.*;
 import core.math.Point2i;
@@ -104,7 +103,7 @@ public class GuiDrawing {
 
     public static void drawBlocksGui() {
         StackfulRender.z(Render.LAYER_GUI);
-        StackfulRender.matrix(uiScene.view().projection);
+        StackfulRender.camera(uiScene.view());
         camera.getBoundsTo(viewport);
         int minX = Math.max(0, toBlock(viewport.x));
         int minY = Math.max(0, toBlock(viewport.y));

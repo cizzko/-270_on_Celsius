@@ -80,7 +80,7 @@ public final class PlayGameScene extends GameScene {
         sun.draw();
         postEffect.draw();
         StackfulRender.z(LAYER_BLOCKS);
-        StackfulRender.matrix(camera.projection); // Центрируем камеру на позицию игрока
+        StackfulRender.camera(camera); // Центрируем камеру на позицию игрока
         WorldDrawing.drawBlocks();
         StackfulRender.z(LAYER_ENTITIES);
         WorldDrawing.drawEntities();

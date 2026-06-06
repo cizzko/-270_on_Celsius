@@ -17,11 +17,8 @@
     }
   },
   "uniforms": {
-    "u_proj": {
-      "type": "MATRIX4F"
-    },
-    "u_texture": {
-      "type": "TEXTURE2D"
-    }
+    "u_logical_ratio": { "type": "VEC2F" },
+    "u_camera_pos": { "type": "VEC2F" },
+    "u_texture": { "type": "TEXTURE2D" }
   }
 }

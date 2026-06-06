@@ -6,6 +6,7 @@ import core.util.Disposable;
 import java.util.Map;
 import java.util.Objects;
 
+import static core.math.Mat3.*;
 import static org.lwjgl.opengl.GL46.*;
 
 public final class Shader implements Disposable {
@@ -125,48 +126,27 @@ public final class Shader implements Disposable {
         glUniform2f(uniformLocation(name), x, y);
     }
 
-    private static final float[] mat4adapt = new float[16];
+    private static final float[] tmpMat3 = new float[9];
 
-    public void setUniformTransforming(String name, float[] val) {
-        float[] mat4 = mat4adapt;
-        toMat4(val, mat4);
-        glUniformMatrix4fv(uniformLocation(name), false, mat4);
+    public void setUniformMat3(String name, float[] val) {
+        glUniformMatrix3fv(uniformLocation(name), false, val);
     }
 
-    public void setUniformTransforming(String name, Mat3 val) {
-        setUniformTransforming(name, val.val);
+    public void setUniformMat3(String name, Mat3 val) {
+        setUniformMat3(name, val.val);
     }
 
-    public void setUniformTransforming(String name,
-                                       float m00, float m01, float m02,
-                                       float m10, float m11, float m12,
-                                       float m20, float m21, float m22) {
-        float[] res = mat4adapt;
-        res[0]  = m00;
-        res[4]  = m01;
-        res[12] = m02;
+    public void setUniformMat3(String name,
+                               float m00, float m01, float m02,
+                               float m10, float m11, float m12,
+                               float m20, float m21, float m22) {
+        float[] res = tmpMat3;
 
-        res[1]  = m10;
-        res[5]  = m11;
-        res[10] = m22;
+        res[M00] = m00; res[M01] = m01; res[M02] = m02;
+        res[M10] = m10; res[M11] = m11; res[M12] = m12;
+        res[M20] = m20; res[M21] = m21; res[M22] = m22;
 
-        res[13] = m12;
-        res[15] = 1;
-        glUniformMatrix4fv(uniformLocation(name), false, res);
-    }
-
-    private static void toMat4(float[] val, float[] res) {
-
-        res[0]  = val[Mat3.M00];
-        res[4]  = val[Mat3.M01];
-        res[12] = val[Mat3.M02];
-
-        res[1]  = val[Mat3.M10];
-        res[5]  = val[Mat3.M11];
-        res[10] = val[Mat3.M22];
-
-        res[13] = val[Mat3.M12];
-        res[15] = 1;
+        glUniformMatrix3fv(uniformLocation(name), false, res);
     }
 
     private int uniformLocation(String name) {
@@ -216,7 +196,7 @@ public final class Shader implements Disposable {
             TEXTURE2D,
             VEC2F,
             FLOAT,
-            MATRIX4F
+            MATRIX3F
         }
     }
 }

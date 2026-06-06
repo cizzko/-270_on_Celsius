@@ -1,6 +1,7 @@
 package core.g2d;
 
 import core.math.Mat3;
+import core.math.Vector2f;
 import core.pool.Pool;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
@@ -59,6 +60,7 @@ public final class UniformBuffer {
 
         static OfInt of(String name, int value) { return new OfInt(name, value); }
         static OfMat3 of(String name, Mat3 value) { return new OfMat3(name, value); }
+        static OfVec2f of(String name, Vector2f value) { return new OfVec2f(name, value.x, value.y); }
         static OfVec2f of(String name, float x, float y) { return new OfVec2f(name, x, y); }
         static OfFloat of(String name, float value) { return new OfFloat(name, value); }
         static OfTexture2d of(String name, short texId, int bindSlot) { return new OfTexture2d(name, texId, bindSlot); }
@@ -103,7 +105,7 @@ public final class UniformBuffer {
 
             @Override
             public void setTo(Shader shader) {
-                shader.setUniformTransforming(name,
+                shader.setUniformMat3(name,
                         m00, m01, m02,
                         m10, m11, m12,
                         m20, m21, m22);

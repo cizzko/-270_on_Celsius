@@ -1,6 +1,5 @@
 package core;
 
-import core.EventHandling.EventHandler;
 import core.UI.Styles;
 import core.assets.AssetsManager;
 import core.g2d.*;
@@ -24,7 +23,7 @@ public final class MenuScene extends GameScene {
         Debug.initMenu();
 
         camera.setToOrthographic(input.getWidth(), input.getHeight());
-        StackfulRender.matrix(camera.projection);
+        StackfulRender.camera(camera);
     }
 
     @Override
