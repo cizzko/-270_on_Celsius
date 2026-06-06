@@ -180,7 +180,7 @@ public final class RenderQueue implements Disposable {
                     shaderId == currentShaderId &&
                     ublock == currentUblock) &&
                     // разрыв, придётся отдельным вызовом сделать
-                    (groupVertexOffset + item.vertexCount == item.vertexOffset);
+                    (groupVertexOffset + groupVertexCount == item.vertexOffset);
 
             if (sameGroup) {
                 groupIndexCount  += item.indexCount;
