@@ -68,13 +68,13 @@ public final class World {
     public boolean getRootBlockPosTo(Point2i pos, Point2i out) { return getRootBlockPosTo(pos.x, pos.y, out); }
 
     public boolean getRootBlockPosTo(int x, int y, Point2i out) {
-        if (getData(x, y) instanceof TileData.MultiblockPart part) {
-            out.set(x - part.rootOffsetX, y - part.rootOffsetY);
-            return true;
-        }
         var block = getBlock(x, y);
         if (block != null && block.isMultiblock()) {
-            out.set(x, y); // Корень
+            if (getData(x, y) instanceof TileData.MultiblockPart part) {
+                out.set(x - part.rootOffsetX, y - part.rootOffsetY);
+            } else {
+                out.set(x, y); // Корень
+            }
             return true;
         }
         return false;

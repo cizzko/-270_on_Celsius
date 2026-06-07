@@ -39,6 +39,7 @@ public class WorldGenerator {
         long startTime = System.currentTimeMillis();
         int sizeX = params.sizeX;
         int sizeY = params.sizeY;
+
         World world = new World(
                 new World.Meta(sizeX, sizeY, params.seed, null, params.description,
                         System.currentTimeMillis()/1000, 0));
@@ -73,9 +74,9 @@ public class WorldGenerator {
                     //  Самый простой способ: в области видимости прогрузить как есть
                     //  (область маленькая и навряд ли даже потоки нужны будут)
                     //  а остальное уже потом крутить в фоне
-                    .thenCompose(__ -> {
+                    .thenRun(() -> {
                         log("regenerating shadow map " + (System.currentTimeMillis() - startTime) + "ms");
-                        return ShadowMap.generate();
+                        ShadowMap.generate();
                     })
                     .thenRun(() -> {
                         log("generating temperature map " + (System.currentTimeMillis() - startTime) + "ms");

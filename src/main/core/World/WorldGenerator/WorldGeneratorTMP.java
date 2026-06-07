@@ -23,6 +23,9 @@ import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import static core.Global.*;
+import static core.Global.world;
+import static core.PlayGameScene.CAMERA_OFFSET_X;
+import static core.PlayGameScene.CAMERA_OFFSET_Y;
 import static core.World.World.findSurfaceY;
 import static core.World.WorldGenerator.WorldGeneratorConstants.*;
 import static core.WorldCoordinates.toBlock;
@@ -55,7 +58,7 @@ public class WorldGeneratorTMP {
         if (!simple) {
             CompletableFuture.runAsync(
                             timedRun("generating relief",
-                            () -> generateRelief(world)))
+                            () -> generateRelief(world)), world.genPool)
                     .thenRun(
                             timedRun("generating environment",
                             () -> generateEnvironments(world)))
@@ -65,15 +68,15 @@ public class WorldGeneratorTMP {
                     .thenRun(
                             timedRun("generating: copy",
                             () -> copy()))
-                    .thenCompose(
-                            timedCompose("regenerating shadow map",
+                    .thenRun(
+                            timedRun("regenerating shadow map",
                             () -> ShadowMap.generate()))
                     .thenRun(
                             timedRun("generating temperature map",
                             () -> TemperatureMap.create()))
                     .thenRun(
                             timedRun("generating player",
-                            () -> player = WorldUtils.spawn(content.creatureById("player"), true)))
+                            () -> spawnPlayer()))
                     .thenRun(() -> {
                         log("generating done! Total time: " + (System.currentTimeMillis() - totalStartTime) + "ms");
                         Debug.saveWorldImage();
@@ -85,7 +88,9 @@ public class WorldGeneratorTMP {
                         }
                     });
         } else {
-            CompletableFuture.runAsync(timedRun("generating flat world", () -> generateFlatWorld(world)))
+            CompletableFuture.runAsync(
+                            timedRun("generating flat world",
+                            () -> generateFlatWorld(world)), world.genPool)
                     .thenRun(
                             timedRun("regenerating shadow map",
                             () -> ShadowMap.generate()))
@@ -94,7 +99,7 @@ public class WorldGeneratorTMP {
                             () -> TemperatureMap.create()))
                     .thenRun(
                             timedRun("generating player",
-                            () -> Global.player = WorldUtils.spawn(content.creatureById("player"), true)))
+                            () -> spawnPlayer()))
                     .thenRun(() -> {
                         log("generating done! Total time: " + (System.currentTimeMillis() - totalStartTime) + "ms");
                         Debug.saveWorldImage();
@@ -106,6 +111,12 @@ public class WorldGeneratorTMP {
                         }
                     });
         }
+    }
+
+    private static void spawnPlayer() {
+        Global.player = WorldUtils.spawn(content.creatureById("player"), true);
+        camera.position.set(player.x() + CAMERA_OFFSET_X, player.y() + CAMERA_OFFSET_Y);
+        camera.update();
     }
 
     /**
@@ -183,22 +194,20 @@ public class WorldGeneratorTMP {
         int cores = Runtime.getRuntime().availableProcessors();
         int chunkSize = (world.sizeX / cores) + 1;
 
-        world.genPool.submit(() -> {
-            IntStream.range(0, cores).parallel().forEach(p -> {
-                int startChunkX = p * chunkSize;
-                int endChunkX = Math.min(world.sizeX, startChunkX + chunkSize);
+        IntStream.range(0, cores).parallel().forEach(p -> {
+            int startChunkX = p * chunkSize;
+            int endChunkX = Math.min(world.sizeX, startChunkX + chunkSize);
 
-                for (int x = startChunkX; x < endChunkX; x++) {
-                    world.setBiomes(x, defaultBiome);
+            for (int x = startChunkX; x < endChunkX; x++) {
+                world.setBiomes(x, defaultBiome);
 
-                    int endY = world.sizeY / 2;
-                    for (int y = 0; y < endY; y++) {
-                        short blockId = availableBlocks[Math.min(maxBlockIdx, endY - y - 1)];
-                        world.set(x, y, content.blocksRegistry.typeById(blockId), false);
-                    }
+                int endY = world.sizeY / 2;
+                for (int y = 0; y < endY; y++) {
+                    short blockId = availableBlocks[Math.min(maxBlockIdx, endY - y - 1)];
+                    world.set(x, y, content.blocksRegistry.typeById(blockId), false);
                 }
-            });
-        }).join();
+            }
+        });
     }
 
     /**
@@ -296,48 +305,46 @@ public class WorldGeneratorTMP {
         int cores = Runtime.getRuntime().availableProcessors();
         int chunkSize = (worldWidth / cores) + 1;
 
-        world.genPool.submit(() -> {
-            IntStream.range(0, cores).parallel().forEach(p -> {
-                int startChunkX = p * chunkSize;
-                int endChunkX = Math.min(worldWidth, startChunkX + chunkSize);
-                Biomes defaultBiome = Biomes.getDefault();
+        IntStream.range(0, cores).parallel().forEach(p -> {
+            int startChunkX = p * chunkSize;
+            int endChunkX = Math.min(worldWidth, startChunkX + chunkSize);
+            Biomes defaultBiome = Biomes.getDefault();
 
-                for (int x = startChunkX; x < endChunkX; x++) {
-                    float targetY = worldHeights[x];
+            for (int x = startChunkX; x < endChunkX; x++) {
+                float targetY = worldHeights[x];
 
-                    Biomes blockBiome = worldXBiomes[x];
-                    if (blockBiome == null) {
-                        blockBiome = defaultBiome;
-                    }
+                Biomes blockBiome = worldXBiomes[x];
+                if (blockBiome == null) {
+                    blockBiome = defaultBiome;
+                }
 
-                    world.setBiomes(x, blockBiome);
+                world.setBiomes(x, blockBiome);
 
-                    //плавное смешивание биома
-                    Biomes blend = blendBiomes[x];
-                    short[] activeBlocksSet = (blend != null) ? blend.getBlocks() : blockBiome.getBlocks();
-                    int maxBlockIdx = activeBlocksSet.length - 1;
+                //плавное смешивание биома
+                Biomes blend = blendBiomes[x];
+                short[] activeBlocksSet = (blend != null) ? blend.getBlocks() : blockBiome.getBlocks();
+                int maxBlockIdx = activeBlocksSet.length - 1;
 
-                    //зона перехода (когда уникальные блоки биома кончились)
-                    int transitionZone = (int) (targetY - maxBlockIdx);
-                    //ставит блоки биома (напр: слой травы, грязи, итд)
-                    if (transitionZone > 0) {
-                        var fillerBlock = content.blocksRegistry.typeById(activeBlocksSet[maxBlockIdx]);
-                        for (int y = 0; y < transitionZone; y++) {
-                            world.set(x, y, fillerBlock, false);
-                        }
-                    }
-
-                    //просто полоска камня вниз когда блоки кончились
-                    int startSurfaceY = Math.max(0, transitionZone);
-                    for (int y = startSurfaceY; y < targetY; y++) {
-                        int blockIdx = Math.max(0, Math.min(maxBlockIdx, (int) targetY - y));
-                        short blockId = activeBlocksSet[blockIdx];
-
-                        world.set(x, y, content.blocksRegistry.typeById(blockId), false);
+                //зона перехода (когда уникальные блоки биома кончились)
+                int transitionZone = (int) (targetY - maxBlockIdx);
+                //ставит блоки биома (напр: слой травы, грязи, итд)
+                if (transitionZone > 0) {
+                    var fillerBlock = content.blocksRegistry.typeById(activeBlocksSet[maxBlockIdx]);
+                    for (int y = 0; y < transitionZone; y++) {
+                        world.set(x, y, fillerBlock, false);
                     }
                 }
-            });
-        }).join();
+
+                //просто полоска камня вниз когда блоки кончились
+                int startSurfaceY = Math.max(0, transitionZone);
+                for (int y = startSurfaceY; y < targetY; y++) {
+                    int blockIdx = Math.max(0, Math.min(maxBlockIdx, (int) targetY - y));
+                    short blockId = activeBlocksSet[blockIdx];
+
+                    world.set(x, y, content.blocksRegistry.typeById(blockId), false);
+                }
+            }
+        });
     }
 
     /**
@@ -569,103 +576,101 @@ public class WorldGeneratorTMP {
         int cores = Runtime.getRuntime().availableProcessors();
         int chunkSize = (totalColumns / cores) + 1;
 
-        world.genPool.submit(() -> {
-            IntStream.range(0, cores).parallel().forEach(p -> {
-                int startChunkX = p * chunkSize;
-                int endChunkX = Math.min(sizeX, startChunkX + chunkSize);
+        IntStream.range(0, cores).parallel().forEach(p -> {
+            int startChunkX = p * chunkSize;
+            int endChunkX = Math.min(sizeX, startChunkX + chunkSize);
 
-                IntArrayList localStack = new IntArrayList(LOCAL_STACK_CAPACITY);
-                int[] islandBuffer = new int[minSize];
+            IntArrayList localStack = new IntArrayList(LOCAL_STACK_CAPACITY);
+            int[] islandBuffer = new int[minSize];
 
-                for (int y = 0; y < sizeY; y++) {
-                    for (int x = startChunkX; x < endChunkX; x++) {
-                        int globalIndex = x + sizeX * y;
+            for (int y = 0; y < sizeY; y++) {
+                for (int x = startChunkX; x < endChunkX; x++) {
+                    int globalIndex = x + sizeX * y;
 
-                        short tile = tiles[globalIndex];
-                        if (tile != 0 && (tile & 0x8000) == 0) {
-                            boolean hasNeighbors = false;
+                    short tile = tiles[globalIndex];
+                    if (tile != 0 && (tile & 0x8000) == 0) {
+                        boolean hasNeighbors = false;
+                        for (int[] dir : directions) {
+                            int nx = x + dir[0];
+                            int ny = y + dir[1];
+                            if (nx >= 0 && nx < sizeX && ny >= 0 && ny < sizeY) {
+                                if (tiles[nx + sizeX * ny] != 0) {
+                                    hasNeighbors = true;
+                                    break;
+                                }
+                            }
+                        }
+
+                        tiles[globalIndex] |= 0x8000;
+
+                        if (!hasNeighbors) {
+                            tiles[globalIndex] = 0;
+                            world.destroy(x, y);
+                            continue;
+                        }
+
+                        int islandSize = 0;
+                        localStack.clear();
+                        localStack.add(globalIndex);
+                        boolean touchesBorder = false;
+
+                        while (!localStack.isEmpty()) {
+                            int currentIdx = localStack.removeInt(localStack.size() - 1);
+
+                            if (islandSize < minSize) {
+                                islandBuffer[islandSize] = currentIdx;
+                            }
+                            islandSize++;
+
+                            int cx = currentIdx % sizeX;
+                            int cy = currentIdx / sizeX;
+
+                            if (cx == startChunkX || cx == endChunkX - 1) {
+                                touchesBorder = true;
+                            }
+
                             for (int[] dir : directions) {
-                                int nx = x + dir[0];
-                                int ny = y + dir[1];
-                                if (nx >= 0 && nx < sizeX && ny >= 0 && ny < sizeY) {
-                                    if (tiles[nx + sizeX * ny] != 0) {
-                                        hasNeighbors = true;
-                                        break;
+                                int nx = cx + dir[0];
+                                int ny = cy + dir[1];
+
+                                if (nx >= startChunkX && nx < endChunkX && ny >= 0 && ny < sizeY) {
+                                    int nextIdx = nx + sizeX * ny;
+                                    short nextTile = tiles[nextIdx];
+
+                                    if (nextTile != 0 && (nextTile & 0x8000) == 0) {
+                                        tiles[nextIdx] |= 0x8000;
+                                        localStack.add(nextIdx);
                                     }
                                 }
                             }
+                        }
 
-                            tiles[globalIndex] |= 0x8000;
-
-                            if (!hasNeighbors) {
-                                tiles[globalIndex] = 0;
-                                world.destroy(x, y);
-                                continue;
-                            }
-
-                            int islandSize = 0;
-                            localStack.clear();
-                            localStack.add(globalIndex);
-                            boolean touchesBorder = false;
-
-                            while (!localStack.isEmpty()) {
-                                int currentIdx = localStack.removeInt(localStack.size() - 1);
-
-                                if (islandSize < minSize) {
-                                    islandBuffer[islandSize] = currentIdx;
-                                }
-                                islandSize++;
-
-                                int cx = currentIdx % sizeX;
-                                int cy = currentIdx / sizeX;
-
-                                if (cx == startChunkX || cx == endChunkX - 1) {
-                                    touchesBorder = true;
-                                }
-
-                                for (int[] dir : directions) {
-                                    int nx = cx + dir[0];
-                                    int ny = cy + dir[1];
-
-                                    if (nx >= startChunkX && nx < endChunkX && ny >= 0 && ny < sizeY) {
-                                        int nextIdx = nx + sizeX * ny;
-                                        short nextTile = tiles[nextIdx];
-
-                                        if (nextTile != 0 && (nextTile & 0x8000) == 0) {
-                                            tiles[nextIdx] |= 0x8000;
-                                            localStack.add(nextIdx);
-                                        }
-                                    }
-                                }
-                            }
-
-                            if (islandSize < minSize && !touchesBorder) {
-                                for (int i = 0; i < islandSize; i++) {
-                                    int idx = islandBuffer[i];
-                                    int px = idx % sizeX;
-                                    int py = idx / sizeX;
-                                    tiles[idx] = 0;
-                                    world.destroy(px, py);
-                                }
+                        if (islandSize < minSize && !touchesBorder) {
+                            for (int i = 0; i < islandSize; i++) {
+                                int idx = islandBuffer[i];
+                                int px = idx % sizeX;
+                                int py = idx / sizeX;
+                                tiles[idx] = 0;
+                                world.destroy(px, py);
                             }
                         }
                     }
                 }
-            });
+            }
+        });
 
-            IntStream.range(0, cores).parallel().forEach(p -> {
-                int startChunkX = p * chunkSize;
-                int endChunkX = Math.min(sizeX, startChunkX + chunkSize);
-                for (int y = 0; y < sizeY; y++) {
-                    for (int x = startChunkX; x < endChunkX; x++) {
-                        int globalIndex = x + sizeX * y;
-                        if (tiles[globalIndex] != 0) {
-                            tiles[globalIndex] &= 0x7FFF;
-                        }
+        IntStream.range(0, cores).parallel().forEach(p -> {
+            int startChunkX = p * chunkSize;
+            int endChunkX = Math.min(sizeX, startChunkX + chunkSize);
+            for (int y = 0; y < sizeY; y++) {
+                for (int x = startChunkX; x < endChunkX; x++) {
+                    int globalIndex = x + sizeX * y;
+                    if (tiles[globalIndex] != 0) {
+                        tiles[globalIndex] &= 0x7FFF;
                     }
                 }
-            });
-        }).join();
+            }
+        });
     }
 
     /**

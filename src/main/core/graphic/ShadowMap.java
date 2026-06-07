@@ -7,7 +7,6 @@ import core.content.entity.CreatureEntity;
 import core.content.entity.Hitbox;
 
 import java.util.HashMap;
-import java.util.concurrent.CompletableFuture;
 import java.util.stream.IntStream;
 
 import static core.Global.*;
@@ -18,7 +17,6 @@ public class ShadowMap {
     private static byte[] shadows;
     private static HashMap<CreatureEntity, Color> shadowsDynamic = new HashMap<>();
     private static Color deletedColor = Color.CLEAR, deletedColorDynamic = Color.CLEAR, addedColor = Color.CLEAR, addedColorDynamic = Color.CLEAR;
-    private static final Color tmp = new Color();
     private final static Color white = new Color(255, 255, 255, 255),
             brightDirty = new Color(165, 165, 165, 255),
             dirty = new Color(85, 85, 85, 255),
@@ -63,54 +61,48 @@ public class ShadowMap {
         return 0;
     }
 
-    public static CompletableFuture<Void> generate() {
+    public static void generate() {
         shadows = new byte[world.sizeX * world.sizeY];
-        return generateShadows();
-    }
+        int totalColumns = world.sizeX;
+        int cores = Runtime.getRuntime().availableProcessors();
+        int chunkSize = (totalColumns / cores) + 1;
 
-    private static CompletableFuture<Void> generateShadows() {
-        return CompletableFuture.runAsync(() -> {
-            int totalColumns = world.sizeX;
-            int cores = Runtime.getRuntime().availableProcessors();
-            int chunkSize = (totalColumns / cores) + 1;
+        IntStream.range(0, cores).parallel().forEach(p -> {
+            int startChunkX = Math.max(1, p * chunkSize);
+            int endChunkX = Math.min(world.sizeX - 1, startChunkX + chunkSize);
 
-            world.genPool.submit(() -> IntStream.range(0, cores).parallel().forEach(p -> {
-                int startChunkX = Math.max(1, p * chunkSize);
-                int endChunkX = Math.min(world.sizeX - 1, startChunkX + chunkSize);
-                for (int y = 1; y < world.sizeY; y++) {
-                    for (int x = startChunkX; x < endChunkX; x++) {
-                        if (checkHasGasAround(x, y, 1)) {
-                            setShadow0(x, y, 1);
-                        }
+            for (int y = 1; y < world.sizeY; y++) {
+                for (int x = startChunkX; x < endChunkX; x++) {
+                    if (checkHasGasAround(x, y, 1)) {
+                        setShadow0(x, y, 1);
                     }
                 }
-            })).join();
+            }
+        });
 
-            world.genPool.submit(() -> IntStream.range(0, cores).parallel().forEach(p -> {
-                int startChunkX = Math.max(1, p * chunkSize);
-                int endChunkX = Math.min(world.sizeX - 1, startChunkX + chunkSize);
-                for (int y = 1; y < world.sizeY; y++) {
-                    for (int x = startChunkX; x < endChunkX; x++) {
-                        if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
-                            setShadow0(x, y, 2);
-                        }
+        IntStream.range(0, cores).parallel().forEach(p -> {
+            int startChunkX = Math.max(1, p * chunkSize);
+            int endChunkX = Math.min(world.sizeX - 1, startChunkX + chunkSize);
+            for (int y = 1; y < world.sizeY; y++) {
+                for (int x = startChunkX; x < endChunkX; x++) {
+                    if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
+                        setShadow0(x, y, 2);
                     }
                 }
-            })).join();
+            }
+        });
 
-            world.genPool.submit(() -> IntStream.range(0, cores).parallel().forEach(p -> {
-                int startChunkX = Math.max(2, p * chunkSize);
-                int endChunkX = Math.min(world.sizeX - 2, startChunkX + chunkSize);
-                for (int y = 2; y < world.sizeY; y++) {
-                    for (int x = startChunkX; x < endChunkX; x++) {
-                        if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
-                            setShadow0(x, y, 3);
-                        }
+        IntStream.range(0, cores).parallel().forEach(p -> {
+            int startChunkX = Math.max(2, p * chunkSize);
+            int endChunkX = Math.min(world.sizeX - 2, startChunkX + chunkSize);
+            for (int y = 2; y < world.sizeY; y++) {
+                for (int x = startChunkX; x < endChunkX; x++) {
+                    if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
+                        setShadow0(x, y, 3);
                     }
                 }
-            })).join();
-
-        }, world.genPool);
+            }
+        });
     }
 
     public static void update() {
@@ -118,8 +110,6 @@ public class ShadowMap {
             updateShadows();
         }
     }
-
-    private static final Hitbox hitbox = new Hitbox();
 
     private static void updateShadows() {
         camera.getBoundsTo(viewport);
@@ -186,8 +176,12 @@ public class ShadowMap {
     }
 
     private static boolean isNotGas(int x, int y) {
-        int id = world.getBlockId(x, y);
-        return id > 0 && content.blocksRegistry.typeById(id).type != Type.GAS;
+        return world.getBlockId(x, y) > 0;
+        // int id = world.getBlockId(x, y);
+        // return id > 0 && content.blocksRegistry.typeById(id).type != Type.GAS;
+
+        // Медленнее:
+        // return world.getBlockType(x, y) != Type.GAS;
     }
 
     private static boolean checkHasGasAround(int x, int y, int radius) {
