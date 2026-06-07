@@ -199,7 +199,7 @@ public final class ItemStack {
         @Override
         public void serialize(ItemStack value, JsonGenerator gen, SerializerProvider provider) throws IOException {
             gen.writeStartObject();
-            gen.writeStringField("item", value.item.id);
+            gen.writeStringField("item", value.item.key);
             if (value.count != 1) {
                 gen.writeNumberField("count", value.count);
             }

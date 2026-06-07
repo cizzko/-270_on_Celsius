@@ -15,7 +15,8 @@ import static core.math.MathUtil.toByteExact;
 public class Block implements ContentType, Loadable {
     public static Block AIR;
 
-    public final String id;
+    public final String key;
+    public short id;
 
     public byte tileCountX, tileCountY;
 
@@ -27,8 +28,8 @@ public class Block implements ContentType, Loadable {
     public @Nullable Block createWith;
     public Type type;
 
-    public Block(String id) {
-        this.id = id;
+    public Block(String key) {
+        this.key = key;
     }
 
     @Override
@@ -59,10 +60,12 @@ public class Block implements ContentType, Loadable {
         }
     }
 
-    @Override
-    public final String id() {
-        return id;
+    public final String key() {
+        return key;
     }
+
+    public final short id() { return id; }
+    public final void setId(short id) { this.id = id; }
 
     public boolean isMultiblock() { return tileCountX > 1 || tileCountY > 1; }
 
@@ -85,24 +88,28 @@ public class Block implements ContentType, Loadable {
         if (!(o instanceof Block that)) {
             return false;
         }
-        return id.equals(that.id);
+        return key.equals(that.key);
     }
 
     @Override
     public final int hashCode() {
-        return id.hashCode();
+        return key.hashCode();
     }
 
     @Override
     public final String toString() {
-        return getClass().getSimpleName() + "['" + id + "']";
+        return getClass().getSimpleName() + "['" + key + "']";
     }
 
+    // Никогда не переставляйте порядок констант в этом перечислении
+    // От этого зависит работа ContentManager
     public enum Type {
         GAS,
         LIQUID,
         SOLID,    // Твёрдая поверхность на которой можно стоять и строить
         PLASMA,
-        WALKABLE  // Листва, паутина и остальные блоки, через которые можно проходить (падать)
+        WALKABLE;  // Листва, паутина и остальные блоки, через которые можно проходить (падать)
+
+        public static final Type[] VALUES = values();
     }
 }

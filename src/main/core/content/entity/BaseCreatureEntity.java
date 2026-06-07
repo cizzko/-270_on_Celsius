@@ -18,7 +18,6 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
     public final C creature;
 
     protected float x, y;
-    protected float prevX, prevY;
     protected float hp;
     public boolean hasGravity, isUnbreakable, dead;
 
@@ -35,21 +34,12 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
         return id;
     }
 
-    public final void setId(int id) {
-        this.id = (short) id;
+    public final void setId(short id) {
+        this.id = id;
     }
-
-    public final float prevX() { return prevX; }
-
-    public final float prevY() { return prevY; }
 
     public abstract float centerX();
     public abstract float centerY();
-
-    protected void updateLastPosition() {
-        prevX = x;
-        prevY = y;
-    }
 
     @MustBeInvokedByOverriders
     public void init() {

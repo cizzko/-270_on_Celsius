@@ -40,7 +40,6 @@ public class WorldGeneratorTMP {
         World world = new World(
                 new World.Meta(sizeX, sizeY, params.seed, null, params.description,
                         System.currentTimeMillis() / 1000, 0));
-        entityPool.worldIndex().bounds.set(0, 0, sizeX, sizeY);
         Global.world = world;
 
         boolean simple = params.simple;
@@ -57,8 +56,8 @@ public class WorldGeneratorTMP {
             CompletableFuture.runAsync(
                             timedRun("generating relief",
                             () -> generateRelief(world)))
-                    .thenCompose(
-                            timedCompose("generating environment",
+                    .thenRun(
+                            timedRun("generating environment",
                             () -> generateEnvironments(world)))
                     .thenRun(
                             timedRun("generating caves",
@@ -162,8 +161,8 @@ public class WorldGeneratorTMP {
         int height = world.sizeY;
         int width = world.sizeX;
 
-        for (int x = 0; x < COPY_SIZE; x++) {
-            for (int y = 0; y < height; y++) {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < COPY_SIZE; x++) {
                 var obj = world.getBlock(x, y);
                 if (obj != null) {
                     world.copyFromTo(x, y, width - COPY_SIZE + x, y, obj, false);
@@ -194,7 +193,7 @@ public class WorldGeneratorTMP {
 
                     int endY = world.sizeY / 2;
                     for (int y = 0; y < endY; y++) {
-                        int blockId = availableBlocks[Math.min(maxBlockIdx, endY - y - 1)];
+                        short blockId = availableBlocks[Math.min(maxBlockIdx, endY - y - 1)];
                         world.set(x, y, content.blocksRegistry.typeById(blockId), false);
                     }
                 }
@@ -676,12 +675,10 @@ public class WorldGeneratorTMP {
      * </p>
      * @param world мир
      */
-    private static CompletableFuture<Void> generateEnvironments(World world) {
-        return CompletableFuture.runAsync(() -> {
-            generateTrees(world);
-            generateDecorStones(world);
-            generateHerb();
-        });
+    private static void generateEnvironments(World world) {
+        generateTrees(world);
+        generateDecorStones(world);
+        generateHerb();
     }
 
     private static void generateTrees(World world) {
@@ -703,8 +700,7 @@ public class WorldGeneratorTMP {
             if (Math.random() * chance < 1) {
                 int y = findSurfaceY(x, 3);
                 if (y - 1 > 0) {
-                    var block = world.getBlock(x, y - 1);
-                    if (block != null && block.type == Type.SOLID) {
+                    if (world.getBlockType(x, y - 1) == Type.SOLID) {
                         world.set(x, y, smallStone, false);
                     }
                 }

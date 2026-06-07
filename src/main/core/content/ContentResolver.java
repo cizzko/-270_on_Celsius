@@ -8,7 +8,7 @@ import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 
 import java.util.HashMap;
 
-public class ContentResolver {
+public final class ContentResolver {
     private final Reference2ObjectOpenHashMap<Class<? extends ContentType>, HashMap<String, ContentType>> contentMap;
 
     public ContentResolver(Reference2ObjectOpenHashMap<Class<? extends ContentType>, HashMap<String, ContentType>> contentMap) {
@@ -24,7 +24,7 @@ public class ContentResolver {
                 continue;
             }
             if (itemStack.item() instanceof ItemUnresolved r) {
-                itemStack.setItem(ContentManager.content(contentMap, Item.class).get(r.id()));
+                itemStack.setItem(ContentManager.content(contentMap, Item.class).get(r.key()));
             }
         }
         return itemStacks;
@@ -32,7 +32,7 @@ public class ContentResolver {
 
     public Block resolveBlock(Block block) {
         if (block instanceof BlockUnresolved) {
-            return ContentManager.content(contentMap, Block.class).get(block.id());
+            return ContentManager.content(contentMap, Block.class).get(block.key());
         }
         return block;
     }

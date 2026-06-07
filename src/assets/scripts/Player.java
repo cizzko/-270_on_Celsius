@@ -16,7 +16,7 @@ void toggleNoClip() {
     Player.noClip = !Player.noClip;
 }
 
-boolean kill(int id) {
+boolean kill(short id) {
     var entity = Global.entityPool.getEntity(id);
     if (entity != null) {
         entity.remove();

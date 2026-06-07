@@ -1,6 +1,5 @@
 package core.content.entity;
 
-import core.WorldCoordinates;
 import core.math.Rectangle;
 
 import static core.WorldCoordinates.toBlock;

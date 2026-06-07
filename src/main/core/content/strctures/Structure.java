@@ -6,25 +6,30 @@ import core.content.ContentResolver;
 import core.content.ContentType;
 import core.content.Loadable;
 import core.content.blocks.BlockUnresolved;
+import core.math.MathUtil;
 
 import java.util.ArrayList;
 
+import static core.math.MathUtil.toShortExact;
+
 public class Structure implements ContentType, Loadable {
 
-    public final String id;
+    public final String key;
+
+    public short id;
 
     public final ArrayList<Part> blocks = new ArrayList<>();
 
-    public Structure(String id) {
-        this.id = id;
+    public Structure(String key) {
+        this.key = key;
     }
 
     public static class Part implements Comparable<Part> {
-        public final int offsetX;
-        public final int offsetY;
+        public final short offsetX;
+        public final short offsetY;
         Block block;
 
-        public Part(int offsetX, int offsetY, Block block) {
+        public Part(short offsetX, short offsetY, Block block) {
             this.offsetX = offsetX;
             this.offsetY = offsetY;
             this.block = block;
@@ -40,11 +45,11 @@ public class Structure implements ContentType, Loadable {
 
         @Override
         public int compareTo(Structure.Part o) {
-            int cmp = Integer.compare(offsetX, o.offsetX);
+            int cmp = Short.compare(offsetX, o.offsetX);
             if (cmp != 0) {
                 return cmp;
             }
-            return Integer.compare(offsetY, o.offsetY);
+            return Short.compare(offsetY, o.offsetY);
         }
 
         @Override
@@ -53,14 +58,16 @@ public class Structure implements ContentType, Loadable {
         }
     }
 
-    @Override
-    public final String id() { return id; }
+    public final String key() { return key; }
+    public final short id() { return id; }
+
+    public final void setId(short id) { this.id = id; }
 
     @Override
     public void load(ContentLoader cnt) {
         for (var node : cnt.node().path("Blocks")) {
-            int offsetX = node.path("OffsetX").asInt(0);
-            int offsetY = node.path("OffsetY").asInt(0);
+            short offsetX = toShortExact(node.path("OffsetX").asInt(0));
+            short offsetY = toShortExact(node.path("OffsetY").asInt(0));
             var block = new BlockUnresolved(node.required("Block").asText());
             blocks.add(new Part(offsetX, offsetY, block));
         }
@@ -76,12 +83,17 @@ public class Structure implements ContentType, Loadable {
     }
 
     @Override
-    public int hashCode() {
-        return id.hashCode();
+    public final int hashCode() {
+        return key.hashCode();
     }
 
     @Override
     public final boolean equals(Object obj) {
-        return this == obj || obj instanceof Structure s && id.equals(s.id);
+        return this == obj || obj instanceof Structure s && key.equals(s.key);
+    }
+
+    @Override
+    public final String toString() {
+        return getClass().getSimpleName() + "['" + key + ']';
     }
 }

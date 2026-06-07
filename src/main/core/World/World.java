@@ -19,6 +19,7 @@ import core.World.WorldGenerator.Biomes;
 import core.content.blocks.Block;
 import core.content.blocks.data.TileData;
 import core.content.entity.BlockEntity;
+import core.content.entity.DrawComponent;
 import core.graphic.ShadowMap;
 import core.math.MathUtil;
 import core.math.Point2i;
@@ -27,10 +28,10 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.Objects;
 import java.util.concurrent.ForkJoinPool;
 
 import static core.Constants.availableProcessors;
+import static core.Global.*;
 import static core.Global.world;
 import static core.World.WorldGenerator.WorldGeneratorConstants.COPY_SIZE;
 
@@ -188,7 +189,7 @@ public final class World {
 
         setImpls(x, y, object, followingRules);
 
-        if (Global.gameState == GameState.PLAYING) {
+        if (gameState == GameState.PLAYING) {
             if (x < COPY_SIZE) {
                 copyFromTo(x, y, sizeX - COPY_SIZE + x, y, object, followingRules);
             } else if (x > sizeX - COPY_SIZE) {
@@ -259,7 +260,7 @@ public final class World {
         //прикольно бустит скорость но надо потестить получше
         if (lastId != blockId) {
             lastId = blockId;
-            return lastBlock = Global.content.blocksRegistry.typeById(Short.toUnsignedInt(blockId));
+            return lastBlock = content.blocksRegistry.typeById(Short.toUnsignedInt(blockId));
         }
 
         return lastBlock;
@@ -283,10 +284,8 @@ public final class World {
         }
 
         if (inBounds(x, y)) {
-            var root = getRootBlockPos(x, y);
-
-            if (root != null) {
-                var rootBlock = getBlock(root.x, root.y);
+            if (getRootBlockPosTo(x, y, tmp)) {
+                var rootBlock = getBlock(tmp);
 
                 for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
                     for (int blockX = 0; blockX < rootBlock.tileCountX; blockX++) {
@@ -311,6 +310,11 @@ public final class World {
         return inBounds(x, y) ? Short.toUnsignedInt(tiles[pos2index(x, y)]) : -1;
     }
 
+    public Block.Type getBlockType(Point2i pos)  { return getBlockType(pos.x, pos.y); }
+    public Block.Type getBlockType(int x, int y) { // проверки границ для пусичек
+        return content.getBlockType(tiles[pos2index(x, y)]);
+    }
+
     // region Приватные методы
 
     public int pos2index(int x, int y) { return x + sizeX * y; }
@@ -331,6 +335,7 @@ public final class World {
         setHp(x, y, object.maxHp);
 
         if (object.isMultiblock()) {
+            // TODO тут должна быть проверка для мультиблока на followingRules, чтобы в цикле этим не заниматься
             for (int currentY = 0; currentY < object.tileCountY; currentY++) {
                 for (int currentX = 0; currentX < object.tileCountX; currentX++) {
                     int partX = x + currentX, partY = y + currentY;
@@ -354,7 +359,7 @@ public final class World {
             return;
         }
         int idx = pos2index(x, y);
-        var block = Global.content.blocksRegistry.typeById(old);
+        var block = content.blocksRegistry.typeById(old);
         if (block.isMultiblock()) {
             int dx, dy;
             if (data.remove(idx) instanceof TileData.MultiblockPart part) {
@@ -375,7 +380,7 @@ public final class World {
 
     private void setImpl(int x, int y, Block block, boolean followingRules) {
         if (!followingRules || checkPlaceRules(x, y, block)) {
-            tiles[pos2index(x, y)] = (short) Global.content.blocksRegistry.idByType(block);
+            tiles[pos2index(x, y)] = block.id;
         }
     }
 
@@ -400,14 +405,6 @@ public final class World {
             }
         }
         ShadowMap.update();
-    }
-
-    @Deprecated(forRemoval = true)
-    public Point2i getRootBlockPos(int x, int y) {
-        Point2i p = new Point2i(x, y);
-        if (getRootBlockPosTo(x, y, p))
-            return p;
-        return null;
     }
 
     public boolean checkPlaceRules(int x, int y, Block root) {
@@ -437,12 +434,13 @@ public final class World {
             }
 
             if (root.type == Block.Type.SOLID) {
-                boolean anyCollision = Global.entityPool.worldIndex().any(x, y, root.tileCountX, root.tileCountY);
+                // Если убрать + DrawComponent.GAP, то игрок может ускоренно строиться снизу вверх, как в бедварсе....
+                boolean anyCollision = entityPool.index().any(x, y, root.tileCountX, root.tileCountY + DrawComponent.GAP);
                 return !anyCollision;
             }
         } else {
             if (root.type == Block.Type.SOLID) {
-                boolean anyCollision = Global.entityPool.worldIndex().any(x, y, root.tileCountX, root.tileCountY);
+                boolean anyCollision = entityPool.index().any(x, y, root.tileCountX, root.tileCountY + DrawComponent.GAP);
                 if (anyCollision) {
                     return false;
                 }
@@ -487,7 +485,7 @@ public final class World {
                     int pos = Integer.parseInt(p.currentName());
                     short blockId = worl.tiles[pos];
                     if (blockId >= 0) {
-                        var block = Global.content.blocksRegistry.typeById(blockId);
+                        var block = content.blocksRegistry.typeById(blockId);
                         if (block != null) {
                             var ent = block.createEntity(worl.index2x(pos), worl.index2y(pos));
                             if (ent != null) {
@@ -531,7 +529,7 @@ public final class World {
                     int pos = Integer.parseInt(p.currentName());
                     short blockId = worl.tiles[pos];
                     if (blockId >= 0) {
-                        var block = Global.content.blocksRegistry.typeById(blockId);
+                        var block = content.blocksRegistry.typeById(blockId);
                         if (block != null) {
                             if (block.isMultiblock()) {
                                 p.nextToken(); // START_OBJECT
@@ -610,15 +608,13 @@ public final class World {
     //впр можно хранить карту высот, но поиск нужен не так часто, чтоб это дало желаемый профит
     //todo @test возможно, последовательный обход будет быстрее работать в силу отсутствия кешмиссов
     public static int findSurfaceY(int cellX, int period) {
+        if (!(cellX >= 0 && cellX < world.sizeX)) // TODO generateCaves
+            return -1;
         for (int y = world.sizeY - 1; y > 0; y -= period) {
-            var block = world.getBlock(cellX, y);
-
-            if (block != null && block.type == Block.Type.SOLID) {
+            if (world.getBlockType(cellX, y) == Block.Type.SOLID) {
                 for (int i = y + period; i > y - 1; i--) {
-                    var current = world.getBlock(cellX, i);
-
                     //если сверху вниз, то первый блок и будет солид, нет смысла проверять над ним
-                    if (current != null && current.type == Block.Type.SOLID) {
+                    if (world.getBlockType(cellX, i) == Block.Type.SOLID) {
                         return i + 1;
                     }
                 }

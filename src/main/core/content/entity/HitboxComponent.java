@@ -4,9 +4,6 @@ import core.math.Rectangle;
 
 public interface HitboxComponent extends PositionComponent {
 
-    float prevX();
-    float prevY();
-
     float centerX();
     float centerY();
 

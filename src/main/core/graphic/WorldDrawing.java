@@ -356,7 +356,7 @@ public final class WorldDrawing {
     public static void drawEntities() {
         camera.getBoundsTo(viewport);
         var hitbox = TmpShapes.r1;
-        entityPool.entities().values().forEach(ent -> {
+        entityPool.forEach(ent -> {
             if (ent instanceof DrawComponent d) {
                 ent.getHitboxTo(hitbox);
 

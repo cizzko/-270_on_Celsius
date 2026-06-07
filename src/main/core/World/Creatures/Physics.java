@@ -13,7 +13,6 @@ import core.math.MathUtil;
 import core.math.Rectangle;
 import core.math.Vector2f;
 import core.util.FixedBitset;
-import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
 import java.util.Arrays;
@@ -49,48 +48,47 @@ public class Physics {
         processCollisions();
     }
 
+    static final float STEPS = 1f / Time.ONE_SECOND;
+
+    static long[] resistanceSet; // TODO SparseFixedBitSet ?
+    static final IntOpenHashSet completedCollisions = new IntOpenHashSet();
+
     static final Rectangle hitbox = new Rectangle();
     static final Rectangle entityHitbox = new Rectangle();
     static final Rectangle blockHitbox = new Rectangle();
     static final Vector2f tmp1 = new Vector2f();
 
-    static final IntOpenHashSet completedCollisions = new IntOpenHashSet();
-
     static int combine(short a, short b) {
-        return HashCommon.mix(a << 16 | b & 0xffff);
+        if (a > b) { // коммутативный id; меньший в старших битах, больший в младших
+            short tmp = a;
+            a = b;
+            b = tmp;
+        }
+        return a << 16 | b & 0xffff;
     }
 
     private static void processCollisions() {
         completedCollisions.clear();
         entityPool.updatePositions();
 
-        entityPool.entities().values().forEach(me -> {
-            entityPool.worldIndex().intersect(me, them -> {
+        entityPool.forEach(me -> {
+            entityPool.index().intersect(me, them -> {
                 if (me == them) {
                     return;
                 }
 
-                var meColId   = combine(me.id(), them.id());
-                var themColId = combine(them.id(), me.id());
-                if (completedCollisions.contains(meColId) || completedCollisions.contains(themColId)) {
-                    return;
+                if (completedCollisions.add(combine(me.id(), them.id()))) {
+                    me.onCollide(them);
+                    if (!me.isRemoved()) {
+                        them.onCollide(me);
+                    }
                 }
-
-                me.onCollide(them);
-                if (!me.isRemoved()) {
-                    them.onCollide(me);
-                }
-
-                completedCollisions.add(meColId);
-                completedCollisions.add(themColId);
             });
         });
     }
 
     private static void updateEntities() {
-        for (var ent : entityPool.entities().values()) {
-            ent.update();
-        }
+        entityPool.forEach(Entity::update);
     }
 
     private static Vector2f overlap(Rectangle a, Rectangle b) {
@@ -162,19 +160,15 @@ public class Physics {
 
         if (collided) {
             var vel = entity.velocity();
-            if (abs(deltaX) > 0) {
-                vel.x = 0;
-            } else if (abs(deltaY) > 0) {
-                vel.y = 0;
-            }
+            if (abs(deltaX) > 0) vel.x = 0;
+            // vel.y необходим для просчёта урона от падения. Там же он и обнуляется
+            // TODO: Для vel.x необходимо такое же сделать
         }
 
         entity.setPosition(
                 entity.x() - hitbox.x + entityHitbox.x,
                 entity.y() - hitbox.y + entityHitbox.y);
     }
-
-    static final float STEPS = 1f / Time.ONE_SECOND;
 
     private static void updateMovement() {
 
@@ -184,7 +178,7 @@ public class Physics {
 
         // Физика не будет оставаться на главном потоке, но пока это прототип.
 
-        entityPool.entities().values().forEach(ent -> {
+        entityPool.forEach(ent -> {
             if (ent instanceof LivingEntity livingEntity) {
                 Vector2f vel = livingEntity.velocity();
                 Vector2f acc = livingEntity.acceleration();
@@ -206,7 +200,7 @@ public class Physics {
     }
 
     private static void simulate(float dt) {
-        entityPool.entities().values().forEach(ent -> simulateEntity(dt, ent));
+        entityPool.forEach(ent -> simulateEntity(dt, ent));
     }
 
     private static void simulateEntity(float dt, Entity ent) {
@@ -303,16 +297,13 @@ public class Physics {
             vel.y = 0;
     }
 
-    private static long[] resistanceSet;
-
     private static float calculateFriction(LivingEntity ent) {
         ent.getHitboxTo(entityHitbox);
 
-        int minX = toBlock(entityHitbox.x);
-        int minY = toBlock(entityHitbox.y) - 1;
-
-        int maxX = toBlock(entityHitbox.x + entityHitbox.width);
-        int maxY = toBlock(entityHitbox.y + entityHitbox.height);
+        int minX = Math.max(0, toBlock(entityHitbox.x));
+        int minY = Math.max(0, toBlock(entityHitbox.y) - 1);
+        int maxX = Math.min(world.sizeX - 1, toBlock(entityHitbox.x + entityHitbox.width));
+        int maxY = Math.min(world.sizeY - 1, toBlock(entityHitbox.y + entityHitbox.height));
 
         float resistance = 100;
         if (resistanceSet == null) {
@@ -327,8 +318,8 @@ public class Physics {
                 if (block != null && block.resistance > 0) {
                     blockHitbox.set(x, y, block.tileCountX, block.tileCountY);
 
+                    var blockId = world.getBlockId(x, y);
                     if (blockHitbox.overlaps(entityHitbox)) {
-                        int blockId = content.blocksRegistry.idByType(block);
                         if (!FixedBitset.isSet(resistanceSet, blockId)) {
                             FixedBitset.setBit(resistanceSet, blockId);
 
@@ -349,16 +340,14 @@ public class Physics {
     public static boolean checkIntersection(float wx, float wy, Drawable texture) {
         entityHitbox.set(wx, wy, toWorld(texture.width()), toWorld(texture.height()));
 
-        int minX = toBlock(entityHitbox.x);
-        int minY = toBlock(entityHitbox.y);
-
-        int maxX = toBlock(entityHitbox.x + entityHitbox.width);
-        int maxY = toBlock(entityHitbox.y + entityHitbox.height);
+        int minX = Math.max(0, toBlock(entityHitbox.x));
+        int minY = Math.max(0, toBlock(entityHitbox.y));
+        int maxX = Math.min(world.sizeX - 1, toBlock(entityHitbox.x + entityHitbox.width));
+        int maxY = Math.min(world.sizeY - 1, toBlock(entityHitbox.y + entityHitbox.height));
 
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
-                var block = world.getBlock(x, y);
-                if (block == null || block.type == Block.Type.SOLID) {
+                if (world.getBlockType(x, y) == Block.Type.SOLID) {
                     return true;
                 }
             }

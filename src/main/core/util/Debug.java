@@ -107,7 +107,7 @@ public class Debug {
         setDebugValue(GameState.PLAYING, () -> {
             var mouseBlockPos = input.mouseBlockPos();
             var mouseBlock = world.getBlock(mouseBlockPos);
-            String blockId = mouseBlock != null ? mouseBlock.id + " (BID: " + content.blocksRegistry.idByType(mouseBlock) + ")" : "<void>";
+            String blockId = mouseBlock != null ? mouseBlock.key + " (BID: " + mouseBlock.id + ")" : "<void>";
             return "Mouse: " + mouseBlockPos + " ID: " + blockId + " HP: " + world.getHp(mouseBlockPos);
         });
     }
@@ -120,12 +120,12 @@ public class Debug {
 
         StackfulRender.z(Render.LAYER_DEBUG);
 
-        for (Entity ent : entityPool.entities().values()) {
+        entityPool.forEach(ent -> {
             ent.getHitboxTo(rect);
             var pos = camera.project(TmpShapes.v1.set(rect.x, rect.y));
             GuiDrawing.drawText(pos.x, pos.y,
                     "HasFloor: " + ent.hasFloor(), black);
-        }
+        });
     }
 
     public static void giveItems() {
@@ -147,7 +147,11 @@ public class Debug {
         if (debugLevel < 2) {
             return;
         }
+        log.debug("Saving world image..");
         Thread.startVirtualThread(() -> {
+            // у виртуальных нет имени)
+            // FIXME(Skat): забавный факт. на большом мире сохранение изображение настолько долгое, что если выйти из мира, то он упадёт)
+            Thread.currentThread().setName("WorldImageSaver");
             BufferedImage image = new BufferedImage(world.sizeX, world.sizeY, BufferedImage.TYPE_INT_RGB);
             Path path = assets.workingDir().resolve("worldImage.png");
             for (int y = 0; y < world.sizeY; y++) {
@@ -162,6 +166,7 @@ public class Debug {
             }
             try {
                 ImageIO.write(image, "png", path.toFile());
+                log.debug("Saving world image done");
             } catch (IOException e) {
                 log.error("", e);
             }

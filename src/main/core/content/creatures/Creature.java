@@ -8,16 +8,24 @@ import core.content.entity.CreatureEntity;
 import core.g2d.Atlas;
 
 public abstract class Creature implements ContentType, Loadable {
-    public final String id;
+    public final String key;
+    public short id;
 
     public float weight;
     public int maxHp;
     public Atlas.Region texture;
     public boolean hasGravity;
 
-    protected Creature(String id) {
-        this.id = id;
+    protected Creature(String key) {
+        this.key = key;
     }
+
+    public final String key() {
+        return key;
+    }
+
+    public final short id() { return id; }
+    public final void setId(short id) { this.id = id; }
 
     @Override
     public void load(ContentLoader cnt) {
@@ -28,7 +36,7 @@ public abstract class Creature implements ContentType, Loadable {
     }
 
     public CreatureEntity create(float x, float y) {
-        int id = Global.entityPool.acquireId();
+        short id = Global.entityPool.acquireId();
 
         var ent = constructEntity();
         ent.setId(id);
@@ -42,11 +50,6 @@ public abstract class Creature implements ContentType, Loadable {
     protected abstract CreatureEntity constructEntity();
 
     @Override
-    public final String id() {
-        return id;
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) {
             return true;
@@ -54,13 +57,11 @@ public abstract class Creature implements ContentType, Loadable {
         if (!(o instanceof Creature that)) {
             return false;
         }
-        return id.equals(that.id);
+        return key.equals(that.key);
     }
 
     @Override
     public int hashCode() {
-        int h = 5381;
-        h += (h << 5) + id.hashCode();
-        return h;
+        return key.hashCode();
     }
 }

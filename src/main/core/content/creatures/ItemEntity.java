@@ -25,7 +25,6 @@ public class ItemEntity implements LivingEntity {
 
     protected short id;
     protected float x, y;
-    protected float prevX, prevY;
     protected ItemStack itemStack;
     protected float hp, phase;
     protected boolean isUnbreakable, dead;
@@ -40,8 +39,8 @@ public class ItemEntity implements LivingEntity {
         return id;
     }
 
-    public final void setId(int id) {
-        this.id = (short) id;
+    public final void setId(short id) {
+        this.id = id;
     }
 
     public final float x() { return x; }
@@ -54,10 +53,6 @@ public class ItemEntity implements LivingEntity {
     public final float getHp() { return hp; }
 
     public final void setPosition(float x, float y) { this.x = x; this.y = y; }
-
-    public final float prevX() { return prevX; }
-
-    public final float prevY() { return prevY; }
 
     public float centerX() {
         return x + toWorld(ITEM_DROPPED_SIZE)/2f;

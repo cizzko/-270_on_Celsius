@@ -119,7 +119,7 @@ public class PlayerEntity
         } else {
             if (hasFloor && Math.abs(velocity.y) <= GAP && input.pressed(GLFW_KEY_SPACE)) {
                 velocity.y += 18.35f * GRAVITY;
-                jumpedTicks = 2.5f / Time.ONE_SECOND;
+                jumpedTicks = 5f / Time.ONE_SECOND;
             }
         }
 

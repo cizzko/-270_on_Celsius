@@ -8,7 +8,7 @@ public interface Entity extends HitboxComponent {
 
     // TODO unsigned short внутри
     short id();
-    void setId(int id);
+    void setId(short id);
 
     /** Вызывается при создании сущности на координатах */
     default void init() {}

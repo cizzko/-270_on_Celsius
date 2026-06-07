@@ -4,5 +4,8 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 public interface ContentType {
     @JsonValue
-    String id();
+    String key();
+
+    short id();
+    void setId(short id);
 }

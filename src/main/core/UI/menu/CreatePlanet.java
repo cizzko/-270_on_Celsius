@@ -124,7 +124,6 @@ public class CreatePlanet extends Dialog {
     }
 
     public static class GenerationParameters {
-        public boolean randomSpawn;
         public boolean creatures;
         public boolean simple;
         public int sizeX = Constants.World.MIN_WORLD_SIZE;

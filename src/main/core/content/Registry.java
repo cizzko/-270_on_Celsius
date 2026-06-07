@@ -1,17 +1,16 @@
 package core.content;
 
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
+import it.unimi.dsi.fastutil.objects.Object2ShortOpenHashMap;
 import org.jetbrains.annotations.Nullable;
 
 public final class Registry<T extends ContentType> {
 
     private final Object2ObjectOpenHashMap<String, T> name2Type;
-    private final Object2IntOpenHashMap<T> type2Id;
+    private final Object2ShortOpenHashMap<T> type2Id;
     private final T[] id2Type;
 
-    Registry(Object2ObjectOpenHashMap<String, T> name2Type, Object2IntOpenHashMap<T> type2Id, T[] id2Type) {
+    Registry(Object2ObjectOpenHashMap<String, T> name2Type, Object2ShortOpenHashMap<T> type2Id, T[] id2Type) {
         this.name2Type = name2Type;
         this.type2Id = type2Id;
         this.id2Type = id2Type;
@@ -22,7 +21,7 @@ public final class Registry<T extends ContentType> {
     }
 
     public int idByType(T type) {
-        return type2Id.getOrDefault(type, -1);
+        return type2Id.getOrDefault(type, (short) -1);
     }
 
     public T typeById(int id) {

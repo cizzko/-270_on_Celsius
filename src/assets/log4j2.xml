@@ -24,5 +24,7 @@
         </Root>
         <Logger name="core.UIScene" level="DEBUG"></Logger>
         <Logger name="core.g2d" level="ERROR"></Logger>
+        <Logger name="AutoLoader" level="ERROR"></Logger>
+        <Logger name="AssetsManager" level="ERROR"></Logger>
     </Loggers>
 </Configuration>

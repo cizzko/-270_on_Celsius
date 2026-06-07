@@ -1,72 +1,125 @@
 package core.content;
 
-import core.math.Rectangle;
 import core.content.entity.Entity;
-import core.util.QuadTree;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.shorts.ShortArrayList;
 import org.jetbrains.annotations.Nullable;
 
-public class EntityPool {
-    private final Int2ObjectOpenHashMap<Entity> entities = new Int2ObjectOpenHashMap<>();
-    private final QuadTree<Entity> worldIndex = new QuadTree<>(new Rectangle());
-    private final IntArrayFIFOQueue freeIds = new IntArrayFIFOQueue();
+import java.util.Arrays;
+import java.util.function.Consumer;
+
+public final class EntityPool {
+    private Entity[] entities;
+    private final EntityIndex index = new EntityIndex();
+    private final ShortArrayList freeIds = new ShortArrayList();
+    private final ObjectArrayList<Entity> pendingAddList = new ObjectArrayList<>();
     private final int maxCreatureCount;
 
-    private int idCounter = 0;
-    private boolean needIndexRebuild;
+    private short idCounter = 0;
+    private boolean needIndexRebuild, iterating;
 
     public EntityPool(int maxCreatureCount) {
         this.maxCreatureCount = maxCreatureCount;
+        this.entities = new Entity[16]; // Базовый размер. Пока что никогда не уменьшает свой размер
     }
+
+    public int entityCount() { return idCounter - freeIds.size(); }
 
     public void updatePositions() {
         needIndexRebuild = false;
-        worldIndex.clear();
-        entities.values().forEach(worldIndex::insert);
+        index.clear();
+        index.presize(entityCount());
+        forEachImpl(index::insert); // при CME мы сами себе злобные буратины
+        index.build();
     }
 
     public void add(Entity ent) {
-        entities.put(ent.id(), ent);
-        needIndexRebuild = true;
+        if (!iterating) {
+            entities[ent.id()] = ent;
+            needIndexRebuild = true;
+        } else {
+            pendingAddList.add(ent);
+        }
     }
 
-    public Int2ObjectOpenHashMap<Entity> entities() { return entities; }
-
-    public boolean exists(int id) { return entities.containsKey(id); }
-
-    public @Nullable Entity getEntity(int id) {
-        return entities.get(id);
+    private void forEachImpl(Consumer<Entity> consumer) {
+        Entity[] entArray = entities;
+        for (short i = 0, n = idCounter; i < n; ++i) {
+            Entity entity = entArray[i];
+            if (entity != null) {
+                consumer.accept(entity);
+            }
+        }
     }
 
-    public int acquireId() {
+    public void forEach(Consumer<Entity> consumer) {
+        Entity[] entArray = entities;
+        iterating = true;
+        try {
+            for (short i = 0, n = idCounter; i < n; ++i) {
+                Entity entity = entArray[i];
+                if (entity != null) {
+                    consumer.accept(entity);
+                }
+            }
+        } finally {
+            iterating = false;
+            needIndexRebuild = true;
+            for (int i = 0, n = pendingAddList.size(); i < n; i++) {
+                var newEnt = pendingAddList.get(i);
+                entArray[newEnt.id()] = newEnt;
+            }
+            pendingAddList.clear();
+        }
+
+    }
+
+    public boolean exists(short id) {
+        return (id >= 0 && id < idCounter) && entities[id] != null;
+    }
+
+    public @Nullable Entity getEntity(short id) {
+        if (id < 0 || id >= idCounter) return null;
+        return entities[id];
+    }
+
+    public short acquireId() {
         if (freeIds.isEmpty()) {
             if (idCounter >= maxCreatureCount) {
                 throw new IllegalStateException("Maximum number of creatures exceeded");
             }
-            return idCounter++;
+            short newId = idCounter++;
+            ensureCapacity(newId);
+            return newId;
         }
-        return freeIds.dequeueInt();
+        return freeIds.popShort();
     }
 
-    public QuadTree<Entity> worldIndex() {
+    public EntityIndex index() {
         if (needIndexRebuild) {
             updatePositions();
         }
-        return worldIndex;
+        return index;
     }
 
-    public void releaseId(Entity creature) {
-        freeIds.enqueue(creature.id());
-        entities.remove(creature.id());
+    public void releaseId(Entity entity) {
+        freeIds.push(entity.id());
+        entities[entity.id()] = null;
         needIndexRebuild = true;
     }
 
     public void clear() {
-        entities.clear();
-        worldIndex.clear();
+        Arrays.fill(entities, null);
+        index.clear();
         freeIds.clear();
         idCounter = 0;
         needIndexRebuild = false;
+    }
+
+    private void ensureCapacity(short id) {
+        if (id >= entities.length) {
+            int newCapacity = Math.min(entities.length * 2, maxCreatureCount);
+            this.entities = Arrays.copyOf(entities, newCapacity);
+        }
     }
 }

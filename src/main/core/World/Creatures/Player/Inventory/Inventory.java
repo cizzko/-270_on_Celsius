@@ -165,12 +165,13 @@ public class Inventory {
                 } else {
                     var worldMousePos = input.mouseWorldPos();
 
-                    var dst = WorldUtils.getDistanceToMouse();
-                    if (dst > 5) {
+                    var dstb = WorldUtils.getDistanceToMouse();
+                    if (dstb > 5) {
+                        float dst = (float) Math.sqrt(player.dst2(worldMousePos.x, worldMousePos.y));
                         worldMousePos.sub(player.x(), player.y()).nor().scale(dst);
                         worldMousePos.add(player.x(), player.y());
                     }
-                    worldMousePos.sub(ITEM_DROPPED_SIZE/2f, ITEM_DROPPED_SIZE/2f);
+                    worldMousePos.sub(toWorld(ITEM_DROPPED_SIZE/2f), toWorld(ITEM_DROPPED_SIZE/2f));
 
                     int blockId = world.getBlockId(toBlock(worldMousePos.x), toBlock(worldMousePos.y));
                     if (blockId == 0) {

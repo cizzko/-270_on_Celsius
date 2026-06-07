@@ -57,13 +57,13 @@ public class WorldUtils {
     }
 
     public static ItemEntity dropItem(ItemStack itemStack, float x, float y) {
-        float rx = x + ThreadLocalRandom.current().nextFloat(0.3f, 0.7f);
-        float ry = y + ThreadLocalRandom.current().nextFloat(0.1f, 0.5f);
+        float rx = x + ThreadLocalRandom.current().nextFloat(0.15f, 0.3f);
+        float ry = y + ThreadLocalRandom.current().nextFloat(0.1f, 0.25f);
         return spawnItemEntity(itemStack, rx, ry);
     }
 
     public static ItemEntity spawnItemEntity(ItemStack itemStack, float x, float y) {
-        int id = Global.entityPool.acquireId();
+        short id = Global.entityPool.acquireId();
         var ent = new ItemEntity(itemStack);
 
         ent.setId(id);

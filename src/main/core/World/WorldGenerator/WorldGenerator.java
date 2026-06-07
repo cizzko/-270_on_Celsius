@@ -42,7 +42,6 @@ public class WorldGenerator {
         World world = new World(
                 new World.Meta(sizeX, sizeY, params.seed, null, params.description,
                         System.currentTimeMillis()/1000, 0));
-        entityPool.worldIndex().bounds.set(0,0, sizeX, sizeY);
         Global.world = world;
 
         boolean simple = params.simple;
@@ -69,7 +68,11 @@ public class WorldGenerator {
                         log("generating: copy " + (System.currentTimeMillis() - startTime) + "ms");
                         copy();
                     })
-                    //todo тени можно продолжать рисовать после спавна
+                    // TODO(Ociz): тени можно продолжать рисовать после спавна
+                    //  Skat: отличная идея, особенно если рендер теней будет происходит визуально гладко для игрока
+                    //  Самый простой способ: в области видимости прогрузить как есть
+                    //  (область маленькая и навряд ли даже потоки нужны будут)
+                    //  а остальное уже потом крутить в фоне
                     .thenCompose(__ -> {
                         log("regenerating shadow map " + (System.currentTimeMillis() - startTime) + "ms");
                         return ShadowMap.generate();

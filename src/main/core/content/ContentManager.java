@@ -11,8 +11,8 @@ import core.content.creatures.Creature;
 import core.content.items.Item;
 import core.content.items.ItemBlock;
 import core.content.strctures.Structure;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -23,6 +23,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static java.util.Comparator.*;
+
 public final class ContentManager {
     private static final Logger log = LogManager.getLogger();
 
@@ -32,8 +34,10 @@ public final class ContentManager {
     public Registry<Structure> structuresRegistry;
     public Registry<Tag<?>> tagsRegistry;
 
+    private final short[] blockTypeEndId = new short[Block.Type.VALUES.length];
+
     private final ArrayList<Item> craftableByPlayer = new ArrayList<>();
-    private final Int2ObjectOpenHashMap<ArrayList<Item>> craftableByWorkbench = new Int2ObjectOpenHashMap<>();
+    private final Short2ObjectOpenHashMap<ArrayList<Item>> craftableByWorkbench = new Short2ObjectOpenHashMap<>();
 
     record ContentSource(Type type, Path dir) {}
     @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
@@ -84,7 +88,7 @@ public final class ContentManager {
                 try {
                     loader.init(source.type, file);
                     var cont = loader.readContent();
-                    index.put(cont.id(), cont);
+                    index.put(cont.key(), cont);
                 } catch (Exception e) {
                     log.error("Failed to load content: '{}'", file, e);
                 }
@@ -166,8 +170,7 @@ public final class ContentManager {
                 // Крафт из рук
                 craftableByPlayer.add(item);
             } else {
-                int blockId = blocksRegistry.idByType(item.createWith);
-                craftableByWorkbench.computeIfAbsent(blockId, k -> new ArrayList<>()).add(item);
+                craftableByWorkbench.computeIfAbsent(item.createWith.id, k -> new ArrayList<>()).add(item);
             }
         }
 
@@ -178,14 +181,14 @@ public final class ContentManager {
     private void generateBlockItems(Reference2ObjectOpenHashMap<Class<? extends ContentType>, HashMap<String, ContentType>> contentMap) {
         var itemIndex = contentMap.computeIfAbsent(Item.class, k -> new HashMap<>());
         for (var block : content(contentMap, Block.class).values()) {
-            var itemBlock = new ItemBlock(block.id);
+            var itemBlock = new ItemBlock(block.key);
             itemBlock.block = block;
             itemBlock.weight = 50;
             itemBlock.texture = block.texture;
             itemBlock.requirements = block.requirements;
             itemBlock.createWith = block.createWith;
 
-            itemIndex.put(itemBlock.id(), itemBlock);
+            itemIndex.put(itemBlock.key(), itemBlock);
         }
     }
 
@@ -197,17 +200,34 @@ public final class ContentManager {
                     try{
                         loadable.resolve(res);
                     } catch (Exception ex) {
-                        log.error("[{}: '{}'] Failed to resolve", type, cont.id(), ex);
+                        log.error("[{}: '{}'] Failed to resolve", type, cont.key(), ex);
                     }
                 }
             }
         });
     }
 
+    public Block.Type getBlockType(short blockId) {
+        for (int i = 0; i < blockTypeEndId.length; i++) {
+            int start = i == 0 ? 0 : blockTypeEndId[i - 1];
+            int end = blockTypeEndId[i];
+            if (blockId >= start && blockId <= end) {
+                return Block.Type.VALUES[i];
+            }
+            // else if (i != 0) {
+            //     System.out.println("| " + Block.Type.VALUES[i] + " | start = " + start + " | end = " + end + " | blockId = " + blockId);
+            // }
+        }
+        throw new IllegalArgumentException("Invalid block id: " + blockId);
+    }
+
     private void generateIds(Reference2ObjectOpenHashMap<Class<? extends ContentType>, HashMap<String, ContentType>> contentMap) {
 
         // TODO в идеале предмет воздуха тоже с id 0
-        var blockList = content(contentMap, Block.class).values();
+        var blockList = content(contentMap, Block.class).values().stream()
+                .sorted(comparing((Block a) -> a.type)
+                        .thenComparing(a -> a.key))
+                .toList();
 
         // +1 из-за воздуха. см ниже
         var blgen = new RegistryGenerator<>(Block.class, blockList.size() + 1);
@@ -221,11 +241,12 @@ public final class ContentManager {
             blgen.putId(air);
         }
 
-        for (var block : blockList) {
-            if (block.id.equals("air")) {
+        for (Block block : blockList) {
+            if (block.key.equals("air")) {
                 continue;
             }
             blgen.putId(block);
+            blockTypeEndId[block.type.ordinal()] = block.id;
         }
 
         itemsRegistry = indexContent(contentMap, Item.class);
@@ -238,7 +259,9 @@ public final class ContentManager {
             Reference2ObjectOpenHashMap<Class<? extends ContentType>, HashMap<String, ContentType>> contentMap,
             Class<C> contentType)
     {
-        var cntList = content(contentMap, contentType).values();
+        var cntList = content(contentMap, contentType).values().stream()
+                .sorted(comparing(ContentType::key))
+                .toList();
         var gen = new RegistryGenerator<>(contentType, cntList.size());
         for (var value : cntList) {
             C cnt = contentType.cast(value);
@@ -251,12 +274,12 @@ public final class ContentManager {
     public List<Item> getCraftsFor(Block createWith) {
         return createWith == null
                 ? craftableByPlayer
-                : craftableByWorkbench.get(blocksRegistry.idByType(createWith));
+                : craftableByWorkbench.get(createWith.id);
     }
 
     // TODO странные названия
     public Item itemById(Block block) {
-        return itemById(block.id);
+        return itemById(block.key);
     }
 
     public Item itemById(String id) {

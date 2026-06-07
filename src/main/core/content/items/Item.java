@@ -16,7 +16,9 @@ public sealed class Item implements ContentType, Loadable
         permits ItemBlock, ItemTool, ItemUnresolved, ItemWeapon {
     public static final int DEFAULT_MAX_STACK_SIZE = 99;
 
-    public final String id;
+    public final String key;
+
+    public short id;
 
     public int maxStackSize = DEFAULT_MAX_STACK_SIZE;
 
@@ -26,18 +28,20 @@ public sealed class Item implements ContentType, Loadable
     public @Nullable Block createWith; // null если доступно из кармана игрока
 
     @JsonCreator
-    public static Item deserializer(String id) {
-        return Global.content.itemById(id);
+    public static Item deserializer(String key) {
+        return Global.content.itemById(key);
     }
 
-    public Item(String id) {
-        this.id = Objects.requireNonNull(id);
+    public Item(String key) {
+        this.key = Objects.requireNonNull(key);
     }
 
-    @Override
-    public final String id() {
-        return id;
+    public final String key() {
+        return key;
     }
+
+    public final short id() { return id; }
+    public final void setId(short id) { this.id = id; }
 
     @Override
     @MustBeInvokedByOverriders
@@ -61,11 +65,11 @@ public sealed class Item implements ContentType, Loadable
     }
 
     public String getName() {
-        return Global.lang.get("item." + id + ".name");
+        return Global.lang.get("item." + key + ".name");
     }
 
     public String getDescription() {
-        return Global.lang.get("item." + id + ".description");
+        return Global.lang.get("item." + key + ".description");
     }
 
     public float uiScale() {
@@ -80,16 +84,16 @@ public sealed class Item implements ContentType, Loadable
         if (!(o instanceof Item item)) {
             return false;
         }
-        return id.equals(item.id);
+        return key.equals(item.key);
     }
 
     @Override
     public final int hashCode() {
-        return id.hashCode();
+        return key.hashCode();
     }
 
     @Override
     public String toString() {
-        return "Item['" + id + "']";
+        return "Item['" + key + "']";
     }
 }

@@ -24,7 +24,7 @@ import java.util.function.Function;
 
 import static core.Global.assets;
 
-public class ContentLoader {
+public final class ContentLoader {
     private static final EnumMap<Type, HashMap<String, Function<String, ContentType>>> constructors = new EnumMap<>(Type.class);
     static {
         ctor(Type.ITEM, "item", Item::new);
@@ -136,7 +136,7 @@ public class ContentLoader {
     }
 
     public Atlas.Region readTexture(String propName) {
-        return Global.atlas.get(node.path(propName).asText(null));
+        return Global.atlas.get(node.required(propName).asText(null));
     }
 
     public Block readBlockUnresolved(String propName) {
