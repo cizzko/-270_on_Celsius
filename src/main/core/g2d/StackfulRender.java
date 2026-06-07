@@ -8,8 +8,7 @@ import core.pool.Pool;
 import core.pool.Poolable;
 import core.graphic.Color;
 import core.util.Disposable;
-
-import java.util.ArrayDeque;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import static core.g2d.Render.*;
 
@@ -42,7 +41,7 @@ public final class StackfulRender {
         float u2 = BytePack.fromB16toFloat32(texture.u2);
         float v2 = BytePack.fromB16toFloat32(texture.v2);
 
-        var ublockObj = queue.uniformBuffer().allocate();
+        var ublockObj = queue.uniformBuffer().allocate(Shaders.repeat);
         ublockObj.push(Uniform.of("u_logical_ratio", Global.camera.projectionScale));
         ublockObj.push(Uniform.of("u_camera_pos", Global.camera.position));
         ublockObj.push(Uniform.of("u_reg_uv", u1, v1));
@@ -68,23 +67,23 @@ public final class StackfulRender {
     public static void drawPostEffect(Drawable screenTexture) {
         var rlist = state.rlist;
 
-        int vertexCountPerQuad = queue.getVertexCountPerQuad(state.primitiveType);
+        short vertexCountPerQuad = queue.getVertexCountPerQuad(state.primitiveType);
         rlist.checkSpace(1, vertexCountPerQuad);
 
-        var item = allocItem();
+        var item = rlist.allocItem();
         item.vertexOffset = rlist.getVertexIndex();
         item.vertexCount = vertexCountPerQuad;
 
         rlist.addRectangle(state.primitiveType, state.colorRgba8888,
                 -1, 1,   // x1, y1 (левый верхний)
-                -1, -1,  // x2, y2 (левый нижний)
-                1, -1,   // x3, y3 (правый нижний)
-                1, 1,    // x4, y4 (правый верхний)
-                0, 0,    // u, v   (левая нижняя точка текстуры)
+                -1, -1,    // x2, y2 (левый нижний)
+                1, -1,     // x3, y3 (правый нижний)
+                1, 1,      // x4, y4 (правый верхний)
+                0, 0,       // u,  v  (левая нижняя точка текстуры)
                 1, 1);
 
-        int INDICES_PER_QUAD = 6;
-        int VERTICES_PER_QUAD = 4;
+        short INDICES_PER_QUAD = 6;
+        short VERTICES_PER_QUAD = 4;
         int quadIndex = item.vertexOffset / VERTICES_PER_QUAD;
 
         item.indexOffset = quadIndex * INDICES_PER_QUAD;
@@ -130,7 +129,6 @@ public final class StackfulRender {
             this.yScale = old.yScale;
         }
 
-        @Override
         public void reset() {
             rlist = null;
             ublock = UBLOCK_UNSET;
@@ -146,36 +144,19 @@ public final class StackfulRender {
 
         int ublock() {
             if (ublock == State.UBLOCK_UNSET) {
-                var block = queue.uniformBuffer().allocate();
+                var block = queue.uniformBuffer().allocate(shader);
                 block.push(Uniform.of("u_logical_ratio", logicalRatio));
                 block.push(Uniform.of("u_camera_pos", cameraPosition));
                 return queue.uniformBuffer().push(block);
             }
             return ublock;
         }
-
-        @Override
-        public String toString() {
-            return "State{" +
-                   "rlist=" + rlist +
-                   ", primitiveType=" + primitiveType +
-                   ", layer=" + layer +
-                   ", blending=" + blending +
-                   ", shader=" + shader +
-                   ", ublock=" + ublock +
-                   ", logicalRatio=" + logicalRatio +
-                   ", cameraPosition=" + cameraPosition +
-                   ", colorRgba8888=" + colorRgba8888 +
-                   ", xScale=" + xScale +
-                   ", yScale=" + yScale +
-                   '}';
-        }
     }
 
     private static final int MAX_NESTING = 10;
 
     private static final Pool<State> statePool = new Pool<>(State::new, MAX_NESTING);
-    private static final ArrayDeque<State> stack = new ArrayDeque<>(MAX_NESTING);
+    private static final ObjectArrayList<State> stack = new ObjectArrayList<>(MAX_NESTING);
     private static State state;
 
     public static Shader defaultShader;
@@ -286,10 +267,10 @@ public final class StackfulRender {
     ) {
 
 
-        int vertexCountPerQuad = queue.getVertexCountPerQuad(primitiveType);
+        short vertexCountPerQuad = queue.getVertexCountPerQuad(primitiveType);
         rlist.checkSpace(1, vertexCountPerQuad);
 
-        var item = allocItem();
+        var item = rlist.allocItem();
 
         item.vertexOffset = rlist.getVertexIndex();
         item.vertexCount = vertexCountPerQuad;
@@ -329,20 +310,20 @@ public final class StackfulRender {
             float u, float v,
             float u2, float v2
     ) {
-        int vertexCountPerQuad = queue.getVertexCountPerQuad(primitiveType);
+        short vertexCountPerQuad = queue.getVertexCountPerQuad(primitiveType);
         rlist.checkSpace(1, vertexCountPerQuad);
 
-        var item = allocItem();
+        var item = rlist.allocItem();
         item.vertexOffset = rlist.getVertexIndex();
         item.vertexCount = vertexCountPerQuad;
         rlist.addRectangle(primitiveType, rgba8888, x, y, x2, y2, u, v, u2, v2);
 
-        int INDICES_PER_QUAD = 6;
-        int VERTICES_PER_QUAD = 4;
+        short INDICES_PER_QUAD = 6;
+        short VERTICES_PER_QUAD = 4;
         int quadIndex = item.vertexOffset / VERTICES_PER_QUAD;
 
         item.indexOffset = quadIndex * INDICES_PER_QUAD;
-        item.indexCount = 6;
+        item.indexCount = INDICES_PER_QUAD;
         item.sortKey = makeSortKey(primitiveType, layer, blending, texId, shaderId, ublock, rlist.getItemIndex());
 
         item.validate();

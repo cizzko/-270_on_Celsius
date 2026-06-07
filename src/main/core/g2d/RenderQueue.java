@@ -6,13 +6,11 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.intellij.lang.annotations.MagicConstant;
-import org.jetbrains.annotations.Debug;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
-import java.util.Objects;
 
 import static core.g2d.Render.*;
 import static core.g2d.RenderList.KIND_DYNAMIC;
@@ -29,7 +27,6 @@ public final class RenderQueue implements Disposable {
 
     public static final boolean USE_INDEXES = true;
 
-    final Pool<RenderItem> ritemAlloc;
     final Pool<RenderList> rlistAlloc;
     final @Nullable ElementBufferObject ebo;
 
@@ -40,7 +37,6 @@ public final class RenderQueue implements Disposable {
     private final UniformBuffer uniformBuffer = new UniformBuffer();
 
     public RenderQueue(int itemCount, int vertexCount) {
-        this.ritemAlloc = new Pool<>(RenderItem::new, itemCount);
         this.rlistAlloc = new Pool<>(() -> {
             var list = new RenderList(rlistCount++, itemCount, vertexCount);
             created.add(list);
@@ -72,9 +68,7 @@ public final class RenderQueue implements Disposable {
 
     public UniformBuffer uniformBuffer() { return uniformBuffer; }
 
-    public RenderItem allocItem() { return ritemAlloc.obtain(); }
-
-    public int getVertexCountPerQuad(@PrimitiveType byte primitiveType) {
+    public short getVertexCountPerQuad(@PrimitiveType byte primitiveType) {
         return switch (primitiveType) {
             case PRIMITIVE_TYPE_TRIANGLE_STRIP -> 4;
             case PRIMITIVE_TYPE_TRIANGLES -> USE_INDEXES ? 4 : 6;
@@ -83,6 +77,7 @@ public final class RenderQueue implements Disposable {
     }
 
     public void beginFrame() {
+        // Здесь могла быть ваша статистика
     }
 
     public void endFrame() {
@@ -138,7 +133,7 @@ public final class RenderQueue implements Disposable {
 
         var items = rlist.items;
 
-        Arrays.parallelSort(items.elements(), 0, items.size(), RenderItem.Comparator.INSTANCE);
+        Arrays.parallelSort(items, 0, rlist.itemCount, RenderItem.Comparator.INSTANCE);
 
         var vertices = rlist.vertices;
         var mesh = rlist.mesh;
@@ -162,8 +157,8 @@ public final class RenderQueue implements Disposable {
         VertexFormat currentVertexFormat = defaultShader.vertexFormat();
 
         //noinspection ForLoopReplaceableByForEach
-        for (int i = 0; i < items.size(); ++i) {
-            var item = items.get(i);
+        for (int i = 0, n = rlist.itemCount; i < n; ++i) {
+            var item = items[i];
 
             byte primitiveType = getPrimitiveType(item.sortKey);
             byte layer = getLayer(item.sortKey);
@@ -196,8 +191,7 @@ public final class RenderQueue implements Disposable {
                     setBlending(blending);
                 }
 
-                var shader = ResourceCache.shadersById.get(shaderId);
-                Objects.requireNonNull(shader);
+                var shader = ResourceCache.shadersById[shaderId];
 
                 if (currentShaderId != shaderId) {
                     shader.use();
@@ -206,7 +200,7 @@ public final class RenderQueue implements Disposable {
                 }
 
                 if (currentUblock != ublock) {
-                    var block = uniformBuffer.id2blocks.get(ublock);
+                    var block = uniformBuffer.id2blocks[ublock];
                     block.setTo(shader);
                 }
 
@@ -242,7 +236,7 @@ public final class RenderQueue implements Disposable {
                 vertices.position(vapos);
                 vertices.limit(vacount);
             }
-            case RenderList.KIND_DYNAMIC -> rlistAlloc.free(rlist);
+            case RenderList.KIND_DYNAMIC -> rlistAlloc.freeAndReset(rlist);
         }
     }
 
@@ -269,8 +263,6 @@ public final class RenderQueue implements Disposable {
         if (ebo != null) {
             ebo.close();
         }
-        ritemAlloc.clear();
-        rlistAlloc.clear();
         for (RenderList renderList : created) {
             renderList.close();
         }

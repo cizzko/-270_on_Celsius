@@ -2,22 +2,19 @@ package core.g2d;
 
 import core.math.Mat3;
 import core.math.Vector2f;
-import core.pool.Pool;
-import it.unimi.dsi.fastutil.bytes.Byte2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 
 public final class UniformBuffer {
     private static final int MAX_ID = Byte.MAX_VALUE;
 
-    private final Pool<Block> pool = new Pool<>(Block::new, 16);
+    final Long2ObjectOpenHashMap<Block> hash2blocks = new Long2ObjectOpenHashMap<>(MAX_ID);
+    final Block[] id2blocks = new Block[MAX_ID];
 
-    final Long2ObjectOpenHashMap<Block> hash2blocks = new Long2ObjectOpenHashMap<>();
-    final Byte2ObjectOpenHashMap<Block> id2blocks = new Byte2ObjectOpenHashMap<>(MAX_ID);
-
-    public Block allocate() {
-        return pool.create();
+    public Block allocate(Shader shader) {
+        return new Block(shader.uniforms.size());
     }
 
     public int push(Block block) {
@@ -33,8 +30,7 @@ public final class UniformBuffer {
                 return block.id;
             }
             block.id = (byte) id;
-            block.children.trimToSize();
-            id2blocks.put(block.id, block);
+            id2blocks[block.id] = block;
             return block.id;
         }
         return block.id;
@@ -42,13 +38,7 @@ public final class UniformBuffer {
 
     public void clear() {
         hash2blocks.clear();
-        id2blocks.clear();
-    }
-
-    public void debug() {
-        for (int i = 0; i < id2blocks.size(); i++) {
-            System.out.println("block[" + i + "]: " + id2blocks.get((byte)i));
-        }
+        Arrays.fill(id2blocks, null);
     }
 
     public sealed interface Uniform {
@@ -161,7 +151,11 @@ public final class UniformBuffer {
 
         public byte id = UNITIALIZED;
 
-        private final ArrayList<Uniform> children = new ArrayList<>();
+        private final ObjectArrayList<Uniform> children;
+
+        public Block(int uniformCount) {
+            children = new ObjectArrayList<>(uniformCount);
+        }
 
         private long hash;
         public long hash() {
@@ -174,7 +168,9 @@ public final class UniformBuffer {
 
         private long computeHash() {
             long h = 5381L;
-            for (Uniform child : children) {
+            Object[] elements = children.elements();
+            for (int i = 0, n = children.size(); i < n; i++) {
+                var child = (Uniform) elements[i];
                 h += (h << 5L) + child.hash();
             }
             return h;
@@ -188,9 +184,9 @@ public final class UniformBuffer {
         }
 
         public void setTo(Shader shader) {
-            //noinspection ForLoopReplaceableByForEach
-            for (int i = 0; i < children.size(); i++) {
-                var child = children.get(i);
+            Object[] elements = children.elements();
+            for (int i = 0, n = children.size(); i < n; i++) {
+                var child = (Uniform) elements[i];
                 child.setTo(shader);
             }
         }

@@ -16,7 +16,7 @@ public final class Fill {
 
     private static float prevLineWidth = lineWidth;
 
-    public static final Drawable cachedRect = atlas.get(WHITE_RECT), cachedCircle = atlas.get(WHITE_CIRCLE);
+    public static final Atlas.Region cachedRect = atlas.get(WHITE_RECT), cachedCircle = atlas.get(WHITE_CIRCLE);
 
     public static void lineWidth(float w) {
         prevLineWidth = lineWidth;

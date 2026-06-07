@@ -2,7 +2,6 @@ package core.g2d;
 
 import core.pool.Poolable;
 import core.util.Disposable;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 
@@ -24,10 +23,9 @@ public final class RenderList implements Disposable, Poolable {
     int kind;
     @Nullable RenderList next, prev;
 
-    int prevItemIdx, prevVertexIdx;
-
-    final int itemCapacity, vertexCapacity;
-    final ObjectArrayList<RenderItem> items;
+    final int vertexCapacity;
+    final RenderItem[] items;
+    int itemCount;
     final FloatBuffer vertices;
     final Mesh mesh;
 
@@ -48,18 +46,18 @@ public final class RenderList implements Disposable, Poolable {
         return "RenderList[" + id + ";" + kindToString(kind) + "]{" +
                (next != null ? ("next=" + next) : "") +
                (prev != null ? (", prev=" + prev + ", ") : "") +
-               "prevItemIdx=" + prevItemIdx +
-               ", prevVertexIdx=" + prevVertexIdx +
-               ", items=" + items.size() + "/" + itemCapacity +
+               ", items=" + itemCount + "/" + items.length +
                ", vertices=" + vertices +
                '}';
     }
 
     RenderList(int id, int itemCount, int vertexCount) {
         this.id = id;
-        this.itemCapacity = itemCount;
         this.vertexCapacity = vertexCount;
-        this.items    = new ObjectArrayList<>(new RenderItem[itemCount], true) { };
+        this.items = new RenderItem[itemCount];
+        for (int i = 0; i < items.length; i++) {
+            items[i] = new RenderItem();
+        }
 
         // 6 на прямоугольник в случае без индексов, с ними 4
         var vertexFormat = defaultShader.vertexFormat();
@@ -71,11 +69,13 @@ public final class RenderList implements Disposable, Poolable {
         mesh.vboUpload(vertices);
     }
 
-    public int getItemIndex()   { return items.size(); }
+    public int getItemIndex()   { return itemCount; }
     public int getVertexIndex() { return vertices.position() / defaultShader.vertexFormat().vertexSizeIn(Float.BYTES); }
 
+    public RenderItem allocItem() { return items[itemCount]; }
+
     public boolean hasSpace(int itemCount, int vertexCount) {
-        return items.size() + itemCount < itemCapacity &&
+        return this.itemCount + itemCount < items.length &&
                vertices.remaining() >= vertexCount * defaultShader.vertexFormat().vertexSizeIn(Float.BYTES);
     }
 
@@ -89,27 +89,18 @@ public final class RenderList implements Disposable, Poolable {
                 newRList.prev = n;
                 n.next = n = newRList;
             }
+            assert false; // TODO планируют упростить
             return n;
         }
         return this;
     }
 
     public boolean isEmpty() {
-        return items.isEmpty() && vertices.position() == 0;
-    }
-
-    public void begin() {
-        prevItemIdx   = items.size();
-        prevVertexIdx = vertices.position();
-    }
-
-    public boolean end() {
-        return prevItemIdx == items.size() && prevVertexIdx == vertices.position();
+        return itemCount == 0 && vertices.position() == 0;
     }
 
     public void clear() {
-        items.forEach(queue.ritemAlloc::free);
-        items.clear();
+        itemCount = 0;
         vertices.clear();
     }
 
@@ -213,19 +204,20 @@ public final class RenderList implements Disposable, Poolable {
     }
 
     public void push(RenderItem item) {
-        items.add(item);
+        items[itemCount++] = item;
     }
 
     @Override
     public void close() {
         MemoryUtil.memFree(vertices);
-        items.clear();
+        // items это массив в куче, так что пусть сборщик сделает своё дело
+        // Arrays.fill(items, null);
     }
 
     void debug() {
         if (log.isDebugEnabled()) {
             log.debug("HasSpace : {}", hasSpace(1, 1));
-            log.debug("Items    : {}/{}", items.size(), itemCapacity);
+            log.debug("Items    : {}/{}", itemCount, items.length);
             log.debug("Vertices : {}/{}", vertices.position(), vertices.capacity());
         }
     }

@@ -122,9 +122,9 @@ public final class Render {
     }
 
     /// Максимальное количество вершин в [RenderList]
-    static final int RENDER_MAX_VERTEX_COUNT  = 64 * 1024;
+    static final int RENDER_MAX_VERTEX_COUNT  = 4 * 4 * 1024;
     /// Максимальное количество [RenderItem] в [RenderList]
-    static final int RENDER_MAX_ITEMS_COUNT   = 32 * 1024;
+    static final int RENDER_MAX_ITEMS_COUNT   = 4 * 1024;
 
     public static final RenderQueue queue = new RenderQueue(
             RENDER_MAX_ITEMS_COUNT, RENDER_MAX_VERTEX_COUNT);
@@ -135,5 +135,4 @@ public final class Render {
     }
 
     public static RenderQueue queue() { return queue; }
-    public static RenderItem allocItem() { return queue.allocItem(); }
 }

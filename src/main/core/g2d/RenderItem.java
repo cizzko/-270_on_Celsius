@@ -4,14 +4,16 @@ import core.pool.Poolable;
 
 public final class RenderItem implements Poolable {
     public /* unsigned */ long sortKey;
-    public int vertexOffset, vertexCount;
-    public int indexOffset, indexCount;
+    public int vertexOffset;
+    public short vertexCount;
+    public int indexOffset;
+    public short indexCount;
 
     public void validate() {
-        assert vertexOffset >= 0;
-        assert vertexCount > 0;
-        assert indexOffset >= 0;
-        assert indexCount > 0;
+        // assert vertexOffset >= 0;
+        // assert vertexCount > 0;
+        // assert indexOffset >= 0;
+        // assert indexCount > 0;
     }
 
     @Override

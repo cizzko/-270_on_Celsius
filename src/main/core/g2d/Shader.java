@@ -4,7 +4,6 @@ import core.math.Mat3;
 import core.util.Disposable;
 
 import java.util.Map;
-import java.util.Objects;
 
 import static core.math.Mat3.*;
 import static org.lwjgl.opengl.GL46.*;
@@ -68,7 +67,7 @@ public final class Shader implements Disposable {
         glDeleteShader(fragmentShader);
 
         var shader = new Shader(program, name, vertexFormat, uniforms);
-        ResourceCache.shadersById.put(program, shader);
+        ResourceCache.shadersById[program] = shader;
 
         return shader;
     }
@@ -149,10 +148,12 @@ public final class Shader implements Disposable {
         glUniformMatrix3fv(uniformLocation(name), false, res);
     }
 
-    private int uniformLocation(String name) {
+    public int uniformLocation(String name) {
         Uniform uniform = uniforms.get(name);
-        Objects.requireNonNull(uniform, () -> "Invalid uniform name: '" + name + "' in " + this);
-        return uniform.position;
+        if (uniform != null) {
+            return uniform.position;
+        }
+        throw new IllegalStateException("Invalid uniform name: '" + name + "' in " + this);
     }
 
     @Override
@@ -167,7 +168,7 @@ public final class Shader implements Disposable {
 
     @Override
     public void close() {
-        ResourceCache.shadersById.remove(id);
+        ResourceCache.shadersById[id] = null;
         glDeleteProgram(id);
     }
 
