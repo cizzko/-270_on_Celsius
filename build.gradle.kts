@@ -30,10 +30,15 @@ tasks.withType<JavaExec> {
 //    jvmArgs("-XX:+UnlockDiagnosticVMOptions", "-XX:+DebugNonSafepoints", "-XX:+ShowHiddenFrames")
 
     if (name.startsWith(MAIN_CLASS)) {
-        // core.Main.main()
+        // core.Main.main() то что использует идея
         jvmArguments.add("--enable-native-access=org.lwjgl")
         jvmArguments.add("--enable-native-access=org.lwjgl.opengl")
         jvmArguments.add("-XX:-OmitStackTraceInFastThrow")
+        jvmArguments.add("-ea:core.main")
+        jvmArguments.add("-XX:+UseZGC") // экспериментируем как бы
+        if (JavaLanguageVersion.current().canCompileOrRun(25)) {
+            jvmArguments.add("-XX:+UseCompactObjectHeaders")
+        }
     }
 
     doFirst {
@@ -176,8 +181,12 @@ jlink {
         args = listOf("--packaged")
 
         jvmArgs = arrayListOf()
+        jvmArgs.add("-XX:-OmitStackTraceInFastThrow")
         if (System.getProperty("os.name")!!.startsWith("Darwin") || System.getProperty("os.name")!!.startsWith("Mac OS X")) {
             jvmArgs.add("-XstartOnFirstThread")
+        }
+        if (JavaLanguageVersion.current().canCompileOrRun(25)) {
+            jvmArgs.add("-XX:+UseCompactObjectHeaders")
         }
         if (JavaLanguageVersion.current().canCompileOrRun(22)) {
             jvmArgs.add("--enable-native-access=org.lwjgl.opengl")
