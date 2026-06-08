@@ -11,6 +11,7 @@ import java.util.Locale;
 import static core.WorldCoordinates.toBlock;
 import static core.WorldCoordinates.toWorld;
 import static core.math.MathUtil.toByteExact;
+import static core.math.MathUtil.toShortExact;
 
 public class Block implements ContentType, Loadable {
     public static Block AIR;
@@ -20,9 +21,10 @@ public class Block implements ContentType, Loadable {
 
     public byte tileCountX, tileCountY;
 
-    public int maxHp;
-    public float density, resistance;
-    public int lightTransmission;
+    public short maxHp;
+    public float density; // unused
+    public float resistance;
+    public int lightTransmission; // unused
     public Atlas.Region texture;
     public ItemStack[] requirements;
     public @Nullable Block createWith;
@@ -35,7 +37,7 @@ public class Block implements ContentType, Loadable {
     @Override
     @MustBeInvokedByOverriders
     public void load(ContentLoader cnt) {
-        this.maxHp = cnt.node().path("MaxHp").asInt(100);
+        this.maxHp = toShortExact(cnt.node().path("MaxHp").asInt(100));
         this.texture = cnt.readTexture("Texture");
         this.requirements = cnt.readItemStacksUnresolved(cnt.node().path("Requirements"));
 

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import core.content.items.Item;
 import core.content.items.data.ItemData;
+import core.math.MathUtil;
 import org.jetbrains.annotations.CheckReturnValue;
 import org.jetbrains.annotations.Nullable;
 
@@ -20,15 +21,15 @@ public final class ItemStack {
     public static final ItemStack[] EMPTY_ARRAY = {};
 
     private Item item;
-    private int count;
+    private short count;
     private @Nullable ItemData data;
 
     @JsonCreator
     public ItemStack(@JsonProperty("item") Item item,
-                     @JsonProperty("count") int count,
+                     @JsonProperty("count") short count,
                      @JsonProperty("data") @Nullable ItemData data) {
         this.item = Objects.requireNonNull(item);
-        this.count = Math.min(requirePositive(count), item.maxStackSize);
+        this.count = (short)Math.min(requirePositive(count), item.maxStackSize);
         this.data = data;
     }
 
@@ -40,7 +41,7 @@ public final class ItemStack {
         return new ItemStack(item, count);
     }
 
-    private static int requirePositive(int count) {
+    private static short requirePositive(short count) {
         if (count < 0) {
             throw new IllegalArgumentException("Negative ItemStack size");
         }
@@ -49,7 +50,7 @@ public final class ItemStack {
 
     public ItemStack(Item item, int count) {
         this.item = Objects.requireNonNull(item);
-        this.count = Math.min(requirePositive(count), item.maxStackSize);
+        this.count = (short) Math.min(requirePositive((short) count), item.maxStackSize);
     }
 
     public static ItemStack itemStack(Item item, int count) { return new ItemStack(item, count); }
@@ -86,7 +87,7 @@ public final class ItemStack {
     }
 
     public void setCount(int count) {
-        this.count = Math.min(requirePositive(count), item.maxStackSize);
+        this.count = (short)Math.min(requirePositive((short)count), item.maxStackSize);
     }
 
     public void setData(@Nullable ItemData data) {
@@ -95,7 +96,7 @@ public final class ItemStack {
 
     public void set(Item item, int count) {
         this.item = Objects.requireNonNull(item);
-        this.count = Math.min(requirePositive(count), item.maxStackSize);
+        this.count = (short)Math.min(requirePositive((short)count), item.maxStackSize);
         this.data = null;
     }
 
@@ -104,7 +105,7 @@ public final class ItemStack {
 
     @CheckReturnValue
     public boolean decrement(int d) {
-        count = Math.max(0, count - d);
+        count = (short)Math.max(0, count - d);
         return count == 0;
     }
 

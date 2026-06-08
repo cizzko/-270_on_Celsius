@@ -3,6 +3,7 @@ package core.graphic;
 import core.UI.Styles;
 import core.Window;
 import core.content.ItemStack;
+import core.content.ItemStackPredicate;
 import core.content.items.Item;
 import core.g2d.*;
 import core.math.Point2i;
@@ -22,25 +23,46 @@ public class GuiDrawing {
 
     private static final Point2i textSize = new Point2i();
 
+    public static void drawObjects(float x, float y, ItemStackPredicate[] items, Atlas.Region iconRegion) {
+        if (items.length == 0) {
+            return;
+        }
+        draw(iconRegion, x, y + 16);
+
+        float ox = iconRegion.width();
+        for (int i = 0; i < items.length; i++) {
+            var itemPredicate = items[i];
+
+            drawText(x + ox + (i * 54), y + 3,
+                    itemPredicate.count() > 9 ? "9+" : String.valueOf(itemPredicate.count()), Styles.DIRTY_BRIGHT_BLACK);
+
+            Item item = itemPredicate.ref().any();
+            float uiScale = item.uiScale();
+            var tex = item.texture;
+            draw(tex, x + ox + (i * 54) + 5, y + 15,
+                    tex.width() * uiScale, tex.height() * uiScale);
+        }
+    }
+
     public static void drawObjects(float x, float y, ItemStack[] items, Atlas.Region iconRegion) {
         if (items.length == 0) {
             return;
         }
         draw(iconRegion, x, y + 16);
 
+        float ox = iconRegion.width();
         for (int i = 0; i < items.length; i++) {
             var item = items[i];
             if (item == null) {
                 continue;
             }
 
-            int playerSize = Math.max(player.creature.texture.width(), player.creature.texture.height());
-            drawText((x + (i * 54)) + playerSize + 28, y + 3,
+            drawText(x + ox + (i * 54), y + 3,
                     item.count() > 9 ? "9+" : String.valueOf(item.count()), Styles.DIRTY_BRIGHT_BLACK);
 
             float uiScale = item.item().uiScale();
             var tex = item.item().texture;
-            draw(tex, (x + (i * 54)) + playerSize + 5, y + 15,
+            draw(tex, x + ox + (i * 54) + 5, y + 15,
                     tex.width() * uiScale, tex.height() * uiScale);
         }
     }

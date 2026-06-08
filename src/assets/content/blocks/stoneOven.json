@@ -3,7 +3,7 @@
   "Type": "WALKABLE",
   "Texture": "textures/blocks/stoneOven",
   "Input": {
-    "smallStone": 1
+    "#stone": 1
   },
   "MaxHp": 100,
   "Requirements": {

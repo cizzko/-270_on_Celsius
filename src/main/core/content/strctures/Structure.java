@@ -1,5 +1,6 @@
 package core.content.strctures;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import core.content.blocks.Block;
 import core.content.ContentLoader;
 import core.content.ContentResolver;
@@ -65,7 +66,9 @@ public class Structure implements ContentType, Loadable {
 
     @Override
     public void load(ContentLoader cnt) {
-        for (var node : cnt.node().path("Blocks")) {
+        JsonNode blocksNode = cnt.node().path("Blocks");
+        blocks.ensureCapacity(blocksNode.size());
+        for (var node : blocksNode) {
             short offsetX = toShortExact(node.path("OffsetX").asInt(0));
             short offsetY = toShortExact(node.path("OffsetY").asInt(0));
             var block = new BlockUnresolved(node.required("Block").asText());

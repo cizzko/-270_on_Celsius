@@ -14,6 +14,7 @@ import core.content.blocks.Workbench;
 import core.content.items.*;
 import core.content.strctures.Structure;
 import core.g2d.Atlas;
+import core.math.MathUtil;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,6 +24,7 @@ import java.util.HashMap;
 import java.util.function.Function;
 
 import static core.Global.assets;
+import static core.math.MathUtil.*;
 
 public final class ContentLoader {
     private static final EnumMap<Type, HashMap<String, Function<String, ContentType>>> constructors = new EnumMap<>(Type.class);
@@ -111,6 +113,28 @@ public final class ContentLoader {
     public RuntimeException malformed(String message) {
         Path relPath = assets.assetsDir().relativize(path);
         return new RuntimeException("[" + type + ", path='" + relPath +  "', id='" + id + "'] " + message);
+    }
+
+    public ItemStackPredicate[] readItemStacksPredicatesUnresolved(JsonNode node) {
+        switch (node.getNodeType()) {
+            case OBJECT -> {
+                if (node.isEmpty()) {
+                    return ItemStackPredicate.EMPTY_ARRAY;
+                }
+                var itemStacks = new ItemStackPredicate[node.size()];
+                int i = 0;
+                for (var pair : node.properties()) {
+                    String itemId = pair.getKey();
+                    short count = toShortExact(pair.getValue().asInt(1));
+                    itemStacks[i++] = new ItemStackPredicate(new TagReference.OfUnresolved<>(Item.class, itemId), count);
+                }
+                return itemStacks;
+            }
+            case MISSING, NULL -> {
+                return ItemStackPredicate.EMPTY_ARRAY;
+            }
+            default -> throw malformed("'requirements' must be an object");
+        }
     }
 
     public ItemStack[] readItemStacksUnresolved(JsonNode node) {

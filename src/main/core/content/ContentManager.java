@@ -71,9 +71,9 @@ public final class ContentManager {
         }
 
         generateBlockItems(contentMap);
-        resolveAll(contentMap);
         generateIds(contentMap);
         loadTags(contentDir, contentMap);
+        resolveAll(contentMap);
         loadCrafts(contentMap);
     }
 
