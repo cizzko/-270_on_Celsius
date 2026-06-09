@@ -42,8 +42,6 @@ public final class PlayGameScene extends GameScene {
     public void onInit() {
         Debug.initPlaying();
 
-        // Global.postEffect.use(true);
-
         updateCamera();
         smoothedCamera = Config.getBoolean("SmoothedCamera");
 
@@ -117,8 +115,6 @@ public final class PlayGameScene extends GameScene {
         if (player.isDead()) {
             return;
         }
-
-        camera.updateLastPosition();
 
         if (smoothedCamera) {
             float base = 0.08f * Math.max(1, player.velocity().len() / 4f);

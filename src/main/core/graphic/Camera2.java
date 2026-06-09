@@ -4,7 +4,6 @@ import core.math.Rectangle;
 import core.math.Vector2f;
 
 public final class Camera2 {
-    public final Vector2f lastPosition = new Vector2f();
     public final Vector2f position = new Vector2f();
 
     // Размер экрана в логических единицах
@@ -16,10 +15,6 @@ public final class Camera2 {
 
     public Camera2(float pixelsPerUnit) {
         this.pixelsPerUnit = pixelsPerUnit;
-    }
-
-    public void updateLastPosition() {
-        lastPosition.set(position);
     }
 
     public void update() {
@@ -46,7 +41,6 @@ public final class Camera2 {
     }
 
     public void setToOrthographic(float width, float height) {
-        lastPosition.set(0, 0);
         position.set(width / (2f * pixelsPerUnit), height / (2f * pixelsPerUnit));
         resizeViewport(width, height);
     }

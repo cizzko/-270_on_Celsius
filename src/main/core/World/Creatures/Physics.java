@@ -213,14 +213,12 @@ public class Physics {
         if (ent.x() >= rightBorder) {
             ent.setX(ent.x() - dx);
             if (player == ent) {
-                camera.updateLastPosition();
                 camera.position.x -= dx;
                 ShadowMap.update();
             }
         } else if (ent.x() <= leftBorder) {
             ent.setX(ent.x() + dx);
             if (player == ent) {
-                camera.updateLastPosition();
                 camera.position.x += dx;
                 ShadowMap.update();
             }

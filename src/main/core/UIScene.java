@@ -222,12 +222,10 @@ public final class UIScene implements InputListener {
 // region InputListener
 
     @Override
-    public void onResize(int width, int height) {
-        // if (Global.postEffect.use) {
-        //     Global.postEffect.resize(width, height);
-        // }
+    public void onFramebufferResize(int width, int height) {
         view.setToOrthographic(width, height);
-        rootElement.onResize(width, height);
+        view.unproject(mouse);
+        rootElement.onFramebufferResize(width, height);
     }
 
     @Override
