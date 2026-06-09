@@ -6,7 +6,7 @@ import core.assets.AssetsManager;
 import core.content.EntityPool;
 import core.g2d.*;
 import core.input.InputHandler;
-import core.lang.LangTranslation;
+import core.LangTranslation;
 import core.util.Debug;
 import core.util.FutureUtil;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -32,7 +32,7 @@ public final class Window extends Application {
     private static final Logger lwjglLogger = LogManager.getLogger("LWJGL");
 
     public static int defaultWidth = 1920, defaultHeight = 1080;
-    public static Mode defaultMode = Mode.FULLSCREEN;
+    public static Mode defaultMode = Mode.BORDERLESS;
 
     public enum Mode {
         WINDOW,

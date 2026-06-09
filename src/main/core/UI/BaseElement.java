@@ -224,8 +224,8 @@ public abstract class BaseElement<E extends BaseElement<E>> implements Element {
 
 
     @Override
-    public void onResize(int width, int height) {
-        inputListeners.forEach(listener -> listener.onResize(width, height));
+    public void onFramebufferResize(int width, int height) {
+        inputListeners.forEach(listener -> listener.onFramebufferResize(width, height));
     }
 
     @Override

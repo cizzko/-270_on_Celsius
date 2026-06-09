@@ -97,10 +97,10 @@ public abstract class BaseGroup<G extends BaseElement<G> & Group> extends BaseEl
     }
 
     @Override
-    public void onResize(int width, int height) {
-        super.onResize(width, height);
+    public void onFramebufferResize(int width, int height) {
+        super.onFramebufferResize(width, height);
         for (Element child : children) {
-            child.onResize(width, height);
+            child.onFramebufferResize(width, height);
         }
     }
 
