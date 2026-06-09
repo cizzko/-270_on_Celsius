@@ -47,6 +47,7 @@ open module core.main {
     exports core.g2d;
     exports core.graphic;
     exports core.input;
+    exports core.lang;
     exports core.math;
     exports core.pool;
     exports core.util;

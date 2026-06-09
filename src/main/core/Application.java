@@ -119,15 +119,29 @@ public class Application {
 
     protected void nextFrame() {
         if (framerate > 0) {
-            long elapsedTime = System.nanoTime() - prevSwapTime;
             double frameTime = 1e9 / framerate;
+            long elapsedTime = System.nanoTime() - prevSwapTime;
+
             if (elapsedTime < frameTime) {
-                long toSleep = (long) (frameTime - elapsedTime);
-                try {
-                    Thread.sleep((toSleep / 1_000_000), (int)(toSleep % 1_000_000));
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                long toWait = (long) (frameTime - elapsedTime);
+                long targetTime = System.nanoTime() + toWait;
+
+                while (toWait > 1_500_000L) {
+                    long sleepMs = (toWait / 1_000_000L) - 1;
+                    if (sleepMs <= 0) break;
+
+                    try {
+                        Thread.sleep(sleepMs);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        return;
+                    }
+
+                    toWait = targetTime - System.nanoTime();
                 }
+
+                while (System.nanoTime() < targetTime)
+                    Thread.onSpinWait();
             }
         }
         prevSwapTime = System.nanoTime();

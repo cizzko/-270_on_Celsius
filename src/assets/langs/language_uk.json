@@ -1,0 +1,99 @@
+{
+  "Basic": {
+    "text": "Basic",
+    "comments": [
+      "src/main/core/UI/menu/CreatePlanet.java:45",
+      "src/main/core/UI/menu/Settings.java:32"
+    ]
+  },
+  "Continue": {
+    "text": "Continue",
+    "comments": [ "src/main/core/UI/menu/Pause.java:15" ]
+  },
+  "Exit": {
+    "text": "Exit",
+    "comments": [
+      "src/main/core/UI/menu/MainMenu.java:30",
+      "src/main/core/UI/menu/Pause.java:31"
+    ]
+  },
+  "Experimental worl gen": {
+    "text": "Experimental worl gen",
+    "comments": [ "src/main/core/UI/menu/CreatePlanet.java:76" ]
+  },
+  "Generate flat world": {
+    "text": "Generate flat world",
+    "comments": [ "src/main/core/UI/menu/CreatePlanet.java:85" ]
+  },
+  "Generate world": {
+    "text": "Generate world",
+    "comments": [ "src/main/core/UI/menu/CreatePlanet.java:55" ]
+  },
+  "Generation": {
+    "text": "Generation",
+    "comments": [ "src/main/core/UI/menu/CreatePlanet.java:48" ]
+  },
+  "Graphics": {
+    "text": "Graphics",
+    "comments": [ "src/main/core/UI/menu/Settings.java:40" ]
+  },
+  "Language": {
+    "text": "Language",
+    "comments": [ "src/main/core/UI/menu/Settings.java:96" ]
+  },
+  "Load save": {
+    "text": "Load save",
+    "comments": [ "src/main/core/UI/menu/MainMenu.java:22" ]
+  },
+  "Load world": {
+    "text": "Load world",
+    "comments": [ "src/main/core/UI/menu/LoadSave.java:83" ]
+  },
+  "Menu": {
+    "text": "Menu",
+    "comments": [ "src/main/core/UI/menu/Pause.java:27" ]
+  },
+  "New game": {
+    "text": "New game",
+    "comments": [ "src/main/core/UI/menu/MainMenu.java:19" ]
+  },
+  "Other": {
+    "text": "Other",
+    "comments": [ "src/main/core/UI/menu/Settings.java:36" ]
+  },
+  "Physics": {
+    "text": "Physics",
+    "comments": [ "src/main/core/UI/menu/CreatePlanet.java:51" ]
+  },
+  "Return": {
+    "text": "Return",
+    "comments": [
+      "src/main/core/UI/menu/CreatePlanet.java:39",
+      "src/main/core/UI/menu/LoadSave.java:79",
+      "src/main/core/UI/menu/Settings.java:27"
+    ]
+  },
+  "Save": {
+    "text": "Save",
+    "comments": [ "src/main/core/UI/menu/Settings.java:48" ]
+  },
+  "Save world": {
+    "text": "Save world",
+    "comments": [ "src/main/core/UI/menu/Pause.java:19" ]
+  },
+  "Settings": {
+    "text": "Settings",
+    "comments": [
+      "src/main/core/UI/menu/MainMenu.java:26",
+      "src/main/core/UI/menu/Pause.java:23"
+    ]
+  },
+  "System language": {
+    "text": "System language",
+    "comments": [ "src/main/core/UI/menu/Settings.java:101" ]
+  },
+  "Vertical sync": {
+    "text": "Vertical sync",
+    "comments": [ "src/main/core/UI/menu/Settings.java:56" ]
+  }
+}

@@ -10,11 +10,6 @@ val MAIN_CLASS  = "core.Main"
 val MAIN_MODULE = "core.main"
 
 sourceSets {
-    create("tools") {
-        java {
-            srcDir("src/tools")
-        }
-    }
     main {
         java {
             srcDir("src/main")
@@ -22,6 +17,14 @@ sourceSets {
         resources {
             srcDir("src/assets")
         }
+    }
+
+    create("tools") {
+        java {
+            srcDir("src/tools")
+        }
+        compileClasspath += sourceSets["main"].output
+        runtimeClasspath += sourceSets["main"].output
     }
 }
 
@@ -63,14 +66,19 @@ tasks.withType<JavaExec> {
 
 tasks.named<JavaCompile>("compileToolsJava") {
     dependsOn(tasks.compileJava)
-    classpath = sourceSets["main"].runtimeClasspath + sourceSets["main"].output
+}
+
+val syncTranslation = tasks.register<JavaExec>("syncTranslation") {
+    mustRunAfter(tasks.classes)
+    classpath = sourceSets["tools"].runtimeClasspath + sourceSets["main"].output
+
+    workingDir = rootDir
+    mainClass = "core.tool.lang.TranslationProcessor"
 }
 
 val genatlas = tasks.register<JavaExec>("genatlas") {
     mustRunAfter(tasks.classes)
-    classpath = sourceSets["tools"].runtimeClasspath +
-            sourceSets["main"].runtimeClasspath +
-            sourceSets["main"].output
+    classpath = sourceSets["tools"].runtimeClasspath + sourceSets["main"].output
 
     workingDir = rootDir
     mainClass = "core.tool.AtlasGenerator"
@@ -132,6 +140,8 @@ java {
         languageVersion = JavaLanguageVersion.of(target)
     }
 }
+
+configurations["toolsImplementation"].extendsFrom(configurations["implementation"])
 
 dependencies {
     implementation("it.unimi.dsi:fastutil:8.5.18")

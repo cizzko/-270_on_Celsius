@@ -1,0 +1,9 @@
+{
+  "reference": "en",
+  "bundle": "language",
+  "format": "json",
+  "supported": [
+    "ru",
+    "uk"
+  ]
+}

@@ -52,7 +52,7 @@ public class CreatePlanet extends Dialog {
         );
         generateWorld = sizePanel.addButton(Styles.SIMPLE_TEXT_BUTTON, () -> WorldGenerator.generateWorld(parameters))
                 .set(1460, 260, 420, 65)
-                .setName(Global.lang.get("GenerateWorld"))
+                .setName(Global.lang.get("Generate world"))
                 .setOneShot(true);
         sizePanel.addSlider(Styles.DEFAULT_SLIDER, Constants.World.MIN_WORLD_SIZE, Constants.World.MAX_WORLD_SIZE, (size, max) -> {
             String pic;
@@ -73,7 +73,8 @@ public class CreatePlanet extends Dialog {
             toggleDialog(this, true);
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> WorldGenerator.useExpGen = !WorldGenerator.useExpGen)
                     .setPosition(70, 890)
-                    .setName(Global.lang.get("ExpGenWorld"));
+                    .setClicked(WorldGenerator.useExpGen)
+                    .setName(Global.lang.get("Experimental worl gen"));
         }}).set(40, 270, 1360, 950 - 270);
         generationParameters = background.add(new Dialog() {{
             setId("generationParameters");
@@ -82,8 +83,8 @@ public class CreatePlanet extends Dialog {
             toggleDialog(this, false);
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> parameters.simple = !parameters.simple)
                     .setPosition(70, 890)
-                    .setName(Global.lang.get("GenerateSimpleWorld"));
-        }}).set(40, 270, 1360, 950 - 270);;
+                    .setName(Global.lang.get("Generate flat world"));
+        }}).set(40, 270, 1360, 950 - 270);
     }
 
     private void toggleDialog(Dialog dialog, boolean state) {

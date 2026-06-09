@@ -3,13 +3,13 @@ package core.World.Weather;
 import core.GameObject;
 import core.Load;
 import core.Time;
+import core.g2d.Render;
 import core.g2d.StackfulRender;
 import core.g2d.Texture;
 import core.graphic.Color;
 import core.graphic.ShadowMap;
 
-import static core.Global.player;
-import static core.Global.world;
+import static core.Global.*;
 import static core.World.WorldGenerator.WorldGeneratorConstants.COPY_SIZE;
 import static core.WorldCoordinates.BLOCK_SIZE;
 import static core.math.MathUtil.lerp;
@@ -113,11 +113,10 @@ public class Sun extends GameObject {
 
     @Override
     public void draw() {
-        //todo что то с блендингом пикселей
         StackfulRender.draw(skyBackgroundTex, skyColor, 0, 0);
+        StackfulRender.blending(Render.BLENDING_PREMUL);
         StackfulRender.draw(sunsetTex, sunsetColor, 0, 0);
-        StackfulRender.pushRenderList();
-        StackfulRender.flush();
         StackfulRender.draw(sunTex, sunColor, x, y);
+        StackfulRender.blending(Render.BLENDING_NORMAL);
     }
 }

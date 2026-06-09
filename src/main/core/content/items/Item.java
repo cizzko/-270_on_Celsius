@@ -69,11 +69,11 @@ public sealed class Item implements ContentType, Loadable
     }
 
     public String getName() {
-        return Global.lang.get("item." + key + ".name");
+        return Global.lang.get("items." + key + ".name");
     }
 
     public String getDescription() {
-        return Global.lang.get("item." + key + ".description");
+        return Global.lang.get("items." + key + ".description");
     }
 
     public float uiScale() {

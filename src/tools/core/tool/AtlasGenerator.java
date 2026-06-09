@@ -151,6 +151,7 @@ public final class AtlasGenerator {
 
         Files.walkFileTree(sourceDir, new WalkVisitor());
 
+        // TODO нет смысла полностью бегать по дереву. Первый не похожий получил и всё, отвал
         if (oldHashes != null && oldHashes.size() == regionMap.size() &&
                     Files.exists(atlasPath) &&
                     Files.exists(atlasMetaPath)) {

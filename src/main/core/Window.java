@@ -6,7 +6,7 @@ import core.assets.AssetsManager;
 import core.content.EntityPool;
 import core.g2d.*;
 import core.input.InputHandler;
-import core.LangTranslation;
+import core.lang.LangTranslation;
 import core.util.Debug;
 import core.util.FutureUtil;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;

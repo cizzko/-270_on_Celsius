@@ -1,7 +1,6 @@
 package core.content;
 
 import core.Global;
-import core.LangTranslation;
 
 import java.util.List;
 import java.util.Set;

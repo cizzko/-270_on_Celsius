@@ -80,7 +80,7 @@ public final class LoadSave extends Dialog {
 
         loadWorld = sizePanel.addButton(Styles.SIMPLE_TEXT_BUTTON, () -> WorldGenerator.generateWorld(parameters))
                 .set(1460, 260, 420, 65)
-                .setName(Global.lang.get("LoadWorld"))
+                .setName(Global.lang.get("Load world"))
                 .setOneShot(true);
 
         //todo тут подгружать метадату размера

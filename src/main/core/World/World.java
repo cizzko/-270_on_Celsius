@@ -434,13 +434,12 @@ public final class World {
             }
 
             if (root.type == Block.Type.SOLID) {
-                // Если убрать + DrawComponent.GAP, то игрок может ускоренно строиться снизу вверх, как в бедварсе....
-                boolean anyCollision = entityPool.index().any(x, y, root.tileCountX, root.tileCountY + DrawComponent.GAP);
+                boolean anyCollision = entityPool.index().any(x, y, root.tileCountX, root.tileCountY);
                 return !anyCollision;
             }
         } else {
             if (root.type == Block.Type.SOLID) {
-                boolean anyCollision = entityPool.index().any(x, y, root.tileCountX, root.tileCountY + DrawComponent.GAP);
+                boolean anyCollision = entityPool.index().any(x, y, root.tileCountX, root.tileCountY);
                 if (anyCollision) {
                     return false;
                 }

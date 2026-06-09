@@ -10,7 +10,6 @@ import core.UI.TextArea;
 import core.World.Weather.Sun;
 import core.content.blocks.Block;
 import core.content.blocks.data.TileData;
-import core.content.entity.Entity;
 import core.content.entity.Hitbox;
 import core.content.items.Item;
 import core.g2d.Fill;
@@ -18,6 +17,7 @@ import core.g2d.Render;
 import core.g2d.StackfulRender;
 import core.graphic.Color;
 import core.graphic.GuiDrawing;
+import core.graphic.ShadowMap;
 import core.math.Rectangle;
 import core.math.TmpShapes;
 import org.jetbrains.annotations.Nullable;
@@ -108,7 +108,8 @@ public class Debug {
             var mouseBlockPos = input.mouseBlockPos();
             var mouseBlock = world.getBlock(mouseBlockPos);
             String blockId = mouseBlock != null ? mouseBlock.key + " (BID: " + mouseBlock.id + ")" : "<void>";
-            return "Mouse: " + mouseBlockPos + " ID: " + blockId + " HP: " + world.getHp(mouseBlockPos);
+            return "Mouse: " + mouseBlockPos + " ID: " + blockId + " HP: " + world.getHp(mouseBlockPos) +
+                   " Shadow: " + ShadowMap.getColorTo(mouseBlockPos.x, mouseBlockPos.y, TmpShapes.c2);
         });
     }
 

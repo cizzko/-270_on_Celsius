@@ -20,7 +20,6 @@ import static core.g2d.Render.*;
 
 public final class PlayGameScene extends GameScene {
     public final Sun sun = new Sun();
-    public final PostEffect postEffect = new PostEffect();
     //надо что то думать с круглым миром
     public static boolean smoothedCamera;
 
@@ -63,7 +62,6 @@ public final class PlayGameScene extends GameScene {
     protected void update() {
         Physics.updatePhysics(this);
         updateCamera();
-        postEffect.update();
         sun.update();
         updateInventoryInteraction();
         Bullets.updateBullets();
@@ -76,7 +74,8 @@ public final class PlayGameScene extends GameScene {
 
         StackfulRender.z(LAYER_BACKGROUND);
         sun.draw();
-        postEffect.draw();
+        // if (false)
+        {
         StackfulRender.z(LAYER_BLOCKS);
         StackfulRender.camera(camera); // Центрируем камеру на позицию игрока
         WorldDrawing.drawBlocks();
@@ -91,6 +90,7 @@ public final class PlayGameScene extends GameScene {
         WorkbenchLogic.draw();
         Inventory.draw();
         drawCurrentHP();
+        }
         Debug.drawTextValues();
     }
 

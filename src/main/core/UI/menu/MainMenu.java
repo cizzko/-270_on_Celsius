@@ -2,6 +2,7 @@ package core.UI.menu;
 
 import core.GameState;
 import core.Global;
+import core.Time;
 import core.UI.Dialog;
 import core.UI.Styles;
 import core.UIMenus;
@@ -16,10 +17,10 @@ public class MainMenu extends Dialog {
 
         panel.addButton(Styles.TEXT_BUTTON, this::playButton)
                 .set(40, 990, 240, 65)
-                .setName(lang.get("NewGame"));
+                .setName(lang.get("New game"));
         panel.addButton(Styles.TEXT_BUTTON, this::loadSave)
                 .set(300, 990, 240, 65)
-                .setName(lang.get("LoadSave"));
+                .setName(lang.get("Load save"));
 
         panel.addButton(Styles.TEXT_BUTTON, this::settingsBtn)
                 .set(720, 990, 240, 65)

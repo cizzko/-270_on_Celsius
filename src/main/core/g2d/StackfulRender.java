@@ -74,13 +74,13 @@ public final class StackfulRender {
         item.vertexOffset = rlist.getVertexIndex();
         item.vertexCount = vertexCountPerQuad;
 
-        rlist.addRectangle(state.primitiveType, state.colorRgba8888,
-                -1, 1,   // x1, y1 (левый верхний)
-                -1, -1,    // x2, y2 (левый нижний)
-                1, -1,     // x3, y3 (правый нижний)
-                1, 1,      // x4, y4 (правый верхний)
-                0, 0,       // u,  v  (левая нижняя точка текстуры)
-                1, 1);
+        // rlist.addRectangle(state.primitiveType, state.colorRgba8888,
+        //         -1, 1,   // x1, y1 (левый верхний)
+        //         -1, -1,    // x2, y2 (левый нижний)
+        //         1, -1,     // x3, y3 (правый нижний)
+        //         1, 1,      // x4, y4 (правый верхний)
+        //         0, 0,       // u,  v  (левая нижняя точка текстуры)
+        //         1, 1);
 
         short INDICES_PER_QUAD = 6;
         short VERTICES_PER_QUAD = 4;

@@ -5,6 +5,7 @@ import core.util.Disposable;
 import org.jetbrains.annotations.Nullable;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL15C.glBindBuffer;
 import static org.lwjgl.opengl.GL46.*;
@@ -41,13 +42,13 @@ public final class Mesh implements Disposable {
         glBindVertexArray(vao);
     }
 
-    public void vboUpload(FloatBuffer buffer) { // не забудь vao
+    public void vboUpload(IntBuffer buffer) { // не забудь vao
         glBindBuffer(GL_ARRAY_BUFFER, vbo);
         glBufferData(GL_ARRAY_BUFFER, buffer, GL_DYNAMIC_DRAW);
     }
 
     public boolean draw(int primitiveType,
-                        FloatBuffer vertices, int vertexOffset, int vertexCount,
+                        IntBuffer vertices, int vertexOffset, int vertexCount,
                         @Nullable ElementBufferObject ebo, int indexOffset, int indexCount,
                         VertexFormat format) {
 

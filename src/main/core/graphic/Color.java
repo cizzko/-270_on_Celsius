@@ -48,7 +48,7 @@ public final class Color {
     }
 
     public static float toGLBits(int rgba8888) {
-        return Float.intBitsToFloat(Integer.reverseBytes(rgba8888) & 0xfeffffff);
+        return Float.intBitsToFloat(Integer.reverseBytes(rgba8888) & 0xfffeffff);
     }
 
     public static String toString(int rgba8888) {
