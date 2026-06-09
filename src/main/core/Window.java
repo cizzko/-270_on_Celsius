@@ -6,6 +6,7 @@ import core.assets.AssetsManager;
 import core.content.EntityPool;
 import core.g2d.*;
 import core.input.InputHandler;
+import core.LangTranslation;
 import core.util.Debug;
 import core.util.FutureUtil;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -31,11 +32,23 @@ public final class Window extends Application {
     private static final Logger lwjglLogger = LogManager.getLogger("LWJGL");
 
     public static int defaultWidth = 1920, defaultHeight = 1080;
-    public static boolean defaultFullscreen = true;
+    public static Mode defaultMode = Mode.BORDERLESS;
+
+    public enum Mode {
+        WINDOW,
+        FULLSCREEN,
+        BORDERLESS
+    }
 
     public static boolean windowFocused = true;
     public static long glfwWindow;
     public static Font defaultFont;
+
+    private static final int GLFW_PLATFORM_FLAG = switch (System.getenv("XDG_SESSION_TYPE")) {
+        case "wayland" -> GLFW_PLATFORM_WAYLAND;
+        case "x11" -> GLFW_PLATFORM_X11;
+        default -> 0;
+    };
 
     public static void setClipboardText(@Nullable CharSequence text) {
         glfwSetClipboardString(glfwWindow, text);
@@ -43,6 +56,59 @@ public final class Window extends Application {
 
     public static @Nullable String getClipboardText() {
         return glfwGetClipboardString(glfwWindow);
+    }
+
+    private static boolean isFullscreen = defaultMode == Mode.FULLSCREEN;
+
+    private static String windowTitle = "-270 on Celsius";
+    private static int windowedX, windowedY;
+    private static int windowedWidth = defaultWidth, windowedHeight = defaultHeight;
+    private static int minWindowWidth = 640, minWindowHeight = 360;
+    private static int maxWindowWidth = GLFW_DONT_CARE, maxWindowHeight = GLFW_DONT_CARE;
+
+    public static void toggleFullscreen() {
+        if (defaultMode == Mode.BORDERLESS) {
+            return;
+        }
+
+        if (!isFullscreen) {
+            long monitor = glfwGetPrimaryMonitor();
+            GLFWVidMode vidMode = glfwGetVideoMode(monitor);
+            if (vidMode == null) return;
+
+            setWindowPos();
+
+            try (var st = MemoryStack.stackPush()) {
+                var pX = st.mallocInt(1);
+                var pY = st.mallocInt(1);
+                glfwGetWindowSize(glfwWindow, pX, pY);
+                windowedWidth = pX.get();
+                windowedHeight = pY.get();
+            }
+
+            glfwSetWindowMonitor(glfwWindow, monitor, 0, 0, vidMode.width(), vidMode.height(), vidMode.refreshRate());
+            isFullscreen = true;
+        } else {
+            glfwSetWindowMonitor(glfwWindow, MemoryUtil.NULL, windowedX, windowedY, windowedWidth, windowedHeight, GLFW_DONT_CARE);
+            setWindowLimits();
+            isFullscreen = false;
+        }
+    }
+
+    private static void setWindowLimits() {
+        glfwSetWindowSizeLimits(glfwWindow, minWindowWidth, minWindowHeight, maxWindowWidth, maxWindowHeight);
+    }
+
+    private static void setWindowPos() {
+        if (GLFW_PLATFORM_FLAG != GLFW_PLATFORM_WAYLAND) {
+            try (var st = MemoryStack.stackPush()) {
+                var pX = st.mallocInt(1);
+                var pY = st.mallocInt(1);
+                glfwGetWindowPos(glfwWindow, pX, pY);
+                windowedX = pX.get();
+                windowedY = pY.get();
+            }
+        }
     }
 
     @Override
@@ -80,13 +146,12 @@ public final class Window extends Application {
            }
        }));
 
-        // glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
-        switch (System.getenv("XDG_SESSION_TYPE")) {
-            case "wayland" -> {
-                glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
-                glfwInitHint(GLFW_WAYLAND_LIBDECOR, GLFW_WAYLAND_DISABLE_LIBDECOR);
-            }
-            case null, default -> {}
+
+        if (GLFW_PLATFORM_FLAG == GLFW_PLATFORM_WAYLAND) {
+            glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
+            glfwInitHint(GLFW_WAYLAND_LIBDECOR, GLFW_WAYLAND_DISABLE_LIBDECOR);
+        } else if (GLFW_PLATFORM_FLAG == GLFW_PLATFORM_X11) {
+            // glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
         }
         if (!glfwInit()) {
             throw new RuntimeException("Failed to initialize GLFW");
@@ -94,7 +159,11 @@ public final class Window extends Application {
 
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        // glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
+
+        if (defaultMode == Mode.BORDERLESS) {
+            glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+            glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE);
+        }
 
         if (Config.getBoolean("DebugMACOSX") || Platform.get() == Platform.MACOSX) {
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -103,8 +172,53 @@ public final class Window extends Application {
             glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
         }
 
-        glfwWindow = glfwCreateWindow(defaultWidth, defaultHeight, "-270 on Celsius",
-                defaultFullscreen ? glfwGetPrimaryMonitor() : MemoryUtil.NULL, MemoryUtil.NULL);
+        long primaryMonitorPtr = glfwGetPrimaryMonitor();
+        var mode = glfwGetVideoMode(primaryMonitorPtr);
+
+        glfwWindowHint(GLFW_RED_BITS, mode.redBits());
+        glfwWindowHint(GLFW_GREEN_BITS, mode.greenBits());
+        glfwWindowHint(GLFW_BLUE_BITS, mode.blueBits());
+        glfwWindowHint(GLFW_REFRESH_RATE, mode.refreshRate());
+
+        int windowWidth;
+        int windowHeight;
+        long monitorPtr;
+
+        switch (defaultMode) {
+            case WINDOW -> {
+                windowWidth = defaultWidth;
+                windowHeight = defaultHeight;
+                monitorPtr = MemoryUtil.NULL;
+            }
+            case FULLSCREEN -> {
+                windowWidth = mode.width();
+                windowHeight = mode.height();
+                monitorPtr = primaryMonitorPtr;
+            }
+            case BORDERLESS -> {
+                windowWidth = mode.width();
+                windowHeight = mode.height();
+                monitorPtr = MemoryUtil.NULL;
+            }
+            default -> throw new IllegalStateException();
+        }
+
+        glfwWindow = glfwCreateWindow(windowWidth, windowHeight, windowTitle, monitorPtr, MemoryUtil.NULL);
+
+        switch (defaultMode) {
+            case WINDOW -> setWindowLimits();
+            case BORDERLESS -> {
+                if (GLFW_PLATFORM_FLAG != GLFW_PLATFORM_WAYLAND) {
+                    try (var st = MemoryStack.stackPush()) {
+                        var pX = st.mallocInt(1);
+                        var pY = st.mallocInt(1);
+                        glfwGetMonitorPos(glfwWindow, pX, pY);
+                        glfwSetWindowPos(glfwWindow, pX.get(), pY.get());
+                    }
+                }
+            }
+        }
+
         if (glfwWindow == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create window");
         }

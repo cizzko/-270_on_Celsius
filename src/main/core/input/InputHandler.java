@@ -1,5 +1,6 @@
 package core.input;
 
+import core.GameState;
 import core.Global;
 import core.WorldCoordinates;
 import core.math.Point2i;
@@ -11,7 +12,7 @@ import org.lwjgl.glfw.*;
 
 import java.util.Arrays;
 
-import static core.Window.glfwWindow;
+import static core.Window.*;
 import static core.util.FixedBitset.createBitSet;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;
@@ -54,7 +55,6 @@ public class InputHandler {
                 int y = (int) (height - ypos);
                 int x = (int) xpos;
                 lastMouseMoveTimestamp = System.currentTimeMillis();
-                mousePos.set((int) xpos, (int) (height - ypos));
                 mousePos.set(x, y);
                 if (anyMouseClick) {
                     onMouseDragged(x, y);
@@ -123,13 +123,33 @@ public class InputHandler {
                 onScroll(xoffsetf, yoffsetf);
             }
         }));
-        glfwSetWindowSizeCallback(glfwWindow, Global.app.keep(new GLFWWindowSizeCallback() {
+        glfwSetFramebufferSizeCallback(glfwWindow, Global.app.keep(new GLFWFramebufferSizeCallback() {
             @Override
             public void invoke(long window, int w, int h) {
+
+                float aspect = (float) w / h;
+                float defaultAspect = (float) defaultWidth/defaultHeight;
+                if (Global.gameState == GameState.MENU) // TODO решить как поступать
+                {
+                    if (aspect >= defaultAspect) {
+                        int viewW = (int)(h * defaultAspect);
+                        glViewport((w - viewW)/2, 0, viewW, h);
+                        w = viewW;
+                    } else {
+                        int viewH = (int)(w / defaultAspect);
+                        glViewport(0, (h - viewH)/2, w, viewH);
+                        h = viewH;
+                    }
+                } else {
+                    glViewport(0, 0, w, h);
+                }
+
                 width = w;
                 height = h;
-                glViewport(0, 0, w, h);
-                onResize(w, h);
+
+                if (Global.gameState == GameState.PLAYING)
+                    Global.camera.resizeViewport(w, h);
+                onFramebufferResize(w, h);
             }
         }));
         glfwSetCharCallback(glfwWindow, Global.app.keep(new GLFWCharCallback() {
@@ -237,8 +257,8 @@ public class InputHandler {
 
     // endregion
 
-    private void onResize(int w, int h) {
-        listeners.forEach(i -> i.onResize(w, h));
+    private void onFramebufferResize(int w, int h) {
+        listeners.forEach(i -> i.onFramebufferResize(w, h));
     }
 
     private static void setBit(long[] bits, int i) {

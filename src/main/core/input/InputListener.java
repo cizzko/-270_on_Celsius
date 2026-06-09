@@ -1,7 +1,7 @@
 package core.input;
 
 public interface InputListener {
-    default void onResize(int width, int height) {}
+    default void onFramebufferResize(int width, int height) {}
 
     default boolean onTouchDown(float x, float y, int button) { return false; }
 
