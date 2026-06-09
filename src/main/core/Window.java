@@ -47,7 +47,7 @@ public final class Window extends Application {
     private static final int GLFW_PLATFORM_FLAG = switch (System.getenv("XDG_SESSION_TYPE")) {
         case "wayland" -> GLFW_PLATFORM_WAYLAND;
         case "x11" -> GLFW_PLATFORM_X11;
-        default -> 0;
+        case null, default -> 0;
     };
 
     public static void setClipboardText(@Nullable CharSequence text) {
@@ -198,7 +198,12 @@ public final class Window extends Application {
             case BORDERLESS -> {
                 windowWidth = mode.width();
                 windowHeight = mode.height();
-                monitorPtr = MemoryUtil.NULL;
+                if (GLFW_PLATFORM_FLAG == GLFW.GLFW_PLATFORM_WAYLAND) {
+                    // TODO(Skat) у меня на wayland+kde нижняя панель не убирается
+                    monitorPtr = primaryMonitorPtr;
+                } else {
+                    monitorPtr = MemoryUtil.NULL;
+                }
             }
             default -> throw new IllegalStateException();
         }
