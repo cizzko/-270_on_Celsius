@@ -39,6 +39,9 @@ tasks.withType<JavaExec> {
         if (JavaLanguageVersion.current().canCompileOrRun(25)) {
             jvmArguments.add("-XX:+UseCompactObjectHeaders")
         }
+        if (System.getProperty("os.name")!!.startsWith("Darwin") || System.getProperty("os.name")!!.startsWith("Mac OS X")) {
+            jvmArguments.add("-XstartOnFirstThread")
+        }
     }
 
     doFirst {
