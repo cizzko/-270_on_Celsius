@@ -3,16 +3,20 @@ package core.content.blocks;
 import core.content.ContentLoader;
 import core.content.ContentResolver;
 import core.content.ItemStack;
+import core.content.ItemStackPredicate;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 
+import static core.math.MathUtil.toShortExact;
+
 public class Factory extends Block {
     public float maxHp;
     public float productionSpeed; // За сколько 1 предмет производится в мс
-    public int maxItemCapacity;
+    public short maxItemCapacity;
     public @Nullable Malfunction malfunction;
-    public ItemStack[] input, output, fuel;
+    public ItemStackPredicate[] input, fuel;
+    public ItemStack[] output;
 
     public Factory(String id) {
         super(id);
@@ -27,20 +31,20 @@ public class Factory extends Block {
             this.malfunction = Malfunction.valueOf(malfunctionNode.toUpperCase(Locale.ROOT));
         }
         this.maxHp = json.path("MaxHp").floatValue();
-        this.maxItemCapacity = json.path("MaxStoredObjects").intValue();
+        this.maxItemCapacity = toShortExact(json.path("MaxStoredObjects").intValue());
         this.productionSpeed = json.path("ProductionSpeed").floatValue();
 
-        this.input = cnt.readItemStacksUnresolved(json.path("Input"));
+        this.input = cnt.readItemStacksPredicatesUnresolved(json.path("Input"));
+        this.fuel = cnt.readItemStacksPredicatesUnresolved(json.path("Fuel"));
         this.output = cnt.readItemStacksUnresolved(json.path("Output"));
-        this.fuel = cnt.readItemStacksUnresolved(json.path("Fuel"));
     }
 
     @Override
     public void resolve(ContentResolver res) {
         super.resolve(res);
-        this.input = res.resolveItemStacks(input);
+        this.input = res.resolveItemStacksPredicates(input);
+        this.fuel = res.resolveItemStacksPredicates(fuel);
         this.output = res.resolveItemStacks(output);
-        this.fuel = res.resolveItemStacks(fuel);
     }
 
     @Override

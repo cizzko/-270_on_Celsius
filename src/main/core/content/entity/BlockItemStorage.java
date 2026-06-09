@@ -1,91 +1,103 @@
 package core.content.entity;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.content.ItemStack;
+import core.content.ItemStackPredicate;
 import core.content.serialize.SerializableContent;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Objects;
 
 public final class BlockItemStorage implements SerializableContent {
-    public final ItemStack[] items;
-    public final int[] sizes;
+    public final ObjectArrayList<ItemStack> items;
+    public final ItemStackPredicate[] predicates;
     public final int maxCapacity;
 
     private int total;
 
-    @JsonCreator
-    public BlockItemStorage(@JsonProperty("items") ItemStack[] items,
-                            @JsonProperty("sizes") int[] sizes,
-                            @JsonProperty("maxCapacity") int maxCapacity,
-                            @JsonProperty("total") int total) {
-        this.items = Objects.requireNonNull(items);
-        this.sizes = Objects.requireNonNull(sizes);
-        this.maxCapacity = maxCapacity;
-        this.total = total;
-    }
-
-    public BlockItemStorage(ItemStack[] items, int maxCapacity) {
-        this.items = new ItemStack[items.length];
-        this.sizes = new int[items.length];
-        for (int i = 0; i < items.length; i++) {
-            this.items[i] = new ItemStack(items[i].item(), 0);
-            this.sizes[i] = items[i].count();
-        }
+    public BlockItemStorage(ItemStackPredicate[] predicates, int maxCapacity) {
+        this.predicates = predicates;
+        this.items = new ObjectArrayList<>();
         this.maxCapacity = maxCapacity;
     }
 
     @Override
     public void serialize(JsonGenerator gen, SerializerProvider provider) throws IOException {
         gen.writeStartObject();
-        gen.writeObjectField("items", items);
-        gen.writeObjectField("sizes", sizes);
-        gen.writeNumberField("maxCapacity", maxCapacity);
-        gen.writeNumberField("total", total);
+        // TODO сериализация
         gen.writeEndObject();
     }
 
     public boolean hasRequired() {
-        for (int i = 0; i < items.length; i++) {
-            if (items[i].count() < sizes[i]) {
-                return false;
+        if (items.isEmpty()) {
+            return false;
+        }
+        for (var predicate : predicates) {
+            for (var item : items) {
+                if (!predicate.matches(item)) {
+                    return false;
+                }
             }
         }
         return true;
     }
 
-    public boolean removeFirst() {
-        for (int i = 0; i < items.length; i++) {
-            ItemStack allowedStack = items[i];
-            int maxSize = sizes[i];
-
-            if (allowedStack.count() >= maxSize) {
-                allowedStack.decrement(maxSize);
-                total -= maxSize;
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public int add(ItemStack stack) {
-        for (ItemStack allowedStack : items) {
-            if (allowedStack.isSame(stack)) {
-                int toAdd = maxCapacity - allowedStack.count();
-                if (toAdd >= 0) {
-                    int d = allowedStack.add(toAdd);
-                    if (d >= 0) {
-                        total += toAdd;
-                        return toAdd;
-                    }
+    public void removeFirst() {
+        for (var predicate : predicates) {
+            for (var item : items) {
+                if (predicate.matches(item)) {
+                    short toTake = predicate.count();
+                    //noinspection ResultOfMethodCallIgnored
+                    item.decrement(toTake);
+                    total -= toTake;
+                    assert total >= 0;
+                    assert toTake >= 0;
                 }
             }
         }
-        return 0;
+        items.removeIf(ItemStack::isEmpty);
+    }
+
+    public int add(ItemStack stack) {
+
+        ItemStackPredicate first = null;
+        for (var predicate : predicates) {
+            if (predicate.isSame(stack)) {
+                first = predicate;
+                break;
+            }
+        }
+
+        if (first == null) {
+            return 0;
+        }
+        int freeSpace = maxCapacity - total;
+        int toAdd = Math.min(freeSpace, stack.count());
+        assert toAdd > 0;
+        toAdd = add0(stack, toAdd);
+        assert toAdd > 0;
+        total += toAdd;
+        assert total >= 0;
+        assert total <= maxCapacity;
+        return toAdd;
+    }
+
+    private int add0(ItemStack itemStack, int quantity) {
+        for (ItemStack item : items) {
+            if (item.isSame(itemStack)) {
+                int d = item.add(quantity);
+                if (d < 0) {
+                    quantity -= Math.abs(d);
+                    int res = item.add(quantity);
+                    assert res >= 0;
+                    return res;
+                }
+            }
+        }
+        items.add(itemStack.asCount(quantity));
+        return quantity;
     }
 
     public int total() {
@@ -93,16 +105,6 @@ public final class BlockItemStorage implements SerializableContent {
     }
 
     public boolean isEmpty() {
-        return total > 0;
-    }
-
-    @Override
-    public String toString() {
-        return "BlockItemStorage{" +
-               "items=" + Arrays.toString(items) +
-               ", sizes=" + Arrays.toString(sizes) +
-               ", maxCapacity=" + maxCapacity +
-               ", total=" + total +
-               '}';
+        return total == 0;
     }
 }

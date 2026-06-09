@@ -2,6 +2,7 @@ package core.World.Creatures.Player.WorkbenchMenu;
 
 import core.EventHandling.EventHandler;
 import core.World.Creatures.Player.Inventory.Inventory;
+import core.content.ItemStack;
 import core.content.blocks.Factory;
 import core.content.blocks.Workbench;
 import core.content.items.Item;
@@ -154,7 +155,8 @@ public class WorkbenchLogic {
             return;
         }
         var currentItems = getCurrentItems();
-        if (Inventory.addItem(currentItems.get(currentObjectIdx))) {
+        Item item = currentItems.get(currentObjectIdx);
+        if (Inventory.addItemStack(new ItemStack(item, item.createCount))) {
             for (var obj : required) {
                 if (obj != null) {
                     player.takeItem(obj.x, obj.y, obj.count);

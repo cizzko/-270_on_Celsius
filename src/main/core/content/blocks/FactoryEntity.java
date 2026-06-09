@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.Time;
 import core.World.Creatures.Player.Inventory.Inventory;
+import core.g2d.Atlas;
 import core.graphic.GuiDrawing;
 import core.content.ItemGrid;
 import core.content.ItemStack;
@@ -139,6 +140,10 @@ public class FactoryEntity extends BaseBlockEntity<Factory> {
         assert p.currentToken() == JsonToken.END_OBJECT;
     }
 
+    private Atlas.Region
+            cachedFactoryIn = atlas.get("UI/GUI/buildMenu/factoryIn"),
+            cachedFactoryOut =  atlas.get("UI/GUI/buildMenu/factoryOut");
+
     @Override
     public void drawGui() {
         if (!isSelected) {
@@ -148,20 +153,20 @@ public class FactoryEntity extends BaseBlockEntity<Factory> {
                 .set(x + toWorld(block.texture.width()) - .5f, y + toWorld(block.texture.height()) - .5f);
         camera.project(pos);
 
-        int playerSize = Math.max(player.creature.texture.width(), player.creature.texture.height());
         var backpanelColor = Color.rgba8888(40, 40, 40, 170);
         int freeCell = ArrayUtils.findFreeCell(outputStored);
-        if (!input.isEmpty() && freeCell != -1) {
-            int w = input.items.length * 54 + playerSize;
+        // TODO тотально переделать
+        if (!input.isEmpty() || (outputStored != null && freeCell != 0)) {
+            int w = 145;
             Fill.rect(pos.x, pos.y, w, 64, backpanelColor);
         }
 
         if (!input.isEmpty())
-            GuiDrawing.drawObjects(pos.x, pos.y, input.items, atlas.get("UI/GUI/buildMenu/factoryIn"));
+            GuiDrawing.drawObjects(pos.x, pos.y, input.predicates, cachedFactoryIn);
 
         if (outputStored != null && freeCell != 0) {
-            pos.x += 78;
-            GuiDrawing.drawObjects(pos.x, pos.y, outputStored, atlas.get("UI/GUI/buildMenu/factoryOut"));
+            pos.x += cachedFactoryIn.width() + 52;
+            GuiDrawing.drawObjects(pos.x, pos.y, outputStored, cachedFactoryOut);
         }
     }
 

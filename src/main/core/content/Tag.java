@@ -1,5 +1,8 @@
 package core.content;
 
+import core.Global;
+import core.LangTranslation;
+
 import java.util.List;
 import java.util.Set;
 
@@ -7,6 +10,7 @@ public final class Tag<C extends ContentType> implements ContentType {
     private final String key;
     private final Class<C> type;
     private final Set<String> ids;
+    // TODO ShortHashSet ?????
     private final List<C> elements;
 
     private short id;
@@ -17,6 +21,8 @@ public final class Tag<C extends ContentType> implements ContentType {
         this.ids = ids;
         this.elements = elements;
     }
+
+    public String getName() { return Global.lang.get("tag." + key + ".name"); }
 
     public short id() { return id; }
 

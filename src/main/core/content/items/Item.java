@@ -5,22 +5,25 @@ import core.Global;
 import core.content.*;
 import core.content.blocks.Block;
 import core.g2d.Atlas;
+import core.math.MathUtil;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
 import static core.graphic.GuiDrawing.itemSize;
+import static core.math.MathUtil.toShortExact;
 
 public sealed class Item implements ContentType, Loadable
         permits ItemBlock, ItemTool, ItemUnresolved, ItemWeapon {
-    public static final int DEFAULT_MAX_STACK_SIZE = 99;
+    public static final short DEFAULT_MAX_STACK_SIZE = 99;
 
     public final String key;
 
     public short id;
 
-    public int maxStackSize = DEFAULT_MAX_STACK_SIZE;
+    public short maxStackSize = DEFAULT_MAX_STACK_SIZE;
+    public short createCount;
 
     public float weight;
     public Atlas.Region texture;
@@ -50,7 +53,8 @@ public sealed class Item implements ContentType, Loadable
         this.requirements = cnt.readItemStacksUnresolved(cnt.node().path("Requirements"));
         // TODO: не должно быть дефолтного значения
         this.weight = (float) cnt.node().path("Weight").asDouble(50);
-        this.maxStackSize = cnt.node().path("MaxStackSize").asInt(DEFAULT_MAX_STACK_SIZE);
+        this.maxStackSize = toShortExact(cnt.node().path("MaxStackSize").asInt(DEFAULT_MAX_STACK_SIZE));
+        this.createCount = toShortExact(cnt.node().path("CreateCount").asInt(1));
 
         String createWithId = cnt.node().path("CreateWith").asText(null);
         this.createWith = (createWithId == null || createWithId.equals("player")) ? null : cnt.readBlockUnresolved("CreateWith");
