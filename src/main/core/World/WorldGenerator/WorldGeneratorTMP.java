@@ -23,7 +23,6 @@ import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import static core.Global.*;
-import static core.Global.world;
 import static core.PlayGameScene.CAMERA_OFFSET_X;
 import static core.PlayGameScene.CAMERA_OFFSET_Y;
 import static core.World.World.findSurfaceY;
@@ -91,6 +90,9 @@ public class WorldGeneratorTMP {
             CompletableFuture.runAsync(
                             timedRun("generating flat world",
                             () -> generateFlatWorld(world)), world.genPool)
+                    .thenRun(
+                            timedRun("generating: copy",
+                            () -> copy()))
                     .thenRun(
                             timedRun("regenerating shadow map",
                             () -> ShadowMap.generate()))
@@ -183,27 +185,93 @@ public class WorldGeneratorTMP {
     }
 
     /**
-     * Генерирует плоский мир без всего для отладки
+     * Генерирует плоский мир для отладки
      * @param world мир
      */
     private static void generateFlatWorld(World world) {
-        Biomes defaultBiome = Biomes.getDefault();
-        short[] availableBlocks = defaultBiome.getBlocks();
-        int maxBlockIdx = availableBlocks.length - 1;
+        int worldWidth = world.sizeX;
+        //карта высот
+        float[] worldHeights = new float[worldWidth];
+        //карта биомов
+        Biomes[] worldXBiomes = new Biomes[worldWidth];
+        //карта смешиваний
+        Biomes[] blendBiomes = new Biomes[worldWidth];
+
+        Biomes lastBiomes = Biomes.getDefault();
+        Biomes currentBiomes = Biomes.getRand();
+
+        int lastX = 0;
+        float lastY = world.sizeY / 2f;
+
+        int lastSwapBiomes = 0;
+        final int minSwapBiomes = 100;
+
+        var rnd = ThreadLocalRandom.current();
+        do {
+            int iters = 100;
+
+            for (int j = 0; j < iters; j++) {
+                lastX++;
+
+                if (lastX >= 0 && lastX < worldWidth && lastY > 0) {
+                    worldXBiomes[lastX] = currentBiomes;
+                    worldHeights[lastX] = lastY;
+                    lastSwapBiomes++;
+
+                    if (lastSwapBiomes > minSwapBiomes) {
+                        lastBiomes = currentBiomes;
+                        currentBiomes = Biomes.getRand();
+                        lastSwapBiomes = 0;
+                    }
+
+                    if (lastSwapBiomes < BIOME_SWAP_MAX_THRESHOLD && rnd.nextFloat() * lastSwapBiomes < BIOME_SWAP_CHANCE) {
+                        blendBiomes[lastX] = lastBiomes;
+                    }
+                } else if (lastX > worldWidth) {
+                    break;
+                }
+            }
+        } while (lastX < world.sizeX);
 
         int cores = Runtime.getRuntime().availableProcessors();
-        int chunkSize = (world.sizeX / cores) + 1;
+        int chunkSize = (worldWidth / cores) + 1;
 
         IntStream.range(0, cores).parallel().forEach(p -> {
             int startChunkX = p * chunkSize;
-            int endChunkX = Math.min(world.sizeX, startChunkX + chunkSize);
+            int endChunkX = Math.min(worldWidth, startChunkX + chunkSize);
+            Biomes defaultBiome = Biomes.getDefault();
 
             for (int x = startChunkX; x < endChunkX; x++) {
-                world.setBiomes(x, defaultBiome);
+                float targetY = worldHeights[x];
 
-                int endY = world.sizeY / 2;
-                for (int y = 0; y < endY; y++) {
-                    short blockId = availableBlocks[Math.min(maxBlockIdx, endY - y - 1)];
+                Biomes blockBiome = worldXBiomes[x];
+                if (blockBiome == null) {
+                    blockBiome = defaultBiome;
+                }
+
+                world.setBiomes(x, blockBiome);
+
+                //плавное смешивание биома
+                Biomes blend = blendBiomes[x];
+                short[] activeBlocksSet = (blend != null) ? blend.getBlocks() : blockBiome.getBlocks();
+                int maxBlockIdx = activeBlocksSet.length - 1;
+
+                //зона перехода (когда уникальные блоки биома кончились)
+                int transitionZone = (int) (targetY - maxBlockIdx);
+                //ставит блоки биома (напр: слой травы, грязи, итд)
+                if (transitionZone > 0) {
+                    var fillerBlock = content.blocksRegistry.typeById(activeBlocksSet[maxBlockIdx]);
+                    for (int y = 0; y < transitionZone; y++) {
+                        world.set(x, y, fillerBlock, false);
+                    }
+                }
+
+                //просто полоска камня вниз когда блоки кончились
+                int startSurfaceY = Math.max(0, transitionZone);
+                for (int y = startSurfaceY; y < targetY; y++) {
+                    int blockIdx = Math.max(0, Math.min(maxBlockIdx, (int) targetY - y));
+                    short blockId = activeBlocksSet[blockIdx];
+
                     world.set(x, y, content.blocksRegistry.typeById(blockId), false);
                 }
             }
@@ -218,7 +286,7 @@ public class WorldGeneratorTMP {
      * <li>Чем больше отклонение {@code angle} от {@code 90}, тем меньше он может продолжаться (защита от пилообразного мира)</li>
      * </ul>
      * После прохождения {@link WorldGeneratorConstants#MIN_SWAP_BIOMES MIN_SWAP_BIOMES} биом меняется на {@link Biomes#getRand()},
-     * В конце вызывается {@link #doItAgainToArrays} для сглаживания высот
+     * В конце вызывается {@link #smoothHeights} для сглаживания высот
      * </p>
      * @param world мир
      */
@@ -300,7 +368,7 @@ public class WorldGeneratorTMP {
             }
         } while (lastX + COPY_SIZE + INTERPOLATE_SIZE < world.sizeX);
 
-        doItAgainToArrays(lastY, worldHeights);
+        smoothHeights(lastY, worldHeights);
 
         int cores = Runtime.getRuntime().availableProcessors();
         int chunkSize = (worldWidth / cores) + 1;
@@ -357,11 +425,9 @@ public class WorldGeneratorTMP {
      * @param worldHeights карта высот
      */
 
-    //todo переименовать
-    private static void doItAgainToArrays(float lastY, float[] worldHeights) {
-        //todo INTERPOLATE_SIZE динамически от размера перепада
+    private static void smoothHeights(float lastY, float[] worldHeights) {
         float lastX = world.sizeX - COPY_SIZE - INTERPOLATE_SIZE;
-        float delta = DO_IT_AGAIN_DELTA;
+        float delta = SMOOTH_HEIGHTS_DELTA;
         float delt = worldHeights[0] - lastY;
         float angle = (float) Math.toDegrees(Math.atan2(delta, delt));
         float deltaX = MathUtil.sin(Math.toRadians(angle));

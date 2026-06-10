@@ -24,9 +24,7 @@ public class WorldGeneratorConstants {
     /** Шанс сглаживания перехода между биомами */
     public static final float BIOME_SWAP_CHANCE = 5f;
 
-    //todo хыыххы когда нибудь я переименую doitagain
-    public static final float DO_IT_AGAIN_DELTA = 90f;
-    public static final int DO_IT_AGAIN_ITERS = 90;
+    public static final float SMOOTH_HEIGHTS_DELTA = 90f;
 
     /** Начальная координата X для пещер */
     public static final int CAVES_INITIAL_X = INTERPOLATE_SIZE + COPY_SIZE;

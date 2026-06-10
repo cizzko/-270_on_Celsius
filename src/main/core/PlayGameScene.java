@@ -2,12 +2,13 @@ package core;
 
 import core.EventHandling.Config;
 import core.World.Creatures.Physics;
-import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.Inventory.Bullets;
+import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
-import core.graphic.GuiDrawing;
 import core.World.Weather.Sun;
+import core.World.WorldGenerator.Background;
 import core.g2d.StackfulRender;
+import core.graphic.GuiDrawing;
 import core.graphic.WorldDrawing;
 import core.util.Commandline;
 import core.util.Debug;
@@ -76,6 +77,7 @@ public final class PlayGameScene extends GameScene {
 
         StackfulRender.z(LAYER_BACKGROUND);
         sun.draw();
+        Background.update();
         postEffect.draw();
         StackfulRender.z(LAYER_BLOCKS);
         StackfulRender.camera(camera); // Центрируем камеру на позицию игрока

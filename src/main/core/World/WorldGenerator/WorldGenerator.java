@@ -1,7 +1,6 @@
 package core.World.WorldGenerator;
 
 import core.*;
-import core.EventHandling.Config;
 import core.UI.menu.CreatePlanet;
 import core.World.PerlinNoiseGenerator;
 import core.World.StaticWorldObjects.TemperatureMap;
@@ -29,7 +28,7 @@ import static core.WorldCoordinates.toBlock;
 
 public class WorldGenerator {
     private static final Logger log = LogManager.getLogger("WorldGen");
-    public static boolean useExpGen = Config.getBoolean("EnableExpFeatures");
+    public static boolean useExpGen = false;
 
     public static void generateWorld(CreatePlanet.GenerationParameters params) {
         if (useExpGen) {

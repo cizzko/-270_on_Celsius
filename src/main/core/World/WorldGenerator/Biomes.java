@@ -3,19 +3,23 @@ package core.World.WorldGenerator;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.Global;
+import core.assets.AssetsManager;
 import core.content.blocks.Block;
 import core.content.serialize.SerializableContent;
+import core.g2d.Texture;
+import core.util.FutureUtil;
 
 import java.io.IOException;
 
 public enum Biomes implements SerializableContent {
     //чем ближе к 90 тем меньше максимальный угол наклона линии генерации
-    mountains(60, 20, 160, 1, getMountains(), "World/Backdrops/back"),
-    plain(30, 40, 140, 1, getPlain(), "World/Backdrops/back"),
-    forest(40, 40, 140, 1, getForest(), "World/Backdrops/back"),
-    desert(30, 60, 120, 1, getDesert(), "World/Backdrops/back"),
-    snowed(30, 60, 120, 1, getSnowed(), "World/backdrops/back");
+    mountains(60, 20, 160, 1, getMountains(), "World/Backdrops/backMountains.png"),
+    plain(30, 40, 140, 1, getPlain(), "World/Backdrops/backPlain.png"),
+    forest(40, 40, 140, 1, getForest(), "World/Backdrops/backForest.png"),
+    desert(30, 60, 120, 1, getDesert(), "World/Backdrops/backDesert.png"),
+    snowed(30, 60, 120, 1, getSnowed(), "World/Backdrops/backSnowed.png");
 
+    private Texture backdropTex = null;
     private static final Biomes defaultBiome = forest;
     private final int blockGradientChance, upperBorder, bottomBorder, chanceDecrease;
     private final String backdrop;
@@ -31,6 +35,10 @@ public enum Biomes implements SerializableContent {
         this.blocks = blocks;
         this.backdrop = backdrop;
         this.chanceDecrease = chanceDecrease;
+
+        if (backdrop != null) {
+            this.backdropTex = FutureUtil.join(Global.assets.load(Texture.class, backdrop, AssetsManager.LoadType.SYNC));
+        }
     }
 
     public int getBlockGradientChance() {
@@ -53,8 +61,8 @@ public enum Biomes implements SerializableContent {
         return blocks;
     }
 
-    public String getBackdrop() {
-        return backdrop;
+    public Texture getBackdrop() {
+        return backdropTex;
     }
 
     public static Biomes getDefault() {

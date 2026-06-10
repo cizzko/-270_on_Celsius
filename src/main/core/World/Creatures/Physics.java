@@ -5,10 +5,10 @@ import core.PlayGameScene;
 import core.Time;
 import core.content.blocks.Block;
 import core.content.entity.Entity;
-import core.graphic.ShadowMap;
 import core.content.entity.HealthComponent;
 import core.content.entity.LivingEntity;
 import core.g2d.Drawable;
+import core.graphic.ShadowMap;
 import core.math.MathUtil;
 import core.math.Rectangle;
 import core.math.Vector2f;
@@ -19,10 +19,9 @@ import java.util.Arrays;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Player.noClip;
-import static core.WorldCoordinates.*;
+import static core.WorldCoordinates.toBlock;
 import static core.WorldCoordinates.toWorld;
 import static java.lang.Math.*;
-import static java.lang.Math.abs;
 
 public class Physics {
     // Для какого веса считались коэффициенты физики. Проверяли на игроке. Меньше весит - меньше влияет вес
@@ -277,9 +276,9 @@ public class Physics {
     }
 
     private static void entityFall(LivingEntity ent) {
-
         var vel = ent.velocity();
         boolean hasFloor = ent.hasFloor();
+
         if (vel.y < -FALL_DAMAGE_SPEED_THRESHOLD && hasFloor) {
             float impact = (ent.getWeight() * WEIGHT_FACTOR) * (vel.y*vel.y)/2f;
             int damage = (int) floor(impact * FALL_DAMAGE_MULTIPLIER);

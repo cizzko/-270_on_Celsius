@@ -64,6 +64,11 @@ public final class Color {
                 255);
     }
 
+    public static int withR(int rgba8888, int newR) { return (Math.clamp(newR, 0, 255) << 24) | (rgba8888 & 0x00FFFFFF); }
+    public static int withG(int rgba8888, int newG) { return (rgba8888 & 0xFF00FFFF) | (Math.clamp(newG, 0, 255) << 16); }
+    public static int withB(int rgba8888, int newB) { return (rgba8888 & 0xFFFF00FF) | (Math.clamp(newB, 0, 255) << 8); }
+    public static int withA(int rgba8888, int newA) { return (rgba8888 & 0xFFFFFF00) | Math.clamp(newA, 0, 255); }
+
     public float toGLBits() { return toGLBits(rgba8888); }
     public int rgba8888() { return rgba8888; }
 
