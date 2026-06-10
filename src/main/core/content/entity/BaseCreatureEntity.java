@@ -4,31 +4,42 @@ import core.content.blocks.Block;
 import core.content.creatures.Creature;
 import core.g2d.Atlas;
 import core.g2d.StackfulRender;
-import core.math.Rectangle;
-import core.math.TmpShapes;
-import core.math.Vector2f;
-import it.unimi.dsi.fastutil.HashCommon;
+import core.math.*;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
+import static core.Global.camera;
 import static core.Global.world;
 import static core.WorldCoordinates.*;
 
 public abstract class BaseCreatureEntity<C extends Creature> implements CreatureEntity {
+    private static final byte FLAG_DEAD = 1 << 0;
+
     public short id;
     public final C creature;
+    public long flags;
 
-    protected float x, y;
+    protected double x, y;
+
     protected float hp;
-    public boolean hasGravity, isUnbreakable, dead;
 
-    // Блоков / такт
-    protected Vector2f velocity = new Vector2f();
-    // Блоков / такт²
-    protected Vector2f acceleration = new Vector2f();
+    protected final Vector2f velocity = new Vector2f();
+    protected final Vector2f acceleration = new Vector2f();
 
     protected BaseCreatureEntity(C creature) {
         this.creature = creature;
     }
+
+    protected void setFlag(int flag, boolean st) {
+        if (st) {
+            this.flags |= flag;
+        } else {
+            this.flags &= ~flag;
+        }
+    }
+    protected void flipFlag(int flag) {
+        flags ^= flag;
+    }
+    protected boolean isFlag(int flag) { return (flags & flag) != 0; }
 
     public final short id() {
         return id;
@@ -38,50 +49,45 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
         this.id = id;
     }
 
-    public abstract float centerX();
-    public abstract float centerY();
+    public abstract double centerX();
+    public abstract double centerY();
 
     @MustBeInvokedByOverriders
     public void init() {
-        this.hp = getMaxHp();
-        this.hasGravity = creature.hasGravity;
+        this.hp = maxHp();
     }
 
     public final C getCreature() {
         return creature;
     }
 
-    public final float getWeight() {
+    public final float weight() {
         return creature.weight;
     }
 
-    public void getHitboxTo(Rectangle entityHitbox) {
+    public void hitboxTo(AABB out) {
         var tex = creature.texture;
-        entityHitbox.set(x, y, toWorld(tex.width()), toWorld(tex.height()));
+        out.setRectangle(x, y, toWorld(tex.width()), toWorld(tex.height()));
     }
 
-    public float getMaxHp() {
+    public float maxHp() {
         return creature.maxHp;
     }
 
-    public float getHp() {
+    public final float hp() {
         return hp;
     }
 
-    public boolean isUnbreakable() {
-        return isUnbreakable;
+    public final boolean isDead() {
+        return isFlag(FLAG_DEAD);
     }
 
-    public boolean isDead() {
-        return dead;
-    }
-
-    public void setHp(float hp) {
+    public final void setHp(float hp) {
         this.hp = hp;
     }
 
     public void damage(float d, DamageSource source) {
-        if (dead) {
+        if (isDead()) {
             return;
         }
 
@@ -93,16 +99,9 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
         }
     }
 
-    protected void onDamage(float d) {
-    }
-
-    protected void onDead() {
-
-    }
-
     public void remove() {
         CreatureEntity.super.remove();
-        dead = true;
+        setFlag(FLAG_DEAD, true);
 
         onDead();
 
@@ -111,44 +110,65 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
         acceleration.set(0, 0);
     }
 
-    public void setUnbreakable(boolean unbreakable) {
-        this.isUnbreakable = unbreakable;
+    public final short blockX()   { return toBlock(x); }
+    public final short blockY()   { return toBlock(y); }
+
+    public final float offsetX() { return (float) (x - blockX()); }
+    public final float offsetY() { return (float) (y - blockY()); }
+
+    public final double x() { return x; }
+    public final double y() { return y; }
+
+    public final void setPosition(float x, float y) {
+        this.x = x;
+        this.y = y;
     }
 
-    public final float x() { return x; }
+    public final void setPosition(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
 
-    public final float y() { return y; }
-
-    public final void setPosition(float x, float y) { this.x = x; this.y = y; }
-
-    public final void setX(float x) { this.x = x; }
-
-    public final void setY(float y) { this.y = y; }
+    public final void setX(double x) { this.x = x; }
+    public final void setY(double y) { this.y = y; }
 
     public final Vector2f velocity() { return velocity; }
     public final Vector2f acceleration() { return acceleration; }
 
-    public void draw(float drawX) {
+    public void draw(double drawX) {
         Atlas.Region tex = creature.texture;
-        StackfulRender.draw(tex, drawX, y, toWorld(tex.width()), toWorld(tex.height()));
+        var rel = camera.relativize(drawX, y);
+        StackfulRender.draw(tex, rel.x, rel.y, toWorld(tex.width()), toWorld(tex.height()));
     }
 
     public boolean hasFloor() {
+        var hitbox = TmpShapes.aabb1;
+        hitboxTo(hitbox);
+        hitbox.maxY = hitbox.minY;
+        hitbox.minY -= GAP;
+        hitbox.maxX -= GAP;
+        hitbox.minX += GAP;
 
-        Rectangle hitbox = TmpShapes.r1;
-        getHitboxTo(hitbox);
+        short minX = hitbox.blockMinX();
+        short maxX = hitbox.blockMaxX();
+        short minY = hitbox.blockMinY();
+        short maxY = hitbox.blockMaxY();
 
-        int minX = toBlock(hitbox.x + GAP);
-        int maxX = toBlock(hitbox.x + hitbox.width - GAP);
-        int minY = toBlock(hitbox.y - GAP);
-
-        for (int x = minX; x <= maxX; x++) {
-            var block = world.getBlock(x, minY);
-            if (block == null || block.type == Block.Type.SOLID) {
-                return true;
+        for (short y = minY; y <= maxY; y++) {
+            for (short x = minX; x <= maxX; x++) {
+                var block = world.getBlock(x, y);
+                if (block == null || block.type == Block.Type.SOLID) {
+                    return true;
+                }
             }
         }
         return false;
+    }
+
+    public final double dstSq(double x, double y) {
+        double dx = x - this.x;
+        double dy = y - this.y;
+        return dx * dx + dy * dy;
     }
 
     public final boolean equals(Object o) {
@@ -162,10 +182,18 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
     }
 
     public final int hashCode() {
-        return id;
+        return Short.toUnsignedInt(id);
     }
 
     public String toString() {
         return getClass().getSimpleName() + "#" + id;
     }
+
+    // region to override
+    protected void onDamage(float d) {
+    }
+
+    protected void onDead() {
+    }
+    // endregion
 }

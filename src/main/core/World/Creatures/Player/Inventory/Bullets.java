@@ -37,9 +37,9 @@ public class Bullets {
 
             if (input.justClicked(GLFW_MOUSE_BUTTON_LEFT) && nowTime - data.lastShootTime >= w.fireRate) {
                 data.lastShootTime = nowTime;
-                Bullets.createBullet(player.x(), player.y(),
-                        w.ammoSpeed, w.damage, Math.abs((float) Math.toDegrees(Math.atan2(input.mousePos().y - 540, input.mousePos().x - 960)) - 180));
-                Sound.playSound(w.sound, Sound.types.EFFECT, false);
+                // Bullets.createBullet(player.x(), player.y(),
+                //         w.ammoSpeed, w.damage, Math.abs((float) Math.toDegrees(Math.atan2(input.mousePos().y - 540, input.mousePos().x - 960)) - 180));
+                // Sound.playSound(w.sound, Sound.types.EFFECT, false);
             }
         }
 

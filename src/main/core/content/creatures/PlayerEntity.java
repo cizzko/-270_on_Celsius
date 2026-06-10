@@ -57,8 +57,8 @@ public class PlayerEntity
         resetItemInHand();
     }
 
-    public float centerX() { return x + toWorld(creature.texture.width())/2f; }
-    public float centerY() { return y + toWorld(creature.texture.height())/2f; }
+    public double centerX() { return x + toWorld(creature.texture.width()) / 2f; }
+    public double centerY() { return y + toWorld(creature.texture.height()) / 2f; }
 
     protected void onDamage(float d) {
         lastDamage += d;
@@ -71,7 +71,7 @@ public class PlayerEntity
 
         scheduler.post(() -> {
             Global.player = WorldUtils.spawn(creature, true);
-            camera.position.set(player.x() + CAMERA_OFFSET_X, player.y() + CAMERA_OFFSET_Y);
+            camera.position.set(player.x() + CAMERA_OFFSET_X, player.x() + CAMERA_OFFSET_Y);
             camera.update();
         }, Time.ONE_SECOND * 5);
     }
@@ -107,8 +107,8 @@ public class PlayerEntity
             velocity.set(0, 0);
 
             int yf = input.axis(GLFW_KEY_S, GLFW_KEY_W);
-            setX(x() + speed * xf);
-            setY(y() + speed * yf);
+            // setX(x() + speed * xf);
+            // setY(y() + speed * yf);
         }
 
         boolean hasFloor = hasFloor();

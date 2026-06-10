@@ -7,8 +7,8 @@ import core.World.StaticWorldObjects.TemperatureMap;
 import core.content.blocks.data.TileData;
 import core.content.entity.DrawComponent;
 import core.g2d.*;
+import core.math.AABB;
 import core.math.Point2i;
-import core.math.Rectangle;
 import core.math.TmpShapes;
 import core.util.FixedBitset;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
@@ -24,7 +24,6 @@ import static core.World.Creatures.Player.Inventory.Inventory.drawBuildGrid;
 import static core.WorldCoordinates.toBlock;
 import static core.WorldCoordinates.toWorld;
 import static core.g2d.StackfulRender.*;
-import static core.g2d.StackfulRender.flush;
 import static core.util.FixedBitset.*;
 import static core.util.FixedBitset.isSet;
 
@@ -32,7 +31,7 @@ import static core.util.FixedBitset.isSet;
 public final class WorldDrawing {
     private WorldDrawing() {}
 
-    static final Rectangle viewport = new Rectangle(); // TODO убрать в Camera2
+    static final AABB viewport = new AABB();
 
     public static void drawPreviewBlocks() {
         for (var q : PREVIEW_BLOCKS) {
@@ -47,7 +46,7 @@ public final class WorldDrawing {
         }
         var block = Global.content.blocksRegistry.typeById(blockId);
 
-        if (viewport.overlaps(x, y, block.tileCountX, block.tileCountY)) {
+        if (viewport.overlaps(x, y, x+block.tileCountX, y+block.tileCountY)) {
             Color color = ShadowMap.getColorTo(x, y, TmpShapes.c1);
             int a = (color.r() + color.g() + color.b()) / 3;
             if (canBreak) {
@@ -93,8 +92,9 @@ public final class WorldDrawing {
                 continue;
             }
             Font.Glyph glyph = Window.defaultFont.getGlyph(ch);
-            draw(glyph, rgba8888, x, y, toWorld(glyph.width()), toWorld(glyph.height()));
-            x += toWorld(5);
+            float w = toWorld(glyph.width());
+            draw(glyph, rgba8888, x, y, w, toWorld(glyph.height()));
+            x += w;
         }
     }
 
@@ -251,9 +251,6 @@ public final class WorldDrawing {
                         drawRepeated(tex, tr.x, tr.y, tr.w, tr.h);
                     }
                 });
-                // скидываем всё что ранее подготовили
-                pushRenderList();
-                flush();
             });
 
             for (int y = minY; y <= maxY; y++) {
@@ -296,11 +293,14 @@ public final class WorldDrawing {
                 USE_DEFAULT = !USE_DEFAULT;
             }
 
-            camera.getBoundsTo(viewport);
-            minX = Math.max(0, -MARGIN + toBlock(viewport.x));
-            minY = Math.max(0, -MARGIN + toBlock(viewport.y));
-            maxX = Math.min(world.sizeX - 1, MARGIN + toBlock(viewport.x + viewport.width));
-            maxY = Math.min(world.sizeY - 1, MARGIN + toBlock(viewport.y + viewport.height));
+            var viewport = TmpShapes.aabb1;
+            camera.boundsTo(viewport);
+            viewport.clampToWorldMargin(MARGIN);
+
+            minX = viewport.blockMinX();
+            minY = viewport.blockMinY();
+            maxX = viewport.blockMaxX();
+            maxY = viewport.blockMaxY();
 
             if (USE_DEFAULT) {
                 notMergingDraw();
@@ -354,36 +354,33 @@ public final class WorldDrawing {
 
     // region Entities
     public static void drawEntities() {
-        camera.getBoundsTo(viewport);
-        var hitbox = TmpShapes.r1;
+        camera.boundsTo(viewport);
         entityPool.forEach(ent -> {
             if (ent instanceof DrawComponent d) {
-                ent.getHitboxTo(hitbox);
+                var hitbox = TmpShapes.aabb1;
+                ent.hitboxTo(hitbox);
 
                 if (ent == player) {
                     d.draw(player.x());
                 } else {
-                    float rightBorder = world.sizeX - SWAP_AREA;
-                    float leftBorder = SWAP_AREA;
-                    float dx = rightBorder - leftBorder;
+                    final int leftBorder = SWAP_AREA;
+                    int rightBorder = world.sizeX - SWAP_AREA;
+                    int dx = rightBorder - leftBorder;
 
-
-                    float drawX = ent.x();
                     // |swap|swap|
                     //      ^ rightBorder
                     //           ^  rightBorder + swap
                     // ^ rightBorder - swap
 
-                    float rightmostX = ent.x() + hitbox.width;
-                    if (rightmostX >= (rightBorder - SWAP_AREA) && rightmostX <= (rightBorder + SWAP_AREA) &&
-                        !viewport.overlaps(ent.x(), ent.y(), hitbox.width, hitbox.height)) {
-                        drawX -= dx;
-                    } else if (ent.x() >= (leftBorder - SWAP_AREA) && ent.x() <= (leftBorder + SWAP_AREA) &&
-                               !viewport.overlaps(ent.x(), ent.y(), hitbox.width, hitbox.height)) {
-                        drawX += dx;
+                    if (!viewport.overlaps(hitbox)) {
+                        if (hitbox.maxX >= (rightBorder - SWAP_AREA) && hitbox.maxX <= (rightBorder + SWAP_AREA)) {
+                            hitbox.minX -= dx;
+                        } else if (hitbox.minX >= (leftBorder - SWAP_AREA) && hitbox.minX <= (leftBorder + SWAP_AREA)) {
+                            hitbox.minX += dx;
+                        }
                     }
-                    if (viewport.overlaps(drawX, ent.y(), hitbox.width, hitbox.height)) {
-                        d.draw(drawX);
+                    if (viewport.overlaps(hitbox)) {
+                        d.draw(hitbox.minX);
                     }
                 }
             }

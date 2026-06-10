@@ -2,8 +2,8 @@ package core.input;
 
 import core.GameState;
 import core.Global;
-import core.WorldCoordinates;
 import core.math.Point2i;
+import core.math.Vector2d;
 import core.math.Vector2f;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.logging.log4j.LogManager;
@@ -13,11 +13,12 @@ import org.lwjgl.glfw.*;
 import java.util.Arrays;
 
 import static core.Window.*;
+import static core.WorldCoordinates.toBlock;
 import static core.util.FixedBitset.createBitSet;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;
 
-public class InputHandler {
+public final class InputHandler {
     private static final Logger log = LogManager.getLogger();
 
     static final int PRESSED_ARRAY_SIZE = 349;
@@ -26,12 +27,12 @@ public class InputHandler {
     private final long[] pressed, clicked, repeated;
     private final long[] justPressed, justClicked;
     private final ObjectArrayList<InputListener> listeners = new ObjectArrayList<>();
-    private final Point2i mousePos = new Point2i();
+    private final Vector2f mousePos = new Vector2f();
     private final Point2i mouseBlockPos = new Point2i();
-    private final Vector2f mouseWorldPos = new Vector2f();
+    private final Vector2d mouseWorldPos = new Vector2d();
 
     private long lastMouseMoveTimestamp;
-    private float scrollOffset = 1, scrollChange = 0;
+    private float scrollOffset = 1, scrollDelta = 0;
     private int width, height;
     private boolean anyMouseClick;
 
@@ -52,10 +53,12 @@ public class InputHandler {
         glfwSetCursorPosCallback(glfwWindow, Global.app.keep(new GLFWCursorPosCallback() {
             @Override
             public void invoke(long window, double xpos, double ypos) {
-                int y = (int) (height - ypos);
-                int x = (int) xpos;
+                float y = (float) (height - ypos);
+                float x = (float) xpos;
                 lastMouseMoveTimestamp = System.currentTimeMillis();
                 mousePos.set(x, y);
+                updateMouseWorld();
+
                 if (anyMouseClick) {
                     onMouseDragged(x, y);
                 } else {
@@ -119,7 +122,7 @@ public class InputHandler {
                 float xoffsetf = (float) xoffset;
                 float yoffsetf = (float) yoffset;
                 scrollOffset = Math.clamp(yoffsetf + scrollOffset, 0, 50);
-                scrollChange = yoffsetf;
+                scrollDelta = yoffsetf;
                 onScroll(xoffsetf, yoffsetf);
             }
         }));
@@ -160,12 +163,18 @@ public class InputHandler {
         }));
     }
 
+    private void updateMouseWorld() {
+        Global.camera.unprojectTo(mousePos, mouseWorldPos);
+        mouseBlockPos.set(toBlock(mouseWorldPos.x), toBlock(mouseWorldPos.y));
+    }
+
     public void update() {
-        scrollChange = 0;
+        scrollDelta = 0;
         Arrays.fill(justPressed, 0);
         Arrays.fill(justClicked, 0);
 
         glfwPollEvents();
+        updateMouseWorld();
     }
 
     public void addListener(InputListener listener) {
@@ -191,31 +200,21 @@ public class InputHandler {
         return scrollOffset;
     }
 
-    public float getScrollChange() {
-        return scrollChange;
+    public float scrollDelta() {
+        return scrollDelta;
     }
 
     public long getLastMouseMoveTimestamp() {
         return lastMouseMoveTimestamp;
     }
 
-    public Point2i mouseBlockPos() {
-        var world = mouseWorldPos();
-        mouseBlockPos.set(WorldCoordinates.toBlock(world.x), WorldCoordinates.toBlock(world.y));
-        return mouseBlockPos;
-    }
+    public Point2i mouseBlockPos() { return mouseBlockPos; }
 
     // Позиция в мире
-    public Vector2f mouseWorldPos() {
-        // Поскольку мы в праве менять проекция камеры, то и значение worldPos() всегда должно быть актуальным
-        mouseWorldPos.set(mousePos.x, mousePos.y);
-        return Global.camera.unproject(mouseWorldPos);
-    }
+    public Vector2d mouseWorldPos() { return mouseWorldPos; }
 
     // Позиция на экране
-    public Point2i mousePos() {
-        return mousePos;
-    }
+    public Vector2f mousePos() { return mousePos; }
 
     public boolean pressed(int keycode) {
         return isSet(pressed, keycode);
@@ -297,11 +296,11 @@ public class InputHandler {
         listeners.forEach(listener -> listener.onCodepoint(codepoint));
     }
 
-    private void onTouchDown(int x, int y, int button) {
+    private void onTouchDown(float x, float y, int button) {
         listeners.forEach(listener -> listener.onTouchDown(x, y, button));
     }
 
-    private void onTouchUp(int x, int y, int button) {
+    private void onTouchUp(float x, float y, int button) {
         listeners.forEach(listener -> listener.onTouchUp(x, y, button));
     }
 
@@ -309,11 +308,11 @@ public class InputHandler {
         listeners.forEach(listener -> listener.onScroll(xOffset, yOffset));
     }
 
-    private void onMouseMove(int x, int y) {
+    private void onMouseMove(float x, float y) {
         listeners.forEach(listener -> listener.onMouseMove(x, y));
     }
 
-    private void onMouseDragged(int x, int y) {
+    private void onMouseDragged(float x, float y) {
         listeners.forEach(listener -> listener.onMouseDragged(x, y));
     }
 

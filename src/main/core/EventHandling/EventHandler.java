@@ -11,7 +11,7 @@ import static org.lwjgl.glfw.GLFW.*;
 public class EventHandler {
 
     public static boolean isMouseClickedIn(float minX, float minY, float maxX, float maxY) {
-        Point2i mousePos = input.mousePos();
+        var mousePos = input.mousePos();
 
         return mousePos.x >= minX && mousePos.x <= maxX &&
                 mousePos.y >= minY && mousePos.y <= maxY &&

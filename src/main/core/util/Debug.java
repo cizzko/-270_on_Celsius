@@ -10,7 +10,6 @@ import core.UI.TextArea;
 import core.World.Weather.Sun;
 import core.content.blocks.Block;
 import core.content.blocks.data.TileData;
-import core.content.entity.Hitbox;
 import core.content.items.Item;
 import core.g2d.Fill;
 import core.g2d.Render;
@@ -18,8 +17,8 @@ import core.g2d.StackfulRender;
 import core.graphic.Color;
 import core.graphic.GuiDrawing;
 import core.graphic.ShadowMap;
-import core.math.Rectangle;
 import core.math.TmpShapes;
+import core.math.Vector2d;
 import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
@@ -36,16 +35,14 @@ import static core.Global.*;
 import static core.WorldCoordinates.toBlock;
 import static core.WorldCoordinates.toWorld;
 import static core.content.ItemStack.itemStack;
+import static core.content.entity.DrawComponent.GAP;
 import static core.graphic.Color.*;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Debug {
-    public static final DecimalFormat FLOATS = new DecimalFormat("#.#", new DecimalFormatSymbols(Locale.ROOT));
+    public static final DecimalFormat FLOATS = new DecimalFormat("#.####", new DecimalFormatSymbols(Locale.ROOT));
 
     public static final int debugLevel = Config.getInt("Debug");
-
-    static final Rectangle rect = new Rectangle();
-    static final Hitbox hitbox = new Hitbox();
 
     // Включается по нажатию M английской
     public static boolean debugMesh = false;
@@ -87,6 +84,14 @@ public class Debug {
         setDebugValue(() -> "DeltaTime: " + Time.delta);
     }
 
+    static String formatWorldPos(Vector2d pos) {
+        int x = toBlock(pos.x);
+        int y = toBlock(pos.y);
+        float offsetX = (float) (pos.x - x);
+        float offsetY = (float) (pos.y - y);
+        return FLOATS.format((double)x + offsetX) + " / " + FLOATS.format((double)y + offsetY);
+    }
+
     static boolean once;
 
     public static void initDebugValuesGame() {
@@ -100,16 +105,19 @@ public class Debug {
             Sun sun = gs.sun;
             return "Sun y: " + (int) (sun.y * 100) / 100f;
         });
-        setDebugValue(GameState.PLAYING, () -> "XY: " + player.x() + " / " + player.y());
-        setDebugValue(GameState.PLAYING, () -> "Camera: " + camera.position.x + " / " + camera.position.y);
+        setDebugValue(GameState.PLAYING, () -> {
+            var worldPos = player.posTo(TmpShapes.v1d);
+            return "XY: " + formatWorldPos(worldPos);
+        });
+        setDebugValue(GameState.PLAYING, () -> "Camera: " + formatWorldPos(camera.position));
         setDebugValue(GameState.PLAYING, () -> "Velocity: " + player.velocity());
-        setDebugValue(GameState.PLAYING, () -> "HP: " + player.getHp() + "/" + player.getMaxHp() + " (" + player.getHpFraction() + ")");
+        setDebugValue(GameState.PLAYING, () -> "HP: " + player.hp() + "/" + player.maxHp() + " (" + player.hpFract() + ")");
         setDebugValue(GameState.PLAYING, () -> {
             var mouseBlockPos = input.mouseBlockPos();
             var mouseBlock = world.getBlock(mouseBlockPos);
             String blockId = mouseBlock != null ? mouseBlock.key + " (BID: " + mouseBlock.id + ")" : "<void>";
             return "Mouse: " + mouseBlockPos + " ID: " + blockId + " HP: " + world.getHp(mouseBlockPos) +
-                   " Shadow: " + ShadowMap.getColorTo(mouseBlockPos.x, mouseBlockPos.y, TmpShapes.c2);
+                   " Shadow: " + ShadowMap.getColorTo(mouseBlockPos.x, mouseBlockPos.y, TmpShapes.c1);
         });
     }
 
@@ -122,10 +130,8 @@ public class Debug {
         StackfulRender.z(Render.LAYER_DEBUG);
 
         entityPool.forEach(ent -> {
-            ent.getHitboxTo(rect);
-            var pos = camera.project(TmpShapes.v1.set(rect.x, rect.y));
-            GuiDrawing.drawText(pos.x, pos.y,
-                    "HasFloor: " + ent.hasFloor(), black);
+            var pos = camera.projectTo(ent.posTo(TmpShapes.v1d), TmpShapes.v1f);
+            GuiDrawing.drawText(pos.x, pos.y, "HasFloor: " + ent.hasFloor(), black);
         });
     }
 
@@ -215,50 +221,59 @@ public class Debug {
         StackfulRender.z(Render.LAYER_DEBUG);
         Fill.lineWidth(toWorld(1));
 
-        camera.getBoundsTo(rect);
-
         if (!player.isDead()) {
-            player.getHitboxTo(rect);
+            var hitbox = TmpShapes.aabb1;
+            player.hitboxTo(hitbox);
             { // Блоки интегрированной модели
-                int minX = toBlock(rect.x);
-                int minY = toBlock(rect.y);
-                int maxX = minX + toBlock(rect.width);
-                int maxY = minY + toBlock(rect.height);
+                short minX = hitbox.blockMinX();
+                short minY = hitbox.blockMinY();
+                short maxX = hitbox.blockMaxX();
+                short maxY = hitbox.blockMaxY();
 
-                for (int x = minX; x <= maxX; x++) {
-                    for (int y = minY; y <= maxY; y++) {
+                for (short y = minY; y <= maxY; y++) {
+                    for (short x = minX; x <= maxX; x++) {
                         Fill.rectangleBorder(x, y, 1, 1, white);
                     }
                 }
             }
-
             { // Блоки которые считаются за пол. Черная обводка
-                int minX = toBlock(player.x());
-                int maxX = toBlock(player.x() + toWorld(player.creature.texture.width()));
-                int minY = toBlock(player.y());
 
-                for (int x = minX; x <= maxX; x++) {
-                    var block = world.getBlock(x, minY);
-                    if (block == null) continue;
-                    if (block.type == Block.Type.SOLID) {
-                        Fill.rectangleBorder(x, minY, block.tileCountX, block.tileCountY, black);
+                hitbox.maxY = hitbox.minY;
+                hitbox.minY -= GAP;
+                hitbox.maxX -= 2*GAP;
+                hitbox.minX += 2*GAP;
+
+                Fill.rectangleBorder((float) hitbox.minX, (float) hitbox.minY, hitbox.width(), hitbox.height(), red);
+
+                short minX = hitbox.blockMinX();
+                short maxX = hitbox.blockMaxX();
+                short minY = hitbox.blockMinY();
+                short maxY = hitbox.blockMaxY();
+
+                for (short y = minY; y <= maxY; y++) {
+                    for (short x = minX; x <= maxX; x++) {
+                        var block = world.getBlock(x, y);
+                        if (block == null) continue;
+                        if (block.type == Block.Type.SOLID) {
+                            Fill.rectangleBorder(x, y, block.tileCountX, block.tileCountY, black);
+                        }
                     }
                 }
             }
         }
 
         { // Корень красный, дочерние синие
-            camera.getBoundsTo(rect);
-            hitbox.set(rect);
-            hitbox.clamp(world.sizeX, world.sizeY);
+            var hitbox = TmpShapes.aabb1;
+            camera.boundsTo(hitbox);
+            hitbox.clampToWorld();
 
-            int minX = hitbox.minX;
-            int maxX = hitbox.maxX;
-            int minY = hitbox.minY;
-            int maxY = hitbox.maxY;
+            short minX = hitbox.blockMinX();
+            short minY = hitbox.blockMinY();
+            short maxX = hitbox.blockMaxX();
+            short maxY = hitbox.blockMaxY();
 
-            for (int x = minX; x <= maxX; x++) {
-                for (int y = minY; y <= maxY; y++) {
+            for (short y = minY; y <= maxY; y++) {
+                for (short x = minX; x <= maxX; x++) {
                     var obj = world.getBlock(x, y);
                     if (obj == null || obj == Block.AIR) {
                         continue;

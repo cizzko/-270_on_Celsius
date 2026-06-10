@@ -14,5 +14,8 @@ public final class WorldCoordinates {
 
     public static float toWorld(float pixels) { return pixels * INV_BLOCK_SIZE; }
 
-    public static int toBlock(float world) { return (int) floor(world); }
+    public static short toBlock(float world) { return (short) floor(world); }
+    public static short toBlock(double world) { return (short) floor(world); }
+
+    public static float toOffset(double world) { return (float) (world - floor(world)); }
 }

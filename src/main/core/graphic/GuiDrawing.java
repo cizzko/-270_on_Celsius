@@ -126,14 +126,16 @@ public class GuiDrawing {
     public static void drawBlocksGui() {
         StackfulRender.z(Render.LAYER_GUI);
         StackfulRender.camera(uiScene.view());
-        camera.getBoundsTo(viewport);
-        int minX = Math.max(0, toBlock(viewport.x));
-        int minY = Math.max(0, toBlock(viewport.y));
-        int maxX = Math.min(world.sizeX - 1, toBlock(viewport.x + viewport.width));
-        int maxY = Math.min(world.sizeY - 1, toBlock(viewport.y + viewport.height));
-        for (int y = minY; y <= maxY; y++) {
-            for (int x = minX; x <= maxX; x++) {
-                var entity = world.getEntity(x, y);
+        camera.boundsTo(viewport);
+        viewport.clampToWorld();
+        short minX = viewport.blockMinX();
+        short minY = viewport.blockMinY();
+        short maxX = viewport.blockMaxX();
+        short maxY = viewport.blockMaxY();
+
+        for (; minY <= maxY; minY++) {
+            for (; minX <= maxX; minX++) {
+                var entity = world.getEntity(minX, minY);
                 if (entity != null) {
                     entity.drawGui();
                 }

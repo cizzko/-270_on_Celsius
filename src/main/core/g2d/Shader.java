@@ -11,6 +11,10 @@ import static org.lwjgl.opengl.GL46.*;
 public final class Shader implements Disposable {
     public static final int MAX_ID = 1 << 8;
 
+    public static final String META_EXT = ".meta.json";
+    public static final String VERT_EXT = ".vert";
+    public static final String FRAG_EXT = ".frag";
+
     final byte id;
     final String shaderName;
 

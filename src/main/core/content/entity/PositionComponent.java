@@ -1,28 +1,31 @@
 package core.content.entity;
 
-import core.WorldCoordinates;
+import core.math.Vector2d;
 
 public interface PositionComponent {
-    float x();
-    float y();
+    double x();
+    double y();
 
-    default int blockX() { return WorldCoordinates.toBlock(x()); }
-    default int blockY() { return WorldCoordinates.toBlock(y()); }
+    default Vector2d posTo(Vector2d out) {
+        return out.set(x(), y());
+    }
 
-    void setPosition(float x, float y);
+    short blockX();
+    short blockY();
 
-    void setX(float x);
-    void setY(float y);
+    float offsetX();
+    float offsetY();
+
+    void setPosition(double x, double y);
+    void setX(double x);
+    void setY(double y);
 
     boolean hasFloor();
 
-    default float dst2(float ox, float oy) {
-        float dx = ox - x();
-        float dy = oy - y();
-        return (dx * dx + dy * dy);
-    }
+    default double dstSq(PositionComponent b) { return dstSq(b.x(), b.y()); }
+    double dstSq(double x, double y);
 
-    default boolean within(float ox, float oy, float radius) {
-        return dst2(ox, oy) <= radius*radius;
+    default boolean within(double x, double y, double radius) {
+        return dstSq(x, y) <= radius*radius;
     }
 }

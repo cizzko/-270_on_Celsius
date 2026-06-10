@@ -53,14 +53,14 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
     @Override
     public void update() {
         if (isClicked) {
-            Vector2f worldPos = input.mouseWorldPos();
+            // var worldPos = input.mouseWorldPos();
 
-            if (worldPos.x > x - 61 && worldPos.x < x + 109 && worldPos.y > y + 56 && worldPos.y < y + 218) {
-                Point2i underMouse = getItemUnderMouse();
-                if (inBounds(underMouse.x, underMouse.y) && getStorage()[underMouse.x][underMouse.y] != null) {
-                    draggedCell = underMouse;
-                }
-            }
+            // if (worldPos.xd() > x - 61 && worldPos.xd() < x + 109 && worldPos.yd() > y + 56 && worldPos.yd() < y + 218) {
+            //     Point2i underMouse = getItemUnderMouse();
+            //     if (inBounds(underMouse.x, underMouse.y) && getStorage()[underMouse.x][underMouse.y] != null) {
+            //         draggedCell = underMouse;
+            //     }
+            // }
 
             if (!player.within(x, y, 3)) {
                 isClicked = false;
@@ -94,19 +94,22 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
         }
 
         StackfulRender.pushState(() -> {
-            Vector2f screenPos = TmpShapes.v1
+            var worldPos = TmpShapes.v1d
                     .set(x - toWorld(61), y + toWorld(56));
-            camera.project(screenPos);
+            var screenPos = TmpShapes.v1f;
+            camera.projectTo(worldPos, screenPos);
+            float sx = screenPos.x;
+            float sy = screenPos.y;
 
             StackfulRender.z(Render.LAYER_GUI);
-            StackfulRender.draw(atlas.get("UI/GUI/inventory/chestInventory"), screenPos.x, screenPos.y);
+            StackfulRender.draw(atlas.get("UI/GUI/inventory/chestInventory"), sx, sy);
             var storage = getStorage();
             for (int x = 0; x < storage.length; x++) {
                 var line = storage[x];
                 for (int y = 0; y < line.length; y++) {
                     var itemStack = line[y];
                     if (itemStack != null) {
-                        GuiDrawing.drawItemStack(10 + screenPos.x + x * 54, 10 + screenPos.y + y * 54f, itemStack);
+                        GuiDrawing.drawItemStack(10 + sx + x * 54, 10 + sy + y * 54f, itemStack);
                     }
                 }
             }
@@ -147,9 +150,9 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
     }
 
     private Point2i getItemUnderMouse() {
-        Vector2f worldPos = input.mouseWorldPos();
+        var worldPos = input.mouseWorldPos();
         return new Point2i(
-                (int) ((worldPos.x - (x - 61)) / 54),
+                (int) ((worldPos.y - (x - 61)) / 54),
                 (int) ((worldPos.y - (y + 56)) / 54));
     }
 }

@@ -200,7 +200,7 @@ public final class RenderQueue implements Disposable {
                 }
 
                 if (currentUblock != ublock) {
-                    var block = uniformBuffer.id2blocks[ublock];
+                    var block = uniformBuffer.blockSet.id2blocks[ublock];
                     block.setTo(shader);
                 }
 

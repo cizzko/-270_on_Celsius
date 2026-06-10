@@ -12,6 +12,7 @@ import core.g2d.StackfulRender;
 import core.graphic.Color;
 import core.graphic.GuiDrawing;
 import core.math.Point2i;
+import core.math.Rectangle;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -42,11 +43,9 @@ public class WorkbenchLogic {
     }
 
     private static void updateScroll() {
-        int x = input.mousePos().x;
-        int y = input.mousePos().y;
-
-        if (x > menuXPos && x < menuXPos + 580 && y > 400 && y < 796) {
-            scroll = Math.clamp(scroll - input.getScrollChange() * 6, -246, 0);
+        var pos = input.mousePos();
+        if (Rectangle.contains(menuXPos, 580, 400, 396, pos)) {
+            scroll = Math.clamp(scroll - input.scrollDelta() * 6, -246, 0);
         }
     }
 

@@ -3,6 +3,7 @@ package core.content.blocks;
 import core.content.*;
 import core.content.entity.BlockEntity;
 import core.g2d.Atlas;
+import core.math.MathUtil;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
 
@@ -74,7 +75,7 @@ public class Block implements ContentType, Loadable {
     public @Nullable BlockEntity createEntity(int x, int y) {
         var ent = constructEntity();
         if (ent != null) {
-            ent.setPosition(x, y);
+            ent.setPosition(MathUtil.toShortExact(x), MathUtil.toShortExact(y));
             ent.init();
         }
         return ent;

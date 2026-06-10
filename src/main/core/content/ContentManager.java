@@ -39,6 +39,13 @@ public final class ContentManager {
     private final ArrayList<Item> craftableByPlayer = new ArrayList<>();
     private final Short2ObjectOpenHashMap<ArrayList<Item>> craftableByWorkbench = new Short2ObjectOpenHashMap<>();
 
+    public boolean isBlockType(short blockId, Block.Type type) {
+        int i = type.ordinal();
+        int start = i == 0 ? 0 : blockTypeEndId[i - 1];
+        int end = blockTypeEndId[i];
+        return blockId >= start && blockId <= end;
+    }
+
     record ContentSource(Type type, Path dir) {}
     @JsonNaming(PropertyNamingStrategies.UpperCamelCaseStrategy.class)
     record TagData(Type classType, List<String> elements) {}

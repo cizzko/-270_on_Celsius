@@ -1,7 +1,5 @@
 package core.math;
 
-import java.awt.*;
-
 public final class Rectangle {
     public float x, y;
     public float width, height;
@@ -46,7 +44,7 @@ public final class Rectangle {
         return x <= px && x + width >= px && y <= py && y + height >= py;
     }
 
-    public static boolean contains(int x, int y, int width, int height, Point2i point) {
+    public static boolean contains(float x, float y, float width, float height, Vector2f point) {
         return contains(x, y, width, height, point.x, point.y);
     }
 

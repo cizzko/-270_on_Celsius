@@ -3,11 +3,10 @@ package core;
 import core.EventHandling.Config;
 import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.World.Creatures.Player.Inventory.Bullets;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
+import core.g2d.*;
 import core.graphic.GuiDrawing;
 import core.World.Weather.Sun;
-import core.g2d.StackfulRender;
 import core.graphic.WorldDrawing;
 import core.util.Commandline;
 import core.util.Debug;
@@ -64,7 +63,6 @@ public final class PlayGameScene extends GameScene {
         updateCamera();
         sun.update();
         updateInventoryInteraction();
-        Bullets.updateBullets();
         world.update();
         Inventory.updateStaticBlocksPreview();
     }
@@ -75,12 +73,23 @@ public final class PlayGameScene extends GameScene {
         StackfulRender.z(LAYER_BACKGROUND);
         sun.draw();
         StackfulRender.z(LAYER_BLOCKS);
-        StackfulRender.camera(camera); // Центрируем камеру на позицию игрока
+        StackfulRender.camera(camera);
         WorldDrawing.drawBlocks();
-        StackfulRender.z(LAYER_ENTITIES);
-        WorldDrawing.drawEntities();
-
         Debug.drawPlayerBorders();
+
+        StackfulRender.z(LAYER_ENTITIES);
+        try (var state = StackfulRender.pushState()) {
+            var worldShader = Shaders.world;
+            state.shader = worldShader;
+            var uniformBuffer = queue().uniformBuffer();
+            var ublock = uniformBuffer.allocate(worldShader);
+            ublock.push(UniformBuffer.Uniform.of("u_logical_ratio", Global.camera.projectionScale));
+            uniformBuffer.push(ublock);
+
+            state.uniformBlock(ublock);
+            WorldDrawing.drawEntities();
+        }
+
         GuiDrawing.drawBlocksGui();
         Debug.drawDebugBorders();
 

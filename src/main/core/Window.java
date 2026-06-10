@@ -285,8 +285,7 @@ public final class Window extends Application {
         }));
 
         assets.load(Atlas.class, "sprites", AssetsManager.LoadType.SYNC);
-        Shaders.repeat = FutureUtil.join(assets.load(Shader.class, "repeat", AssetsManager.LoadType.SYNC));
-        StackfulRender.defaultShader = FutureUtil.join(assets.load(Shader.class, "default", AssetsManager.LoadType.SYNC));
+        Shaders.loadAll();
         Render.init();
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
@@ -294,7 +293,7 @@ public final class Window extends Application {
         glfwShowWindow(glfwWindow);
 
         lang = new LangTranslation();
-        lang.load(); // TODO придумать как загружать и перезагружать
+        lang.load();
 
         entityPool = new EntityPool(Constants.Entity.MAX_COUNT);
 

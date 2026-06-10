@@ -39,8 +39,12 @@ public final class MathUtil {
         return x * x + y * y;
     }
 
-    public static float lerp(float a, float b, float progress) {
-        return a + (b - a) * progress;
+    public static float lerp(float a, float b, float t) {
+        return Math.fma(b - a, t, a);
+    }
+
+    public static double lerp(double a, double b, double t) {
+        return Math.fma(b - a, t, a);
     }
 
     public static byte toByteExact(int value) {

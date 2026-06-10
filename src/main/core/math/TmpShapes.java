@@ -20,23 +20,17 @@ import core.graphic.Colorf;
 public final class TmpShapes {
     private TmpShapes() {}
 
-    public static final Vector2f v1 = new Vector2f();
-    public static final Vector2f v2 = new Vector2f();
-    public static final Vector2f v3 = new Vector2f();
+    public static final Vector2f v1f = new Vector2f();
+
+    public static final Vector2d v1d = new Vector2d();
 
     public static final Rectangle r1 = new Rectangle();
-    public static final Rectangle r2 = new Rectangle();
-    public static final Rectangle r3 = new Rectangle();
+
+    public static final AABB aabb1 = new AABB();
 
     public static final Point2i p1 = new Point2i();
-    public static final Point2i p2 = new Point2i();
-    public static final Point2i p3 = new Point2i();
 
     public static final Color c1 = new Color();
-    public static final Color c2 = new Color();
-    public static final Color c3 = new Color();
 
     public static final Colorf cf1 = new Colorf();
-    public static final Colorf cf2 = new Colorf();
-    public static final Colorf cf3 = new Colorf();
 }

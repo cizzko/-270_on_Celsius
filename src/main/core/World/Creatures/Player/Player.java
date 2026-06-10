@@ -130,8 +130,8 @@ public class Player {
     //todo место для вашего лечения
     //анимации намеренно привязаны к рилтайму а не дт
     public static void drawCurrentHP() {
-        float currentHp = player.getHp();
-        float maxHp = player.getMaxHp();
+        float currentHp = player.hp();
+        float maxHp = player.maxHp();
         long nowTime = System.currentTimeMillis();
 
         if (nowTime - timeFromZero > 7000) {

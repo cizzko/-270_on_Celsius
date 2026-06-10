@@ -2,9 +2,7 @@ package core.graphic;
 
 import core.GameState;
 import core.UI.Styles;
-import core.content.blocks.Block.Type;
 import core.content.entity.CreatureEntity;
-import core.content.entity.Hitbox;
 
 import java.util.HashMap;
 import java.util.stream.IntStream;
@@ -112,11 +110,12 @@ public class ShadowMap {
     }
 
     private static void updateShadows() {
-        camera.getBoundsTo(viewport);
-        int minX = Math.max(0, toBlock(viewport.x));
-        int minY = Math.max(0, toBlock(viewport.y));
-        int maxX = Math.min(world.sizeX - 1, toBlock(viewport.x + viewport.width));
-        int maxY = Math.min(world.sizeY - 1, toBlock(viewport.y + viewport.height));
+        camera.boundsTo(viewport);
+        viewport.clampToWorld();
+        short minX = viewport.blockMinX();
+        short minY = viewport.blockMinY();
+        short maxX = viewport.blockMaxX();
+        short maxY = viewport.blockMaxY();
 
         for (int y = minY; y < maxY; y++) {
             for (int x = minX; x < maxX; x++) {

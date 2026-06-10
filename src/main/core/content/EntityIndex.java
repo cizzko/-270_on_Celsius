@@ -1,17 +1,18 @@
 package core.content;
 
 import core.content.entity.Entity;
-import core.math.Rectangle;
+import core.math.AABB;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import java.util.Comparator;
 import java.util.function.Consumer;
 
 import static core.WorldCoordinates.*;
+import static core.content.entity.DrawComponent.GAP;
 
 /// Линейное Квадродерево на основе кодов Мортона
 public final class EntityIndex {
-    final Rectangle tmp = new Rectangle();
+    final AABB tmp = new AABB();
     final ObjectArrayList<EntityRef> elements = new ObjectArrayList<>();
 
     public void presize(int size) {
@@ -30,13 +31,17 @@ public final class EntityIndex {
     }
 
     public void insert(Entity entity) {
-        entity.getHitboxTo(tmp);
+        entity.hitboxTo(tmp);
 
-        short minX = (short) toBlock(tmp.x);
-        short minY = (short) toBlock(tmp.y);
+        tmp.minX += GAP;
+        tmp.maxX -= GAP;
+        tmp.minY += GAP;
+        tmp.maxY -= GAP;
 
-        short maxX = (short) toBlock(tmp.x + tmp.width);
-        short maxY = (short) toBlock(tmp.y + tmp.height);
+        short minX = tmp.blockMinX();
+        short minY = tmp.blockMinY();
+        short maxX = tmp.blockMaxX();
+        short maxY = tmp.blockMaxY();
 
         int mortonStart = encode(minX, minY);
         int mortonEnd = encode(maxX, maxY);
@@ -48,15 +53,15 @@ public final class EntityIndex {
     }
 
     public void intersect(Entity entity, Consumer<Entity> action) {
-        entity.getHitboxTo(tmp);
-        intersect(tmp.x, tmp.y, tmp.width, tmp.height, action);
+        entity.hitboxTo(tmp);
+        intersect(tmp.minX, tmp.minY, tmp.width(), tmp.height(), action);
     }
 
-    public boolean any(float x, float y, float width, float height) {
-        short minX = (short) toBlock(x);
-        short minY = (short) toBlock(y);
-        short maxX = (short) toBlock(x + width);
-        short maxY = (short) toBlock(y + height);
+    public boolean any(double x, double y, double width, double height) {
+        short minX = toBlock(x);
+        short minY = toBlock(y);
+        short maxX = toBlock(x + width);
+        short maxY = toBlock(y + height);
 
         int searchMin = encode(minX, minY);
         int startIndex = lowerBound(searchMin);
@@ -78,20 +83,20 @@ public final class EntityIndex {
                 continue;
             }
 
-            ent.entity.getHitboxTo(tmp);
-            if (tmp.overlaps(x, y, width, height)) {
+            ent.entity.hitboxTo(tmp);
+            if (tmp.overlaps(x, y, x+width, y+height)) {
                 return true;
             }
         }
         return false;
     }
 
-    public void intersect(float x, float y, float width, float height, Consumer<Entity> action) {
+    public void intersect(double x, double y, float width, float height, Consumer<Entity> action) {
 
-        short minX = (short) toBlock(x);
-        short minY = (short) toBlock(y);
-        short maxX = (short) toBlock(x + width);
-        short maxY = (short) toBlock(y + height);
+        short minX = toBlock(x);
+        short minY = toBlock(y);
+        short maxX = toBlock(x + width);
+        short maxY = toBlock(y + height);
 
         int searchMin = encode(minX, minY);
         int startIndex = lowerBound(searchMin);
@@ -113,8 +118,8 @@ public final class EntityIndex {
                 continue;
             }
 
-            ent.entity.getHitboxTo(tmp);
-            if (tmp.overlaps(x, y, width, height)) {
+            ent.entity.hitboxTo(tmp);
+            if (tmp.overlaps(x, y, x+width, y+height)) {
                 action.accept(ent.entity);
             }
         }

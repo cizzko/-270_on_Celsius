@@ -35,7 +35,7 @@ public abstract class Creature implements ContentType, Loadable {
         this.hasGravity = cnt.node().path("HasGravity").asBoolean(true);
     }
 
-    public CreatureEntity create(float x, float y) {
+    public CreatureEntity create(double x, double y) {
         short id = Global.entityPool.acquireId();
 
         var ent = constructEntity();

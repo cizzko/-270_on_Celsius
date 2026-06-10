@@ -10,6 +10,7 @@ import core.content.creatures.Creature;
 import core.content.creatures.ItemEntity;
 import core.content.entity.CreatureEntity;
 import core.content.strctures.Structure;
+import core.g2d.Atlas;
 import core.math.Point2i;
 
 import java.io.IOException;
@@ -19,6 +20,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import static core.Global.*;
 import static core.World.World.findSurfaceY;
 import static core.World.WorldGenerator.WorldGeneratorConstants.COPY_SIZE;
+import static core.WorldCoordinates.toWorld;
 
 public class WorldUtils {
 
@@ -56,13 +58,13 @@ public class WorldUtils {
         return spawn0(entity, bx);
     }
 
-    public static ItemEntity dropItem(ItemStack itemStack, float x, float y) {
-        float rx = x + ThreadLocalRandom.current().nextFloat(0.15f, 0.3f);
-        float ry = y + ThreadLocalRandom.current().nextFloat(0.1f, 0.25f);
+    public static ItemEntity dropItem(ItemStack itemStack, double x, double y) {
+        double rx = x + ThreadLocalRandom.current().nextFloat(0.15f, 0.3f);
+        double ry = y + ThreadLocalRandom.current().nextFloat(0.1f, 0.25f);
         return spawnItemEntity(itemStack, rx, ry);
     }
 
-    public static ItemEntity spawnItemEntity(ItemStack itemStack, float x, float y) {
+    public static ItemEntity spawnItemEntity(ItemStack itemStack, double x, double y) {
         short id = Global.entityPool.acquireId();
         var ent = new ItemEntity(itemStack);
 
@@ -74,10 +76,11 @@ public class WorldUtils {
         return ent;
     }
 
-    private static <E extends CreatureEntity> E spawn0(Creature entity, float bx) {
-        float wy = findSurfaceY(WorldCoordinates.toBlock(bx), 5) + 1;
+    private static <E extends CreatureEntity> E spawn0(Creature entity, double bx) {
+        double wy = findSurfaceY(WorldCoordinates.toBlock(bx), 5) + 1;
 
-        if (Physics.checkIntersection(bx, wy, entity.texture)) {
+        var tex = entity.texture;
+        if (Physics.checkIntersection(bx, wy, toWorld(tex.width()), toWorld(tex.height()))) {
             Application.log.warn("Unable spawning at: ({}, {})", bx, wy);
             return spawn0(entity, bx + 1);
         }

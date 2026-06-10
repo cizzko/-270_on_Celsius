@@ -149,9 +149,9 @@ public class FactoryEntity extends BaseBlockEntity<Factory> {
         if (!isSelected) {
             return;
         }
-        Vector2f pos = TmpShapes.v1
-                .set(x + toWorld(block.texture.width()) - .5f, y + toWorld(block.texture.height()) - .5f);
-        camera.project(pos);
+        var worldPos = TmpShapes.v1d
+                .set(x + (double)toWorld(block.texture.width()) - .5, y + (double)toWorld(block.texture.height()) - .5);
+        var pos = camera.projectTo(worldPos, TmpShapes.v1f);
 
         var backpanelColor = Color.rgba8888(40, 40, 40, 170);
         int freeCell = ArrayUtils.findFreeCell(outputStored);

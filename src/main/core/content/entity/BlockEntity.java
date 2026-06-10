@@ -11,10 +11,10 @@ import java.io.IOException;
 
 public interface BlockEntity extends BlockDrawComponent {
 
-    void setPosition(int x, int y);
+    void setPosition(short x, short y);
 
-    int x();
-    int y();
+    short x();
+    short y();
     default float centerX() { return x() + 0.5f; }
     default float centerY() { return y() + 0.5f; }
 

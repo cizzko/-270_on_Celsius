@@ -31,7 +31,7 @@ public class Sun extends GameObject {
     @Load("World/Sun/sun.png")
     protected Texture sunTex;
 
-    public static float globalTime = 0f;
+    public static double globalTime = 0f;
     private static final float TIME_SPEED = 0.1f;
 
     public void update() {
@@ -63,18 +63,19 @@ public class Sun extends GameObject {
         updateNightBackground();
     }
 
-    private static float calculateTime(float worldX) {
+    private static float calculateTime(double worldX) {
         float effectiveWidth = world.sizeX - COPY_SIZE;
-        float deltaX = globalTime - worldX;
+        double deltaX = globalTime - worldX;
 
         double angle = (deltaX / effectiveWidth) * 2.0 * Math.PI;
+        // TODO избыточно
         float cosFactor = (float) Math.cos(angle);
         float angleFactor = (float) (Math.acos(cosFactor) / Math.PI);
 
         return (1.0f - angleFactor) * 1200f;
     }
 
-    public static float getTimeAtWorldX(float worldX) {
+    public static float getTimeAtWorldX(double worldX) {
         return calculateTime(worldX);
     }
 

@@ -2,43 +2,67 @@ package core.g2d;
 
 import core.math.Mat3;
 import core.math.Vector2f;
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.HashCommon;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 import java.util.Arrays;
+
+import static it.unimi.dsi.fastutil.HashCommon.arraySize;
+import static it.unimi.dsi.fastutil.HashCommon.maxFill;
 
 public final class UniformBuffer {
     private static final int MAX_ID = Byte.MAX_VALUE;
 
-    final Long2ObjectOpenHashMap<Block> hash2blocks = new Long2ObjectOpenHashMap<>(MAX_ID);
-    final Block[] id2blocks = new Block[MAX_ID];
+    final BlockHashSet blockSet = new BlockHashSet(MAX_ID, MAX_ID, ObjectOpenHashSet.FAST_LOAD_FACTOR);
 
     public Block allocate(Shader shader) {
-        return new Block(shader.uniforms.size());
+        int capacity = shader.uniforms.size();
+        if (blockSet.poolSize > 0) {
+            Block block = blockSet.pool[--blockSet.poolSize];
+            blockSet.pool[blockSet.poolSize] = null;
+            block.prepare(capacity);
+            return block;
+        }
+        return new Block(capacity);
     }
 
     public int push(Block block) {
         if (block.id == Block.UNITIALIZED) {
-            int id = hash2blocks.size();
-            if (id == MAX_ID) {
+            byte nextId = (byte) blockSet.size;
+            var existing = blockSet.addOrGet(block, nextId);
+            if (existing == null) {
                 throw new IllegalStateException("Buffer is full");
             }
-
-            var existing = hash2blocks.putIfAbsent(block.hash(), block);
-            if (block.equals(existing)) {
-                block.id = existing.id;
-                return block.id;
+            if (existing != block) {
+                returnInFramePool(block);
+                return existing.id;
             }
-            block.id = (byte) id;
-            id2blocks[block.id] = block;
-            return block.id;
         }
         return block.id;
     }
 
+    private void returnInFramePool(Block block) {
+        if (blockSet.poolSize < blockSet. pool.length) {
+            block.reset();
+            blockSet.pool[blockSet.poolSize++] = block;
+        }
+    }
+
     public void clear() {
-        hash2blocks.clear();
-        Arrays.fill(id2blocks, null);
+        blockSet.clear();
+        for (int i = 0; i < blockSet.id2blocks.length; i++) {
+            Block block = blockSet.id2blocks[i];
+            if (block == null) break;
+            blockSet.id2blocks[i] = null;
+
+            if (blockSet.poolSize < blockSet.pool.length) {
+                block.reset();
+                blockSet.pool[blockSet.poolSize++] = block;
+            }
+        }
+
+        Arrays.fill(blockSet.id2blocks, null);
     }
 
     public sealed interface Uniform {
@@ -63,8 +87,8 @@ public final class UniformBuffer {
             @Override
             public long hash() {
                 long h = 5381L;
-                h += (h << 5L) + name.hashCode();
-                h += (h << 5L) + Float.hashCode(value);
+                h = (h << 5) + h + name.hashCode();
+                h = (h << 5) + h + Float.hashCode(value);
                 return h;
             }
         }
@@ -76,8 +100,8 @@ public final class UniformBuffer {
             @Override
             public long hash() {
                 long h = 5381L;
-                h += (h << 5L) + name.hashCode();
-                h += (h << 5L) + value;
+                h = (h << 5) + h + name.hashCode();
+                h = (h << 5) + h + value;
                 return h;
             }
         }
@@ -104,16 +128,16 @@ public final class UniformBuffer {
             @Override
             public long hash() {
                 long h = 5381L;
-                h += (h << 5L) + name.hashCode();
-                h += (h << 5L) + Float.hashCode(m00);
-                h += (h << 5L) + Float.hashCode(m01);
-                h += (h << 5L) + Float.hashCode(m02);
-                h += (h << 5L) + Float.hashCode(m10);
-                h += (h << 5L) + Float.hashCode(m11);
-                h += (h << 5L) + Float.hashCode(m12);
-                h += (h << 5L) + Float.hashCode(m20);
-                h += (h << 5L) + Float.hashCode(m21);
-                h += (h << 5L) + Float.hashCode(m22);
+                h = (h << 5) + h + name.hashCode();
+                h = (h << 5) + h + Float.hashCode(m00);
+                h = (h << 5) + h + Float.hashCode(m01);
+                h = (h << 5) + h + Float.hashCode(m02);
+                h = (h << 5) + h + Float.hashCode(m10);
+                h = (h << 5) + h + Float.hashCode(m11);
+                h = (h << 5) + h + Float.hashCode(m12);
+                h = (h << 5) + h + Float.hashCode(m20);
+                h = (h << 5) + h + Float.hashCode(m21);
+                h = (h << 5) + h + Float.hashCode(m22);
                 return h;
             }
         }
@@ -125,9 +149,9 @@ public final class UniformBuffer {
             @Override
             public long hash() {
                 long h = 5381L;
-                h += (h << 5L) + name.hashCode();
-                h += (h << 5L) + Float.hashCode(x);
-                h += (h << 5L) + Float.hashCode(y);
+                h = (h << 5) + h + name.hashCode();
+                h = (h << 5) + h + Float.hashCode(x);
+                h = (h << 5) + h + Float.hashCode(y);
                 return h;
             }
         }
@@ -138,9 +162,9 @@ public final class UniformBuffer {
             @Override
             public long hash() {
                 long h = 5381L;
-                h += (h << 5L) + name.hashCode();
-                h += (h << 5L) + texId;
-                h += (h << 5L) + bindSlot;
+                h = (h << 5) + h + name.hashCode();
+                h = (h << 5) + h + texId;
+                h = (h << 5) + h + bindSlot;
                 return h;
             }
         }
@@ -150,6 +174,7 @@ public final class UniformBuffer {
         static final byte UNITIALIZED = -1;
 
         public byte id = UNITIALIZED;
+        public boolean hashComputed;
 
         private final ObjectArrayList<Uniform> children;
 
@@ -160,10 +185,25 @@ public final class UniformBuffer {
         private long hash;
         public long hash() {
             long h = hash;
-            if (h == 0) {
+            if (!hashComputed) {
+                hashComputed = true;
                 hash = h = computeHash();
             }
             return h;
+        }
+
+        void reset() {
+            id = UNITIALIZED;
+            hash = 0;
+            hashComputed = false;
+            children.clear();
+        }
+
+        void prepare(int capacity) {
+            id = UNITIALIZED;
+            hash = 0;
+            hashComputed = false;
+            children.ensureCapacity(capacity);
         }
 
         private long computeHash() {
@@ -171,7 +211,7 @@ public final class UniformBuffer {
             Object[] elements = children.elements();
             for (int i = 0, n = children.size(); i < n; i++) {
                 var child = (Uniform) elements[i];
-                h += (h << 5L) + child.hash();
+                h = (h << 5) + h + child.hash();
             }
             return h;
         }
@@ -191,15 +231,8 @@ public final class UniformBuffer {
             }
         }
 
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (!(o instanceof Block block)) {
-                return false;
-            }
-            return children.equals(block.children);
+        public boolean equals(Block block) {
+            return block == this || children.equals(block.children);
         }
 
         @Override
@@ -212,6 +245,79 @@ public final class UniformBuffer {
                     ", children=" + children +
                     ", hash=" + hash +
                     '}';
+        }
+    }
+
+    static final class BlockHashSet {
+        private final Block[] pool;
+        final Block[] id2blocks;
+
+        private int poolSize = 0;
+        private Block[] key;
+        private int mask;
+        private int n;
+        private int maxFill;
+        private int size;
+
+        private final int maxSize;
+        private final float f;
+
+        public BlockHashSet(int expected, int maxSize, float f) {
+            if (f <= 0 || f >= 1) throw new IllegalArgumentException("Load factor must be greater than 0 and smaller than 1");
+            if (expected < 0) throw new IllegalArgumentException("The expected number of elements must be nonnegative");
+            this.f = f;
+            this.maxSize = maxSize;
+            id2blocks = new Block[maxSize];
+            pool = new Block[maxSize];
+            n = arraySize(expected, f);
+            mask = n - 1;
+            maxFill = maxFill(n, f);
+            key = new Block[n + 1];
+        }
+
+        public void clear() {
+            if (size == 0) return;
+            size = 0;
+            Arrays.fill(key, null);
+        }
+
+        public Block addOrGet(Block k, byte nextId) {
+            var key = this.key;
+
+            long hash = k.hash();
+            int pos = (int)(HashCommon.mix(hash) & mask);
+            var curr = key[pos];
+            if (curr != null) {
+                do {
+                    if (hash == curr.hash && curr.equals(k)) return curr;
+                } while ((curr = key[pos = pos + 1 & mask]) != null);
+            }
+            if (size == maxSize) {
+                return null;
+            }
+
+            k.id = nextId;
+            key[pos] = k;
+            id2blocks[nextId] = k;
+            if (size++ >= maxFill) rehash(arraySize(size + 1, f));
+            return k;
+        }
+        private void rehash(final int newN) {
+            final var key = this.key;
+            final int mask = newN - 1;
+            final var newKey = new Block[newN + 1];
+
+            int i = n, pos;
+            for (int j = size; j-- != 0;) {
+                while (key[--i] == null);
+                if (newKey[pos = (int) (HashCommon.mix(key[i].hash()) & mask)] != null)
+                    while (newKey[pos = pos + 1 & mask] != null);
+                newKey[pos] = key[i];
+            }
+            n = newN;
+            this.mask = mask;
+            maxFill = maxFill(n, f);
+            this.key = newKey;
         }
     }
 }

@@ -24,6 +24,7 @@ import static core.graphic.Color.*;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Inventory {
+    public static final int ITEM_DROP_DISTANCE = 10;
     public static boolean inventoryOpen = false;
     private static final boolean buildGrid = Config.getBoolean("BuildGrid");
 
@@ -68,15 +69,15 @@ public class Inventory {
     }
 
     public static @Nullable Point2i getFocusedItemIdx() {
-        Point2i mousePos = input.mousePos();
-        int x = mousePos.x;
-        int y = mousePos.y;
+        var mousePos = input.mousePos();
+        float x = mousePos.x;
+        float y = mousePos.y;
 
         // 1488 и 756 - нижний левый угол инвентаря, 54 - размер ячейки
         if (x > 1488 && y > 756) {
             x -= 1488;
             y -= 756;
-            return new Point2i(x / 54, y / 54);
+            return new Point2i((int) Math.floor(x / 54), (int) Math.floor(y / 54));
         }
         return null;
     }
@@ -165,12 +166,10 @@ public class Inventory {
                 } else {
                     var worldMousePos = input.mouseWorldPos();
 
-                    var dstb = WorldUtils.getDistanceToMouse();
-                    if (dstb > 5) {
-                        float dst = (float) Math.sqrt(player.dst2(worldMousePos.x, worldMousePos.y));
-                        worldMousePos.sub(player.x(), player.y()).nor().scale(dst);
-                        worldMousePos.add(player.x(), player.y());
-                    }
+                    float dst = (float) Math.sqrt(player.dstSq(worldMousePos.x, worldMousePos.y));
+                    if (dst > ITEM_DROP_DISTANCE) dst = ITEM_DROP_DISTANCE;
+                    worldMousePos.sub(player.x(), player.y()).nor().scale(dst);
+                    worldMousePos.add(player.x(), player.y());
                     worldMousePos.sub(toWorld(ITEM_DROPPED_SIZE/2f), toWorld(ITEM_DROPPED_SIZE/2f));
 
                     int blockId = world.getBlockId(toBlock(worldMousePos.x), toBlock(worldMousePos.y));

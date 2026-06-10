@@ -14,7 +14,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-public final class ShaderHandler extends AssetHandler<Shader, Void, ShaderHandler.State> {
+public final class ShaderHandler extends AssetHandler<Shader, ShaderHandler.Params, ShaderHandler.State> {
     public ShaderHandler() {
         super(Shader.class, "shaders");
     }
@@ -25,12 +25,12 @@ public final class ShaderHandler extends AssetHandler<Shader, Void, ShaderHandle
     }
 
     @Override
-    public void loadAsync(AssetResolver res, String name, Void params, State state) {
-        state.vertSource = res.fork(() -> Files.readString(dir.resolve(name + ".vert"), StandardCharsets.UTF_8));
-        state.fragSource = res.fork(() -> Files.readString(dir.resolve(name + ".frag"), StandardCharsets.UTF_8));
+    public void loadAsync(AssetResolver res, String name, Params params, State state) {
+        state.vertSource = res.fork(() -> Files.readString(dir.resolve(params.vertFile(name)), StandardCharsets.UTF_8));
+        state.fragSource = res.fork(() -> Files.readString(dir.resolve(params.fragFile(name)), StandardCharsets.UTF_8));
         state.attributesSource = res.fork(() -> {
             ObjectNode node;
-            try (var is = Files.newInputStream(dir.resolve(name + ".meta.json"))) {
+            try (var is = Files.newInputStream(dir.resolve(params.metaFile(name)))) {
                 node = (ObjectNode) Config.json.readTree(is);
             }
             var attributes = node.path("attributes");
@@ -68,7 +68,7 @@ public final class ShaderHandler extends AssetHandler<Shader, Void, ShaderHandle
     }
 
     @Override
-    public Shader loadSync(AssetResolver res, String name, Void params, State state) throws Exception {
+    public Shader loadSync(AssetResolver res, String name, Params params, State state) throws Exception {
         String vertSource = res.join(state.vertSource);
         String fragSource = res.join(state.fragSource);
         var attributes = res.join(state.attributesSource);
@@ -77,8 +77,8 @@ public final class ShaderHandler extends AssetHandler<Shader, Void, ShaderHandle
     }
 
     @Override
-    protected Void createParams() {
-        return null;
+    protected Params createParams() {
+        return new Params();
     }
 
     @Override
@@ -87,6 +87,26 @@ public final class ShaderHandler extends AssetHandler<Shader, Void, ShaderHandle
     }
 
     public record Attributes(VertexFormat vertexFormat, Map<String, Shader.Uniform> uniforms) { }
+
+    public static final class Params {
+        public String vertFile;
+        public String fragFile;
+        public String metaFile;
+
+        String vertFile(String name) { return applyDefaults(vertFile, name, Shader.VERT_EXT); }
+        String fragFile(String name) { return applyDefaults(fragFile, name, Shader.FRAG_EXT); }
+        String metaFile(String name) { return applyDefaults(metaFile, name, Shader.META_EXT); }
+
+        static String applyDefaults(String name, String baseName, String ext) {
+            if (name == null) {
+                return baseName + ext;
+            }
+            if (name.indexOf('.') == -1) {
+                return name + ext;
+            }
+            return name;
+        }
+    }
 
     public static final class State {
         Future<String> vertSource, fragSource;

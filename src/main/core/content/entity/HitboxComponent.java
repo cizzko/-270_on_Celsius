@@ -1,13 +1,13 @@
 package core.content.entity;
 
-import core.math.Rectangle;
+import core.math.AABB;
 
 public interface HitboxComponent extends PositionComponent {
 
-    float centerX();
-    float centerY();
+    double centerX();
+    double centerY();
 
-    void getHitboxTo(Rectangle out);
+    void hitboxTo(AABB out);
 
     CollisionResult onCollide(HitboxComponent them);
 

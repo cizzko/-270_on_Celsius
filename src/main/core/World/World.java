@@ -315,6 +315,10 @@ public final class World {
         return content.getBlockType(tiles[pos2index(x, y)]);
     }
 
+    public boolean isBlockType(int x, int y, Block.Type type) {
+        return content.isBlockType(tiles[pos2index(x, y)], type);
+    }
+
     // region Приватные методы
 
     public int pos2index(int x, int y) { return x + sizeX * y; }

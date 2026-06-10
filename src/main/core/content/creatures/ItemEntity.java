@@ -7,11 +7,10 @@ import core.content.blocks.Block;
 import core.content.ItemStack;
 import core.content.entity.HitboxComponent;
 import core.content.entity.LivingEntity;
-import core.g2d.Atlas;
 import core.g2d.Fill;
 import core.g2d.StackfulRender;
 import core.graphic.WorldDrawing;
-import core.math.Rectangle;
+import core.math.AABB;
 import core.math.TmpShapes;
 import core.math.Vector2f;
 import core.graphic.Color;
@@ -19,51 +18,52 @@ import core.graphic.Color;
 import static core.Global.*;
 import static core.WorldCoordinates.*;
 
-public class ItemEntity implements LivingEntity {
+public final class ItemEntity implements LivingEntity {
     public static final int ITEM_DROPPED_SIZE   = 32; // пиксели
     public static final int MOVE_DST            = 3;  // блоки
 
-    protected short id;
-    protected float x, y;
-    protected ItemStack itemStack;
-    protected float hp, phase;
-    protected boolean isUnbreakable, dead;
-    protected Vector2f velocity = new Vector2f();
-    protected Vector2f acceleration = new Vector2f();
+    private static final byte FLAG_DEAD = 1 << 0;
+
+    public short id;
+    public long flags;
+
+    private double x, y;
+    private final ItemStack itemStack;
+    private float hp, phase;
+    private final Vector2f velocity = new Vector2f();
+    private final Vector2f acceleration = new Vector2f();
 
     public ItemEntity(ItemStack itemStack) {
         this.itemStack = itemStack;
     }
 
-    public final short id() {
+    private void setFlag(int flag, boolean st) {
+        if (st) {
+            this.flags |= flag;
+        } else {
+            this.flags &= ~flag;
+        }
+    }
+    private void flipFlag(int flag) {
+        flags ^= flag;
+    }
+    private boolean isFlag(int flag) { return (flags & flag) != 0; }
+
+    public short id() {
         return id;
     }
 
-    public final void setId(short id) {
+    public void setId(short id) {
         this.id = id;
     }
 
-    public final float x() { return x; }
+    public float hp() { return hp; }
 
-    public final float y() { return y; }
+    public double centerX() { return x + toWorld(ITEM_DROPPED_SIZE) / 2f; }
+    public double centerY() { return y + toWorld(ITEM_DROPPED_SIZE) / 2f; }
 
-    public final void setX(float x) { this.x = x; }
-    public final void setY(float y) { this.y = y; }
-
-    public final float getHp() { return hp; }
-
-    public final void setPosition(float x, float y) { this.x = x; this.y = y; }
-
-    public float centerX() {
-        return x + toWorld(ITEM_DROPPED_SIZE)/2f;
-    }
-
-    public float centerY() {
-        return y + toWorld(ITEM_DROPPED_SIZE)/2f;
-    }
-
-    public void getHitboxTo(Rectangle out) {
-        out.set(x, y, toWorld(ITEM_DROPPED_SIZE), toWorld(ITEM_DROPPED_SIZE));
+    public void hitboxTo(AABB out) {
+        out.setRectangle(x, y, toWorld(ITEM_DROPPED_SIZE), toWorld(ITEM_DROPPED_SIZE));
     }
 
     public CollisionResult onCollide(HitboxComponent them) {
@@ -84,22 +84,21 @@ public class ItemEntity implements LivingEntity {
     }
 
     public void update() {
-        var tmp = TmpShapes.r1;
-        player.getHitboxTo(tmp);
-        float pcx = tmp.x+tmp.width/2f;
-        float pcy = tmp.y;
+        var hitbox = TmpShapes.aabb1;
+        player.hitboxTo(hitbox);
+        double pcx = hitbox.maxX*2f;
+        double pcy = hitbox.minY;
 
-        float dstToPlayer = (float) Math.sqrt(dst2(pcx, pcy));
+        float dstToPlayer = (float) Math.sqrt(dstSq(pcx, pcy));
         if (dstToPlayer <= MOVE_DST && dstToPlayer > 0.01f &&
                     raycastTo(player.blockX(), player.blockY(), (x, y) ->
                             world.getBlockId(x, y) != 0)) {
-            float acceleration = Math.min(3,
-                    1.45f * (getWeight() * Physics.WEIGHT_FACTOR) * (1f - (dstToPlayer / MOVE_DST)));
-            var dir = TmpShapes.v1.set(pcx, pcy)
+            float acceleration = Math.min(3, 1.45f * (weight() * Physics.WEIGHT_FACTOR) * (1f - (dstToPlayer / MOVE_DST)));
+            var dir = TmpShapes.v1d.set(pcx, pcy)
                     .sub(x, y)
                     .nor()
                     .scale(acceleration * Time.delta);
-            velocity.add(dir);
+            velocity.add((float) dir.x, (float) dir.y);
         }
     }
 
@@ -144,7 +143,7 @@ public class ItemEntity implements LivingEntity {
         } while (true);
     }
 
-    public void draw(float drawX) {
+    public void draw(double drawX) {
         float amplitude = 1 / 4f;
         float frequency = 0.45f;
         float periodTicks = Time.ONE_SECOND / frequency;
@@ -155,46 +154,48 @@ public class ItemEntity implements LivingEntity {
         }
         float tSeconds = phase / Time.ONE_SECOND;
         float yOffset = amplitude * 0.5f * (1f - (float)Math.cos(2f * Math.PI * frequency * tSeconds));
-        Atlas.Region tex = itemStack.item().texture;
-        StackfulRender.draw(tex, drawX, y + yOffset, toWorld(ITEM_DROPPED_SIZE), toWorld(ITEM_DROPPED_SIZE));
-        Fill.rectangleBorder(drawX, y + yOffset, toWorld(ITEM_DROPPED_SIZE), toWorld(ITEM_DROPPED_SIZE), toWorld(1), Color.white);
+        var tex = itemStack.item().texture;
+        var pos = camera.relativize(drawX, y + yOffset);
+
+        float w = toWorld(ITEM_DROPPED_SIZE);
+        StackfulRender.draw(tex, pos.x, pos.y, w, w);
+        Fill.rectangleBorder(pos.x, pos.y, w, w, toWorld(1), Color.white);
         if (itemStack.count() > 1) {
             // TODO выглядит всрато из-за не той матрицы
-            WorldDrawing.drawGameText(drawX, y + yOffset, String.valueOf(itemStack.count()), Color.white);
+            WorldDrawing.drawGameText(pos.x, pos.y, String.valueOf(itemStack.count()), Color.white);
         }
     }
 
     public boolean hasFloor() {
-        int minX = toBlock(x - GAP);
-        int maxX = toBlock(x + toWorld(ITEM_DROPPED_SIZE) - GAP);
-        int minY = toBlock(y - GAP);
+        var hitbox = TmpShapes.aabb1;
+        hitboxTo(hitbox);
+        hitbox.maxY = hitbox.minY;
+        hitbox.minY -= GAP;
+        hitbox.maxX -= GAP;
+        hitbox.minX += GAP;
 
-        for (int x = minX; x <= maxX; x++) {
-            int blockId = world.getBlockId(x, minY);
-            if (blockId < 0) {
-                return true;
-            }
-            if (blockId == 0) {
-                continue;
-            }
-            var block = content.blocksRegistry.typeById(blockId);
-            if (block.type == Block.Type.SOLID) {
-                return true;
+        short minX = hitbox.blockMinX();
+        short maxX = hitbox.blockMaxX();
+        short minY = hitbox.blockMinY();
+        short maxY = hitbox.blockMaxY();
+
+        for (short y = minY; y <= maxY; y++) {
+            for (short x = minX; x <= maxX; x++) {
+                var block = world.getBlock(x, y);
+                if (block == null || block.type == Block.Type.SOLID) {
+                    return true;
+                }
             }
         }
         return false;
     }
 
-    public float getMaxHp() {
+    public float maxHp() {
         return 100;
     }
 
-    public boolean isUnbreakable() {
-        return isUnbreakable;
-    }
-
     public boolean isDead() {
-        return dead;
+        return isFlag(FLAG_DEAD);
     }
 
     public void setHp(float hp) {
@@ -205,7 +206,7 @@ public class ItemEntity implements LivingEntity {
     }
 
     public void damage(float d, DamageSource source) {
-        if (source == DamageSource.FALL || dead) {
+        if (source == DamageSource.FALL || isDead()) {
             return;
         }
 
@@ -215,27 +216,42 @@ public class ItemEntity implements LivingEntity {
         }
     }
 
-    public void setUnbreakable(boolean unbreakable) {
+    public short blockX()   { return toBlock(x); }
+    public short blockY()   { return toBlock(y); }
 
+    public float offsetX() { return toOffset(x); }
+    public float offsetY() { return toOffset(y); }
+
+    public double x() { return x; }
+    public double y() { return y; }
+
+    public void setPosition(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+    public void setX(double x) { this.x = x; }
+    public void setY(double y) { this.y = y; }
+
+    public double dstSq(double x, double y) {
+        double dx = x - this.x;
+        double dy = y - this.y;
+        return dx * dx + dy * dy;
     }
 
     public Vector2f velocity() {
         return velocity;
     }
-
-    @Override
     public Vector2f acceleration() {
         return acceleration;
     }
 
-    public float getWeight() {
+    public float weight() {
         return itemStack.item().weight;
     }
 
     public void remove() {
         LivingEntity.super.remove();
-
-        dead = true;
+        setFlag(FLAG_DEAD, true);
         hp = 0;
         velocity.set(0, 0);
         acceleration.set(0, 0);
