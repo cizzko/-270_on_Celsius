@@ -49,7 +49,7 @@ public class TextArea extends BaseElement<TextArea> {
 
     @Override
     protected void resize() {
-        if ((flags & FLAG_TRANSLATION) != 0 && Global.lang.languageHasChanged()) {
+        if ((flags & FLAG_TRANSLATION) != 0) {
             resolveTranslation(text);
         } else {
             if ((flags & (FLAG_X_CHANGED | FLAG_Y_CHANGED)) != 0) {

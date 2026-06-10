@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 
 import static core.g2d.Render.*;
 import static core.g2d.RenderQueue.*;
@@ -18,6 +19,8 @@ public final class RenderList implements Disposable, Poolable {
     public static final int KIND_STATIC  = 1;
     public static final int KIND_DYNAMIC = 2;
 
+    private static final int PRIMITIVE_BYTES = Float.BYTES;
+
     final int id;
 
     int kind;
@@ -26,7 +29,7 @@ public final class RenderList implements Disposable, Poolable {
     final int vertexCapacity;
     final RenderItem[] items;
     int itemCount;
-    final FloatBuffer vertices;
+    final IntBuffer vertices;
     final Mesh mesh;
 
     public void setDirty(boolean state) {
@@ -61,7 +64,7 @@ public final class RenderList implements Disposable, Poolable {
 
         // 6 на прямоугольник в случае без индексов, с ними 4
         var vertexFormat = defaultShader.vertexFormat();
-        this.vertices = MemoryUtil.memAllocFloat(vertexCount * vertexFormat.vertexSizeIn(Float.BYTES));
+        this.vertices = MemoryUtil.memAllocInt(vertexCount * vertexFormat.vertexSizeIn(PRIMITIVE_BYTES));
         this.mesh     = new Mesh();
 
         mesh.bindVao();
@@ -70,13 +73,13 @@ public final class RenderList implements Disposable, Poolable {
     }
 
     public int getItemIndex()   { return itemCount; }
-    public int getVertexIndex() { return vertices.position() / defaultShader.vertexFormat().vertexSizeIn(Float.BYTES); }
+    public int getVertexIndex() { return vertices.position() / defaultShader.vertexFormat().vertexSizeIn(PRIMITIVE_BYTES); }
 
     public RenderItem allocItem() { return items[itemCount]; }
 
     public boolean hasSpace(int itemCount, int vertexCount) {
         return this.itemCount + itemCount < items.length &&
-               vertices.remaining() >= vertexCount * defaultShader.vertexFormat().vertexSizeIn(Float.BYTES);
+               vertices.remaining() >= vertexCount * defaultShader.vertexFormat().vertexSizeIn(PRIMITIVE_BYTES);
     }
 
     public RenderList checkSpace(int itemCount, int vertexCount) {
@@ -114,7 +117,7 @@ public final class RenderList implements Disposable, Poolable {
         if (primitiveType == PRIMITIVE_TYPE_TRIANGLE_STRIP) {
             addRectangleStripes(rgba8888, x, y, x2, y2, x3, y3, x4, y4, u, v, u2, v2);
         } else {
-            addRectangle(primitiveType, x, y, x2, y2, x3, y3, x4, y4, u, v, u2, v2, toGLBits(rgba8888));
+            addRectangle(primitiveType, x, y, x2, y2, x3, y3, x4, y4, u, v, u2, v2, (rgba8888));
         }
     }
 
@@ -130,12 +133,12 @@ public final class RenderList implements Disposable, Poolable {
         float minY = min(min(y, y2), min(y3, y4));
         float maxY = max(max(y, y2), max(y3, y4));
 
-        float color = toGLBits(rgba8888);
+        int c = (rgba8888);
         var va = vertices;
-        addVertex0(va, minX, maxY, u, v,   color);  // TL
-        addVertex0(va, maxX, maxY, u2, v,   color);  // TR
-        addVertex0(va, minX, minY, u, v2,  color);  // BL
-        addVertex0(va, maxX, minY, u2, v2,  color);  // BR
+        addVertex0(va, minX, maxY, u, v,   c);  // TL
+        addVertex0(va, maxX, maxY, u2, v,   c);  // TR
+        addVertex0(va, minX, minY, u, v2,  c);  // BL
+        addVertex0(va, maxX, minY, u2, v2,  c);  // BR
     }
 
     public void addRectangle(int primitiveType, int rgba8888,
@@ -144,20 +147,17 @@ public final class RenderList implements Disposable, Poolable {
                             float u1, float v1,
                             float u2, float v2) {
 
+        int c = (rgba8888);
         if (primitiveType == PRIMITIVE_TYPE_TRIANGLE_STRIP) {
-            float color = toGLBits(rgba8888);
             var va = vertices;
-
-            addVertex0(va, x1, y1, u1, v1, color); // BL
-            addVertex0(va, x1, y2, u1, v2, color); // TL
-            addVertex0(va, x2, y2, u2, v2, color); // TR
-            addVertex0(va, x2, y1, u2, v1, color); // BR
+            addVertex0(va, x1, y1, u1, v1, c); // BL
+            addVertex0(va, x1, y2, u1, v2, c); // TL
+            addVertex0(va, x2, y2, u2, v2, c); // TR
+            addVertex0(va, x2, y1, u2, v1, c); // BR
         } else {
             addRectangle(primitiveType,
                     x1, y1, x1, y2, x2, y2, x2, y1,
-                    u1, v1,
-                    u2, v2,
-                    toGLBits(rgba8888));
+                    u1, v1, u2, v2, c);
         }
     }
 
@@ -167,7 +167,7 @@ public final class RenderList implements Disposable, Poolable {
                             float x4, float y4,
                             float u1, float v1,
                             float u2, float v2,
-                            float c) {
+                            int c) {
         var va = vertices;
         if (primitiveType == PRIMITIVE_TYPE_TRIANGLE_STRIP) {
             addVertex0(va, x1, y1, u1,  v1,  c);  // TL
@@ -192,14 +192,14 @@ public final class RenderList implements Disposable, Poolable {
         }
     }
 
-    private void addVertex0(FloatBuffer va, float x, float y, float u, float v, float color) {
-        va.put(x);
-        va.put(y);
-        va.put(color);
-        va.put(BytePack.packB16toFloat32((short) u, (short) v));
+    private void addVertex0(IntBuffer va, float x, float y, float u, float v, int color) {
+        va.put(Float.floatToIntBits(x));
+        va.put(Float.floatToIntBits(y));
+        va.put(Integer.reverseBytes(color));
+        va.put(BytePack.packB16toInt32((short) u, (short) v));
     }
 
-    public void addVertex(float x, float y, float u, float v, float color) {
+    public void addVertex(float x, float y, float u, float v, int color) {
         addVertex0(vertices, x,  y, u, v, color);
     }
 

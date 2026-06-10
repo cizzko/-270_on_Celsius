@@ -8,6 +8,7 @@ import core.content.creatures.PlayerEntity;
 import core.g2d.Atlas;
 import core.graphic.Camera2;
 import core.input.InputHandler;
+import core.lang.LangTranslation;
 
 import static core.util.Debug.rethrow;
 

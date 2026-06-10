@@ -16,7 +16,7 @@ public class Pause extends Dialog {
                 .setColor(Styles.DEFAULT_ORANGE);
         background.addButton(Styles.TEXT_BUTTON, this::saveButton)
                 .set(840, 580, 240, 65)
-                .setName(Global.lang.get("SaveWorld"))
+                .setName(Global.lang.get("Save world"))
                 .setColor(Styles.DEFAULT_ORANGE);
         background.addButton(Styles.TEXT_BUTTON, this::settingsBtn)
                 .set(840, 430, 240, 65)

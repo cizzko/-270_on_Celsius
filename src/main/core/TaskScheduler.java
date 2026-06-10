@@ -1,15 +1,60 @@
 package core;
 
-import java.util.ArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.RejectedExecutionException;
 
 public final class TaskScheduler {
+    public static final TaskImpl<?>[] ZERO = new TaskImpl[0];
+
     // TODO тут нужна MPSC очередь, желательно фиксированного размера
-    private final ArrayList<TaskImpl<?>> tasks = new ArrayList<>(); // synchronized
+    private final /* synchronized */ TaskQueue tasks = new TaskQueue();
+    private TaskImpl<?>[] guardedQueue = ZERO;
     private volatile boolean running = true;
+
+    static final class TaskQueue { // аааааа, меня вынудили
+        TaskImpl<?>[] a = ZERO;
+        int size;
+
+        void grow(int capacity) {
+            if (capacity <= a.length) return;
+            if (a != ZERO)
+                capacity = Math.clamp((long) a.length + (a.length >> 1), capacity, it.unimi.dsi.fastutil.Arrays.MAX_ARRAY_SIZE);
+            else if (capacity < ObjectArrayList.DEFAULT_INITIAL_CAPACITY)
+                capacity = ObjectArrayList.DEFAULT_INITIAL_CAPACITY;
+            a = Arrays.copyOf(a, capacity);
+        }
+
+        void add(TaskImpl<?> k) {
+            grow(size + 1);
+            a[size++] = k;
+        }
+
+        void addAllToFront(TaskImpl<?>[] sourceArray, int countToCopy) {
+            if (countToCopy <= 0) return;
+
+            int currentSize = this.size;
+            var arr = this.a;
+            int newSize = currentSize + countToCopy;
+
+            if (newSize > arr.length) {
+                int newCapacity = Math.max(arr.length * 2, newSize);
+                var newElements = new TaskImpl<?>[newCapacity];
+
+                System.arraycopy(arr, 0, newElements, countToCopy, currentSize);
+                this.a = newElements;
+            } else {
+                System.arraycopy(arr, 0, arr, countToCopy, currentSize);
+            }
+
+            System.arraycopy(sourceArray, 0, this.a, 0, countToCopy);
+            this.size = newSize;
+        }
+    }
 
     public void post(Runnable task, float delay) {
         post(() -> {
@@ -43,24 +88,52 @@ public final class TaskScheduler {
     }
 
     public void executeAll() {
-        ArrayList<TaskImpl<?>> workQueue;
-        synchronized (tasks) {
-            workQueue = new ArrayList<>(tasks);
+        var tq = tasks;
+        int count;
+        var wq = guardedQueue;
+        synchronized (tq) {
+            count = tq.size;
+            if (count == 0) {
+                return;
+            }
+
+            var tqArray = tq.a;
+            if (wq.length < count) {
+                guardedQueue = wq = Arrays.copyOf(tqArray, count);
+            } else {
+                System.arraycopy(tqArray, 0, wq, 0, count);
+            }
+            for (int i = 0; i < count; i++)
+                tqArray[i] = null;
+            tq.size = 0;
         }
-        var handled = new ArrayList<TaskImpl<?>>();
-        for (TaskImpl<?> task : workQueue) {
+
+        for (int i = 0; i < count; i++) {
+            var task = wq[i];
             task.delay -= Time.delta;
 
             if (task.delay <= 0) {
-                handled.add(task);
-
+                wq[i] = null;
                 task.run();
             }
         }
-        if (!handled.isEmpty()) {
-            synchronized (tasks) {
-                tasks.removeAll(handled);
+        int aliveTasks = 0;
+        for (int i = 0; i < count; i++) {
+            if (wq[i] != null) {
+                if (i != aliveTasks) {
+                    wq[aliveTasks] = wq[i];
+                    wq[i] = null;
+                }
+                aliveTasks++;
             }
+        }
+
+        if (aliveTasks > 0) {
+            synchronized (tq) {
+                tq.addAllToFront(wq, aliveTasks);
+            }
+            for (int i = 0; i < aliveTasks; i++)
+                wq[i] = null;
         }
     }
 
@@ -90,9 +163,11 @@ public final class TaskScheduler {
     public void shutdown() {
         running = false;
 
+        var tq = tasks;
         synchronized (tasks) {
-            for (TaskImpl<?> task : tasks) {
-                task.result.cancel(true);
+            for (int i = 0; i < tq.size; i++) {
+                tq.a[i].result.cancel(true);
+                tq.a[i] = null;
             }
         }
     }

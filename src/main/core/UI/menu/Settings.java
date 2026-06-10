@@ -8,6 +8,8 @@ import core.UI.*;
 import core.UIMenus;
 import core.math.Vector2f;
 
+import java.util.Locale;
+
 import static core.EventHandling.Config.*;
 import static core.Global.atlas;
 import static core.Global.scheduler;
@@ -27,15 +29,15 @@ public class Settings extends Dialog {
         Panel.oneOf(
                 categories.addButton(Styles.SIMPLE_TEXT_BUTTON, this::basicBtn)
                         .set(40, 200, 240, 65)
-                        .setName(Global.lang.get("SettingsBasic"))
+                        .setName(Global.lang.get("Basic"))
                         .setColor(Styles.DIRTY_BLACK),
                 categories.addButton(Styles.SIMPLE_TEXT_BUTTON, this::otherBtn)
                         .set(40, 100, 240, 65)
-                        .setName(Global.lang.get("SettingsOther"))
+                        .setName(Global.lang.get("Other"))
                         .setColor(Styles.DIRTY_BLACK),
                 categories.addButton(Styles.SIMPLE_TEXT_BUTTON, this::graphicsBtn)
                         .set(40, 300, 240, 65)
-                        .setName(Global.lang.get("SettingsGraphics"))
+                        .setName(Global.lang.get("Graphics"))
                         .setColor(Styles.DIRTY_BLACK)
                         .setClickable(false)
                         .setClicked(true)
@@ -43,46 +45,42 @@ public class Settings extends Dialog {
 
         save = categories.addButton(Styles.TEXT_BUTTON, this::saveBtn)
                 .set(40, 800, 240, 65)
-                .setName(Global.lang.get("SettingsSave"));
+                .setName(Global.lang.get("Save"));
         graphicsSettings = mainPanel.add(new Dialog() {{
             setVisible(true);
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
-                boolean newState = getBoolean(INTERPOLATE_SUNSET_KEY);
-                updateConfig(INTERPOLATE_SUNSET_KEY, Boolean.toString(newState));
-            })
-                    .setPosition(310, 980)
-                    .setName(Global.lang.get(INTERPOLATE_SUNSET_KEY))
-                    .setPrompt("InterpolateSunsetPrompt")
-                    .setClicked(getBoolean(INTERPOLATE_SUNSET_KEY));
-            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
-                boolean newState = getBoolean(PRELOAD_RESOURCES_KEY);
-                updateConfig(PRELOAD_RESOURCES_KEY, Boolean.toString(newState));
-            })
-                    .setPosition(310, 910)
-                    .setName(Global.lang.get(PRELOAD_RESOURCES_KEY))
-                    .setPrompt("PreloadResourcesPrompt")
-                    .setClicked(getBoolean(PRELOAD_RESOURCES_KEY));
-            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
-                boolean newState = getBoolean(VERTICAL_SYNC_KEY);
-                updateConfig(VERTICAL_SYNC_KEY, Boolean.toString(newState));
+                boolean newState = getBoolean("Vertical sync");
+                updateConfig("Vertical sync", Boolean.toString(newState));
             })
                     .setPosition(310, 840)
-                    .setName(Global.lang.get(VERTICAL_SYNC_KEY))
-                    .setPrompt("VerticalSyncPrompt")
-                    .setClicked(getBoolean(VERTICAL_SYNC_KEY));
+                    .setName(Global.lang.get("Vertical sync"))
+                    .setClicked(getBoolean("Vertical sync"));
         }});
         basicSettings = mainPanel.add(new Dialog() {{
             setVisible(false);
             var dropDownMenu = add(new Dialog() {{
                 setVisible(false);
                 var dropDown = this;
-                var langs = Global.lang.getLanguages();
+                var langs = Global.lang.supportedLanguages()
+                        .sorted()
+                        .toList();
                 int ox = 780;
                 int oy = 950;
                 int w = 240;
                 int h = 65;
                 for (int i = 0; i < langs.size(); i++) {
                     String lang = langs.get(i);
+
+                    Locale loc = Locale.of(lang);
+                    String displayName = loc.getDisplayName(loc);
+                    int cp = displayName.codePointAt(0);
+                    if (Character.isLowerCase(cp)) {
+                        var sb = new StringBuilder();
+                        sb.appendCodePoint(Character.toUpperCase(cp));
+                        sb.append(displayName, Character.charCount(cp), displayName.length());
+                        displayName = sb.toString();
+                    }
+
                     addButton(Styles.TEXT_BUTTON, () -> {
                         newLang = lang;
                         Global.lang.setLanguage(lang);
@@ -90,24 +88,18 @@ public class Settings extends Dialog {
                     })
                             .set(ox, oy - (h * (i + 1)) + (i * 6) + 6, w, h)
                             .setColor(Styles.DEFAULT_ORANGE)
-                            .setName(lang);
+                            .setName(displayName);
                 }
             }});
             addButton(Styles.TEXT_BUTTON, dropDownMenu::toggleVisibility)
                     .set(780, 950, 240, 65)
                     .setName(Global.lang.get("Language"));
 
-            addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {})
-                    .setPosition(310, 980)
-                    .setName(Global.lang.get(SHOW_PROMPTS_KEY))
-                    .setPrompt("ShowPromptsPrompt")
-                    .setClicked(getBoolean(SHOW_PROMPTS_KEY));
             addToggleButton(Styles.DEFAULT_TOGGLE_BUTTON, () -> {
             })
                     .setPosition(310, 910)
-                    .setName(Global.lang.get(DETECT_LANGUAGE_KEY))
-                    .setPrompt("DetectLanguagePrompt")
-                    .setClicked(getBoolean(DETECT_LANGUAGE_KEY));
+                    .setName(Global.lang.get("System language"))
+                    .setClicked(getBoolean("System language"));
             addImage(745, 965, atlas.get("UI/GUI/languageIcon"));
         }});
         mainPanel.add(new OtterBox(this));
