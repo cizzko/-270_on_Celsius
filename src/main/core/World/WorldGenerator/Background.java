@@ -21,7 +21,7 @@ public class Background {
     static long swap = 0;
 
     private static float backgroundScrollX = 0f;
-    private static float lastPlayerX = 0f;
+    private static double lastPlayerX = 0f;
     private static boolean isInitialized = false;
 
     public static void update() {
@@ -39,14 +39,14 @@ public class Background {
         float leftBorder = Constants.World.SWAP_AREA;
         float rightBorder = world.sizeX - Constants.World.SWAP_AREA;
         float worldWidth = rightBorder - leftBorder;
-        float playerX = player.x();
+        double playerX = player.x();
 
         if (!isInitialized) {
             lastPlayerX = playerX;
             isInitialized = true;
         }
 
-        float deltaPlayerX = playerX - lastPlayerX;
+        double deltaPlayerX = playerX - lastPlayerX;
         if (Math.abs(deltaPlayerX) > worldWidth * 0.5f) {
             if (deltaPlayerX > 0) {
                 deltaPlayerX -= worldWidth;
@@ -55,7 +55,7 @@ public class Background {
             }
         }
 
-        backgroundScrollX -= deltaPlayerX * 1.2f;
+        backgroundScrollX -= (float) (deltaPlayerX * 1.2f);
         backgroundScrollX %= BACKDROP_WIDTH;
         if (backgroundScrollX > 0) {
             backgroundScrollX -= BACKDROP_WIDTH;
