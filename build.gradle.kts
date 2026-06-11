@@ -34,26 +34,20 @@ tasks.withType<JavaExec> {
 
     if (name.startsWith(MAIN_CLASS)) {
         // core.Main.main() то что использует идея
-        jvmArguments.add("--enable-native-access=org.lwjgl")
-        jvmArguments.add("--enable-native-access=org.lwjgl.opengl")
-        jvmArguments.add("-XX:-OmitStackTraceInFastThrow")
+
+        jvmArguments.addAll(applyJvmArgs())
         jvmArguments.add("-ea:core.main")
         jvmArguments.add("-XX:+UseZGC") // экспериментируем как бы
-        if (JavaLanguageVersion.current().canCompileOrRun(25)) {
-            jvmArguments.add("-XX:+UseCompactObjectHeaders")
-        }
-        if (System.getProperty("os.name")!!.startsWith("Darwin") || System.getProperty("os.name")!!.startsWith("Mac OS X")) {
-            jvmArguments.add("-XstartOnFirstThread")
-        }
     }
 
     doFirst {
-        if (System.getProperty("os.name")?.contains("Linux") == true) {
+        if (System.getProperty("os.name")?.contains("Linux") == true &&
+            System.getenv("XDG_SESSION_TYPE") == "wayland") {
             val gpuInfo = providers.exec {
                 commandLine("sh", "-c", "glxinfo | grep 'OpenGL vendor' || echo 'unknown'")
             }.standardOutput.asText.get()
 
-            if (System.getenv("XDG_SESSION_TYPE") == "wayland" && gpuInfo.contains("NVIDIA")) {
+            if (gpuInfo.contains("NVIDIA")) {
                 environment("__GL_THREADED_OPTIMIZATIONS", "0")
             }
         }
@@ -83,6 +77,12 @@ val genatlas = tasks.register<JavaExec>("genatlas") {
     workingDir = rootDir
     mainClass = "core.tool.AtlasGenerator"
 }
+
+// феерически не работает
+// tasks.clean {
+//     val assetsDir = layout.projectDirectory.dir("src/assets");
+//     delete(assetsDir.files("sprites.atlas", "sprites.atlas.hash", "sprites.atlas.meta"))
+// }
 
 tasks.classes {
     finalizedBy(genatlas)
@@ -191,21 +191,35 @@ jlink {
 
     launcher {
         name = "celsius"
-        args = listOf("--packaged")
-
-        jvmArgs = arrayListOf()
-        jvmArgs.add("-XX:-OmitStackTraceInFastThrow")
-        if (System.getProperty("os.name")!!.startsWith("Darwin") || System.getProperty("os.name")!!.startsWith("Mac OS X")) {
-            jvmArgs.add("-XstartOnFirstThread")
-        }
-        if (JavaLanguageVersion.current().canCompileOrRun(25)) {
-            jvmArgs.add("-XX:+UseCompactObjectHeaders")
-        }
-        if (JavaLanguageVersion.current().canCompileOrRun(22)) {
-            jvmArgs.add("--enable-native-access=org.lwjgl.opengl")
-            jvmArgs.add("--enable-native-access=org.lwjgl")
-        }
+        args = applyAppArgs()
+        jvmArgs = applyJvmArgs()
     }
+    jpackage {
+        args = applyAppArgs()
+        jvmArgs = applyJvmArgs()
+    }
+}
+
+fun applyAppArgs(): List<String> {
+    return listOf(
+        "--packaged"
+    )
+}
+
+fun applyJvmArgs(): List<String> {
+    val jvmArgs: MutableList<String> = mutableListOf()
+    jvmArgs.add("-XX:-OmitStackTraceInFastThrow")
+    if (System.getProperty("os.name")!!.startsWith("Darwin") || System.getProperty("os.name")!!.startsWith("Mac OS X")) {
+        jvmArgs.add("-XstartOnFirstThread")
+    }
+    if (JavaLanguageVersion.current().canCompileOrRun(25)) {
+        jvmArgs.add("-XX:+UseCompactObjectHeaders")
+    }
+    if (JavaLanguageVersion.current().canCompileOrRun(22)) {
+        jvmArgs.add("--enable-native-access=org.lwjgl.opengl")
+        jvmArgs.add("--enable-native-access=org.lwjgl")
+    }
+    return jvmArgs
 }
 
 tasks.jar {

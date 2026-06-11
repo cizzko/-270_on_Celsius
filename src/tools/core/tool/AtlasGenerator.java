@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import core.g2d.Atlas;
 import core.graphic.RectanglePacker;
 import core.math.MathUtil;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import org.jetbrains.annotations.NotNull;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
@@ -64,29 +66,26 @@ public final class AtlasGenerator {
     }
 
     public static void main(String[] args) throws IOException {
-        Path basePath = Path.of("src/assets/");
-        Path outputDir = Path.of("src/assets/");
+        var basePath = Path.of("src/assets/");
+        var outputDir = Path.of("src/assets/");
 
-        Set<Path> ignore = Set.of(
-                basePath.resolve("World/Other/background.png"),
-                basePath.resolve("World/Sky/skyBackground0.png"),
-                basePath.resolve("World/Sky/skyBackground1.png"),
-                basePath.resolve("World/Sun/InterpolatedSunset.png"),
-                basePath.resolve("World/Sun/nonInterpolatedSunset.png"),
-                basePath.resolve("UI/GUI/modifiedTemperature.png"),
-                basePath.resolve("World/Sun/sun.png"),
-                basePath.resolve("World/Backdrops/back.png"),
-                basePath.resolve("worldImage.png")
-        );
-        Path error = basePath.resolve("World/textureNotFound.png");
-        String baseName = "sprites"; // sprites.atlas, sprites.atlas.meta
-        process(outputDir, baseName, basePath, error, ignore, 64, 1024 * 8);
+        var exclude = new ObjectOpenHashSet<Path>();
+        exclude.add(basePath.resolve("World/Other"));
+        exclude.add(basePath.resolve("World/Backdrops"));
+        exclude.add(basePath.resolve("World/Sun"));
+        exclude.add(basePath.resolve("World/Sky"));
+        exclude.add(basePath.resolve("World/Sky"));
+        exclude.add(basePath.resolve("UI/GUI/modifiedTemperature.png"));
+
+        var error = basePath.resolve("World/textureNotFound.png");
+        var baseName = "sprites"; // sprites.atlas, sprites.atlas.meta
+        process(outputDir, baseName, basePath, error, exclude, 64, 1024 * 8);
     }
 
     public static void process(Path outputDir,
                                String atlasBaseName,
                                Path sourceDir, Path errorImage,
-                               Set<Path> ignore, int min, int max) throws IOException {
+                               ObjectOpenHashSet<Path> exclude, int min, int max) throws IOException {
         long beginTs = System.currentTimeMillis();
 
         MessageDigest digest;
@@ -112,9 +111,17 @@ public final class AtlasGenerator {
 
             byte[] buf;
 
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                if (exclude.contains(dir)) {
+                    return FileVisitResult.SKIP_SUBTREE;
+                }
+
+                return FileVisitResult.CONTINUE;
+            }
+
             @Override
             public FileVisitResult visitFile(Path path, BasicFileAttributes attrs) throws IOException {
-                if (ignore.contains(path)) {
+                if (exclude.contains(path)) {
                     return FileVisitResult.CONTINUE;
                 }
 
@@ -151,7 +158,6 @@ public final class AtlasGenerator {
 
         Files.walkFileTree(sourceDir, new WalkVisitor());
 
-        // TODO нет смысла полностью бегать по дереву. Первый не похожий получил и всё, отвал
         if (oldHashes != null && oldHashes.size() == regionMap.size() &&
                     Files.exists(atlasPath) &&
                     Files.exists(atlasMetaPath)) {
