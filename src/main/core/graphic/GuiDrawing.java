@@ -134,8 +134,8 @@ public class GuiDrawing {
         short maxY = viewport.blockMaxY();
 
         for (; minY <= maxY; minY++) {
-            for (; minX <= maxX; minX++) {
-                var entity = world.getEntity(minX, minY);
+            for (short x = minX; x <= maxX; x++) {
+                var entity = world.getEntity(x, minY);
                 if (entity != null) {
                     entity.drawGui();
                 }

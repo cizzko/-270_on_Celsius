@@ -28,6 +28,8 @@ public final class ItemEntity implements LivingEntity {
     public long flags;
 
     private double x, y;
+    private double lastX, lastY;
+
     private final ItemStack itemStack;
     private float hp, phase;
     private final Vector2f velocity = new Vector2f();
@@ -82,6 +84,17 @@ public final class ItemEntity implements LivingEntity {
         }
         return CollisionResult.WALKTHROUGH;
     }
+
+    public void updateLastPosition() {
+        lastX = x;
+        lastY = y;
+    }
+
+    public double lastX() { return lastX; }
+    public double lastY() { return lastY; }
+
+    public float width()  { return toWorld(ITEM_DROPPED_SIZE); }
+    public float height() { return toWorld(ITEM_DROPPED_SIZE); }
 
     public void update() {
         var hitbox = TmpShapes.aabb1;
@@ -143,10 +156,11 @@ public final class ItemEntity implements LivingEntity {
         } while (true);
     }
 
-    public void draw(double drawX) {
-        float amplitude = 1 / 4f;
-        float frequency = 0.45f;
-        float periodTicks = Time.ONE_SECOND / frequency;
+    public void draw(float dx) {
+        final float amplitude = 1 / 4f;
+        final float frequency = 0.45f;
+        final float periodTicks = Time.ONE_SECOND / frequency;
+
         phase = (phase + Time.delta) % periodTicks;
 
         if (phase < 0f) {
@@ -155,13 +169,14 @@ public final class ItemEntity implements LivingEntity {
         float tSeconds = phase / Time.ONE_SECOND;
         float yOffset = amplitude * 0.5f * (1f - (float)Math.cos(2f * Math.PI * frequency * tSeconds));
         var tex = itemStack.item().texture;
-        var pos = camera.relativize(drawX, y + yOffset);
+        double rx = Physics.applyAlpha(lastX, x) + dx;
+        double ry = Physics.applyAlpha(lastY, y) + yOffset;
+        var pos = camera.relativize(rx, ry);
 
         float w = toWorld(ITEM_DROPPED_SIZE);
         StackfulRender.draw(tex, pos.x, pos.y, w, w);
         Fill.rectangleBorder(pos.x, pos.y, w, w, toWorld(1), Color.white);
         if (itemStack.count() > 1) {
-            // TODO выглядит всрато из-за не той матрицы
             WorldDrawing.drawGameText(pos.x, pos.y, String.valueOf(itemStack.count()), Color.white);
         }
     }
@@ -229,7 +244,7 @@ public final class ItemEntity implements LivingEntity {
         this.x = x;
         this.y = y;
     }
-    public void setX(double x) { this.x = x; }
+    public void mirrorX(double dx) { this.x += dx; this.lastX += dx; }
     public void setY(double y) { this.y = y; }
 
     public double dstSq(double x, double y) {

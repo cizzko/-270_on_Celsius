@@ -1,7 +1,10 @@
 package core.content.creatures;
 
+import core.Constants;
+import core.EventHandling.Config;
 import core.Global;
 import core.Time;
+import core.World.Creatures.Physics;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
 import core.World.WorldUtils;
 import core.content.ItemGrid;
@@ -9,15 +12,17 @@ import core.content.ItemStack;
 import core.content.entity.BaseCreatureEntity;
 import core.content.entity.HitboxComponent;
 import core.content.entity.InventoryComponent;
+import core.g2d.StackfulRender;
+import core.math.MathUtil;
 import core.math.Point2i;
 import core.math.Vector2f;
 import core.util.Debug;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.GLFW;
 
 import static core.Global.*;
-import static core.PlayGameScene.CAMERA_OFFSET_X;
-import static core.PlayGameScene.CAMERA_OFFSET_Y;
+import static core.PlayGameScene.*;
 import static core.World.Creatures.Physics.GRAVITY;
 import static core.World.Creatures.Player.Player.noClip;
 import static core.WorldCoordinates.toWorld;
@@ -32,11 +37,10 @@ public class PlayerEntity
 
     public final Point2i itemInHandIdx = new Point2i(), draggingItemIdx = new Point2i();
 
-    private float jumpedTicks; // откат прыжка
     private final ObjectArrayList<ObjectArrayList<@Nullable ItemStack>> items;
 
     public float lastDamage = 0;
-    public long lastDamageTime = 0;
+    public long lastDamageTime = 0; // ms
 
     protected PlayerEntity(PlayerType creature) {
         super(creature);
@@ -55,10 +59,22 @@ public class PlayerEntity
         super.init();
         resetDraggingItem();
         resetItemInHand();
+
+        camera.position.set(x + Constants.Camera.OFFSET_X, y + Constants.Camera.OFFSET_Y);
+        camera.update();
     }
 
-    public double centerX() { return x + toWorld(creature.texture.width()) / 2f; }
-    public double centerY() { return y + toWorld(creature.texture.height()) / 2f; }
+    public double centerX() { return x + weight() / 2f; }
+    public double centerY() { return y + height() / 2f; }
+
+    public void draw(float dx) {
+        var tex = creature.texture;
+        double rx = Physics.applyAlpha(lastX, x) + dx;
+        double ry = Physics.applyAlpha(lastY, y);
+        var rel = camera.relativize(rx, ry);
+        StackfulRender.draw(tex, rel.x, rel.y, toWorld(tex.width()), toWorld(tex.height())
+                 * Math.min(1, (float)(1d/(accumulatedJump * 5))));
+    }
 
     protected void onDamage(float d) {
         lastDamage += d;
@@ -69,12 +85,10 @@ public class PlayerEntity
         lastDamage = 0;
         lastDamageTime = 0;
 
-        scheduler.post(() -> {
-            Global.player = WorldUtils.spawn(creature, true);
-            camera.position.set(player.x() + CAMERA_OFFSET_X, player.x() + CAMERA_OFFSET_Y);
-            camera.update();
-        }, Time.ONE_SECOND * 5);
+        scheduler.post(() -> { Global.player = WorldUtils.spawn(creature, true); }, Time.ONE_SECOND * 5);
     }
+
+    private float accumulatedJump;
 
     public void updateInput() {
         if (isDead()) {
@@ -90,7 +104,7 @@ public class PlayerEntity
             WorkbenchLogic.toggleBuildMenu();
         }
 
-        float speed = noClip ? 2f : (1.25f / Time.ONE_SECOND);
+        float speed = noClip ? 2f : (1.25f / Time.ONE_SECOND / Physics.SPEED_FACTOR);
         if (input.pressed(GLFW_KEY_LEFT_SHIFT) || input.pressed(GLFW_KEY_RIGHT_SHIFT)) {
             speed *= 1.5f;
         }
@@ -112,15 +126,23 @@ public class PlayerEntity
         }
 
         boolean hasFloor = hasFloor();
-        if (jumpedTicks > 0) {
-            jumpedTicks -= Time.delta;
-            if (jumpedTicks < 0)
-                jumpedTicks = 0;
-        } else {
-            if (hasFloor && Math.abs(velocity.y) <= GAP && input.pressed(GLFW_KEY_SPACE)) {
-                velocity.y += 18.35f * GRAVITY;
-                jumpedTicks = 5f / Time.ONE_SECOND;
+        if (hasFloor) {
+            if (input.releasedKey(GLFW_KEY_SPACE)) {
+                velocity.y += accumulatedJump;
+                accumulatedJump = 0;
+            } else if (input.pressed(GLFW_KEY_SPACE)) {
+                final float BASE_JUMP = 18.35f * GRAVITY;
+                final float MAX_JUMP  = 1.25f * BASE_JUMP;
+                final float ADDICTION = 0.15f * GRAVITY;
+
+                if (accumulatedJump == 0) {
+                    accumulatedJump += BASE_JUMP;
+                } else if (accumulatedJump < MAX_JUMP) {
+                    accumulatedJump = Math.min(MAX_JUMP, accumulatedJump + ADDICTION * Time.delta);
+                }
             }
+        } else {
+            accumulatedJump = 0;
         }
 
         if (hasFloor) {
@@ -132,13 +154,13 @@ public class PlayerEntity
 
             // Лимит воздушной скорости за один кадр.
             // 99% от обычной скорости
-            float airSpeedCap = 0.99f * speed;
+            float airSpeedCap = 0.99f * (speed * Physics.SPEED_FACTOR);
 
             float d = airSpeedCap - currentSpeedInWishDir;
             if (d > 0) {
                 // Коэффициент отзывчивости управления в воздухе за кадр.
                 // 0.1f означает, что лимит наберется примерно за 10 кадров.
-                float airAcceleration = 0.45f * speed;
+                float airAcceleration = 0.45f * (speed * Physics.SPEED_FACTOR);
                 if (airAcceleration > d) {
                     airAcceleration = d;
                 }
@@ -222,5 +244,24 @@ public class PlayerEntity
 
     public void resetDraggingItem() {
         draggingItemIdx.set(-1, -1);
+    }
+
+    public static boolean smoothedCamera = Config.getBoolean("SmoothedCamera");
+
+    public void updateCamera() {
+        if (isDead()) {
+            return;
+        }
+
+        if (smoothedCamera) {
+            float base = 0.08f * Math.max(1, velocity.len() / 4f);
+            base = Math.min(1f, base);
+            float alpha = 1 - (float)Math.pow(1 - base, Time.delta);
+            camera.position.lerp(x + Constants.Camera.OFFSET_X, y + Constants.Camera.OFFSET_Y, alpha);
+        } else {
+            camera.position.set(x + Constants.Camera.OFFSET_X, y + Constants.Camera.OFFSET_Y);
+        }
+
+        camera.update();
     }
 }

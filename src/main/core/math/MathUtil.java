@@ -65,6 +65,10 @@ public final class MathUtil {
         return equalsEps(a, b, EPSILON);
     }
 
+    public static boolean equalsEps(double a, double b, float eps) {
+        return Math.abs(a - b) <= eps;
+    }
+
     public static boolean equalsEps(float a, float b, float eps) {
         return Math.abs(a - b) <= eps;
     }

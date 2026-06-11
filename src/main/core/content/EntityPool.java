@@ -52,9 +52,24 @@ public final class EntityPool {
         }
     }
 
+    public <C extends Entity> void forEachType(Class<C> type, Consumer<C> consumer) {
+        Entity[] entArray = entities;
+        beginIterating();
+        try {
+            for (short i = 0, n = idCounter; i < n; ++i) {
+                Entity entity = entArray[i];
+                if (type.isInstance(entity)) {
+                    consumer.accept(type.cast(entity));
+                }
+            }
+        } finally {
+            endIterating(entArray);
+        }
+    }
+
     public void forEach(Consumer<Entity> consumer) {
         Entity[] entArray = entities;
-        iterating = true;
+        beginIterating();
         try {
             for (short i = 0, n = idCounter; i < n; ++i) {
                 Entity entity = entArray[i];
@@ -63,15 +78,25 @@ public final class EntityPool {
                 }
             }
         } finally {
-            iterating = false;
-            needIndexRebuild = true;
-            for (int i = 0, n = pendingAddList.size(); i < n; i++) {
-                var newEnt = pendingAddList.get(i);
-                entArray[newEnt.id()] = newEnt;
-            }
-            pendingAddList.clear();
+            endIterating(entArray);
         }
+    }
 
+    private void beginIterating() {
+        iterating = true;
+    }
+
+    private void endIterating(Entity[] entArray) {
+        iterating = false;
+        if (pendingAddList.isEmpty()) {
+            return;
+        }
+        needIndexRebuild = true;
+        for (int i = 0, n = pendingAddList.size(); i < n; i++) {
+            var newEnt = pendingAddList.get(i);
+            entArray[newEnt.id()] = newEnt;
+        }
+        pendingAddList.clear();
     }
 
     public boolean exists(short id) {

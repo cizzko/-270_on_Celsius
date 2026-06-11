@@ -20,7 +20,7 @@ public class Background {
     static Biomes previousBiome = null;
     static long swap = 0;
 
-    private static float backgroundScrollX = 0f;
+    private static double backgroundScrollX = 0f;
     private static double lastPlayerX = 0f;
     private static boolean isInitialized = false;
 
@@ -62,7 +62,7 @@ public class Background {
         }
         lastPlayerX = playerX;
 
-        float drawX = backgroundScrollX;
+        float drawX = (float) backgroundScrollX;
         long last = t - swap;
         if (last > FADE_DURATION) {
             last = FADE_DURATION;

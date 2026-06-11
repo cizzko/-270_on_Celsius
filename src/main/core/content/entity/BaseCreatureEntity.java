@@ -1,5 +1,6 @@
 package core.content.entity;
 
+import core.World.Creatures.Physics;
 import core.content.blocks.Block;
 import core.content.creatures.Creature;
 import core.g2d.Atlas;
@@ -19,6 +20,7 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
     public long flags;
 
     protected double x, y;
+    protected double lastX, lastY;
 
     protected float hp;
 
@@ -52,12 +54,17 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
     public abstract double centerX();
     public abstract double centerY();
 
+    public void updateLastPosition() {
+        lastX = x;
+        lastY = y;
+    }
+
     @MustBeInvokedByOverriders
     public void init() {
         this.hp = maxHp();
     }
 
-    public final C getCreature() {
+    public final C creature() {
         return creature;
     }
 
@@ -119,6 +126,9 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
     public final double x() { return x; }
     public final double y() { return y; }
 
+    public final double lastX() { return lastX; }
+    public final double lastY() { return lastY; }
+
     public final void setPosition(float x, float y) {
         this.x = x;
         this.y = y;
@@ -129,15 +139,20 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
         this.y = y;
     }
 
-    public final void setX(double x) { this.x = x; }
+    public final void mirrorX(double dx) { this.x += dx; this.lastX += dx; }
     public final void setY(double y) { this.y = y; }
 
     public final Vector2f velocity() { return velocity; }
     public final Vector2f acceleration() { return acceleration; }
 
-    public void draw(double drawX) {
-        Atlas.Region tex = creature.texture;
-        var rel = camera.relativize(drawX, y);
+    public float width()  { return creature.texture.width(); }
+    public float height() { return creature.texture.height(); }
+
+    public void draw(float dx) {
+        var tex = creature.texture;
+        double rx = Physics.applyAlpha(lastX, x) + dx;
+        double ry = Physics.applyAlpha(lastY, y);
+        var rel = camera.relativize(rx, ry);
         StackfulRender.draw(tex, rel.x, rel.y, toWorld(tex.width()), toWorld(tex.height()));
     }
 

@@ -7,5 +7,5 @@ public interface DrawComponent {
     // Из-за проблем с неточными числами можно просто 2-3 пикселя отступать и этого даже не будет заметно
     float GAP = WorldCoordinates.INV_BLOCK_SIZE;
 
-    void draw(double drawX);
+    void draw(float dx);
 }

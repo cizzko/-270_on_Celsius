@@ -17,7 +17,7 @@ public interface PositionComponent {
     float offsetY();
 
     void setPosition(double x, double y);
-    void setX(double x);
+    void mirrorX(double dx);
     void setY(double y);
 
     boolean hasFloor();

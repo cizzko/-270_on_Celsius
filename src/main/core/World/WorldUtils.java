@@ -80,10 +80,11 @@ public class WorldUtils {
         double wy = findSurfaceY(WorldCoordinates.toBlock(bx), 5) + 1;
 
         var tex = entity.texture;
-        if (Physics.checkIntersection(bx, wy, toWorld(tex.width()), toWorld(tex.height()))) {
-            Application.log.warn("Unable spawning at: ({}, {})", bx, wy);
-            return spawn0(entity, bx + 1);
-        }
+        // if (Physics.checkIntersection(bx, wy, toWorld(tex.width()), toWorld(tex.height()))) {
+        //     Application.log.warn("Unable spawning at: ({}, {})", bx, wy);
+        //     return spawn0(entity, bx + 1);
+        // }
+        bx = COPY_SIZE + 3;
 
         @SuppressWarnings("unchecked")
         var ent = (E) entity.create(bx, wy);

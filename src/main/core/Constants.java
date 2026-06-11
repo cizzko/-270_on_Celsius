@@ -1,6 +1,7 @@
 package core;
 
 import static core.World.WorldGenerator.WorldGeneratorConstants.COPY_SIZE;
+import static core.WorldCoordinates.toWorld;
 
 public final class Constants {
     private Constants() {}
@@ -13,6 +14,11 @@ public final class Constants {
 
     //нельзя брать вообще все, иначе звуки и гуи самой ос начинают лагать
     public static final int availableProcessors = Runtime.getRuntime().availableProcessors() - 1;
+
+    public static final class Camera {
+        public static final float OFFSET_X = toWorld(32f);
+        public static final float OFFSET_Y = toWorld(200f);
+    }
 
     public static final class World {
         /* Минимальный размер мира в блоках */

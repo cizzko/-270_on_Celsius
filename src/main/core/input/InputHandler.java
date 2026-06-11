@@ -25,6 +25,7 @@ public final class InputHandler {
     static final int CLICKED_ARRAY_SIZE = 8; // GLFW_MOUSE_BUTTON_1 ~ GLFW_MOUSE_BUTTON_8
 
     private final long[] pressed, clicked, repeated;
+    private final long[] releasedKeys, releasedButtons;
     private final long[] justPressed, justClicked;
     private final ObjectArrayList<InputListener> listeners = new ObjectArrayList<>();
     private final Vector2f mousePos = new Vector2f();
@@ -42,6 +43,9 @@ public final class InputHandler {
 
         justPressed = createBitSet(PRESSED_ARRAY_SIZE);
         justClicked = createBitSet(CLICKED_ARRAY_SIZE);
+
+        releasedKeys = createBitSet(PRESSED_ARRAY_SIZE);
+        releasedButtons = createBitSet(CLICKED_ARRAY_SIZE);
 
         repeated = createBitSet(PRESSED_ARRAY_SIZE);
         pressed = createBitSet(PRESSED_ARRAY_SIZE);
@@ -76,6 +80,7 @@ public final class InputHandler {
                 switch (action) {
                     case GLFW_PRESS -> {
                         setBit(pressed, key);
+                        unsetBit(releasedKeys, key);
                         setBit(justPressed, key);
 
                         onKeyDown(key, scancode);
@@ -83,12 +88,13 @@ public final class InputHandler {
                     case GLFW_RELEASE -> {
                         unsetBit(pressed, key);
                         unsetBit(repeated, key);
-                        setBit(justPressed, key);
+                        setBit(releasedKeys, key);
 
                         onKeyUp(key, scancode);
                     }
                     case GLFW_REPEAT -> {
                         setBit(repeated, key);
+                        unsetBit(releasedKeys, key);
 
                         onKeyRepeat(key, scancode);
                     }
@@ -102,13 +108,15 @@ public final class InputHandler {
                     case GLFW_PRESS -> {
                         setBit(clicked, button);
                         setBit(justClicked, button);
+                        unsetBit(releasedButtons, button);
 
                         anyMouseClick = true;
                         onTouchDown(mousePos.x, mousePos.y, button);
                     }
                     case GLFW_RELEASE -> {
                         unsetBit(clicked, button);
-                        setBit(justClicked, button);
+                        // setBit(justClicked, button);
+                        setBit(releasedButtons, button);
 
                         anyMouseClick = false;
                         onTouchUp(mousePos.x, mousePos.y, button);
@@ -172,6 +180,8 @@ public final class InputHandler {
         scrollDelta = 0;
         Arrays.fill(justPressed, 0);
         Arrays.fill(justClicked, 0);
+        Arrays.fill(releasedButtons, 0);
+        Arrays.fill(releasedKeys, 0);
 
         glfwPollEvents();
         updateMouseWorld();
@@ -225,8 +235,12 @@ public final class InputHandler {
     }
 
     public boolean justPressed(int keycode) {
-        return isSet(pressed, keycode) && isSet(justPressed, keycode);
+        return isSet(justPressed, keycode);
     }
+
+    public boolean releasedKey(int keycode) { return isSet(releasedKeys, keycode); }
+
+    public boolean releasedButton(int button) { return isSet(releasedButtons, button); }
 
     public boolean clicked(int button) {
         return isSet(clicked, button);
@@ -234,7 +248,7 @@ public final class InputHandler {
 
     //для мыши
     public boolean justClicked(int button) {
-        return isSet(clicked, button) && isSet(justClicked, button);
+        return isSet(justClicked, button);
     }
 
     // По сути этот метод должен возвращать значения float [-1, 1]

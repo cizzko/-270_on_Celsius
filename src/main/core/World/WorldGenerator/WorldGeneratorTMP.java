@@ -23,8 +23,6 @@ import java.util.function.Supplier;
 import java.util.stream.IntStream;
 
 import static core.Global.*;
-import static core.PlayGameScene.CAMERA_OFFSET_X;
-import static core.PlayGameScene.CAMERA_OFFSET_Y;
 import static core.World.World.findSurfaceY;
 import static core.World.WorldGenerator.WorldGeneratorConstants.*;
 import static core.WorldCoordinates.toBlock;
@@ -117,8 +115,6 @@ public class WorldGeneratorTMP {
 
     private static void spawnPlayer() {
         Global.player = WorldUtils.spawn(content.creatureById("player"), true);
-        camera.position.set(player.x() + CAMERA_OFFSET_X, player.y() + CAMERA_OFFSET_Y);
-        camera.update();
     }
 
     /**

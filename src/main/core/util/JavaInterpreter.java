@@ -8,12 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.management.ManagementFactory;
-import java.lang.module.ModuleDescriptor;
-import java.util.Locale;
-import java.util.Map;
-import java.util.StringJoiner;
-import java.util.TreeSet;
-import java.util.stream.Collectors;
+import java.util.*;
 
 public class JavaInterpreter {
     private static final Logger log = LogManager.getLogger("Console");
@@ -21,33 +16,48 @@ public class JavaInterpreter {
     public static JShell jshell;
 
     public static void init(boolean exploded) {
-
-        jshell = JShell.builder()
-                .executionEngine(new LocalExecutionControlProvider(), Map.of())
-                .build();
-
         var runtimeMxBean = ManagementFactory.getRuntimeMXBean();
+
         var jvmArgs = runtimeMxBean.getInputArguments();
+        int ver = Runtime.version().feature();
+
+        var opts = new ArrayList<String>();
         for (String jvmArg : jvmArgs) {
             if (jvmArg.startsWith("--module-path")) {
-                String list = jvmArg.substring("--module-path=".length());
-                jshell.addToClasspath(list);
+                opts.add(jvmArg);
             }
         }
+        var isModular = JavaInterpreter.class.getModule().getDescriptor() != null;
+        if (!isModular) {
+            opts.add("--module-path=" + runtimeMxBean.getClassPath());
+        }
+
+        opts.add("--enable-preview");
+        opts.add("--release=" + ver);
+        opts.add("--add-modules=core.main");
+
+        var builder = JShell.builder()
+                .executionEngine(new LocalExecutionControlProvider(), Map.of());
+        builder.compilerOptions(opts.toArray(new String[0]));
+
+        jshell = builder.build();
+
         if (!exploded) {
             jshell.addToClasspath(System.getProperty("sun.boot.library.path"));
         }
 
-        execute0("import static core.Global.*;", null);
-        execute0("import static core.Application.*;", null);
-        var dscr = JavaInterpreter.class.getModule().getDescriptor();
-        if (dscr != null) { // хммм, тут всё сложнее
-            var packages = dscr.exports().stream()
-                    .map(ModuleDescriptor.Exports::source)
-                    .collect(Collectors.toCollection(TreeSet::new));
-            for (String aPackage : packages) {
-                execute0("import " + aPackage + ".*;", null);
-            }
+        var out = new StringJoiner("\n").setEmptyValue("");
+
+        execute0("import module java.base;", out);
+        execute0("import module core.main;", out);
+
+        execute0("import static core.Global.*;", out);
+        execute0("import static core.Application.*;", out);
+
+        if (out.length() > 0) {
+            System.out.println();
+            System.out.println(out);
+            System.out.println();
         }
     }
 

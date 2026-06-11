@@ -106,6 +106,10 @@ public class Debug {
             return "Sun y: " + (int) (sun.y * 100) / 100f;
         });
         setDebugValue(GameState.PLAYING, () -> {
+            var worldPos = TmpShapes.v1d.set(player.lastX(), player.lastY());
+            return "Last XY: " + formatWorldPos(worldPos);
+        });
+        setDebugValue(GameState.PLAYING, () -> {
             var worldPos = player.posTo(TmpShapes.v1d);
             return "XY: " + formatWorldPos(worldPos);
         });
@@ -239,7 +243,7 @@ public class Debug {
             { // Блоки которые считаются за пол. Черная обводка
 
                 hitbox.maxY = hitbox.minY;
-                hitbox.minY -= GAP;
+                // hitbox.minY -= GAP;
                 hitbox.maxX -= 2*GAP;
                 hitbox.minX += 2*GAP;
 

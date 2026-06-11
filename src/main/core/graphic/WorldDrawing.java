@@ -6,6 +6,7 @@ import core.content.blocks.Block;
 import core.World.StaticWorldObjects.TemperatureMap;
 import core.content.blocks.data.TileData;
 import core.content.entity.DrawComponent;
+import core.content.entity.Entity;
 import core.g2d.*;
 import core.math.AABB;
 import core.math.Point2i;
@@ -124,7 +125,7 @@ public final class WorldDrawing {
         final Short2ObjectOpenHashMap<ArrayList<Chunk.MergedTile>> rects = new Short2ObjectOpenHashMap<>();
 
         int pos2index(int x, int y) {
-            return (x - minX) + (maxX - minX + 1) * (y - minY);
+            return (x - minX) + cols * (y - minY);
         }
 
         boolean isProcessed(int x, int y) {
@@ -173,6 +174,7 @@ public final class WorldDrawing {
         private void mergingDraw() {
             int newRows = maxY - minY + 1;
             int newCols = maxX - minX + 1;
+            // System.out.println("newCols = " + newCols + " newROWS = " + newRows);
 
             if ((newRows*newCols) != (rows*cols)) {
                 assert Math.toIntExact(Math.multiplyFull(newCols, newRows)) > 0;
@@ -295,6 +297,7 @@ public final class WorldDrawing {
 
             var viewport = TmpShapes.aabb1;
             camera.boundsTo(viewport);
+            viewport.floorToBlock();
             viewport.clampToWorldMargin(MARGIN);
 
             minX = viewport.blockMinX();
@@ -355,36 +358,39 @@ public final class WorldDrawing {
     // region Entities
     public static void drawEntities() {
         camera.boundsTo(viewport);
-        entityPool.forEach(ent -> {
-            if (ent instanceof DrawComponent d) {
-                var hitbox = TmpShapes.aabb1;
-                ent.hitboxTo(hitbox);
+        entityPool.forEach(WorldDrawing::drawEntity);
+    }
 
-                if (ent == player) {
-                    d.draw(player.x());
-                } else {
-                    final int leftBorder = SWAP_AREA;
-                    int rightBorder = world.sizeX - SWAP_AREA;
-                    int dx = rightBorder - leftBorder;
+    private static void drawEntity(Entity ent) {
+        if (ent instanceof DrawComponent d) {
+            var hitbox = TmpShapes.aabb1;
+            ent.hitboxTo(hitbox);
 
-                    // |swap|swap|
-                    //      ^ rightBorder
-                    //           ^  rightBorder + swap
-                    // ^ rightBorder - swap
+            if (ent == player || viewport.overlaps(hitbox)) {
+                d.draw(0);
+            } else {
+                final int leftBorder = SWAP_AREA;
+                int rightBorder = world.sizeX - SWAP_AREA;
+                float dx = rightBorder - leftBorder;
 
-                    if (!viewport.overlaps(hitbox)) {
-                        if (hitbox.maxX >= (rightBorder - SWAP_AREA) && hitbox.maxX <= (rightBorder + SWAP_AREA)) {
-                            hitbox.minX -= dx;
-                        } else if (hitbox.minX >= (leftBorder - SWAP_AREA) && hitbox.minX <= (leftBorder + SWAP_AREA)) {
-                            hitbox.minX += dx;
-                        }
-                    }
-                    if (viewport.overlaps(hitbox)) {
-                        d.draw(hitbox.minX);
-                    }
+                // |swap|swap|
+                //      ^ rightBorder
+                //           ^  rightBorder + swap
+                // ^ rightBorder - swap
+
+                if (hitbox.maxX >= (rightBorder - SWAP_AREA) && hitbox.maxX <= (rightBorder + SWAP_AREA)) {
+                    hitbox.minX -= dx;
+                    hitbox.maxX -= dx;
+                    if (viewport.overlaps(hitbox))
+                        d.draw(-dx);
+                } else if (hitbox.minX >= (leftBorder - SWAP_AREA) && hitbox.minX <= (leftBorder + SWAP_AREA)) {
+                    hitbox.minX += dx;
+                    hitbox.maxX += dx;
+                    if (viewport.overlaps(hitbox))
+                        d.draw(dx);
                 }
             }
-        });
+        }
     }
     // endregion
 }

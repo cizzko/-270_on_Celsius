@@ -22,8 +22,6 @@ import static core.g2d.Render.*;
 
 public final class PlayGameScene extends GameScene {
     public final Sun sun = new Sun();
-    //надо что то думать с круглым миром
-    public static boolean smoothedCamera;
 
     private boolean paused;
 
@@ -43,9 +41,6 @@ public final class PlayGameScene extends GameScene {
     public void onInit() {
         Debug.initPlaying();
 
-        updateCamera();
-        smoothedCamera = Config.getBoolean("SmoothedCamera");
-
         UIMenus.headUpDisplay().show();
     }
 
@@ -63,7 +58,7 @@ public final class PlayGameScene extends GameScene {
     @Override
     protected void update() {
         Physics.updatePhysics(this);
-        updateCamera();
+        player.updateCamera();
         sun.update();
         Background.update();
         updateInventoryInteraction();
@@ -116,25 +111,5 @@ public final class PlayGameScene extends GameScene {
         world = null;
         entityPool.clear();
         WorldDrawing.resetState();
-    }
-
-    public static final float CAMERA_OFFSET_X = toWorld(32f);
-    public static final float CAMERA_OFFSET_Y = toWorld(200f);
-
-    public static void updateCamera() {
-        if (player.isDead()) {
-            return;
-        }
-
-        if (smoothedCamera) {
-            float base = 0.08f * Math.max(1, player.velocity().len() / 4f);
-            base = Math.min(1f, base);
-            float alpha = 1 - (float)Math.pow(1 - base, Time.delta);
-            camera.position.lerp(player.x() + CAMERA_OFFSET_X, player.y() + CAMERA_OFFSET_Y, alpha);
-        } else {
-            camera.position.set(player.x() + CAMERA_OFFSET_X, player.y() + CAMERA_OFFSET_Y);
-        }
-
-        camera.update();
     }
 }
