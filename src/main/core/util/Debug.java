@@ -44,7 +44,7 @@ public class Debug {
 
     public static final int debugLevel = Config.getInt("Debug");
 
-    // Включается по нажатию M английской
+    // Включается по нажатию F3+M английской
     public static boolean debugMesh = false;
 
     @SuppressWarnings("unchecked")
@@ -135,6 +135,7 @@ public class Debug {
 
         entityPool.forEach(ent -> {
             var pos = camera.projectTo(ent.posTo(TmpShapes.v1d), TmpShapes.v1f);
+            Fill.rectangleBorder(pos.x, pos.y, ent.width(), ent.height(), white);
             GuiDrawing.drawText(pos.x, pos.y, "HasFloor: " + ent.hasFloor(), black);
         });
     }
@@ -212,7 +213,8 @@ public class Debug {
         if (input.justPressed(GLFW_KEY_F10)) {
             uiScene.debug();
         }
-        if (input.justPressed(GLFW_KEY_M)) {
+        // TODO нужны комбинации клавиш на уровне InputHandler
+        if (input.justPressed(GLFW_KEY_F3) && input.justPressed(GLFW_KEY_M)) {
             debugMesh = !debugMesh;
         }
     }
@@ -228,7 +230,8 @@ public class Debug {
         if (!player.isDead()) {
             var hitbox = TmpShapes.aabb1;
             player.hitboxTo(hitbox);
-            { // Блоки интегрированной модели
+
+            if (false) { // Блоки интегрированной модели
                 short minX = hitbox.blockMinX();
                 short minY = hitbox.blockMinY();
                 short maxX = hitbox.blockMaxX();
@@ -243,11 +246,9 @@ public class Debug {
             { // Блоки которые считаются за пол. Черная обводка
 
                 hitbox.maxY = hitbox.minY;
-                // hitbox.minY -= GAP;
-                hitbox.maxX -= 2*GAP;
-                hitbox.minX += 2*GAP;
-
-                Fill.rectangleBorder((float) hitbox.minX, (float) hitbox.minY, hitbox.width(), hitbox.height(), red);
+                hitbox.minY -= GAP;
+                hitbox.maxX -= GAP;
+                hitbox.minX += GAP;
 
                 short minX = hitbox.blockMinX();
                 short maxX = hitbox.blockMaxX();

@@ -92,7 +92,7 @@ public final class InputHandler {
 
                         onKeyUp(key, scancode);
                     }
-                    case GLFW_REPEAT -> {
+                    case GLFW_REPEAT -> { // Skat: по факту не вызывается у меня
                         setBit(repeated, key);
                         unsetBit(releasedKeys, key);
 

@@ -169,9 +169,9 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
         short minY = hitbox.blockMinY();
         short maxY = hitbox.blockMaxY();
 
-        for (short y = minY; y <= maxY; y++) {
+        for (; minY <= maxY; minY++) {
             for (short x = minX; x <= maxX; x++) {
-                var block = world.getBlock(x, y);
+                var block = world.getBlock(x, minY);
                 if (block == null || block.type == Block.Type.SOLID) {
                     return true;
                 }

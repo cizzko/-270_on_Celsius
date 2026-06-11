@@ -117,50 +117,51 @@ public final class WorldDrawing {
         record MergedTile(short blockId, int shadowRgba8888, int x, int y, short w, short h) {}
 
         int rows, cols;
-        int minX, minY;
-        int maxX, maxY;
+        short minX, minY;
+        short maxX, maxY;
         long[] processed;
         long[] merged;
 
         final Short2ObjectOpenHashMap<ArrayList<Chunk.MergedTile>> rects = new Short2ObjectOpenHashMap<>();
 
-        int pos2index(int x, int y) {
+        int pos2index(short x, short y) {
             return (x - minX) + cols * (y - minY);
         }
 
-        boolean isProcessed(int x, int y) {
+        boolean isProcessed(short x, short y) {
             return isSet(processed, pos2index(x, y));
         }
 
-        boolean isSame(int x1, int y1, int x2, int y2) {
+        boolean isSame(short x1, short y1, short x2, short y2) {
             return !isProcessed(x2, y2) &&
                    world.getBlockId(x1, y1) == world.getBlockId(x2, y2)
                    && isSameShadowAndTemp(x1, y1, x2, y2)
                     ;
         }
 
-        int maxY2, maxX2, maxArea;
+        short maxY2, maxX2;
+        int maxArea;
 
-        private void findMaxRectangleFrom(int bx, int by) {
+        private void findMaxRectangleFrom(short bx, short by) {
             maxArea = 1;
             maxY2 = by;
             maxX2 = bx;
 
-            int cmx = bx;
+            short cmx = bx;
             while (cmx <= maxX && isSame(bx, by, cmx, by)) cmx++;
             cmx--;
 
-            for (int y = by; y <= maxY; y++) {
+            for (short y = by; y <= maxY; y++) {
                 if (!isSame(bx, by, bx, y)) break;
 
-                int x = bx;
+                short x = bx;
                 while (x <= cmx && isSame(bx, by, x, y)) x++;
                 int validWidth = x - bx;
                 if (validWidth == 0) {
                     break;
                 }
 
-                cmx = bx + validWidth - 1; // Ограничиваем ширину для шагов ниже
+                cmx = (short) (bx + validWidth - 1); // Ограничиваем ширину для шагов ниже
 
                 int area = validWidth * (y - by + 1);
                 if (area > maxArea) {
@@ -174,7 +175,6 @@ public final class WorldDrawing {
         private void mergingDraw() {
             int newRows = maxY - minY + 1;
             int newCols = maxX - minX + 1;
-            // System.out.println("newCols = " + newCols + " newROWS = " + newRows);
 
             if ((newRows*newCols) != (rows*cols)) {
                 assert Math.toIntExact(Math.multiplyFull(newCols, newRows)) > 0;
@@ -189,8 +189,8 @@ public final class WorldDrawing {
 
             rects.clear();
 
-            for (int y = minY; y < maxY; y++) {
-                for (int x = minX; x <= maxX; x++) {
+            for (short y = minY; y < maxY; y++) {
+                for (short x = minX; x <= maxX; x++) {
                     int value = world.getBlockId(x, y);
                     if (value <= 0) {
                         setBit(processed, pos2index(x, y));
@@ -201,13 +201,10 @@ public final class WorldDrawing {
                     }
                     var bl = content.blocksRegistry.typeById(value);
 
-                    int rx = pos.x;
-                    int ry = pos.y;
+                    short tx = (short) (pos.x + bl.tileCountX);
+                    short ty = (short) (pos.y + bl.tileCountY);
 
-                    int tx = rx + bl.tileCountX;
-                    int ty = ry + bl.tileCountY;
-
-                    for (int i = y; i < ty; i++) {
+                    for (short i = y; i < ty; i++) {
                         int start = pos2index(x, i);
                         int end = pos2index(tx, i);
                         FixedBitset.setRange(processed, start, end);
@@ -215,8 +212,8 @@ public final class WorldDrawing {
                 }
             }
 
-            for (int y = minY; y < maxY; y++) {
-                for (int x = minX; x <= maxX; x++) {
+            for (short y = minY; y < maxY; y++) {
+                for (short x = minX; x <= maxX; x++) {
                     if (isProcessed(x, y)) continue;
 
                     short value = (short) world.getBlockId(x, y);
@@ -232,7 +229,7 @@ public final class WorldDrawing {
 
                     blocks.add(new Chunk.MergedTile(value, shadow, x, y, w, h));
 
-                    for (int i = y; i <= maxY2; i++) {
+                    for (short i = y; i <= maxY2; i++) {
                         int start = pos2index(x, i);
                         int end = pos2index(maxX2, i) + 1; // не включается
 
@@ -242,9 +239,12 @@ public final class WorldDrawing {
                 }
             }
 
-            pushState(() -> {
-                shader(Shaders.repeat);
-                rects.forEach((tileId, tiles) -> {
+            try (var state = pushState()) {
+                state.shader = Shaders.repeat;
+                for (var it = rects.short2ObjectEntrySet().fastIterator(); it.hasNext(); ) {
+                    var entry = it.next();
+                    short tileId = entry.getShortKey();
+                    var tiles = entry.getValue();
                     var obj = content.blocksRegistry.typeById(tileId);
                     var tex = obj.texture;
 
@@ -252,11 +252,11 @@ public final class WorldDrawing {
                         color(tr.shadowRgba8888);
                         drawRepeated(tex, tr.x, tr.y, tr.w, tr.h);
                     }
-                });
-            });
+                }
+            }
 
-            for (int y = minY; y <= maxY; y++) {
-                for (int x = minX; x <= maxX; x++) {
+            for (short y = minY; y <= maxY; y++) {
+                for (short x = minX; x <= maxX; x++) {
                     if (!isSet(merged, pos2index(x, y)) && world.getBlockId(x, y) > 0) {
                         var obj = world.getBlock(x, y);
                         int hp = world.getHp(x, y);
