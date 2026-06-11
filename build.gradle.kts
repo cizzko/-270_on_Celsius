@@ -2,7 +2,7 @@ import groovy.json.JsonSlurper
 
 plugins {
     java
-    id("org.beryx.jlink") version "4.0.0"
+    id("org.beryx.jlink") version "4.0.2"
     id("com.github.ben-manes.versions") version "0.54.0"
 }
 
@@ -27,36 +27,6 @@ sourceSets {
         runtimeClasspath += sourceSets["main"].output
     }
 }
-
-tasks.withType<JavaExec> {
-    //для профайлинга
-//    jvmArgs("-XX:+UnlockDiagnosticVMOptions", "-XX:+DebugNonSafepoints", "-XX:+ShowHiddenFrames")
-
-    if (name.startsWith(MAIN_CLASS)) {
-        // core.Main.main() то что использует идея
-
-        jvmArguments.addAll(applyJvmArgs())
-        jvmArguments.add("-ea:core.main")
-        jvmArguments.add("-XX:+UseZGC") // экспериментируем как бы
-    }
-
-    doFirst {
-        if (System.getProperty("os.name")?.contains("Linux") == true &&
-            System.getenv("XDG_SESSION_TYPE") == "wayland") {
-            val gpuInfo = providers.exec {
-                commandLine("sh", "-c", "glxinfo | grep 'OpenGL vendor' || echo 'unknown'")
-            }.standardOutput.asText.get()
-
-            if (gpuInfo.contains("NVIDIA")) {
-                environment("__GL_THREADED_OPTIMIZATIONS", "0")
-            }
-        }
-    }
-}
-//для профайлинга
-//tasks.withType<JavaCompile>().configureEach {
-//    options.compilerArgs.add("-g")
-//}
 
 tasks.named<JavaCompile>("compileToolsJava") {
     dependsOn(tasks.compileJava)
@@ -117,20 +87,21 @@ repositories {
     mavenCentral()
 }
 
-tasks.compileJava {
+tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-parameters")
+    options.isDebug = true
     options.encoding = "UTF-8"
-    options.release = 21
+    options.release = 26
 }
 
 java {
     toolchain {
-        val minVersion = 21 // минимальные требования
+        val minVersion = 26 // минимальные требования
         val preferred = 26  // проверено
 
         val current = JavaLanguageVersion.current().asInt()
 
-        // Суть в том, чтобы версия java была >=21
+        // Суть в том, чтобы версия java была >=minVersion
         val target = when {
             current >= preferred -> current
             current >= minVersion -> current
@@ -149,7 +120,7 @@ dependencies {
     implementation("org.apache.logging.log4j:log4j-core:3.0.0-beta2")
     implementation("org.apache.logging.log4j:log4j-iostreams:3.0.0-beta2")
 
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.21.3")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.22.0")
     implementation("org.jetbrains:annotations:26.1.0")
 
     implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
@@ -175,11 +146,13 @@ application {
 jlink {
     mainClass = MAIN_CLASS
     moduleName = MAIN_MODULE
+    mergedModuleName = "core.libs.merged"
+    mergedModuleJarName = "core-libs-merged"
 
-    mergedModule {
-        requires("java.desktop")
-    }
     enableCds()
+    mergedModule {
+        version = "1.0.0"
+    }
     options.addAll(listOf(
         "--no-header-files",
         "--no-man-pages",
@@ -192,11 +165,11 @@ jlink {
     launcher {
         name = "celsius"
         args = applyAppArgs()
-        jvmArgs = applyJvmArgs()
+        jvmArgs = applyJvmArgs(true)
     }
     jpackage {
         args = applyAppArgs()
-        jvmArgs = applyJvmArgs()
+        jvmArgs = applyJvmArgs(true)
     }
 }
 
@@ -206,7 +179,7 @@ fun applyAppArgs(): List<String> {
     )
 }
 
-fun applyJvmArgs(): List<String> {
+fun applyJvmArgs(aotCache: Boolean): List<String> {
     val jvmArgs: MutableList<String> = mutableListOf()
     jvmArgs.add("-XX:-OmitStackTraceInFastThrow")
     if (System.getProperty("os.name")!!.startsWith("Darwin") || System.getProperty("os.name")!!.startsWith("Mac OS X")) {
@@ -214,6 +187,8 @@ fun applyJvmArgs(): List<String> {
     }
     if (JavaLanguageVersion.current().canCompileOrRun(25)) {
         jvmArgs.add("-XX:+UseCompactObjectHeaders")
+        if (aotCache)
+            jvmArgs.add("-XX:AOTCacheOutput=app.aot")
     }
     if (JavaLanguageVersion.current().canCompileOrRun(22)) {
         jvmArgs.add("--enable-native-access=org.lwjgl.opengl")
@@ -233,6 +208,37 @@ tasks.jar {
         val json = JsonSlurper().parse(layout.projectDirectory.file("src/assets/sprites.atlas.hash").asFile) as Map<String, String>
         excludes.addAll(json.keys)
     }
+}
+
+tasks.run {
+    jvmArguments.addAll(applyJvmArgs(false))
+
+    //для профайлинга
+    //jvmArgs("-XX:+UnlockDiagnosticVMOptions", "-XX:+DebugNonSafepoints", "-XX:+ShowHiddenFrames")
+
+    if (System.getProperty("os.name")?.contains("Linux") == true && System.getenv("XDG_SESSION_TYPE") == "wayland") {
+        val isBadDriver = providers
+            .exec {  commandLine("sh", "-c", "glxinfo | grep 'OpenGL vendor' || echo 'unknown'")  }
+            .standardOutput.asText
+            .map { it.contains("NVIDIA") }
+
+        if (isBadDriver.get()) {
+            environment("__GL_THREADED_OPTIMIZATIONS", "0")
+        }
+    }
+
+    jvmArguments.add("-ea:core.main")
+    jvmArguments.add("-XX:+UseZGC") // экспериментируем как бы
+
+    val mainSourceSet = project.sourceSets["main"]
+    jvmArgumentProviders.add {
+        listOf(
+            "--module-path", classpath.asPath,
+            "--patch-module", "${mainModule.get()}=${mainSourceSet.output.resourcesDir}"
+        )
+    }
+
+    classpath = mainSourceSet.runtimeClasspath
 }
 
 tasks.jpackageImage {
