@@ -35,6 +35,16 @@ public class PlayerEntity
     private static final Vector2f tmp = new Vector2f();
     private static final Vector2f direction = new Vector2f();
 
+    // Базовая скорость прыжка. Чуть больше 2 блоков
+    private static final float BASE_JUMP = 18.35f * GRAVITY;
+    // Прыгаем где-то на 3 блока
+    private static final float MAX_JUMP  = 1.25f * BASE_JUMP;
+    private static final float ADDICTION = 0.15f * GRAVITY;
+    // 99% от обычной скорости
+    private static final float AIR_SPEED_LIMIT = 0.99f;
+    // Коэффициент отзывчивости управления в воздухе за кадр
+    private static final float AIR_SPEED_RESISTANCE = 0.45f;
+
     public final Point2i itemInHandIdx = new Point2i(), draggingItemIdx = new Point2i();
 
     private final ObjectArrayList<ObjectArrayList<@Nullable ItemStack>> items;
@@ -117,7 +127,7 @@ public class PlayerEntity
 
         if (!noClip) {
             direction.set(xf, 0);
-        } else {
+        } else { // TODO сделать элегантнее, но сделаю когда доделаю интерфейс
             velocity.set(0, 0);
 
             int yf = input.axis(GLFW_KEY_S, GLFW_KEY_W);
@@ -131,10 +141,6 @@ public class PlayerEntity
                 velocity.y += accumulatedJump;
                 accumulatedJump = 0;
             } else if (input.pressed(GLFW_KEY_SPACE)) {
-                final float BASE_JUMP = 18.35f * GRAVITY;
-                final float MAX_JUMP  = 1.25f * BASE_JUMP;
-                final float ADDICTION = 0.15f * GRAVITY;
-
                 if (accumulatedJump == 0) {
                     accumulatedJump += BASE_JUMP;
                 } else if (accumulatedJump < MAX_JUMP) {
@@ -146,21 +152,18 @@ public class PlayerEntity
         }
 
         if (hasFloor) {
-            tmp.set(direction).scale(speed);
+            tmp.set(direction).scale(speed * Time.delta);
             acceleration.add(tmp);
         } else if (direction.x != 0) {
             float wishX = Math.signum(direction.x);
             float currentSpeedInWishDir = velocity.x * wishX;
 
             // Лимит воздушной скорости за один кадр.
-            // 99% от обычной скорости
-            float airSpeedCap = 0.99f * (speed * Physics.SPEED_FACTOR);
+            float airSpeedCap = AIR_SPEED_LIMIT * (speed * Physics.SPEED_FACTOR);
 
             float d = airSpeedCap - currentSpeedInWishDir;
             if (d > 0) {
-                // Коэффициент отзывчивости управления в воздухе за кадр.
-                // 0.1f означает, что лимит наберется примерно за 10 кадров.
-                float airAcceleration = 0.45f * (speed * Physics.SPEED_FACTOR);
+                float airAcceleration = AIR_SPEED_RESISTANCE * (speed * Physics.SPEED_FACTOR);
                 if (airAcceleration > d) {
                     airAcceleration = d;
                 }
