@@ -2,11 +2,13 @@ package core.graphic;
 
 import core.Global;
 import core.Window;
+import core.World.TemperatureMap;
 import core.content.blocks.Block;
-import core.World.StaticWorldObjects.TemperatureMap;
 import core.content.blocks.data.TileData;
 import core.content.entity.DrawComponent;
-import core.g2d.*;
+import core.g2d.Font;
+import core.g2d.Shaders;
+import core.g2d.StackfulRender;
 import core.math.AABB;
 import core.math.Point2i;
 import core.math.TmpShapes;
@@ -19,13 +21,11 @@ import java.util.Arrays;
 
 import static core.Constants.World.SWAP_AREA;
 import static core.Global.*;
-import static core.Global.player;
+import static core.Global.camera;
 import static core.World.Creatures.Player.Inventory.Inventory.drawBuildGrid;
-import static core.WorldCoordinates.toBlock;
 import static core.WorldCoordinates.toWorld;
 import static core.g2d.StackfulRender.*;
 import static core.util.FixedBitset.*;
-import static core.util.FixedBitset.isSet;
 
 /// Рендер всего в мире. Используйте на свой страх и риск в интерфейсе
 public final class WorldDrawing {
@@ -334,10 +334,10 @@ public final class WorldDrawing {
 
     private static Color colorFor(int x, int y) {
         Color color = ShadowMap.getColorTo(x, y, TmpShapes.c1);
-        final int upperLimit = 100;
+        final int upperLimit = 150;
         final int lowestLimit = -20;
-        final int maxColor = 65;
-        float temp = TemperatureMap.getTemp(x, y);
+        final int maxColor = 120;
+        float temp = TemperatureMap.getTempCell(x, y);
 
         int a;
         if (temp > upperLimit) {

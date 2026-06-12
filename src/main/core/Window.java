@@ -32,7 +32,7 @@ public final class Window extends Application {
     private static final Logger lwjglLogger = LogManager.getLogger("LWJGL");
 
     public static int defaultWidth = 1920, defaultHeight = 1080;
-    public static Mode defaultMode = Mode.BORDERLESS;
+    public static Mode defaultMode = Mode.FULLSCREEN;
 
     public enum Mode {
         WINDOW,

@@ -5,9 +5,9 @@ import core.PlayGameScene;
 import core.Time;
 import core.content.blocks.Block;
 import core.content.entity.Entity;
-import core.graphic.ShadowMap;
 import core.content.entity.HealthComponent;
 import core.content.entity.LivingEntity;
+import core.graphic.ShadowMap;
 import core.math.AABB;
 import core.math.MathUtil;
 import core.math.Rectangle;
@@ -21,7 +21,6 @@ import static core.Global.*;
 import static core.World.Creatures.Player.Player.noClip;
 import static core.content.entity.DrawComponent.GAP;
 import static java.lang.Math.*;
-import static java.lang.Math.abs;
 
 public class Physics {
     // Для какого веса считались коэффициенты физики. Проверяли на игроке. Меньше весит - меньше влияет вес
@@ -172,13 +171,10 @@ public class Physics {
     }
 
     private static void updateMovement() {
-
         player.updateInput();
-
         updateEntities();
 
         // Физика не будет оставаться на главном потоке, но пока это прототип.
-
         entityPool.forEach(ent -> {
             if (ent instanceof LivingEntity livingEntity) {
                 Vector2f vel = livingEntity.velocity();

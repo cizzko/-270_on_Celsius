@@ -30,7 +30,6 @@ open module core.main {
     exports core.UI;
     exports core.World.Creatures.Player;
     exports core.World.Creatures;
-    exports core.World.StaticWorldObjects;
     exports core.World.Weather;
     exports core.World.WorldGenerator;
     exports core.World;

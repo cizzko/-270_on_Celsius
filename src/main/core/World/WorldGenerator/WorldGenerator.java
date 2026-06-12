@@ -3,7 +3,7 @@ package core.World.WorldGenerator;
 import core.*;
 import core.UI.menu.CreatePlanet;
 import core.World.PerlinNoiseGenerator;
-import core.World.StaticWorldObjects.TemperatureMap;
+import core.World.TemperatureMap;
 import core.World.World;
 import core.World.WorldUtils;
 import core.content.blocks.Block;
@@ -80,7 +80,7 @@ public class WorldGenerator {
                     })
                     .thenRun(() -> {
                         log("generating temperature map " + (System.currentTimeMillis() - startTime) + "ms");
-                        TemperatureMap.create();
+                        TemperatureMap.generate();
                     })
                     .thenRun(() -> {
                         log("generating player " + (System.currentTimeMillis() - startTime) + "ms");
@@ -104,7 +104,7 @@ public class WorldGenerator {
                     })
                     .thenRun(() -> {
                         log("generating temperature map " + (System.currentTimeMillis() - startTime) + "ms");
-                        TemperatureMap.create();
+                        TemperatureMap.generate();
                     })
                     .thenRun(() -> {
                         Global.player = WorldUtils.spawn(content.creatureById("player"), true);

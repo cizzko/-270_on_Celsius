@@ -3,7 +3,7 @@ package core.World.WorldGenerator;
 import core.*;
 import core.UI.menu.CreatePlanet;
 import core.World.PerlinNoiseGenerator;
-import core.World.StaticWorldObjects.TemperatureMap;
+import core.World.TemperatureMap;
 import core.World.World;
 import core.World.WorldUtils;
 import core.content.blocks.Block;
@@ -16,6 +16,10 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
@@ -46,7 +50,7 @@ public class WorldGeneratorTMP {
 
         boolean simple = params.simple;
 
-        log("version: 2.43 unstable");
+        log("version: 2.48 unstable");
         log("World generator: starting generating world with size: " + world.sizeX + "x" + world.sizeY);
 
         var playGameScene = new PlayGameScene();
@@ -72,7 +76,7 @@ public class WorldGeneratorTMP {
                             () -> ShadowMap.generate()))
                     .thenRun(
                             timedRun("generating temperature map",
-                            () -> TemperatureMap.create()))
+                            () -> TemperatureMap.generate()))
                     .thenRun(
                             timedRun("generating player",
                             () -> spawnPlayer()))
@@ -98,7 +102,7 @@ public class WorldGeneratorTMP {
                             () -> ShadowMap.generate()))
                     .thenRun(
                             timedRun("generating temperature map",
-                            () -> TemperatureMap.create()))
+                            () -> TemperatureMap.generate()))
                     .thenRun(
                             timedRun("generating player",
                             () -> spawnPlayer()))
@@ -211,8 +215,6 @@ public class WorldGeneratorTMP {
             int iters = 100;
 
             for (int j = 0; j < iters; j++) {
-                lastX++;
-
                 if (lastX >= 0 && lastX < worldWidth && lastY > 0) {
                     worldXBiomes[lastX] = currentBiomes;
                     worldHeights[lastX] = lastY;
@@ -230,6 +232,7 @@ public class WorldGeneratorTMP {
                 } else if (lastX > worldWidth) {
                     break;
                 }
+                lastX++;
             }
         } while (lastX < world.sizeX);
 
@@ -874,5 +877,60 @@ public class WorldGeneratorTMP {
         int randX = rnd.nextInt(0, world.sizeX);
 
         return new Point2i(randX, World.findSurfaceY(randX, 2));
+    }
+
+    public static void saveTemp(String name) {
+        log.debug("Saving");
+        Thread.startVirtualThread(() -> {
+            BufferedImage image = new BufferedImage(world.sizeX, world.sizeY, BufferedImage.TYPE_INT_RGB);
+            Path path = assets.workingDir().resolve("C://other//-270_On_Celsius//-270_On_Celsius//" + name + ".png");
+            for (int y = 0; y < world.sizeY; y++) {
+                for (int x = 0; x < world.sizeX; x++) {
+                    image.setRGB(x, (world.sizeY - 1) - y, (255 << 24) | ((int)Math.clamp((TemperatureMap.getTempCell(x, y) - 20f) / 980f * 255f, 0, 255) << 16));
+                }
+            }
+            try {
+                ImageIO.write(image, "png", path.toFile());
+                log.debug("Saving done");
+            } catch (IOException e) {
+                log.error("", e);
+            }
+        });
+    }
+    public static void savePressures(String name) {
+        log.debug("Saving");
+        Thread.startVirtualThread(() -> {
+            BufferedImage image = new BufferedImage(world.sizeX, world.sizeY, BufferedImage.TYPE_INT_RGB);
+            Path path = assets.workingDir().resolve("C://other//-270_On_Celsius//-270_On_Celsius//" + name + ".png");
+            for (int y = 0; y < world.sizeY; y++) {
+                for (int x = 0; x < world.sizeX; x++) {
+                    image.setRGB(x, (world.sizeY - 1) - y, (255 << 24) | ((int)Math.clamp((TemperatureMap.getPressure(x, y) / 1000 - 20f) / 980f * 255f, 0, 255) << 16));
+                }
+            }
+            try {
+                ImageIO.write(image, "png", path.toFile());
+                log.debug("Saving done");
+            } catch (IOException e) {
+                log.error("", e);
+            }
+        });
+    }
+    public static void saveDens(String name) {
+        log.debug("Saving");
+        Thread.startVirtualThread(() -> {
+            BufferedImage image = new BufferedImage(world.sizeX, world.sizeY, BufferedImage.TYPE_INT_RGB);
+            Path path = assets.workingDir().resolve("C://other//-270_On_Celsius//-270_On_Celsius//" + name + ".png");
+            for (int y = 0; y < world.sizeY; y++) {
+                for (int x = 0; x < world.sizeX; x++) {
+                    image.setRGB(x, (world.sizeY - 1) - y, (255 << 24) | ((int)Math.clamp((TemperatureMap.getDensity(x, y) * 300 - 20f) / 980f * 255f, 0, 255) << 16));
+                }
+            }
+            try {
+                ImageIO.write(image, "png", path.toFile());
+                log.debug("Saving done");
+            } catch (IOException e) {
+                log.error("", e);
+            }
+        });
     }
 }
