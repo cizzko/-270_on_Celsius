@@ -21,6 +21,10 @@ public final class AABB {
     public short blockMaxX() { return toBlock(maxX); }
     public short blockMaxY() { return toBlock(maxY); }
 
+    public void move(Vector2f dv) {
+        move(dv.x, dv.y);
+    }
+
     public void move(float dx, float dy) {
         this.minX += dx;
         this.minY += dy;
@@ -56,9 +60,14 @@ public final class AABB {
         return out;
     }
 
-    public boolean contains(AABB rhs) {
+    public boolean intersects(AABB rhs) {
         return minX < rhs.maxX && maxX > rhs.minX &&
                minY < rhs.maxY && maxY > rhs.minY;
+    }
+
+    public boolean intersects(double rhsMinX, double rhsMinY, double rhsMaxX, double rhsMaxY) {
+        return minX < rhsMaxX && maxX > rhsMinX &&
+               minY < rhsMaxY && maxY > rhsMinY;
     }
 
     public boolean overlaps(double rhsMinX, double rhsMinY, double rhsMaxX, double rhsMaxY) {
@@ -99,5 +108,22 @@ public final class AABB {
         minY = Math.max(0, -margin + minY);
         maxX = Math.min(world.sizeX - 1, margin + maxX);
         maxY = Math.min(world.sizeY - 1, margin + maxY);
+    }
+
+    public void floorToBlock() {
+        minX = toBlock(minX);
+        minY = toBlock(minY);
+        maxX = toBlock(maxX);
+        maxY = toBlock(maxY);
+    }
+
+    @Override
+    public String toString() {
+        return "AABB[" +
+               "min=(" + minX +
+               ", " + minY +
+               "), max=(" + maxX +
+               ", " + maxY +
+               ")]";
     }
 }

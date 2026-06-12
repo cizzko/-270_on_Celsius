@@ -103,8 +103,9 @@ repositories {
     mavenCentral()
 }
 
-tasks.compileJava {
+tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-parameters")
+    options.isDebug = true
     options.encoding = "UTF-8"
     options.release = 26
 }
@@ -116,7 +117,7 @@ java {
 
         val current = JavaLanguageVersion.current().asInt()
 
-        // Суть в том, чтобы версия java была >=21
+        // Суть в том, чтобы версия java была >=minVersion
         val target = when {
             current >= preferred -> current
             current >= minVersion -> current

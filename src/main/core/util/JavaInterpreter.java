@@ -8,10 +8,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
-import java.util.Locale;
-import java.util.Map;
-import java.util.StringJoiner;
+import java.util.*;
 
 public class JavaInterpreter {
     private static final Logger log = LogManager.getLogger("Console");
@@ -20,10 +17,11 @@ public class JavaInterpreter {
 
     public static void init(boolean exploded) {
         var runtimeMxBean = ManagementFactory.getRuntimeMXBean();
+
         var jvmArgs = runtimeMxBean.getInputArguments();
         int ver = Runtime.version().feature();
-        var opts = new ArrayList<String>();
 
+        var opts = new ArrayList<String>();
         for (String jvmArg : jvmArgs) {
             if (jvmArg.startsWith("--module-path")) {
                 opts.add(jvmArg);

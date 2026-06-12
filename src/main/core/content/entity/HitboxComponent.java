@@ -11,6 +11,14 @@ public interface HitboxComponent extends PositionComponent {
 
     CollisionResult onCollide(HitboxComponent them);
 
+    void updateLastPosition();
+    double lastX();
+    double lastY();
+
+    // boundingbox или типа того
+    float width();
+    float height();
+
     enum CollisionResult {
         WALKTHROUGH, // отсутствие взаимодействия
     }

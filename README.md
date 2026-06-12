@@ -11,7 +11,7 @@
 
 ## Technical Stack
 
-*   **Language:** Java 21+
+*   **Language:** Java 26+
 *   **Build Tool:** Gradle 9.5.0
 *   **Graphics:** LWJGL 3.4.1 (OpenGL 3.3 Core Profile)
 
@@ -21,6 +21,12 @@
 *   `src/assets`: Resources
 *   `src/assets/content`: Content
 *   `src/tools`: Development utilities
+
+**Running from the terminal:**
+
+```bash
+./gradlew run
+```
 
 **Building the distribution:**
 

@@ -84,7 +84,7 @@ public final class EntityIndex {
             }
 
             ent.entity.hitboxTo(tmp);
-            if (tmp.overlaps(x, y, x+width, y+height)) {
+            if (tmp.intersects(x, y, x+width, y+height)) {
                 return true;
             }
         }
@@ -119,7 +119,7 @@ public final class EntityIndex {
             }
 
             ent.entity.hitboxTo(tmp);
-            if (tmp.overlaps(x, y, x+width, y+height)) {
+            if (tmp.intersects(x, y, x+width, y+height)) {
                 action.accept(ent.entity);
             }
         }

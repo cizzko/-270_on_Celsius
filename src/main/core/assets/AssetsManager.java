@@ -96,6 +96,7 @@ public final class AssetsManager {
         }
 
         var props = new Properties();
+
         try (var in = Files.newInputStream(externalFile)) {
             props.load(in);
         } catch (IOException e) {

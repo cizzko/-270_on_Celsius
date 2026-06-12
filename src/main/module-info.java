@@ -1,26 +1,25 @@
 open module core.main {
-    requires org.lwjgl;
-    requires org.lwjgl.glfw;
-    requires org.lwjgl.opengl;
-    requires org.lwjgl.jemalloc;
+    requires transitive org.lwjgl;
+    requires transitive org.lwjgl.glfw;
+    requires transitive org.lwjgl.opengl;
+    requires transitive org.lwjgl.jemalloc;
 
-    requires jdk.jshell;
+    requires transitive org.apache.logging.log4j;
+    requires transitive org.apache.logging.log4j.iostreams;
+    requires transitive org.apache.logging.log4j.core;
 
-    requires org.apache.logging.log4j;
-    requires org.apache.logging.log4j.iostreams;
-    requires org.apache.logging.log4j.core;
-
-    requires com.fasterxml.jackson.databind;
-    requires it.unimi.dsi.fastutil;
-    requires org.jetbrains.annotations;
+    requires transitive com.fasterxml.jackson.databind;
+    requires transitive it.unimi.dsi.fastutil;
+    requires transitive org.jetbrains.annotations;
 
     requires java.desktop;
+    requires jdk.jshell;
     requires jdk.management;
 
-    requires transitive org.lwjgl.natives;
-    requires transitive org.lwjgl.glfw.natives;
-    requires transitive org.lwjgl.opengl.natives;
-    requires transitive org.lwjgl.jemalloc.natives;
+    requires org.lwjgl.natives;
+    requires org.lwjgl.glfw.natives;
+    requires org.lwjgl.opengl.natives;
+    requires org.lwjgl.jemalloc.natives;
 
     exports core.EventHandling;
     exports core.UI.Sounds;

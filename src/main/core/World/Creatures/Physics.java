@@ -3,24 +3,26 @@ package core.World.Creatures;
 import core.Constants;
 import core.PlayGameScene;
 import core.Time;
+import core.WorldCoordinates;
 import core.content.blocks.Block;
 import core.content.entity.Entity;
+import core.graphic.ShadowMap;
 import core.content.entity.HealthComponent;
 import core.content.entity.LivingEntity;
-import core.graphic.ShadowMap;
 import core.math.AABB;
 import core.math.MathUtil;
-import core.math.Rectangle;
 import core.math.Vector2f;
 import core.util.FixedBitset;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Player.noClip;
 import static core.content.entity.DrawComponent.GAP;
 import static java.lang.Math.*;
+import static java.lang.Math.abs;
 
 public class Physics {
     // Для какого веса считались коэффициенты физики. Проверяли на игроке. Меньше весит - меньше влияет вес
@@ -31,7 +33,7 @@ public class Physics {
     // Ле, куда летишь?
     public static final float MAX_SPEED = 10000f;
     // Минимальное смещение, при котором происходит движение. Не вижу смысла сжигать процессор ради меньших значений
-    private static final float MOVE_THRESHOLD = 1e-6f;
+    private static final float MOVE_THRESHOLD = 0;// 1e-6f;
 
     // Скорость, которая набирается при падении ровно с 5 блоков
     private static final float FALL_DAMAGE_SPEED_THRESHOLD = 0.35f; // sqrt(2 * GRAVITY * 5)
@@ -46,14 +48,30 @@ public class Physics {
         processCollisions();
     }
 
-    static final float STEPS = 1f / Time.ONE_SECOND;
+    // Целевой тикрейт физики. Можно считать как 60 тиков / сек
+    public static final float TPS = 60;
+    // Физика работает на фиксированном времени, чтобы обеспечить стабильность системы
+    public static final float FDT = 1f / TPS;
+    public static final float SPEED_FACTOR = FDT;
+    static final double INV_FDT = 1d / FDT;
 
     static long[] resistanceSet; // TODO SparseFixedBitSet ?
     static final IntOpenHashSet completedCollisions = new IntOpenHashSet();
+    static float pdt;
+    /// Поскольку движок имеет фиксированный шаг, то очень мелкие изменения времени
+    /// нецелесообразно обрабатывать, а лучше интерполировать на рендере. Вот это и есть параметр интерполяции
+    /// с.м. [#applyAlpha(double, double)]
+    static double alpha;
 
     static final AABB entityHitbox = new AABB();
     static final AABB blockHitbox = new AABB();
     static final Vector2f tmp1 = new Vector2f();
+
+    public static double alpha() { return alpha; }
+
+    public static double applyAlpha(double last, double curr) {
+        return MathUtil.lerp(last, curr, alpha);
+    }
 
     static int combine(short a, short b) {
         if (a > b) { // коммутативный id; меньший в старших битах, больший в младших
@@ -88,37 +106,6 @@ public class Physics {
         entityPool.forEach(Entity::update);
     }
 
-    private static Vector2f overlap(Rectangle a, Rectangle b) {
-        float penetration = 0f;
-
-        float ax = a.x + a.width / 2, bx = b.x + b.width / 2;
-        float nx = ax - bx;
-        float aex = a.width / 2, bex = b.width / 2;
-
-        float xoverlap = aex + bex - abs(nx);
-        if (abs(xoverlap) > 0) {
-            float aey = a.height / 2, bey = b.height / 2;
-
-            float ay = a.y + a.height / 2, by = b.y + b.height / 2;
-            float ny = ay - by;
-            float yoverlap = aey + bey - abs(ny);
-            if (abs(yoverlap) > 0) {
-                if (abs(xoverlap) < abs(yoverlap)) {
-                    tmp1.x = nx < 0 ? 1 : -1;
-                    tmp1.y = 0;
-                    penetration = xoverlap;
-                } else {
-                    tmp1.x = 0;
-                    tmp1.y = ny < 0 ? 1 : -1;
-                    penetration = yoverlap;
-                }
-            }
-        }
-
-        float m = max(penetration, 0.0f);
-        return tmp1.scale(-m);
-    }
-
     private static void moveDelta(LivingEntity ent, float dx, float dy) {
         ent.hitboxTo(entityHitbox);
         entityHitbox.move(dx, dy);
@@ -136,8 +123,8 @@ public class Physics {
         boolean collided = false;
 
         for (; minY <= maxY; minY++) {
-            for (; minX <= maxX; minX++) {
-                int blockId = world.getBlockId(minX, minY);
+            for (short x = minX; x <= maxX; x++) {
+                int blockId = world.getBlockId(x, minY);
                 if (blockId <= 0) {
                     continue;
                 }
@@ -145,76 +132,87 @@ public class Physics {
                 if (block.type != Block.Type.SOLID) {
                     continue;
                 }
-                blockHitbox.setRectangle(minX, minY, block.tileCountX, block.tileCountY);
+                blockHitbox.setRectangle(x, minY, block.tileCountX, block.tileCountY);
 
-                if (blockHitbox.contains(entityHitbox)) {
+                if (entityHitbox.intersects(blockHitbox)) {
                     // TODO при горизонтальных столкновениях сбрасывать скорость / начислять урон
                     var offsetVec = entityHitbox.overlapTo(blockHitbox, tmp1);
 
-                    entityHitbox.minX += offsetVec.x;
-                    entityHitbox.minY += offsetVec.y;
+                    entityHitbox.move(offsetVec);
                     collided = true;
                 }
             }
         }
 
-
+        boolean hasFloor = false;
         if (collided) {
             var vel = ent.velocity();
             if (abs(dx) > 0) vel.x = 0;
             if (abs(dy) > 0) {
                 entityFall(ent);
+                vel.y = 0;
+                hasFloor = true;
             }
         }
-
-        ent.setPosition(entityHitbox.minX - GAP, entityHitbox.minY - GAP);
+        ent.setPosition(entityHitbox.minX - GAP,entityHitbox.minY - GAP);
+        if (hasFloor) {
+            // 251.9791666623462 + 0.1 = 252.07916666234618; floor(252.07916666234618) = 252.0
+            ent.setY((int)Math.floor(ent.y() + 0.1));
+        }
     }
 
     private static void updateMovement() {
         player.updateInput();
         updateEntities();
 
-        // Физика не будет оставаться на главном потоке, но пока это прототип.
-        entityPool.forEach(ent -> {
-            if (ent instanceof LivingEntity livingEntity) {
-                Vector2f vel = livingEntity.velocity();
-                Vector2f acc = livingEntity.acceleration();
+        float dt = pdt += Time.delta;
+        while (dt >= FDT) {
+            applyAcceleration();
+            simulate();
+            dt -= FDT;
+        }
+        pdt = dt;
+        alpha = dt * INV_FDT;
+    }
 
-                vel.x += acc.x * Time.delta;
-                vel.y += acc.y * Time.delta;
+    private static void applyAcceleration() {
+        entityPool.forEachType(LivingEntity.class, Physics::applyAcceleration);
+    }
 
-                acc.set(0, 0);
-            }
-        });
-
-        float dt = Time.delta;
-        while (dt >= STEPS) {
-            simulate(STEPS);
-            dt -= STEPS;
+    private static void applyAcceleration(LivingEntity ent) {
+        Vector2f vel = ent.velocity();
+        Vector2f acc = ent.acceleration();
+        if (acc.isZeroEps(MathUtil.EPSILON)) {
+            return;
         }
 
-        simulate(dt);
+        // Однажды узнав уже не можешь остановиться
+        vel.x = fma(acc.x, FDT, vel.x);
+        vel.y = fma(acc.y, FDT, vel.y);
+
+        acc.set(0, 0);
     }
 
-    private static void simulate(float dt) {
-        entityPool.forEach(ent -> simulateEntity(dt, ent));
+    private static void simulate() {
+        entityPool.forEach(Physics::simulateEntity);
     }
 
-    private static void simulateEntity(float dt, Entity ent) {
+    private static void simulateEntity(Entity ent) {
+        final float dt = FDT;
         final int leftBorder = Constants.World.SWAP_AREA;
+
         int rightBorder = (world.sizeX - Constants.World.SWAP_AREA);
         int dx = rightBorder - leftBorder;
 
-        // TODO:  при передвижении справа налево движение засчитывается только у ent.getX() (а это левый нижний пиксель)
-        //        Логично что касание должно быть от ent.getX()+hitbox.width
-        if (ent.x() >= rightBorder) {
-            ent.setX(ent.x() - dx);
+        if (ent.x() >= rightBorder &&
+                    ent.x() + ent.width() >= rightBorder) {
+            ent.mirrorX(-dx);
             if (player == ent) {
                 camera.position.x -= dx;
                 ShadowMap.update();
             }
         } else if (ent.x() <= leftBorder) {
-            ent.setX(ent.x() + dx);
+            ent.mirrorX(+dx);
             if (player == ent) {
                 camera.position.x += dx;
                 ShadowMap.update();
@@ -229,6 +227,8 @@ public class Physics {
             return;
         }
 
+        livingEntity.updateLastPosition();
+
         boolean hasFloor = ent.hasFloor();
         Vector2f vel = livingEntity.velocity();
         if (!hasFloor) {
@@ -238,11 +238,11 @@ public class Physics {
         if (hasFloor) {
             float k = calculateFriction(livingEntity);
             float frictionCoefficient = k * livingEntity.weight() * WEIGHT_FACTOR * FRICTION_FACTOR;
-            vel.x *= (float) Math.exp(-frictionCoefficient * dt);
+            vel.x *= (float) exp(-frictionCoefficient * dt);
         } else {
             // TODO по сути это сопротивление в газах (воздух в т.ч.)
             float k = 1f/8;
-            float drag = k * Math.abs(vel.x) * dt;
+            float drag = k * abs(vel.x) * dt;
             if (drag > 1) {
                 drag = 1;
             }
@@ -255,15 +255,15 @@ public class Physics {
         if (abs(vel.y) >= MAX_SPEED) {
             vel.y = signum(vel.y) * MAX_SPEED;
         }
-        move(livingEntity, dt);
+        move(livingEntity);
 
         if (abs(vel.x) <= MathUtil.EPSILON) vel.x = 0;
     }
 
-    private static void move(LivingEntity ent, float dt) {
+    private static void move(LivingEntity ent) {
         var vel = ent.velocity();
-        float dx = vel.x * dt;
-        float dy = vel.y * dt;
+        float dx = vel.x * FDT;
+        float dy = vel.y * FDT;
 
         if (abs(dx) > MOVE_THRESHOLD)
             moveDelta(ent, dx, 0);
@@ -274,8 +274,7 @@ public class Physics {
     private static void entityFall(LivingEntity ent) {
 
         var vel = ent.velocity();
-        boolean hasFloor = ent.hasFloor();
-        if (vel.y < -FALL_DAMAGE_SPEED_THRESHOLD && hasFloor) {
+        if (vel.y < -FALL_DAMAGE_SPEED_THRESHOLD && ent.hasFloor()) {
             float impact = (ent.weight() * WEIGHT_FACTOR) * (vel.y*vel.y)/2f;
             int damage = (int) floor(impact * FALL_DAMAGE_MULTIPLIER);
 
@@ -286,7 +285,6 @@ public class Physics {
                 // world.damage(x, y, damage);
             }
         }
-        vel.y = 0;
     }
 
     private static float calculateFriction(LivingEntity ent) {
@@ -305,13 +303,13 @@ public class Physics {
             Arrays.fill(resistanceSet, 0);
         }
 
-        for (short x = minX; x <= maxX; x++) {
-            for (short y = minY; y <= maxY; y++) {
-                var block = world.getBlock(x, y);
+        for (; minY <= maxY; minY++) {
+            for (short x = minX; x <= maxX; x++) {
+                var block = world.getBlock(x, minY);
                 if (block != null && block.resistance > 0) {
-                    blockHitbox.setRectangle(x, y, block.tileCountX, block.tileCountY);
+                    blockHitbox.setRectangle(x, minY, block.tileCountX, block.tileCountY);
 
-                    var blockId = world.getBlockId(x, y);
+                    var blockId = world.getBlockId(x, minY);
                     if (!FixedBitset.isSet(resistanceSet, blockId) && blockHitbox.overlaps(entityHitbox)) {
                         FixedBitset.setBit(resistanceSet, blockId);
 
@@ -338,8 +336,8 @@ public class Physics {
         short maxY = entityHitbox.blockMaxY();
 
         for (; minY <= maxY; minY++) {
-            for (; minX <= maxX; minX++) {
-                if (world.getBlockType(minX, minY) == Block.Type.SOLID) {
+            for (short x = minX; x <= maxX; x++) {
+                if (world.getBlockType(x, minY) == Block.Type.SOLID) {
                     return true;
                 }
             }

@@ -1,6 +1,6 @@
 package core;
 
-public class GameObject implements AssetLifecycle {
+public abstract class GameObject implements AssetLifecycle {
 
     @Override
     public void onLoaded() {
