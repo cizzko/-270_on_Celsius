@@ -6,23 +6,24 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import core.lang.*;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import org.objectweb.asm.ClassReader;
+import org.objectweb.asm.tree.*;
+import org.objectweb.asm.tree.analysis.*;
 
 import java.io.IOException;
 import java.lang.classfile.*;
 import java.lang.classfile.constantpool.*;
-import java.lang.classfile.instruction.ConstantInstruction;
-import java.lang.classfile.instruction.InvokeInstruction;
-import java.lang.classfile.instruction.LineNumber;
 import java.lang.constant.ClassDesc;
 import java.lang.constant.MethodTypeDesc;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static core.lang.TrMap.TR_ORDER;
 import static core.lang.TrMap.makeTrMap;
+import static java.lang.classfile.Attributes.*;
+import static java.lang.classfile.ClassFile.ACC_ABSTRACT;
+import static java.lang.classfile.ClassFile.ACC_NATIVE;
 
 public final class TranslationProcessor {
 
@@ -73,7 +74,7 @@ public final class TranslationProcessor {
             languageSettings = objectMapper.readValue(is, LanguageSettings.class);
         }
 
-        var cf = ClassFile.of(ClassFile.DebugElementsOption.DROP_DEBUG);
+        var cf = ClassFile.of();
 
         HashMap<MethodRef, MethodInfo> markedMethods;
         List<Path> classFiles;
@@ -92,25 +93,7 @@ public final class TranslationProcessor {
 
         System.out.println("Marked method collect: " + ((System.currentTimeMillis() - t) / 1000f) + "s");
 
-        markedMethods.forEach((ref, methodInfo) -> {
-
-            System.out.print("| " + canonicalClass(ref.classDesc) + "." + ref.methodName + "(");
-            var methodTypeDesc = ref.methodTypeDesc;
-            var indexes = methodInfo.indexes;
-            int parameterCount = methodTypeDesc.parameterCount();
-            for (int i = 0; i < parameterCount; i++) {
-                if (indexes.contains(i)) {
-                    System.out.print("@");
-                    System.out.print(canonicalClass(CD_Translation));
-                    System.out.print(' ');
-                }
-                System.out.print(canonicalClass(methodTypeDesc.parameterType(i)));
-                if (i != parameterCount - 1) {
-                    System.out.print(", ");
-                }
-            }
-            System.out.println(')');
-        });
+        markedMethods.forEach(TranslationProcessor::printMethod);
 
         t = System.currentTimeMillis();
         var trRefMap = classFiles.parallelStream()
@@ -138,6 +121,25 @@ public final class TranslationProcessor {
         }
 
         System.out.println("Translation saving: " + ((System.currentTimeMillis() - t) / 1000f) + "s");
+    }
+
+    private static void printMethod(MethodRef ref, MethodInfo methodInfo) {
+        System.out.print("| " + canonicalClass(ref.classDesc) + "." + ref.methodName + "(");
+        var methodTypeDesc = ref.methodTypeDesc;
+        var indexes = methodInfo.indexes;
+        int parameterCount = methodTypeDesc.parameterCount();
+        for (int i = 0; i < parameterCount; i++) {
+            if (indexes.contains(i)) {
+                System.out.print("@");
+                System.out.print(canonicalClass(CD_Translation));
+                System.out.print(' ');
+            }
+            System.out.print(canonicalClass(methodTypeDesc.parameterType(i)));
+            if (i != parameterCount - 1) {
+                System.out.print(", ");
+            }
+        }
+        System.out.println(')');
     }
 
     private static void checkExistingTrFile(Path file, TreeMap<String, TrLine> trRefMap, Context ctx) throws IOException {
@@ -204,50 +206,6 @@ public final class TranslationProcessor {
         }
     }
 
-    static void writePot(Path trDir, String fileName, TreeMap<String, ArrayList<String>> trMap) throws IOException {
-        var dateTimeFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mmZ");
-        String header = """
-                msgid ""
-                msgstr ""
-                "Project-Id-Version: PACKAGE VERSION\\n"
-                "POT-Creation-Date: {POT_CREATION_DATE}\\n"
-                "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\\n"
-                "Last-Translator: FULL NAME\\n"
-                "Language-Team: LANGUAGE\\n"
-                "Language: \\n"
-                "MIME-Version: 1.0\\n"
-                "Content-Type: text/plain; charset=CHARSET\\n"
-                "Content-Transfer-Encoding: 8bit\\n"
-                """
-                .replace("{POT_CREATION_DATE}", dateTimeFormat.format(ZonedDateTime.now()));
-
-        try (var wr = Files.newBufferedWriter(trDir.resolve(fileName + ".pot"))) {
-            wr.write(header);
-            wr.newLine();
-
-            for (var entry : trMap.entrySet()) {
-                String key = entry.getKey();
-
-                for (String s : entry.getValue()) {
-                    wr.write("#:");
-                    wr.write(s);
-                    wr.newLine();
-                }
-
-                wr.write("msgid \"");
-                wr.write(key
-                        .replace("\"", "\\\""));
-                wr.write("\"");
-                wr.newLine();
-
-                wr.write("msgstr \"\"");
-                wr.newLine();
-
-                wr.newLine();
-            }
-        }
-    }
-
     static void mergeTrMap(TreeMap<String, TrLine> lhs, Map<String, TrLine> rhs) {
 
         rhs.forEach((key, lines) -> {
@@ -260,87 +218,94 @@ public final class TranslationProcessor {
 
     static Map<String, TrLine> parseTrMap(ClassFile cf, Path baseDir, Path file,
                                           HashMap<MethodRef, MethodInfo> markedMethods) {
-        ClassModel classModel;
+        byte[] bytecode;
         try {
-            classModel = cf.parse(file);
+            bytecode = Files.readAllBytes(file);
         } catch (IOException e) {
             e.printStackTrace();
             return Map.of();
         }
-        var cp = classModel.constantPool();
 
-        boolean any = false;
-        for (PoolEntry poolEntry : cp) {
-            if (poolEntry instanceof MemberRefEntry e && isMethodRefEntry(e) && markedMethods.containsKey(makeKey(e))) {
-                any = true;
-                break;
+        {
+            var classModel = cf.parse(bytecode);
+            boolean any = false;
+            for (var poolEntry : classModel.constantPool()) {
+                if (poolEntry instanceof MemberRefEntry e && isMethodRefEntry(e) && markedMethods.containsKey(makeKey(e))) {
+                    any = true;
+                    break;
+                }
+            }
+            if (!any) {
+                return Map.of();
             }
         }
-        if (!any) {
-            return Map.of();
-        }
+
+        var cr = new ClassReader(bytecode);
+        var cn = new ClassNode();
+        cr.accept(cn, 0);
 
         var trMap = makeTrMap();
-        var className =
-                baseDir.resolve(classModel.thisClass().asSymbol().packageName()
-                                .replace('.', '/'),
-                        classModel.findAttribute(Attributes.sourceFile()).orElseThrow()
-                                .sourceFile().stringValue());
+        var cd = ClassDesc.ofInternalName(cn.name);
+        var className = baseDir.resolve(cd.packageName().replace('.', '/'), cn.sourceFile);
 
-        final int lineNumberOffset = 1; // или 0 для конфига выше
-        for (var method : classModel.methods()) {
-            method.code().ifPresent(code -> {
-                var elementList = code.elementList();
-                for (int j = 0; j < elementList.size(); j++) {
-                    var codeElement = elementList.get(j);
-                    if (!(codeElement instanceof InvokeInstruction i)) {
-                        continue;
-                    }
-                    var methodInfo = markedMethods.get(makeKey(i.method()));
-                    if (methodInfo == null) {
-                        continue;
-                    }
-                    var instr = elementList.subList(Math.max(0, j - i.typeSymbol().parameterCount() - lineNumberOffset), j);
-                    if (!hasLDCTranslation(instr)) {
-                        continue;
-                    }
+        int currentLineNumber = -1;
 
-                    String lineNumber = instr.stream()
-                            .filter(c -> c instanceof LineNumber)
-                            .findFirst()
-                            .map(c -> (LineNumber) c)
-                            .map(ln -> className + ":" + ln.line())
-                            .orElseThrow();
+        var interp = new SourceInterpreter();
+        for (MethodNode mn : cn.methods) {
+            if ((mn.access & (ACC_ABSTRACT | ACC_NATIVE)) != 0) {
+                continue;
+            }
 
-                    var insnList = instr.stream()
-                            .filter(c -> !(c instanceof LineNumber))
-                            .toList();
+            var analyzer = new Analyzer<>(interp);
+            Frame<SourceValue>[] frames;
+            try {
+                frames = analyzer.analyze(cn.name, mn);
+            } catch (AnalyzerException e) {
+                e.printStackTrace();
+                continue;
+            }
 
-                    for (int index : methodInfo.indexes) {
-                        if (insnList.get(index) instanceof ConstantInstruction ci &&
-                            ci.constantValue() instanceof String key) {
+            var insnList = mn.instructions;
+            for (int i = 0, n = insnList.size(); i < n; i++) {
+                var frame = frames[i];
+                var asmInstr = insnList.get(i);
 
-                            trMap.computeIfAbsent(key, s -> new TrLine(s, new ArrayList<>())).comments().add(lineNumber);
+                if (asmInstr instanceof LineNumberNode lineNode) {
+                    currentLineNumber = lineNode.line;
+                }
+
+                if (asmInstr.getType() != AbstractInsnNode.METHOD_INSN) {
+                    continue;
+                }
+
+                var invoke = (MethodInsnNode) asmInstr;
+                if (frame == null || invoke.owner.indexOf('[') != -1) {
+                    continue;
+                }
+                var desc = MethodTypeDesc.ofDescriptor(invoke.desc);
+                var marked = markedMethods.get(new MethodRef(ClassDesc.ofInternalName(invoke.owner), invoke.name, desc));
+                if (marked == null) {
+                    continue;
+                }
+
+                int begin = frame.getStackSize() - desc.parameterCount();
+                for (int index : marked.indexes) {
+                    var paramsInsnList = frame.getStack(index + begin);
+                    for (var insn : paramsInsnList.insns) {
+                        if (insn instanceof LdcInsnNode ldc && ldc.cst instanceof String text) {
+                            String lineLink = className + ":" + currentLineNumber;
+                            trMap.computeIfAbsent(text, k -> new TrLine(k, new ArrayList<>()))
+                                    .comments().add(lineLink);
                         }
                     }
                 }
-            });
+            }
         }
-
         return trMap;
     }
 
     static boolean isMethodRefEntry(MemberRefEntry e) {
         return !(e instanceof FieldRefEntry);
-    }
-
-    static boolean hasLDCTranslation(List<CodeElement> instr) {
-        for (CodeElement codeElement : instr) {
-            if (!(codeElement instanceof ConstantInstruction) && !(codeElement instanceof LineNumber)) {
-                return false;
-            }
-        }
-        return true;
     }
 
     static String canonicalClass(ClassDesc classDesc) {
@@ -358,9 +323,13 @@ public final class TranslationProcessor {
             e.printStackTrace();
             return Map.of();
         }
+        return processMarkedMethod(classModel);
+    }
+
+    private static HashMap<MethodRef, MethodInfo> processMarkedMethod(ClassModel classModel) {
         var map = new HashMap<MethodRef, MethodInfo>();
         for (var method : classModel.methods()) {
-            var attr = method.findAttribute(Attributes.runtimeInvisibleParameterAnnotations())
+            var attr = method.findAttribute(runtimeInvisibleParameterAnnotations())
                     .orElse(null);
             if (attr == null) {
                 continue;

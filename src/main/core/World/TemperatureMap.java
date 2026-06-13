@@ -1,21 +1,22 @@
 package core.World;
 
-import core.Constants;
-import core.World.WorldGenerator.WorldGeneratorTMP;
 import core.content.blocks.Block;
+import core.util.BatchScope;
+import core.util.Debug;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Future;
+import java.util.Arrays;
 
 import static core.Global.world;
 import static core.World.WorldGenerator.WorldGeneratorConstants.COPY_SIZE;
+import static java.lang.Math.clamp;
 
 //счас по упрощенной модели - не считает диагонали, большие клампы
 //возможно, в будущем появится галочка обычной или упрощенной модели
 public class TemperatureMap {
-    private static float[][] temps;
-    private static float[][] density;
+    //column-major массивы
+    //Внешний цикл по x, внутренний по y
+    private static float[] temps;
+    private static float[] density;
 
     //ем выше, тем 'взрывоопаснее' газы (температура больше влияет на расширение)
     public static final float R = 250.05f;
@@ -41,114 +42,113 @@ public class TemperatureMap {
     //Множитель теплопроводности блоков
     public static final float SOLID_CONDUCTIVITY_MULT = 0.4f;
 
-    public static void generate() {
-        temps = new float[world.sizeX][world.sizeY];
-        density = new float[world.sizeX][world.sizeY];
+    public static int pos2index(int x, int y) { return x * world.sizeY + y; }
+
+    public static void init() {
+        temps = new float[world.sizeX * world.sizeY];
+        density = new float[world.sizeX * world.sizeY];
 
         //todo
-        for (int x = 0; x < world.sizeX; x++) {
-            java.util.Arrays.fill(temps[x], 50.0f);
-            java.util.Arrays.fill(density[x], 1.2f);
+        Arrays.fill(temps, 50.0f);
+        Arrays.fill(density, 1.2f);
+    }
+
+    public static void generate() {
+        if (true)
+            return;
+
+        int halfSize = 40;
+        int spawnX = world.sizeX / 2;
+        int spawnY = world.sizeY / 2;
+
+        {
+            int startX = clamp(spawnX - halfSize, 0, world.sizeY - 1);
+            int endX   = clamp(spawnX + halfSize, 0, world.sizeY - 1);
+            int startY = clamp(spawnY - halfSize, 0, world.sizeX - 1);
+            int endY   = clamp(spawnY + halfSize, 0, world.sizeX - 1);
+
+            for (int x = startX; x < endX; x++) {
+                for (int y = startY; y < endY; y++) {
+                    int idx = pos2index(x, y);
+                    temps[idx] = 1000.0f;
+                    density[idx] = 7f;
+                }
+            }
         }
 
-//        int halfSize = 40;
-//        int spawnX = world.sizeY / 2;
-//        int spawnY = world.sizeY / 2;
-//
-//        for (int x = spawnX - halfSize; x < spawnX + halfSize; x++) {
-//            for (int y = spawnY - halfSize; y < spawnY + halfSize; y++) {
-//                if (y >= 0 && y < world.sizeY && x > 0) {
-//                    temps[x][y] = 1000.0f;
-//                    density[x][y] = 7f;
-//                }
-//            }
-//        }
-//        for (int i = 0; i < 2000; i++) {
-//            update();
-//        }
-//        WorldGeneratorTMP.saveTemp("Temp");
-//        WorldGeneratorTMP.savePressures("Pressure");
-//        WorldGeneratorTMP.saveDens("Density");
-//        for (int i = 0; i < 10000; i++) {
-//            update();
-//        }
-//        WorldGeneratorTMP.saveTemp("Temp1");
-//        WorldGeneratorTMP.savePressures("Pressure1");
-//        WorldGeneratorTMP.saveDens("Density1");
+        final int leftBorder = 0;
+        final int rightBorder = world.sizeX - COPY_SIZE;
+        final int activeWidth = rightBorder - leftBorder;
+        var scope = new BatchScope(world.genPool, activeWidth);
+        for (int i = 0; i < 2000; i++) {
+            update(scope);
+        }
+        try (scope) {
+            Debug.saveTemp("Temp", scope);
+            Debug.savePressures("Pressure", scope);
+            Debug.saveDens("Density", scope);
+        }
+        for (int i = 0; i < 10000; i++) {
+            update(scope);
+        }
+        Debug.saveTemp("Temp1", null);
+        Debug.savePressures("Pressure1", null);
+        Debug.saveDens("Density1", null);
     }
 
     //чтоб не утекало в одну сторону, это нормальная практика
     private static boolean flip = false;
 
-    public static void update() {
+    public static void update(BatchScope scope) {
         //todo такт не надо, ведь точно можем узнать что где и когда но пока лень
         for (int x = 0; x < world.sizeX; x++) {
-            for (int j = 0; j < world.sizeY; j++) {
+            for (int y = 0; y < world.sizeY; y++) {
                 if (x < COPY_SIZE) {
                     int targetX = world.sizeX - COPY_SIZE + x;
-                    temps[targetX][j] = temps[x][j];
-                    density[targetX][j] = density[x][j];
+                    temps[pos2index(targetX, y)] = temps[pos2index(x, y)];
+                    density[pos2index(targetX, y)] = density[pos2index(x, y)];
                 } else if (x > world.sizeX - COPY_SIZE) {
                     int targetX = x - (world.sizeX - COPY_SIZE);
-                    temps[targetX][j] = temps[x][j];
-                    density[targetX][j] = density[x][j];
+                    temps[pos2index(targetX, y)] = temps[pos2index(x, y)];
+                    density[pos2index(targetX, y)] = density[pos2index(x, y)];
                 }
             }
         }
 
         flip = !flip;
+
         final int leftBorder = 0;
         final int rightBorder = world.sizeX - COPY_SIZE;
         final int activeWidth = rightBorder - leftBorder;
 
-        int processors = Constants.availableProcessors;
-        int chunkSize = activeWidth / processors;
-        if (chunkSize < 1) {
-            chunkSize = 1;
-        }
-
-        List<Future<?>> futures = new ArrayList<>(processors);
         final boolean currentFlip = flip;
 
         //оно должно ломаться, ведь итерации созависимы, но охренеть не ломается
-        for (int t = 0; t < processors; t++) {
-            final int startX = leftBorder + t * chunkSize;
-            final int endX = (t == processors - 1) ? rightBorder : (startX + chunkSize);
 
-            if (startX >= rightBorder) {
-                break;
-            }
+        try (scope) {
 
-            futures.add(world.genPool.submit(() -> {
-                if (currentFlip) {
+            if (currentFlip) {
+                scope.submit(leftBorder, rightBorder, (startX, endX) -> {
                     for (int i = startX; i < endX; i++) {
-                        for (int j = 0; j < world.sizeY; j++) {
+                        int end = world.sizeY - 1;
+                        for (int j = 0; j < end; j++) {
                             processHorizontalFlow(i, j, leftBorder, activeWidth);
-
-                            if (j < world.sizeY - 1) {
-                                processVerticalFlow(i, j);
-                            }
+                            processVerticalFlow(i, j);
                         }
+                        processHorizontalFlow(i, end, leftBorder, activeWidth);
                     }
-                } else {
+                });
+            } else {
+                scope.submit(leftBorder, rightBorder, (startX, endX) -> {
                     for (int i = endX - 1; i >= startX; i--) {
-                        for (int j = world.sizeY - 1; j >= 0; j--) {
+                        int start = world.sizeY - 1;
+                        processHorizontalFlow(i, start, leftBorder, activeWidth);
+                        for (int j = start - 1; j >= 0; j--) {
                             processHorizontalFlow(i, j, leftBorder, activeWidth);
-
-                            if (j < world.sizeY - 1) {
-                                processVerticalFlow(i, j);
-                            }
+                            processVerticalFlow(i, j);
                         }
                     }
-                }
-            }));
-        }
-
-        for (Future<?> future : futures) {
-            try {
-                future.get();
-            } catch (Exception e) {
-                e.printStackTrace();
+                });
             }
         }
     }
@@ -157,19 +157,24 @@ public class TemperatureMap {
         //todo хихи хаха
         int nextI = leftBorder + ((i - leftBorder + 1) % activeWidth);
 
-        boolean isLeftSolid = world.getBlockType(i, j) == Block.Type.SOLID;
-        boolean isRightSolid = world.getBlockType(nextI, j) == Block.Type.SOLID;
+        int idx = pos2index(i, j);
+        int nextIdx = pos2index(nextI, j);
 
-        float deltaT = temps[i][j] - temps[nextI][j];
+        float deltaT = temps[idx] - temps[nextIdx];
         if (Math.abs(deltaT) > 0.01f) {
             float conduct = getConductivity(i, j, nextI, j);
             float ht = deltaT * HEAT_DIFFUSION_K * conduct;
 
-            temps[i][j] -= ht / getHeatCapacity(i, j);
-            temps[nextI][j] += ht / getHeatCapacity(nextI, j);
+            temps[idx] -= ht / getHeatCapacity(i, j);
+            temps[nextIdx] += ht / getHeatCapacity(nextI, j);
         }
 
-        if (isLeftSolid || isRightSolid) {
+        boolean isLeftSolid = world.isBlockType(i, j, Block.Type.SOLID);
+        if (isLeftSolid) {
+            return;
+        }
+        boolean isRightSolid = world.isBlockType(nextI, j, Block.Type.SOLID);
+        if (isRightSolid) {
             return;
         }
 
@@ -182,62 +187,68 @@ public class TemperatureMap {
 
             //флов показывает влево или вправо
             if (flow > 0) {
-                float maxFlow = density[i][j] * MAX_FLOW_RESTR;
-                if (flow > maxFlow){
-                    flow = maxFlow;
-                }
-
-                float energy = flow * temps[i][j];
-                float energyLeft = (density[i][j] * temps[i][j]) - energy;
-                float energyRight = (density[nextI][j] * temps[nextI][j]) + energy;
-
-                density[i][j] -= flow;
-                density[nextI][j] += flow;
-
-                if (density[i][j] > MIN_DENSITY_THRESHOLD) {
-                    temps[i][j] = energyLeft / density[i][j];
-                }
-                if (density[nextI][j] > MIN_DENSITY_THRESHOLD) {
-                    temps[nextI][j] = energyRight / density[nextI][j];
-                }
-
-            } else if (flow < 0) {
-                flow = -flow;
-                float maxFlow = density[nextI][j] * MAX_FLOW_RESTR;
+                float maxFlow = density[idx] * MAX_FLOW_RESTR;
                 if (flow > maxFlow) {
                     flow = maxFlow;
                 }
 
-                float energy = flow * temps[nextI][j];
-                float energyRight = (density[nextI][j] * temps[nextI][j]) - energy;
-                float energyLeft = (density[i][j] * temps[i][j]) + energy;
+                float energy = flow * temps[idx];
+                float energyLeft = (density[idx] * temps[idx]) - energy;
+                float energyRight = (density[nextIdx] * temps[nextIdx]) + energy;
 
-                density[nextI][j] -= flow;
-                density[i][j] += flow;
+                density[idx] -= flow;
+                density[nextIdx] += flow;
 
-                if (density[nextI][j] > MIN_DENSITY_THRESHOLD) {
-                    temps[nextI][j] = energyRight / density[nextI][j];
+                if (density[idx] > MIN_DENSITY_THRESHOLD) {
+                    temps[idx] = energyLeft / density[idx];
                 }
-                if (density[i][j] > MIN_DENSITY_THRESHOLD) {
-                    temps[i][j] = energyLeft / density[i][j];
+                if (density[nextIdx] > MIN_DENSITY_THRESHOLD) {
+                    temps[nextIdx] = energyRight / density[nextIdx];
+                }
+
+            } else {
+                flow = -flow;
+                float maxFlow = density[nextIdx] * MAX_FLOW_RESTR;
+                if (flow > maxFlow) {
+                    flow = maxFlow;
+                }
+
+                float energy = flow * temps[nextIdx];
+                float energyRight = (density[nextIdx] * temps[nextIdx]) - energy;
+                float energyLeft = (density[idx] * temps[idx]) + energy;
+
+                density[nextIdx] -= flow;
+                density[idx] += flow;
+
+                if (density[nextIdx] > MIN_DENSITY_THRESHOLD) {
+                    temps[nextIdx] = energyRight / density[nextIdx];
+                }
+                if (density[idx] > MIN_DENSITY_THRESHOLD) {
+                    temps[idx] = energyLeft / density[idx];
                 }
             }
         }
     }
 
     private static void processVerticalFlow(int i, int j) {
-        float deltaT = temps[i][j] - temps[i][j + 1];
+        int idx = pos2index(i, j);
+        int nextIdx = pos2index(i, j + 1);
+
+        float deltaT = temps[idx] - temps[nextIdx];
         if (Math.abs(deltaT) > 0.01f) {
             float conduct = getConductivity(i, j, i, j + 1);
             float heatTransfer = deltaT * HEAT_DIFFUSION_K * conduct;
 
-            temps[i][j] -= heatTransfer / getHeatCapacity(i, j);
-            temps[i][j + 1] += heatTransfer / getHeatCapacity(i, j + 1);
+            temps[idx] -= heatTransfer / getHeatCapacity(i, j);
+            temps[nextIdx] += heatTransfer / getHeatCapacity(i, j + 1);
         }
 
-        boolean isUpSolid = world.getBlockType(i, j) == Block.Type.SOLID;
-        boolean isDownSolid = world.getBlockType(i, j + 1) == Block.Type.SOLID;
-        if (isUpSolid || isDownSolid) {
+        boolean isUpSolid = world.isBlockType(i, j, Block.Type.SOLID);
+        if (isUpSolid) {
+            return;
+        }
+        boolean isDownSolid = world.isBlockType(i, j + 1, Block.Type.SOLID);
+        if (isDownSolid) {
             return;
         }
 
@@ -249,59 +260,59 @@ public class TemperatureMap {
             float flow = deltaP * SIM_K;
 
             if (flow > 0) {
-                float maxFlow = density[i][j] * MAX_FLOW_RESTR;
+                float maxFlow = density[idx] * MAX_FLOW_RESTR;
                 if (flow > maxFlow) {
                     flow = maxFlow;
                 }
 
-                float energy = flow * temps[i][j];
-                float energyUp = (density[i][j] * temps[i][j]) - energy;
-                float energyDown = (density[i][j + 1] * temps[i][j + 1]) + energy;
+                float energy = flow * temps[idx];
+                float energyUp = (density[idx] * temps[idx]) - energy;
+                float energyDown = (density[nextIdx] * temps[nextIdx]) + energy;
 
-                density[i][j] -= flow;
-                density[i][j + 1] += flow;
+                density[idx] -= flow;
+                density[nextIdx] += flow;
 
-                if (density[i][j] > MIN_DENSITY_THRESHOLD) {
-                    temps[i][j] = energyUp / density[i][j];
+                if (density[idx] > MIN_DENSITY_THRESHOLD) {
+                    temps[idx] = energyUp / density[idx];
                 }
-                if (density[i][j + 1] > MIN_DENSITY_THRESHOLD) {
-                    temps[i][j + 1] = energyDown / density[i][j + 1];
+                if (density[nextIdx] > MIN_DENSITY_THRESHOLD) {
+                    temps[nextIdx] = energyDown / density[nextIdx];
                 }
 
-            } else if (flow < 0) {
+            } else {
                 flow = -flow;
-                float maxFlow = density[i][j + 1] * MAX_FLOW_RESTR;
+                float maxFlow = density[nextIdx] * MAX_FLOW_RESTR;
                 if (flow > maxFlow) {
                     flow = maxFlow;
                 }
 
-                float energy = flow * temps[i][j + 1];
-                float energyDown = (density[i][j + 1] * temps[i][j + 1]) - energy;
-                float energyUp = (density[i][j] * temps[i][j]) + energy;
+                float energy = flow * temps[nextIdx];
+                float energyDown = (density[nextIdx] * temps[nextIdx]) - energy;
+                float energyUp = (density[idx] * temps[idx]) + energy;
 
-                density[i][j + 1] -= flow;
-                density[i][j] += flow;
+                density[nextIdx] -= flow;
+                density[idx] += flow;
 
-                if (density[i][j + 1] > MIN_DENSITY_THRESHOLD) {
-                    temps[i][j + 1] = energyDown / density[i][j + 1];
+                if (density[nextIdx] > MIN_DENSITY_THRESHOLD) {
+                    temps[nextIdx] = energyDown / density[nextIdx];
                 }
-                if (density[i][j] > MIN_DENSITY_THRESHOLD) {
-                    temps[i][j] = energyUp / density[i][j];
+                if (density[idx] > MIN_DENSITY_THRESHOLD) {
+                    temps[idx] = energyUp / density[idx];
                 }
             }
         }
     }
 
     private static float getHeatCapacity(int x, int y) {
-        if (world.getBlockType(x, y) == Block.Type.SOLID) {
+        if (world.isBlockType(x, y, Block.Type.SOLID)) {
             return SOLID_HEAT_CAPACITY_MULT;
         }
-        return Math.max(MIN_DENSITY_THRESHOLD, density[x][y]);
+        return Math.max(MIN_DENSITY_THRESHOLD, density[pos2index(x, y)]);
     }
 
     private static float getConductivity(int x1, int y1, int x2, int y2) {
-        float c1 = (world.getBlockType(x1, y1) == Block.Type.SOLID) ? SOLID_CONDUCTIVITY_MULT : 1.0f;
-        float c2 = (world.getBlockType(x2, y2) == Block.Type.SOLID) ? SOLID_CONDUCTIVITY_MULT : 1.0f;
+        float c1 = world.isBlockType(x1, y1, Block.Type.SOLID) ? SOLID_CONDUCTIVITY_MULT : 1.0f;
+        float c2 = world.isBlockType(x2, y2, Block.Type.SOLID) ? SOLID_CONDUCTIVITY_MULT : 1.0f;
 
         return Math.min(c1, c2);
     }
@@ -312,19 +323,20 @@ public class TemperatureMap {
     //не семплируется!!!! если нужно узнать в конкретной точке
     //то надо брать несколько и сглаживать
     public static float getDensity(int x, int y) {
-        if (world.getBlockType(x, y) == Block.Type.SOLID) {
+        if (world.isBlockType(x, y, Block.Type.SOLID)) {
             //todo
             return 5;
         }
-        return density[x][y];
+        return density[pos2index(x, y)];
     }
 
     public static float getPressure(int x, int y) {
+        int idx = pos2index(x, y);
         if (world.getBlockType(x, y) == Block.Type.SOLID) {
-            return SOLID_BASE_PRESSURE * pow_2_5((temps[x][y] + 273.15f) / 273.15f);
+            return SOLID_BASE_PRESSURE * pow_2_5((temps[idx] + 273.15f) / 273.15f);
         }
 
-        return density[x][y] * (temps[x][y] + 273.15f) * R;
+        return density[idx] * (temps[idx] + 273.15f) * R;
     }
 
     /// {@link TemperatureMap#SOLID_SHRINK}
@@ -333,6 +345,6 @@ public class TemperatureMap {
     }
 
     public static float getTempCell(int x, int y) {
-        return temps[x][y];
+        return temps[pos2index(x, y)];
     }
 }

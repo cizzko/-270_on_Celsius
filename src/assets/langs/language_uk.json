@@ -13,17 +13,17 @@
   "Exit": {
     "text": "Exit",
     "comments": [
-      "src/main/core/UI/menu/MainMenu.java:30",
+      "src/main/core/UI/menu/MainMenu.java:31",
       "src/main/core/UI/menu/Pause.java:31"
     ]
   },
   "Experimental worl gen": {
     "text": "Experimental worl gen",
-    "comments": [ "src/main/core/UI/menu/CreatePlanet.java:76" ]
+    "comments": [ "src/main/core/UI/menu/CreatePlanet.java:77" ]
   },
   "Generate flat world": {
     "text": "Generate flat world",
-    "comments": [ "src/main/core/UI/menu/CreatePlanet.java:85" ]
+    "comments": [ "src/main/core/UI/menu/CreatePlanet.java:86" ]
   },
   "Generate world": {
     "text": "Generate world",
@@ -43,7 +43,7 @@
   },
   "Load save": {
     "text": "Load save",
-    "comments": [ "src/main/core/UI/menu/MainMenu.java:22" ]
+    "comments": [ "src/main/core/UI/menu/MainMenu.java:23" ]
   },
   "Load world": {
     "text": "Load world",
@@ -55,7 +55,7 @@
   },
   "New game": {
     "text": "New game",
-    "comments": [ "src/main/core/UI/menu/MainMenu.java:19" ]
+    "comments": [ "src/main/core/UI/menu/MainMenu.java:20" ]
   },
   "Other": {
     "text": "Other",
@@ -84,7 +84,7 @@
   "Settings": {
     "text": "Settings",
     "comments": [
-      "src/main/core/UI/menu/MainMenu.java:26",
+      "src/main/core/UI/menu/MainMenu.java:27",
       "src/main/core/UI/menu/Pause.java:23"
     ]
   },

@@ -279,22 +279,22 @@ public final class World {
     /// @param newHp новое значение здоровья блока. Должно быть в отрезке `[0, 255]`
     public void setHp(int x, int y, @MathUtil.UnsignedByte int newHp) {
         // Global.app.ensureMainThread();
-        if (newHp < 0 || newHp >= (1 << 8)) {
-            throw new IllegalArgumentException("HP out of range: [0, 255]");
+        // if (newHp < 0 || newHp >= (1 << 8))
+        //     throw new IllegalArgumentException("HP out of range: [0, 255]");
+
+        if (!inBounds(x, y)) {
+            return;
         }
+        if (getRootBlockPosTo(x, y, tmp)) {
+            var rootBlock = getBlock(tmp);
 
-        if (inBounds(x, y)) {
-            if (getRootBlockPosTo(x, y, tmp)) {
-                var rootBlock = getBlock(tmp);
-
-                for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
-                    for (int blockX = 0; blockX < rootBlock.tileCountX; blockX++) {
-                        setHpImpl(x + blockX, y + blockY, newHp);
-                    }
+            for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
+                for (int blockX = 0; blockX < rootBlock.tileCountX; blockX++) {
+                    setHpImpl(x + blockX, y + blockY, newHp);
                 }
-            } else {
-                setHpImpl(x, y, newHp);
             }
+        } else {
+            setHpImpl(x, y, newHp);
         }
     }
 

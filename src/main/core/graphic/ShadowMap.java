@@ -3,9 +3,9 @@ package core.graphic;
 import core.GameState;
 import core.UI.Styles;
 import core.content.entity.CreatureEntity;
+import core.util.BatchScope;
 
 import java.util.HashMap;
-import java.util.stream.IntStream;
 
 import static core.Global.*;
 import static core.WorldCoordinates.toBlock;
@@ -22,6 +22,10 @@ public class ShadowMap {
 
 
     // todo переписать генерацию и обновление теней
+
+    public static void init() {
+        shadows = new byte[world.sizeX * world.sizeY];
+    }
 
     public static void getShadowTo(int x, int y, Color out) {
         if (world.inBounds(x, y)) {
@@ -60,47 +64,34 @@ public class ShadowMap {
     }
 
     public static void generate() {
-        shadows = new byte[world.sizeX * world.sizeY];
-        int totalColumns = world.sizeX;
-        int cores = Runtime.getRuntime().availableProcessors();
-        int chunkSize = (totalColumns / cores) + 1;
-
-        IntStream.range(0, cores).parallel().forEach(p -> {
-            int startChunkX = Math.max(1, p * chunkSize);
-            int endChunkX = Math.min(world.sizeX - 1, startChunkX + chunkSize);
-
-            for (int y = 1; y < world.sizeY; y++) {
-                for (int x = startChunkX; x < endChunkX; x++) {
+        var scope = new BatchScope(world.genPool, world.sizeX);
+        scope.submit(1, world.sizeY, (loY, hiY) -> {
+            for (int y = loY; y < hiY; y++) {
+                for (int x = 0; x < world.sizeX; x++) {
                     if (checkHasGasAround(x, y, 1)) {
                         setShadow0(x, y, 1);
                     }
                 }
             }
-        });
-
-        IntStream.range(0, cores).parallel().forEach(p -> {
-            int startChunkX = Math.max(1, p * chunkSize);
-            int endChunkX = Math.min(world.sizeX - 1, startChunkX + chunkSize);
-            for (int y = 1; y < world.sizeY; y++) {
-                for (int x = startChunkX; x < endChunkX; x++) {
+        }).awaitAll();
+        scope.submit(1, world.sizeY, (loY, hiY) -> {
+            for (int y = loY; y < hiY; y++) {
+                for (int x = 0; x < world.sizeX; x++) {
                     if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
                         setShadow0(x, y, 2);
                     }
                 }
             }
-        });
-
-        IntStream.range(0, cores).parallel().forEach(p -> {
-            int startChunkX = Math.max(2, p * chunkSize);
-            int endChunkX = Math.min(world.sizeX - 2, startChunkX + chunkSize);
-            for (int y = 2; y < world.sizeY; y++) {
-                for (int x = startChunkX; x < endChunkX; x++) {
+        }).awaitAll();
+        scope.submit(2, world.sizeY, (loY, hiY) -> {
+            for (int y = loY; y < hiY; y++) {
+                for (int x = 0; x < world.sizeX; x++) {
                     if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
                         setShadow0(x, y, 3);
                     }
                 }
             }
-        });
+        }).awaitAll();
     }
 
     public static void update() {
@@ -117,8 +108,8 @@ public class ShadowMap {
         short maxX = viewport.blockMaxX();
         short maxY = viewport.blockMaxY();
 
-        for (int y = minY; y < maxY; y++) {
-            for (int x = minX; x < maxX; x++) {
+        for (short y = minY; y < maxY; y++) {
+            for (short x = minX; x < maxX; x++) {
                 if (checkHasGasAround(x, y, 1)) {
                     setShadow0(x, y, 1);
                 } else {
@@ -127,16 +118,16 @@ public class ShadowMap {
             }
         }
 
-        for (int y = minY; y < maxY; y++) {
-            for (int x = minX; x < maxX; x++) {
+        for (short y = minY; y < maxY; y++) {
+            for (short x = minX; x < maxX; x++) {
                 if (checkHasGasAround(x, y, 1) && checkHasDegreeAround(x, y, 1)) {
                     setShadow0(x, y, 2);
                 }
             }
         }
 
-        for (int y = minY; y < maxY; y++) {
-            for (int x = minX; x < maxX; x++) {
+        for (short y = minY; y < maxY; y++) {
+            for (short x = minX; x < maxX; x++) {
                 if (checkHasDegreeAround(x, y, 2) && checkHasGasAround(x, y, 2)) {
                     setShadow0(x, y, 3);
                 }

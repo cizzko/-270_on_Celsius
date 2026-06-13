@@ -1,6 +1,8 @@
 package core.World.WorldGenerator;
 
 public class WorldGeneratorConstants {
+    public static final String RANDOM_GENERATOR_NAME = null; // null для умолчания
+
     //за вертикаль принято 0, горизонталь 90
 
     /* Сколько блоков копируем по краям */

@@ -7,6 +7,7 @@ import core.Time;
 import core.UI.Dialog;
 import core.UI.Styles;
 import core.UI.TextArea;
+import core.World.TemperatureMap;
 import core.World.Weather.Sun;
 import core.content.blocks.Block;
 import core.content.blocks.data.TileData;
@@ -24,10 +25,12 @@ import org.jetbrains.annotations.Nullable;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.Locale;
+import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 
 import static core.Application.log;
@@ -43,6 +46,9 @@ public class Debug {
     public static final DecimalFormat FLOATS = new DecimalFormat("#.####", new DecimalFormatSymbols(Locale.ROOT));
 
     public static final int debugLevel = Config.getInt("Debug");
+
+    // Директория ./tmp для созданных картинок и прочего
+    public static final String TEMP_DIR = "tmp";
 
     // Включается по нажатию F3+M английской
     public static boolean debugMesh = false;
@@ -155,17 +161,58 @@ public class Debug {
         player.addItem(itemStack(content.itemById("stoneOven"), n));
     }
 
+    interface PixelOperator {
+        int apply(int x, int y);
+    }
+
+    private static void saveTempData(String name, @Nullable BatchScope scope, PixelOperator pixelAct) {
+        Executor ex = scope;
+        if (ex == null)
+            ex = Thread.ofPlatform()::start;
+
+        log.debug("Saving {}.png", name);
+        ex.execute(() -> {
+            BufferedImage image = new BufferedImage(world.sizeX, world.sizeY, BufferedImage.TYPE_INT_RGB);
+            Path path = assets.workingDir().resolve(TEMP_DIR, name + ".png");
+            try {
+                Files.createDirectories(path.getParent());
+            } catch (IOException e) {
+                log.error("Failed to create dir: {}", path, e);
+                return;
+            }
+            for (int y = 0; y < world.sizeY; y++) {
+                for (int x = 0; x < world.sizeX; x++) {
+                    int ry = (world.sizeY - 1) - y;
+                    image.setRGB(x, ry, pixelAct.apply(x, y));
+                }
+            }
+            try {
+                ImageIO.write(image, "png", path.toFile());
+                log.debug("Saving done {}.png", name);
+            } catch (IOException e) {
+                log.error("", e);
+            }
+        });
+    }
+
     public static void saveWorldImage() {
         if (debugLevel < 2) {
             return;
         }
         log.debug("Saving world image..");
-        Thread.startVirtualThread(() -> {
+        Thread.ofPlatform().start(() -> {
             // у виртуальных нет имени)
             // FIXME(Skat): забавный факт. на большом мире сохранение изображение настолько долгое, что если выйти из мира, то он упадёт)
             Thread.currentThread().setName("WorldImageSaver");
             BufferedImage image = new BufferedImage(world.sizeX, world.sizeY, BufferedImage.TYPE_INT_RGB);
-            Path path = assets.workingDir().resolve("worldImage.png");
+            Path path = assets.workingDir().resolve(TEMP_DIR, "worldImage.png");
+            try {
+                Files.createDirectories(path.getParent());
+            } catch (IOException e) {
+                log.error("Failed to create dir: {}", path, e);
+                return;
+            }
+
             for (int y = 0; y < world.sizeY; y++) {
                 for (int x = 0; x < world.sizeX; x++) {
                     int block = world.getBlockId(x, y);
@@ -182,6 +229,24 @@ public class Debug {
             } catch (IOException e) {
                 log.error("", e);
             }
+        });
+    }
+
+    public static void saveTemp(String name, BatchScope scope) {
+        saveTempData(name, scope, (x, y) -> {
+            return (255 << 24) | ((int)Math.clamp((TemperatureMap.getTempCell(x, y) - 20f) / 980f * 255f, 0, 255) << 16);
+        });
+    }
+
+    public static void savePressures(String name, BatchScope scope) {
+        saveTempData(name, scope, (x, y) -> {
+            return (255 << 24) | ((int)Math.clamp((TemperatureMap.getPressure(x, y) / 1000 - 20f) / 980f * 255f, 0, 255) << 16);
+        });
+    }
+
+    public static void saveDens(String name, BatchScope scope) {
+        saveTempData(name, scope, (x, y) -> {
+            return (255 << 24) | ((int)Math.clamp((TemperatureMap.getDensity(x, y) * 300 - 20f) / 980f * 255f, 0, 255) << 16);
         });
     }
 

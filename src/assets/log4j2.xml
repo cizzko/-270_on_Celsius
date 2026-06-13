@@ -22,9 +22,10 @@
             <AppenderRef ref="Console"/>
             <AppenderRef ref="File"/>
         </Root>
-        <Logger name="core.UIScene" level="ERROR"></Logger>
-        <Logger name="core.g2d" level="ERROR"></Logger>
-        <Logger name="AutoLoader" level="ERROR"></Logger>
-        <Logger name="AssetsManager" level="ERROR"></Logger>
+        <Logger name="Console" level="INFO"/>
+        <Logger name="core.UIScene" level="ERROR"/>
+        <Logger name="core.g2d" level="ERROR"/>
+        <Logger name="AutoLoader" level="ERROR"/>
+        <Logger name="AssetsManager" level="ERROR"/>
     </Loggers>
 </Configuration>

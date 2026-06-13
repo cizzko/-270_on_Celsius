@@ -9,6 +9,7 @@ log.txt
 *.atlas
 *.atlas.meta
 *.atlas.hash
+tmp
 
 *.patch
 *.diff

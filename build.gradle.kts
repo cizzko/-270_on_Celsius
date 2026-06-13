@@ -28,22 +28,6 @@ sourceSets {
     }
 }
 
-tasks.withType<JavaExec> {
-
-    doFirst {
-        if (System.getProperty("os.name")?.contains("Linux") == true &&
-            System.getenv("XDG_SESSION_TYPE") == "wayland") {
-            val gpuInfo = providers.exec {
-                commandLine("sh", "-c", "glxinfo | grep 'OpenGL vendor' || echo 'unknown'")
-            }.standardOutput.asText.get()
-
-            if (gpuInfo.contains("NVIDIA")) {
-                environment("__GL_THREADED_OPTIMIZATIONS", "0")
-            }
-        }
-    }
-}
-
 tasks.named<JavaCompile>("compileToolsJava") {
     dependsOn(tasks.compileJava)
 }
@@ -56,7 +40,7 @@ val syncTranslation = tasks.register<JavaExec>("syncTranslation") {
     mainClass = "core.tool.lang.TranslationProcessor"
 }
 
-val genatlas = tasks.register<JavaExec>("genatlas") {
+val genAtlas = tasks.register<JavaExec>("genAtlas") {
     mustRunAfter(tasks.classes)
     classpath = sourceSets["tools"].runtimeClasspath + sourceSets["main"].output
 
@@ -71,7 +55,7 @@ val genatlas = tasks.register<JavaExec>("genatlas") {
 // }
 
 tasks.classes {
-    finalizedBy(genatlas)
+    finalizedBy(genAtlas)
 }
 
 val lwjglVersion = "3.4.1"
@@ -105,6 +89,7 @@ repositories {
 
 tasks.withType<JavaCompile>().configureEach {
     options.compilerArgs.add("-parameters")
+    options.compilerArgs.add("-g")
     options.isDebug = true
     options.encoding = "UTF-8"
     options.release = 26
@@ -138,6 +123,11 @@ dependencies {
 
     implementation("com.fasterxml.jackson.core:jackson-databind:2.22.0")
     implementation("org.jetbrains:annotations:26.1.0")
+
+    val asmVersion = "9.10.1"
+    "toolsImplementation"("org.ow2.asm:asm:$asmVersion")
+    "toolsImplementation"("org.ow2.asm:asm-tree:$asmVersion")
+    "toolsImplementation"("org.ow2.asm:asm-analysis:$asmVersion")
 
     implementation(platform("org.lwjgl:lwjgl-bom:$lwjglVersion"))
     implementation("org.lwjgl", "lwjgl")
@@ -226,16 +216,27 @@ tasks.jar {
     }
 }
 
-//для профайлинга
-//tasks.withType<JavaCompile>().configureEach {
-//    options.compilerArgs.add("-g")
-//}
-
 tasks.run {
     jvmArguments.addAll(applyJvmArgs(false))
 
+    if (System.getProperty("os.name")?.contains("Linux") == true && System.getenv("XDG_SESSION_TYPE") == "wayland") {
+        val isBadDriver = providers
+            .exec {  commandLine("sh", "-c", "glxinfo | grep 'OpenGL vendor' || echo 'unknown'")  }
+            .standardOutput.asText
+            .map { it.contains("NVIDIA") }
+
+        if (isBadDriver.get()) {
+            environment("__GL_THREADED_OPTIMIZATIONS", "0")
+        }
+    }
+
     //для профайлинга
-    //jvmArgs("-XX:+UnlockDiagnosticVMOptions", "-XX:+DebugNonSafepoints", "-XX:+ShowHiddenFrames")
+//    jvmArguments.add("-XX:+UnlockDiagnosticVMOptions");
+//    jvmArguments.add("-XX:+DebugNonSafepoints")
+//    jvmArguments.add("-XX:+PreserveFramePointer")
+//    jvmArguments.add("-XX:+ShowHiddenFrames")
+//        jvmArguments.add("-XX:TieredStopAtLevel=4")
+//    jvmArguments.add("-Xcomp")
 
     jvmArguments.add("-ea:core.main")
     jvmArguments.add("-XX:+UseZGC") // экспериментируем как бы

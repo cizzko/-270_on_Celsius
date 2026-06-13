@@ -41,7 +41,7 @@ public final class ContentManager {
 
     public boolean isBlockType(short blockId, Block.Type type) {
         int i = type.ordinal();
-        int start = i == 0 ? 0 : blockTypeEndId[i - 1];
+        int start = i == 0 ? 0 : blockTypeEndId[i - 1] + 1;
         int end = blockTypeEndId[i];
         return blockId >= start && blockId <= end;
     }

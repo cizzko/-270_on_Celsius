@@ -11,20 +11,18 @@ import core.content.blocks.Block.Type;
 import core.graphic.ShadowMap;
 import core.math.MathUtil;
 import core.math.Point2i;
+import core.util.BatchScope;
 import core.util.Debug;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.imageio.ImageIO;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.IntStream;
+import java.util.random.RandomGenerator;
+import java.util.random.RandomGeneratorFactory;
 
 import static core.Global.*;
 import static core.World.World.findSurfaceY;
@@ -33,6 +31,8 @@ import static core.WorldCoordinates.toBlock;
 
 public class WorldGeneratorTMP {
     private static final Logger log = LogManager.getLogger("WorldGen");
+
+    private static RandomGenerator RNG;
 
     /**
      * Запускает генерацию мира
@@ -46,9 +46,18 @@ public class WorldGeneratorTMP {
                         System.currentTimeMillis() / 1000, 0));
         Global.world = world;
 
+        var rngFactory = RANDOM_GENERATOR_NAME == null
+                ? RandomGeneratorFactory.getDefault()
+                : RandomGeneratorFactory.of(RANDOM_GENERATOR_NAME);
+        RNG = rngFactory.create(params.seed);
+
+        ShadowMap.init();
+        TemperatureMap.init();
+
         boolean simple = params.simple;
 
         log("version: 2.48 unstable");
+        log("Seed: 0x" + Long.toHexString(params.seed));
         log("World generator: starting generating world with size: " + world.sizeX + "x" + world.sizeY);
 
         var playGameScene = new PlayGameScene();
@@ -206,7 +215,6 @@ public class WorldGeneratorTMP {
         int lastSwapBiomes = 0;
         final int minSwapBiomes = 100;
 
-        var rnd = ThreadLocalRandom.current();
         do {
             int iters = 100;
 
@@ -222,7 +230,7 @@ public class WorldGeneratorTMP {
                         lastSwapBiomes = 0;
                     }
 
-                    if (lastSwapBiomes < BIOME_SWAP_MAX_THRESHOLD && rnd.nextFloat() * lastSwapBiomes < BIOME_SWAP_CHANCE) {
+                    if (lastSwapBiomes < BIOME_SWAP_MAX_THRESHOLD && RNG.nextFloat() * lastSwapBiomes < BIOME_SWAP_CHANCE) {
                         blendBiomes[lastX] = lastBiomes;
                     }
                 } else if (lastX > worldWidth) {
@@ -232,12 +240,8 @@ public class WorldGeneratorTMP {
             }
         } while (lastX < world.sizeX);
 
-        int cores = Runtime.getRuntime().availableProcessors();
-        int chunkSize = (worldWidth / cores) + 1;
-
-        IntStream.range(0, cores).parallel().forEach(p -> {
-            int startChunkX = p * chunkSize;
-            int endChunkX = Math.min(worldWidth, startChunkX + chunkSize);
+        var scope = new BatchScope(world.genPool, worldWidth);
+        scope.submit((startChunkX, endChunkX) -> {
             Biomes defaultBiome = Biomes.getDefault();
 
             for (int x = startChunkX; x < endChunkX; x++) {
@@ -274,7 +278,7 @@ public class WorldGeneratorTMP {
                     world.set(x, y, content.blocksRegistry.typeById(blockId), false);
                 }
             }
-        });
+        }).awaitAll();
     }
 
     /**
@@ -312,10 +316,9 @@ public class WorldGeneratorTMP {
         int lastSwapBiomes = 0;
         final int minSwapBiomes = MIN_SWAP_BIOMES;
 
-        var rnd = ThreadLocalRandom.current();
         do {
             angle = Math.clamp(
-                    angle + (rnd.nextFloat() * blockGradient - blockGradient / 2f),
+                    angle + (RNG.nextFloat() * blockGradient - blockGradient / 2f),
                     Math.clamp(upperBorder + (lastY - world.sizeY / 2f), upperBorder, RELIEF_BASE_ANGLE),
                     Math.clamp(bottomBorder - (world.sizeY / 2f - lastY), RELIEF_BASE_ANGLE, bottomBorder)
             );
@@ -327,7 +330,7 @@ public class WorldGeneratorTMP {
             }
 
             //todo RELIEF_ITERS_MULTIPLIER динамически
-            int iters = (int) (rnd.nextFloat() * RELIEF_ITERS_MULTIPLIER / denominator);
+            int iters = (int) (RNG.nextFloat() * RELIEF_ITERS_MULTIPLIER / denominator);
 
             double rad = Math.toRadians(angle);
             float deltaX = (float) Math.sin(rad);
@@ -349,7 +352,7 @@ public class WorldGeneratorTMP {
                     worldHeights[currentIntX] = lastY;
                     lastSwapBiomes++;
 
-                    if (lastSwapBiomes > minSwapBiomes && rnd.nextFloat() * lastSwapBiomes - minSwapBiomes > BIOME_SWAP_MULTIPLIER) {
+                    if (lastSwapBiomes > minSwapBiomes && RNG.nextFloat() * lastSwapBiomes - minSwapBiomes > BIOME_SWAP_MULTIPLIER) {
                         lastBiomes = currentBiomes;
                         currentBiomes = Biomes.getRand();
                         lastSwapBiomes = 0;
@@ -358,7 +361,7 @@ public class WorldGeneratorTMP {
                         blockGradient = currentBiomes.getBlockGradientChance();
                     }
 
-                    if (lastSwapBiomes < BIOME_SWAP_MAX_THRESHOLD && rnd.nextFloat() * lastSwapBiomes < BIOME_SWAP_CHANCE) {
+                    if (lastSwapBiomes < BIOME_SWAP_MAX_THRESHOLD && RNG.nextFloat() * lastSwapBiomes < BIOME_SWAP_CHANCE) {
                         blendBiomes[currentIntX] = lastBiomes;
                     }
                 } else if (currentIntX > worldWidth) {
@@ -369,12 +372,8 @@ public class WorldGeneratorTMP {
 
         smoothHeights(lastY, worldHeights);
 
-        int cores = Runtime.getRuntime().availableProcessors();
-        int chunkSize = (worldWidth / cores) + 1;
-
-        IntStream.range(0, cores).parallel().forEach(p -> {
-            int startChunkX = p * chunkSize;
-            int endChunkX = Math.min(worldWidth, startChunkX + chunkSize);
+        var scope = new BatchScope(world.genPool, worldWidth);
+        scope.submit((startChunkX, endChunkX) -> {
             Biomes defaultBiome = Biomes.getDefault();
 
             for (int x = startChunkX; x < endChunkX; x++) {
@@ -411,7 +410,7 @@ public class WorldGeneratorTMP {
                     world.set(x, y, content.blocksRegistry.typeById(blockId), false);
                 }
             }
-        });
+        }).awaitAll();
     }
 
     /**
@@ -459,14 +458,13 @@ public class WorldGeneratorTMP {
         int upper = 0;
         int upperX = CAVES_INITIAL_X;
         int downedX = CAVES_INITIAL_X;
-        var rnd = ThreadLocalRandom.current();
-        int caves = (int) (world.sizeX / ((rnd.nextFloat() * CAVES_COUNT_RAND_MULT) + CAVES_COUNT_BASE));
+        int caves = (int) (world.sizeX / ((RNG.nextFloat() * CAVES_COUNT_RAND_MULT) + CAVES_COUNT_BASE));
 
         for (int b = 0; b < caves; b++) {
             int minRadius = CAVES_MIN_RADIUS;
             int maxRadius = CAVES_MAX_RADIUS;
-            int startRadius = Math.max(minRadius, rnd.nextInt(maxRadius));
-            boolean isUpper = rnd.nextFloat() * CAVES_UPPER_CHANCE > 1 || (upper < caves / CAVES_UPPER_DIVISOR);
+            int startRadius = Math.max(minRadius, RNG.nextInt(maxRadius));
+            boolean isUpper = RNG.nextFloat() * CAVES_UPPER_CHANCE > 1 || (upper < caves / CAVES_UPPER_DIVISOR);
 
             //todo есть смысл потыкать положение пещер
             //потому что сейчас все верхние спавнятся в начале мира +-
@@ -478,18 +476,18 @@ public class WorldGeneratorTMP {
                 generateCave(upperX, findSurfaceY(upperX, 3),
                         startRadius, minRadius, maxRadius - 2,
                         CAVE_UPPER_MIN_ANGLE, CAVE_UPPER_MAX_ANGLE,
-                        rnd.nextInt(CAVE_UPPER_START_MIN, CAVE_UPPER_START_MAX),
+                        RNG.nextInt(CAVE_UPPER_START_MIN, CAVE_UPPER_START_MAX),
                         CAVE_UPPER_SHOT_CHANCE);
                 //первое меняет случайный разброс, второе минимальное расстояние
-                upperX += (int) ((rnd.nextFloat() * (world.sizeX / (caves / (CAVES_X_DIVISOR_UPPER * 4))) + (world.sizeX / (caves / (CAVES_X_DIVISOR_UPPER / 2)))));
+                upperX += (int) ((RNG.nextFloat() * (world.sizeX / (caves / (CAVES_X_DIVISOR_UPPER * 4))) + (world.sizeX / (caves / (CAVES_X_DIVISOR_UPPER / 2)))));
             } else {
                 //пещеры в глубине
-                generateCave(downedX, (int) (findSurfaceY(downedX, 3) - rnd.nextFloat() * (world.sizeY / CAVES_DOWNED_Y_DIVISOR)),
+                generateCave(downedX, (int) (findSurfaceY(downedX, 3) - RNG.nextFloat() * (world.sizeY / CAVES_DOWNED_Y_DIVISOR)),
                         startRadius, minRadius, maxRadius,
                         CAVE_DOWNED_MIN_ANGLE, CAVE_DOWNED_MAX_ANGLE,
-                        rnd.nextInt(CAVE_DOWNED_START_ANGLE),
+                        RNG.nextInt(CAVE_DOWNED_START_ANGLE),
                         CAVE_DOWNED_SHOT_CHANCE);
-                downedX += (int) ((rnd.nextFloat() * (world.sizeX / (caves / (CAVES_X_DIVISOR_DOWNED * 2)))) + (world.sizeX / (caves / CAVES_X_DIVISOR_DOWNED)));
+                downedX += (int) ((RNG.nextFloat() * (world.sizeX / (caves / (CAVES_X_DIVISOR_DOWNED * 2)))) + (world.sizeX / (caves / CAVES_X_DIVISOR_DOWNED)));
             }
         }
         log.debug("spawned {} caves", caves);
@@ -637,14 +635,8 @@ public class WorldGeneratorTMP {
     public static void clearFloatingIslands(short[] tiles, int sizeX, int sizeY, int minSize) {
         //Какая то сложнючая но быстрая дичь которую наверняка можно сделать лучше/красивее
 
-        int totalColumns = sizeX;
-        int cores = Runtime.getRuntime().availableProcessors();
-        int chunkSize = (totalColumns / cores) + 1;
-
-        IntStream.range(0, cores).parallel().forEach(p -> {
-            int startChunkX = p * chunkSize;
-            int endChunkX = Math.min(sizeX, startChunkX + chunkSize);
-
+        var scope = new BatchScope(world.genPool, sizeX);
+        scope.submit(0, sizeX, (startChunkX, endChunkX) -> {
             IntArrayList localStack = new IntArrayList(LOCAL_STACK_CAPACITY);
             int[] islandBuffer = new int[minSize];
 
@@ -680,7 +672,7 @@ public class WorldGeneratorTMP {
                         boolean touchesBorder = false;
 
                         while (!localStack.isEmpty()) {
-                            int currentIdx = localStack.removeInt(localStack.size() - 1);
+                            int currentIdx = localStack.popInt();
 
                             if (islandSize < minSize) {
                                 islandBuffer[islandSize] = currentIdx;
@@ -722,20 +714,19 @@ public class WorldGeneratorTMP {
                     }
                 }
             }
-        });
+        }).awaitAll();
 
-        IntStream.range(0, cores).parallel().forEach(p -> {
-            int startChunkX = p * chunkSize;
-            int endChunkX = Math.min(sizeX, startChunkX + chunkSize);
-            for (int y = 0; y < sizeY; y++) {
-                for (int x = startChunkX; x < endChunkX; x++) {
+        scope.submit(0, sizeY, (loY, hiY) -> {
+            for (int y = loY; y < hiY; y++) {
+                for (int x = 0; x < sizeX; x++) {
                     int globalIndex = x + sizeX * y;
                     if (tiles[globalIndex] != 0) {
                         tiles[globalIndex] &= 0x7FFF;
                     }
                 }
             }
-        });
+        }).awaitAll();
+
     }
 
     /**
@@ -747,7 +738,7 @@ public class WorldGeneratorTMP {
      */
     private static void generateEnvironments(World world) {
         generateTrees(world);
-        generateDecorStones(world);
+        gemerateSmallStone(world);
         generateHerb();
     }
 
@@ -762,15 +753,15 @@ public class WorldGeneratorTMP {
      */
 
     //todo а почему тут кстати не генератефорсет
-    private static void generateDecorStones(World world) {
+    private static void gemerateSmallStone(World world) {
         var smallStone = Global.content.blockById("smallStone");
         float chance = DECOR_STONE_SPAWN_CHANCE;
 
         for (int x = 0; x < world.sizeX; x++) {
             if (Math.random() * chance < 1) {
                 int y = findSurfaceY(x, 3);
-                if (y - 1 > 0) {
-                    if (world.getBlockType(x, y - 1) == Type.SOLID) {
+                if (y - 1 > 0 && world.inBounds(x, y - 1)) {
+                    if (world.isBlockType(x, y - 1, Type.SOLID)) {
                         world.set(x, y, smallStone, false);
                     }
                 }
@@ -873,60 +864,5 @@ public class WorldGeneratorTMP {
         int randX = rnd.nextInt(0, world.sizeX);
 
         return new Point2i(randX, World.findSurfaceY(randX, 2));
-    }
-
-    public static void saveTemp(String name) {
-        log.debug("Saving");
-        Thread.startVirtualThread(() -> {
-            BufferedImage image = new BufferedImage(world.sizeX, world.sizeY, BufferedImage.TYPE_INT_RGB);
-            Path path = assets.workingDir().resolve("C://other//-270_On_Celsius//-270_On_Celsius//" + name + ".png");
-            for (int y = 0; y < world.sizeY; y++) {
-                for (int x = 0; x < world.sizeX; x++) {
-                    image.setRGB(x, (world.sizeY - 1) - y, (255 << 24) | ((int)Math.clamp((TemperatureMap.getTempCell(x, y) - 20f) / 980f * 255f, 0, 255) << 16));
-                }
-            }
-            try {
-                ImageIO.write(image, "png", path.toFile());
-                log.debug("Saving done");
-            } catch (IOException e) {
-                log.error("", e);
-            }
-        });
-    }
-    public static void savePressures(String name) {
-        log.debug("Saving");
-        Thread.startVirtualThread(() -> {
-            BufferedImage image = new BufferedImage(world.sizeX, world.sizeY, BufferedImage.TYPE_INT_RGB);
-            Path path = assets.workingDir().resolve("C://other//-270_On_Celsius//-270_On_Celsius//" + name + ".png");
-            for (int y = 0; y < world.sizeY; y++) {
-                for (int x = 0; x < world.sizeX; x++) {
-                    image.setRGB(x, (world.sizeY - 1) - y, (255 << 24) | ((int)Math.clamp((TemperatureMap.getPressure(x, y) / 1000 - 20f) / 980f * 255f, 0, 255) << 16));
-                }
-            }
-            try {
-                ImageIO.write(image, "png", path.toFile());
-                log.debug("Saving done");
-            } catch (IOException e) {
-                log.error("", e);
-            }
-        });
-    }
-    public static void saveDens(String name) {
-        log.debug("Saving");
-        Thread.startVirtualThread(() -> {
-            BufferedImage image = new BufferedImage(world.sizeX, world.sizeY, BufferedImage.TYPE_INT_RGB);
-            Path path = assets.workingDir().resolve("C://other//-270_On_Celsius//-270_On_Celsius//" + name + ".png");
-            for (int y = 0; y < world.sizeY; y++) {
-                for (int x = 0; x < world.sizeX; x++) {
-                    image.setRGB(x, (world.sizeY - 1) - y, (255 << 24) | ((int)Math.clamp((TemperatureMap.getDensity(x, y) * 300 - 20f) / 980f * 255f, 0, 255) << 16));
-                }
-            }
-            try {
-                ImageIO.write(image, "png", path.toFile());
-                log.debug("Saving done");
-            } catch (IOException e) {
-                log.error("", e);
-            }
-        });
     }
 }
