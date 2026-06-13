@@ -321,10 +321,15 @@ public class TemperatureMap {
 
     public static float getPressure(int x, int y) {
         if (world.getBlockType(x, y) == Block.Type.SOLID) {
-            return SOLID_BASE_PRESSURE * (float) Math.pow((temps[x][y] + 273.15f) / 273.15f, SOLID_SHRINK);
+            return SOLID_BASE_PRESSURE * pow_2_5((temps[x][y] + 273.15f) / 273.15f);
         }
 
         return density[x][y] * (temps[x][y] + 273.15f) * R;
+    }
+
+    /// {@link TemperatureMap#SOLID_SHRINK}
+    private static float pow_2_5(float base) {
+        return (float)((double)base * base * Math.sqrt(base));
     }
 
     public static float getTempCell(int x, int y) {
