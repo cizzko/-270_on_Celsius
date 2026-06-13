@@ -105,7 +105,7 @@ public class Sun extends GameObject {
         int deleteGradient = Math.clamp(aGradient, 0, 150);
         int backGradient = Math.clamp(aGradient, 0, 255);
 
-        Color color = Color.fromRgba8888(deleteGradient, deleteGradient, deleteGradient, 0);
+        int color = Color.rgba8888(deleteGradient, deleteGradient, deleteGradient, 0);
         ShadowMap.deleteAllColor(color);
         ShadowMap.deleteAllColorDynamic(color);
 

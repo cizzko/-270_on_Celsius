@@ -1,7 +1,6 @@
 package core.graphic;
 
 import core.GameState;
-import core.UI.Styles;
 import core.content.entity.CreatureEntity;
 import core.util.BatchScope;
 
@@ -10,14 +9,20 @@ import java.util.HashMap;
 import static core.Global.*;
 import static core.graphic.WorldDrawing.viewport;
 
-public final class ShadowMap {
+public class ShadowMap {
     private static byte[] shadows;
-    private static HashMap<CreatureEntity, Color> shadowsDynamic = new HashMap<>();
-    private static Color deletedColor = Color.CLEAR, deletedColorDynamic = Color.CLEAR, addedColor = Color.CLEAR, addedColorDynamic = Color.CLEAR;
-    private final static Color white = new Color(255, 255, 255, 255),
+
+    private static final Color deletedColor = Color.CLEAR.copy();
+    private static final Color addedColor = Color.CLEAR.copy();
+    private static final Color
+            white = new Color(255, 255, 255, 255),
             brightDirty = new Color(165, 165, 165, 255),
             dirty = new Color(85, 85, 85, 255),
-            blackDirty = Styles.DIRTY_BRIGHT_BLACK.copy();
+            blackDirty = core.ui.Styles.DIRTY_BRIGHT_BLACK.copy();
+
+    private static final HashMap<CreatureEntity, Color> shadowsDynamic = new HashMap<>();
+    private static final Color deletedColorDynamic = Color.CLEAR.copy();
+    private static final Color addedColorDynamic = Color.CLEAR.copy();
 
 
     // todo переписать генерацию и обновление теней
@@ -149,19 +154,19 @@ public final class ShadowMap {
     }
 
     public static void addAllColor(Color color) {
-        addedColor = color;
+        addedColor.set(color);
     }
 
     public static void addAllColorDynamic(Color color) {
-        addedColorDynamic = color;
+        addedColorDynamic.set(color);
     }
 
-    public static void deleteAllColor(Color color) {
-        deletedColor = color;
+    public static void deleteAllColor(int rgba8888) {
+        deletedColor.setRgba8888(rgba8888);
     }
 
-    public static void deleteAllColorDynamic(Color color) {
-        deletedColorDynamic = color;
+    public static void deleteAllColorDynamic(int rgba8888) {
+        deletedColorDynamic.setRgba8888(rgba8888);
     }
 
     private static boolean isNotGas(int x, int y) {

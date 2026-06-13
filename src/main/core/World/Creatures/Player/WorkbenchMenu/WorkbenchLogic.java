@@ -1,10 +1,10 @@
 package core.World.Creatures.Player.WorkbenchMenu;
 
-import core.EventHandling.EventHandler;
-import core.World.Creatures.Player.Inventory.Inventory;
+import core.Hotkeys;
 import core.content.ItemStack;
 import core.content.blocks.Factory;
 import core.content.blocks.Workbench;
+import core.content.entity.InventoryComponent;
 import core.content.items.Item;
 import core.content.items.ItemBlock;
 import core.g2d.Fill;
@@ -13,6 +13,7 @@ import core.graphic.Color;
 import core.graphic.GuiDrawing;
 import core.math.Point2i;
 import core.math.Rectangle;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -21,35 +22,41 @@ import static core.Global.*;
 import static core.graphic.GuiDrawing.drawObjects;
 
 public class WorkbenchLogic {
+    public static final int CELL_SIZE = 54;
+
+
     public static EnumMap<Workbench.Tier, Workbench> nearbyWorkbench = new EnumMap<>(Workbench.Tier.class);
 
     private static boolean isOpen;
-    private static Point2i currentObject;
-    private static int currentObjectIdx = -1;
+    private static Point2i selected;
+    private static int selectedIdx = -1;
 
-    private static float scroll = -276;
+    private static float scroll = -246;
     private static final Color fogging = new Color(0, 0, 0, 117);
     //todo не помешает перевести меню в гуи
-    private static int current = 0, menuXPos = 680;
+    private static int current = 0, menuXPos = 1240;
 
     public static void updateInput() {
-        updateBenchButton();
+        nearbyWorkbench.clear();
         updateScroll();
         updateBuildButton();
     }
 
-    private static void updateBenchButton() {
-        nearbyWorkbench.clear();
-    }
-
     private static void updateScroll() {
         var pos = input.mousePos();
-        if (Rectangle.contains(menuXPos, 580, 400, 396, pos)) {
+
+        int viewportWidth = input.viewportWidth();
+        int viewportHeight = input.viewportHeight();
+        if (Rectangle.contains(viewportWidth - menuXPos, viewportHeight - 500, 400, 396, pos)) {
             scroll = Math.clamp(scroll - input.scrollDelta() * 6, -246, 0);
         }
     }
 
     public static void draw() {
+        int viewportWidth = input.viewportWidth();
+        int viewportHeight = input.viewportHeight();
+        int baseX = viewportWidth - menuXPos;
+
         //чем дальше в лес иф елс иф елс иф елс
         if (nearbyWorkbench.isEmpty()) {
             if (current != 0) {
@@ -58,22 +65,21 @@ public class WorkbenchLogic {
             current = 0;
         } else {
             //некрасиво
-            if (EventHandler.isMouseClickedIn(menuXPos + 8, 580, menuXPos + 54, 626)) {
-                currentObject = null;
+            if (Hotkeys.isMouseClickedIn(baseX + 8, 580, baseX + CELL_SIZE, 626)) {
                 resetObject();
                 current = 0;
             }
-            if (EventHandler.isMouseClickedIn(menuXPos + 8, 634, menuXPos + 54, 682) &&
+            if (Hotkeys.isMouseClickedIn(baseX + 8, 634, baseX + CELL_SIZE, 682) &&
                 nearbyWorkbench.containsKey(Workbench.Tier.LARGE)) {
                 resetObject();
                 current = 1;
             }
-            if (EventHandler.isMouseClickedIn(menuXPos + 8, 688, menuXPos + 54, 734) &&
+            if (Hotkeys.isMouseClickedIn(baseX + 8, 688, baseX + CELL_SIZE, 734) &&
                 nearbyWorkbench.containsKey(Workbench.Tier.MEDIUM)) {
                 resetObject();
                 current = 2;
             }
-            if (EventHandler.isMouseClickedIn(menuXPos + 8, 742, menuXPos + 54, 788) &&
+            if (Hotkeys.isMouseClickedIn(baseX + 8, 742, baseX + CELL_SIZE, 788) &&
                 nearbyWorkbench.containsKey(Workbench.Tier.SMALL)) {
                 resetObject();
                 current = 3;
@@ -81,17 +87,17 @@ public class WorkbenchLogic {
         }
 
         if (isOpen) {
-            StackfulRender.draw(atlas.get("UI/GUI/workbenchMenu/menu" + (currentObject == null ? "Small" : "Full")), menuXPos, 400);
-            Fill.rect(menuXPos + 3, 587 + (54 * current), 3, 32, Color.rgba8888(255, 80, 0, 200));
+            StackfulRender.draw(atlas.get("UI/GUI/workbenchMenu/menu" + (selected == null ? "Small" : "Full")), baseX, 400);
+            Fill.rect(baseX + 3, 587 + (CELL_SIZE * current), 3, 32, Color.rgba8888(255, 80, 0, 200));
 
             if (!nearbyWorkbench.containsKey(Workbench.Tier.SMALL)) {
-                Fill.rect(menuXPos + 8, 742, 46, 46, fogging);
+                Fill.rect(baseX + 8, 742, 46, 46, fogging);
             }
             if (!nearbyWorkbench.containsKey(Workbench.Tier.MEDIUM)) {
-                Fill.rect(menuXPos + 8, 688, 46, 46, fogging);
+                Fill.rect(baseX + 8, 688, 46, 46, fogging);
             }
             if (!nearbyWorkbench.containsKey(Workbench.Tier.LARGE)) {
-                Fill.rect(menuXPos + 8, 634, 46, 46, fogging);
+                Fill.rect(baseX + 8, 634, 46, 46, fogging);
             }
 
             final int IN_ROW = 9;
@@ -100,15 +106,15 @@ public class WorkbenchLogic {
             for (int i = 0, y = 0; i < currentWorkbench.size(); i++) {
                 int x = i % IN_ROW;
 
-                float xCoord = menuXPos + 72 + x * 54;
-                float yCoord = 982 + scroll - (y * 54f);
+                float xCoord = baseX + 72 + x * CELL_SIZE;
+                float yCoord = 982 + scroll - (y * CELL_SIZE);
 
                 if (yCoord < 741) {
                     GuiDrawing.drawItem(xCoord, yCoord, currentWorkbench.get(i));
 
-                    if (EventHandler.isMouseClickedIn(xCoord, yCoord, xCoord + 46, yCoord + 46)) {
-                        currentObject = new Point2i(x, y);
-                        currentObjectIdx = i;
+                    if (Hotkeys.isMouseClickedIn(xCoord, yCoord, xCoord + 46, yCoord + 46)) {
+                        selected = new Point2i(x, y);
+                        selectedIdx = i;
                     }
                 }
                 if (x == 0 && i > 0) {
@@ -118,21 +124,23 @@ public class WorkbenchLogic {
 
             //todo описания
             //todo перенести все в гуи!! но позже
-            if (currentObjectIdx != -1 && 986 + scroll + (currentObject.y * 54) < 741) {
-                GuiDrawing.drawText(menuXPos + 585, 703, currentWorkbench.get(currentObjectIdx).getName());
-                drawRequirements(menuXPos + 590,  648);
-                StackfulRender.draw(atlas.get("UI/GUI/inventory/inventoryCurrent"), menuXPos + 62 + currentObject.x * 54, 972 + scroll + (currentObject.y * 54));
+            if (selectedIdx != -1 && 986 + scroll + (selected.y * CELL_SIZE) < 741) {
+                GuiDrawing.drawText(baseX + 585, 703, currentWorkbench.get(selectedIdx).getName());
+                drawRequirements(baseX + 590,  648);
+                StackfulRender.draw(atlas.get("UI/GUI/inventory/inventoryCurrent"),
+                        baseX + 62 + selected.x * CELL_SIZE,
+                        972 + scroll + (selected.y * CELL_SIZE));
             }
 
             // scrollbar
-            Color color = Color.fromRgba8888(0, 0, 0, 200);
+            var color = Color.rgba8888(0, 0, 0, 200);
             Fill.rect(1915, (int) Math.abs(scroll / 2f) - 5, 4, 20, color);
         }
     }
 
     private static void resetObject() {
-        currentObject = null;
-        currentObjectIdx = -1;
+        selected = null;
+        selectedIdx = -1;
     }
 
     private static List<Item> getCurrentItems() {
@@ -146,7 +154,11 @@ public class WorkbenchLogic {
     }
 
     private static void updateBuildButton() {
-        if (!isOpen || !EventHandler.isMouseClickedIn(menuXPos + 580, 742, menuXPos + 625, 788)) {
+
+        int viewportWidth = input.viewportWidth();
+        int viewportHeight = input.viewportHeight();
+        int baseX = viewportWidth - menuXPos;
+        if (!isOpen || !Hotkeys.isMouseClickedIn(baseX + 580, viewportHeight - 338, baseX + 625, viewportHeight - 292)) {
             return;
         }
         var required = hasRequiredItems();
@@ -154,13 +166,14 @@ public class WorkbenchLogic {
             return;
         }
         var currentItems = getCurrentItems();
-        Item item = currentItems.get(currentObjectIdx);
-        if (Inventory.addItemStack(new ItemStack(item, item.createCount))) {
+        Item item = currentItems.get(selectedIdx);
+        var stat = player.addItem(new ItemStack(item, item.createCount));
+        if (stat != InventoryComponent.TransitionResult.FAILED) {
             for (var obj : required) {
-                if (obj != null) {
-                    player.takeItem(obj.x, obj.y, obj.count);
-                }
+                player.takeItem(obj.x, obj.y, obj.count);
             }
+        } else {
+            System.out.println("Не получилось добавить :( " + stat);
         }
     }
 
@@ -170,14 +183,14 @@ public class WorkbenchLogic {
 
     record ItemCraftTransaction(int x, int y, int count) {}
 
-    private static ItemCraftTransaction[] hasRequiredItems() {
-        if (currentObjectIdx == -1) {
+    private static @Nullable ItemCraftTransaction[] hasRequiredItems() {
+        if (selectedIdx == -1) {
             return null;
         }
 
         var currentItems = getCurrentItems();
 
-        Item item = currentItems.get(currentObjectIdx);
+        Item item = currentItems.get(selectedIdx);
         if (item.requirements != null) {
             var required = item.requirements;
             ItemCraftTransaction[] hasNeededObject = new ItemCraftTransaction[required.length];
@@ -202,11 +215,11 @@ public class WorkbenchLogic {
     }
 
     private static void drawRequirements(float x, float y) {
-        if (currentObjectIdx == -1) {
+        if (selectedIdx == -1) {
             return;
         }
         var currentItems = getCurrentItems();
-        var stack = currentItems.get(currentObjectIdx);
+        var stack = currentItems.get(selectedIdx);
         if (stack instanceof ItemBlock itemBlock && itemBlock.block instanceof Factory factory) {
             drawObjects(x, y - 41, factory.input, atlas.get("UI/GUI/buildMenu/factoryIn"));
             drawObjects(x, y - 82, factory.output, atlas.get("UI/GUI/buildMenu/factoryOut"));

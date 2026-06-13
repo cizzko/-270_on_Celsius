@@ -5,7 +5,6 @@ import core.Global;
 import core.content.*;
 import core.content.blocks.Block;
 import core.g2d.Atlas;
-import core.math.MathUtil;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
 

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.EnumNamingStrategies;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.EnumNaming;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import core.EventHandling.Config;
+import core.util.Config;
 import core.Global;
 import core.content.blocks.Block;
 import core.content.creatures.Creature;

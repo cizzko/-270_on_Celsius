@@ -1,15 +1,14 @@
 package core.graphic;
 
-import core.UI.Styles;
 import core.Window;
 import core.content.ItemStack;
 import core.content.ItemStackPredicate;
 import core.content.items.Item;
 import core.g2d.*;
 import core.math.Point2i;
+import core.ui.Styles;
 
 import static core.Global.*;
-import static core.WorldCoordinates.*;
 import static core.g2d.StackfulRender.*;
 import static core.graphic.WorldDrawing.viewport;
 
@@ -84,6 +83,19 @@ public class GuiDrawing {
                 continue;
             }
             Font.Glyph glyph = Window.defaultFont.getGlyph(ch);
+            draw(glyph, rgba8888, x, y);
+            x += glyph.width();
+        }
+    }
+
+
+    public static void drawTextUncached(Font font,
+                                        float x, float y,
+                                        String text,
+                                        int rgba8888) {
+        for (int i = 0, n = text.length(); i < n; i++) {
+            char c = text.charAt(i);
+            var glyph = font.getGlyph(c);
             draw(glyph, rgba8888, x, y);
             x += glyph.width();
         }

@@ -329,7 +329,7 @@ public final class TemperatureMap {
 
     public static float getPressure(int x, int y) {
         int idx = pos2index(x, y);
-        if (world.getBlockType(x, y) == Block.Type.SOLID) {
+        if (world.isBlockType(x, y, Block.Type.SOLID)) {
             return SOLID_BASE_PRESSURE * pow_2_5((temps[idx] + 273.15f) / 273.15f);
         }
 

@@ -19,7 +19,7 @@ import static core.math.MathUtil.toByteExact;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
 import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
 
-public final class FontHandler extends AssetHandler<Font, Void, FontHandler.State> {
+public final class FontHandler extends AssetHandler<Font, FontHandler.Params, FontHandler.State> {
 
     public FontHandler() {
         super(Font.class, "fonts");
@@ -31,16 +31,14 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
     }
 
     @Override
-    public void loadAsync(AssetResolver res, String name, Void params, State state) {
+    public void loadAsync(AssetResolver res, String name, Params params, State state) {
         state.texture = res.fork(() -> {
 
             java.awt.Font awtFont;
             try (var in = Files.newInputStream(dir.resolve(name))) {
                 awtFont = java.awt.Font.createFont(java.awt.Font.PLAIN, in);
             }
-            awtFont = awtFont.deriveFont(java.awt.Font.PLAIN, (float) (fontSize * Toolkit.getDefaultToolkit().getScreenResolution() / 72.0));
-
-            Font fnt = new Font();
+            awtFont = awtFont.deriveFont(java.awt.Font.PLAIN, params.size);
 
             BufferedImage tmp = new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB);
             Graphics2D tmpg = tmp.createGraphics();
@@ -51,6 +49,9 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
                 tmpg.dispose();
             }
             FontMetrics metrics = tmpg.getFontMetrics();
+            float ascent = metrics.getAscent();
+            float descent = metrics.getDescent();
+            float leading = metrics.getLeading();
 
             // TODO:
             // Мне не понравилось работать с java.awt.Font
@@ -73,17 +74,21 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
                 if (charWidth == 0) {
                     continue;
                 }
+                String cstr = Character.toString(c);
 
+                //TODO округлять?
                 BufferedImage image = new BufferedImage(charWidth, guessedHeight, BufferedImage.TYPE_INT_ARGB);
-                Graphics2D g2 = image.createGraphics();
+                var g2 = image.createGraphics();
+                var lm = metrics.getLineMetrics(cstr, g2);
                 g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 g2.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
                 g2.setFont(awtFont);
                 g2.setColor(Color.WHITE);
-                g2.drawString(Character.toString(c), 0, metrics.getAscent());
+                g2.drawString(cstr, 0, lm.getAscent());
                 g2.dispose();
 
-                glyphs.add(new GlyphPacked(c, image));
+                var e = new GlyphPacked(c, image);
+                glyphs.add(e);
             }
 
             for (var packed : glyphs) {
@@ -107,7 +112,9 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
             }
             gr.dispose();
 
-            return new FontData(fnt, atlasImage, glyphs);
+            return new FontData(atlasImage, glyphs,
+                    ascent, descent, leading,
+                    params.size);
         });
     }
 
@@ -126,30 +133,28 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
     }
 
     @Override
-    public Font loadSync(AssetResolver res, String name, Void params, State state) {
+    public Font loadSync(AssetResolver res, String name, Params params, State state) {
         var glyphData = res.join(state.texture);
         res.checkIfFailed();
 
-        var fnt = glyphData.fnt;
-        fnt.texture = Texture.load(glyphData.atlas, GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, (short) 0, (short) 0, (short) 1, (short) 1);
+        var texture = Texture.load(glyphData.atlas, GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, (short) 0, (short) 0, (short) 1, (short) 1);
 
         var glyphs = glyphData.glyphs;
         var glyphTable = new Char2ObjectOpenHashMap<Font.Glyph>(glyphs.size());
         for (GlyphPacked glyph : glyphs) {
-            glyphTable.put(glyph.ch, new Font.Glyph(fnt, glyph.w, glyph.h, glyph.x, glyph.y));
+            glyphTable.put(glyph.ch, new Font.Glyph(texture, glyph.w, glyph.h, glyph.x, glyph.y));
         }
         glyphTable.trim();
 
-        fnt.glyphTable = glyphTable;
         Font.Glyph unknownGlyph = glyphTable.get('?');
         glyphTable.defaultReturnValue(unknownGlyph);
-        fnt.unknownGlyph = unknownGlyph;
-        return fnt;
+        return new Font(texture, glyphTable, unknownGlyph,
+                glyphData.ascent, glyphData.descent, glyphData.leading);
     }
 
     @Override
-    protected Void createParams() {
-        return null;
+    protected Params createParams() {
+        return new Params();
     }
 
     @Override
@@ -157,11 +162,17 @@ public final class FontHandler extends AssetHandler<Font, Void, FontHandler.Stat
         return new State();
     }
 
+    public static final class Params {
+        public float size = fontSize;
+    }
+
     public static final class State {
         private Future<FontData> texture;
     }
 
-    public record FontData(Font fnt, BufferedImage atlas, ArrayList<GlyphPacked> glyphs) {
+    public record FontData(BufferedImage atlas, ArrayList<GlyphPacked> glyphs,
+                           float ascent, float descent, float leading,
+                           float size) {
 
     }
 }

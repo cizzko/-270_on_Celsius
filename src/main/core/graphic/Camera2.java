@@ -26,10 +26,10 @@ public final class Camera2 {
     public void update() {
         float w = width;
         float h = height;
-        float ppu = pixelsPerUnit;
+        float invPPU = 1f / pixelsPerUnit;
 
-        float lx = w / ppu;
-        float ly = h / ppu;
+        float lx = w * invPPU;
+        float ly = h * invPPU;
         logicalScreenSize.set(lx, ly);
         projectionScale.set(2f / lx, 2f / ly);
 
@@ -79,18 +79,6 @@ public final class Camera2 {
     }
 
     // Перевод координат экрана в координаты мира
-    public Vector2f unproject(Vector2f screenCoordinates) {
-        float ndcX = (2.0f * screenCoordinates.x) / width - 1.0f;
-        float ndcY = (2.0f * screenCoordinates.y) / height - 1.0f;
-
-        float localX = ndcX / projectionScale.x;
-        float localY = ndcY / projectionScale.y;
-
-        screenCoordinates.x = (float) (localX + position.x);
-        screenCoordinates.y = (float) (localY + position.y);
-        return screenCoordinates;
-    }
-
     public void unprojectTo(Vector2f screenCoordinates, Vector2d worldCoordinates) {
         double ndcX = Math.fma(screenCoordinates.x, invWidth2, -1.);
         double ndcY = Math.fma(screenCoordinates.y, invHeight2, -1.);

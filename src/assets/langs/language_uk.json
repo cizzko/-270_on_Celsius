@@ -45,10 +45,6 @@
     "text": "Load save",
     "comments": [ "src/main/core/UI/menu/MainMenu.java:23" ]
   },
-  "Load world": {
-    "text": "Load world",
-    "comments": [ "src/main/core/UI/menu/LoadSave.java:83" ]
-  },
   "Menu": {
     "text": "Menu",
     "comments": [ "src/main/core/UI/menu/Pause.java:27" ]

@@ -1,9 +1,8 @@
 package core;
 
-import core.EventHandling.Config;
+import core.util.Config;
 import core.World.WorldUtils;
 
-import java.io.IOException;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;

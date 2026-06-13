@@ -2,7 +2,7 @@ package core.content;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import core.EventHandling.Config;
+import core.util.Config;
 import core.Global;
 import core.content.ContentManager.Type;
 import core.content.blocks.BlockUnresolved;
@@ -14,7 +14,6 @@ import core.content.blocks.Workbench;
 import core.content.items.*;
 import core.content.strctures.Structure;
 import core.g2d.Atlas;
-import core.math.MathUtil;
 
 import java.io.IOException;
 import java.nio.file.Files;

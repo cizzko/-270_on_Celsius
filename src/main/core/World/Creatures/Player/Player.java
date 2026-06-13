@@ -1,6 +1,6 @@
 package core.World.Creatures.Player;
 
-import core.EventHandling.Config;
+import core.util.Config;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.WorldUtils;
 import core.content.ItemStack;

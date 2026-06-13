@@ -1,7 +1,6 @@
 package core.World.WorldGenerator;
 
 import core.*;
-import core.UI.menu.CreatePlanet;
 import core.World.PerlinNoiseGenerator;
 import core.World.TemperatureMap;
 import core.World.World;
@@ -11,6 +10,7 @@ import core.content.blocks.Block.Type;
 import core.graphic.ShadowMap;
 import core.math.MathUtil;
 import core.math.Point2i;
+import core.ui.menu.CreatePlanet;
 import core.util.BatchScope;
 import core.util.Debug;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -56,9 +56,9 @@ public class WorldGeneratorTMP {
 
         boolean simple = params.simple;
 
-        log("version: 2.48 unstable");
+        log("Version: 2.48 unstable");
         log("Seed: 0x" + Long.toHexString(params.seed));
-        log("World generator: starting generating world with size: " + world.sizeX + "x" + world.sizeY);
+        log("Starting generating world with size: " + world.sizeX + "x" + world.sizeY);
 
         var playGameScene = new PlayGameScene();
         gameScene.addPreload(playGameScene);

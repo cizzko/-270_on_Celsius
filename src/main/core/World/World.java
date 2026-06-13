@@ -14,12 +14,10 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import core.Application;
 import core.GameState;
-import core.Global;
 import core.World.WorldGenerator.Biomes;
 import core.content.blocks.Block;
 import core.content.blocks.data.TileData;
 import core.content.entity.BlockEntity;
-import core.content.entity.DrawComponent;
 import core.graphic.ShadowMap;
 import core.math.MathUtil;
 import core.math.Point2i;
@@ -32,7 +30,6 @@ import java.util.concurrent.ForkJoinPool;
 
 import static core.Constants.availableProcessors;
 import static core.Global.*;
-import static core.Global.world;
 import static core.World.WorldGenerator.WorldGeneratorConstants.COPY_SIZE;
 
 /// Для кеш-локальности мира обходить его построчно, то есть:

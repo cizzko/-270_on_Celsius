@@ -1,7 +1,7 @@
 package core.World.Creatures.Player.Inventory;
 
-import core.EventHandling.EventHandler;
-import core.EventHandling.Config;
+import core.Hotkeys;
+import core.util.Config;
 import core.content.ItemStack;
 import core.content.items.Item;
 import core.content.items.ItemBlock;
@@ -14,6 +14,8 @@ import core.math.Point2i;
 import core.math.Rectangle;
 import org.jetbrains.annotations.Nullable;
 
+import java.beans.EventHandler;
+
 import static core.Global.*;
 import static core.graphic.GuiDrawing.*;
 import static core.World.WorldUtils.getDistanceToMouse;
@@ -25,6 +27,7 @@ import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Inventory {
     public static final int ITEM_DROP_DISTANCE = 10;
+    public static final int CELL_SIZE = 54;
     public static boolean inventoryOpen = false;
     private static final boolean buildGrid = Config.getBoolean("BuildGrid");
 
@@ -32,14 +35,16 @@ public class Inventory {
         updateUnderMouse();
         updateDropItem();
 
-        if (EventHandler.isMouseClickedIn(1875, 1035, 1920, 1080)) {
+        if (Hotkeys.isMouseClickedIn(input.viewportWidth() - 45, input.viewportHeight() - 45, input.viewportWidth(), input.viewportHeight())) {
             inventoryOpen = !inventoryOpen;
         }
     }
 
     public static void draw() {
         String gridTex = "UI/GUI/inventory/inventory" + (inventoryOpen ? "Open" : "Closed");
-        StackfulRender.draw(atlas.get(gridTex), inventoryOpen ? 1488 : 1866, 756);
+        int viewportWidth = input.viewportWidth();
+        int viewportHeight = input.viewportHeight();
+        StackfulRender.draw(atlas.get(gridTex), viewportWidth - (inventoryOpen ? 432 : CELL_SIZE), viewportHeight - 324);
 
         var items = player.items();
         for (int x = inventoryOpen ? 0 : 7; x < items.size(); x++) {
@@ -47,7 +52,7 @@ public class Inventory {
             for (int y = 0; y < line.size(); y++) {
                 ItemStack item = line.get(y);
                 if (item != null) {
-                    drawItemStack(1498 + x * 54, 766 + y * 54f, item);
+                    drawItemStack((viewportWidth - 422) + x * CELL_SIZE, (viewportHeight - 314) + y * 54f, item);
                 }
             }
         }
@@ -63,7 +68,8 @@ public class Inventory {
             }
             var current = player.itemInHandIdx;
             if ((inventoryOpen || current.x > 6)) {
-                StackfulRender.draw(atlas.get("UI/GUI/inventory/inventoryCurrent"), 1488 + current.x * 54, 756 + current.y * 54f);
+                StackfulRender.draw(atlas.get("UI/GUI/inventory/inventoryCurrent"),
+                        (viewportWidth - 432) + current.x * CELL_SIZE, (viewportHeight - 324) + current.y * 54f);
             }
         }
     }
@@ -73,11 +79,14 @@ public class Inventory {
         float x = mousePos.x;
         float y = mousePos.y;
 
-        // 1488 и 756 - нижний левый угол инвентаря, 54 - размер ячейки
-        if (x > 1488 && y > 756) {
-            x -= 1488;
-            y -= 756;
-            return new Point2i((int) Math.floor(x / 54), (int) Math.floor(y / 54));
+        int viewportWidth = input.viewportWidth();
+        int viewportHeight = input.viewportHeight();
+        int tl = viewportWidth - 432;
+        int bl = viewportHeight - 324;
+        if (x > tl && y > bl) {
+            x -= tl;
+            y -= bl;
+            return new Point2i((int) Math.floor(x / CELL_SIZE), (int) Math.floor(y / CELL_SIZE));
         }
         return null;
     }
@@ -87,10 +96,14 @@ public class Inventory {
         if (itemInHand != null && itemInHand.item() instanceof ItemBlock b) {
             Point2i blockPos = input.mouseBlockPos();
 
+            int viewportWidth = input.viewportWidth();
+            int viewportHeight = input.viewportHeight();
+            int tl = viewportWidth - 432;
+            int bl = viewportHeight - 324;
             if (!player.hasDraggingItem() &&
-                        !Rectangle.contains(1488, 756, 500, 500, input.mousePos())) {
+                        !Rectangle.contains(tl, bl, 500, 500, input.mousePos())) {
                 boolean canBuild = getDistanceToMouse() < 8 && world.checkPlaceRules(blockPos.x, blockPos.y, b.block);
-                WorldDrawing.addBlockPreview(blockPos.x, blockPos.y, (short) content.blocksRegistry.idByType(b.block), (byte) b.block.maxHp, canBuild);
+                WorldDrawing.addBlockPreview(blockPos.x, blockPos.y, b.block.id, (byte) b.block.maxHp, canBuild);
             }
         }
     }
@@ -112,8 +125,11 @@ public class Inventory {
 
     private static void updateUnderMouse() {
         Point2i underMouse = getFocusedItemIdx();
-
-        if (underMouse != null && EventHandler.isMouseClickedIn(1488, 756, 1919, 1079) && !player.hasDraggingItem()) {
+        int viewportWidth = input.viewportWidth();
+        int viewportHeight = input.viewportHeight();
+        int tl = viewportWidth - 432;
+        int bl = viewportHeight - 324;
+        if (underMouse != null && Hotkeys.isMouseClickedIn(tl, bl, tl + 431, bl + 323) && !player.hasDraggingItem()) {
             boolean hasUnderMouseItem = player.getItem(underMouse.x, underMouse.y) != null;
             if (hasUnderMouseItem) {
                 if (player.itemInHandIdx.equals(underMouse)) {
@@ -135,16 +151,17 @@ public class Inventory {
     }
 
     private static void updateDropItem() {
-        if (!input.clicked(GLFW_MOUSE_BUTTON_LEFT) && player.hasDraggingItem()) {
+        var me = player;
+        if (!input.clicked(GLFW_MOUSE_BUTTON_LEFT) && me.hasDraggingItem()) {
             Point2i focusedItemIdx = getFocusedItemIdx();
 
             if (focusedItemIdx != null) {
-                if (!focusedItemIdx.equals(player.draggingItemIdx)) {
-                    swapItems(focusedItemIdx, player.draggingItemIdx);
-                    player.resetItemInHand();
+                if (!focusedItemIdx.equals(me.draggingItemIdx)) {
+                    swapItems(focusedItemIdx, me.draggingItemIdx);
+                    me.resetItemInHand();
                 }
             } else {
-                var currentInMouse = player.getDraggingItem();
+                var currentInMouse = me.getDraggingItem();
                 if (currentInMouse == null) {
                     return;
                 }
@@ -155,10 +172,10 @@ public class Inventory {
 
                 if (blockEntity != null) {
                     switch (blockEntity.insertItem(currentInMouse)) {
-                        case MOVE -> player.setItem(player.draggingItemIdx, null);
+                        case MOVE -> me.setItem(me.draggingItemIdx, null);
                         case PARTIAL_MOVE -> {
                             if (currentInMouse.isEmpty()) {
-                                player.setItem(player.draggingItemIdx, null);
+                                me.setItem(me.draggingItemIdx, null);
                             }
                         }
                         case FAILED -> {}
@@ -166,21 +183,21 @@ public class Inventory {
                 } else {
                     var worldMousePos = input.mouseWorldPos();
 
-                    float dst = (float) Math.sqrt(player.dstSq(worldMousePos.x, worldMousePos.y));
+                    float dst = (float) Math.sqrt(me.dstSq(worldMousePos.x, worldMousePos.y));
                     if (dst > ITEM_DROP_DISTANCE) dst = ITEM_DROP_DISTANCE;
-                    worldMousePos.sub(player.x(), player.y()).nor().scale(dst);
-                    worldMousePos.add(player.x(), player.y());
+                    worldMousePos.sub(me.x(), me.y()).nor().scale(dst);
+                    worldMousePos.add(me.x(), me.y());
                     worldMousePos.sub(toWorld(ITEM_DROPPED_SIZE/2f), toWorld(ITEM_DROPPED_SIZE/2f));
 
                     int blockId = world.getBlockId(toBlock(worldMousePos.x), toBlock(worldMousePos.y));
                     if (blockId == 0) {
                         WorldUtils.spawnItemEntity(currentInMouse, worldMousePos.x, worldMousePos.y);
-                        player.setItem(player.draggingItemIdx, null);
+                        me.setItem(me.draggingItemIdx, null);
                     }
                 }
-                player.resetItemInHand();
+                me.resetItemInHand();
             }
-            player.resetDraggingItem();
+            me.resetDraggingItem();
         }
     }
 

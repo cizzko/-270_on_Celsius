@@ -21,12 +21,6 @@ open module core.main {
     requires org.lwjgl.opengl.natives;
     requires org.lwjgl.jemalloc.natives;
 
-    exports core.EventHandling;
-    exports core.UI.Sounds;
-    exports core.UI.animation;
-    exports core.UI.hud;
-    exports core.UI.menu;
-    exports core.UI;
     exports core.World.Creatures.Player;
     exports core.World.Creatures;
     exports core.World.Weather;
@@ -48,6 +42,11 @@ open module core.main {
     exports core.lang;
     exports core.math;
     exports core.pool;
+    exports core.ui.animation;
+    exports core.ui.hud;
+    exports core.ui.menu;
+    exports core.ui.widget;
+    exports core.ui;
     exports core.util;
     exports core;
 }

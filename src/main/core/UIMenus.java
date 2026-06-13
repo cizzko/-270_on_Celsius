@@ -1,7 +1,9 @@
 package core;
 
-import core.UI.hud.HeadUpDisplay;
-import core.UI.menu.*;
+import core.ui.hud.HeadUpDisplay;
+import core.ui.menu.*;
+import core.ui.LayoutGroup;
+import org.jetbrains.annotations.Nullable;
 
 public final class UIMenus {
     private static MainMenu mainMenu;
@@ -10,7 +12,17 @@ public final class UIMenus {
     private static Pause pause;
     private static Settings settings;
 
-    private static HeadUpDisplay headUpDisplay;
+    public static final class WidgetGroup extends LayoutGroup<WidgetGroup> {
+        WidgetGroup(@Nullable String id) { super(id); }
+    }
+
+    public static final WidgetGroup hudGroup = new WidgetGroup("Hud")
+            .setTouchable(false)
+            .setFillParent(true);
+
+    static {
+        UIMenus.hudGroup.add(new HeadUpDisplay());
+    }
 
     public static MainMenu mainMenu() {
         if (mainMenu == null) {
@@ -45,12 +57,5 @@ public final class UIMenus {
             loadSave = new LoadSave();
         }
         return loadSave;
-    }
-
-    public static HeadUpDisplay headUpDisplay() {
-        if (headUpDisplay == null) {
-            headUpDisplay = new HeadUpDisplay();
-        }
-        return headUpDisplay;
     }
 }

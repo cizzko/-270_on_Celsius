@@ -21,8 +21,6 @@ public class Application {
 
     public Application() {
         this.mainThread = Thread.currentThread();
-
-        Global.app = this;
     }
 
     public <N extends NativeResource> N keep(N aNative) {
@@ -83,6 +81,10 @@ public class Application {
         this.framerate = framerate;
     }
 
+    public int framerate() {
+        return framerate;
+    }
+
     public void ensureMainThread() {
         if (!isMainThread()) {
             throw new IllegalStateException("Async access");
@@ -99,12 +101,15 @@ public class Application {
         prevFrameTime = prevSwapTime = frameCounterTime = System.nanoTime();
     }
 
+    // public final FrameTimeProfiler profiler = new FrameTimeProfiler(100);
+
     protected void updateTime() {
         long now = System.nanoTime();
 
         float deltaTime = (now - prevFrameTime) * 1e-9f;
         prevFrameTime = now;
 
+        // profiler.addFrameTime(deltaTime);
         Time.delta = Math.clamp(deltaTime * Time.ONE_SECOND, 0.0001f, Time.ONE_SECOND / 10f);
 
         if (now - frameCounterTime >= 1e9f) {
@@ -118,8 +123,9 @@ public class Application {
     }
 
     protected void nextFrame() {
-        if (framerate > 0) {
-            double frameTime = 1e9 / framerate;
+        int fr = framerate;
+        if (fr > 0) {
+            double frameTime = 1e9 / fr;
             long elapsedTime = System.nanoTime() - prevSwapTime;
 
             if (elapsedTime < frameTime) {

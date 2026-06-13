@@ -1,21 +1,28 @@
 package core.util;
 
+import core.Global;
+import core.ui.widget.Console;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import jdk.jshell.JShell;
-import jdk.jshell.SnippetEvent;
 import jdk.jshell.execution.LocalExecutionControlProvider;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.management.ManagementFactory;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class JavaInterpreter {
     private static final Logger log = LogManager.getLogger("Console");
 
     public static JShell jshell;
 
-    public static void init(boolean exploded) {
+    public static void init() {
         var runtimeMxBean = ManagementFactory.getRuntimeMXBean();
 
         var jvmArgs = runtimeMxBean.getInputArguments();
@@ -42,46 +49,85 @@ public class JavaInterpreter {
 
         jshell = builder.build();
 
-        if (!exploded) {
+        if (!Global.assets.isExploded()) {
+            // Этот магический ключик указывает на modules у jlink образа
             jshell.addToClasspath(System.getProperty("sun.boot.library.path"));
         }
 
-        var out = new StringJoiner("\n").setEmptyValue("");
+        Consumer<String> out = (_) -> {};
 
-        execute0("import module java.base;", out);
-        execute0("import module core.main;", out);
+        executeSync("import module java.base;", out);
+        executeSync("import module core.main;", out);
 
-        execute0("import static core.Global.*;", out);
-        execute0("import static core.Application.*;", out);
+        executeSync("import static core.Global.*;", out);
+        executeSync("import static core.Application.*;", out);
 
-        if (out.length() > 0) {
-            System.out.println();
-            System.out.println(out);
-            System.out.println();
+        readScripts();
+    }
+
+    private static void readScripts() {
+        var scriptsDir = Global.assets.assetsDir().resolve("scripts");
+        try (var dirstr = Files.newDirectoryStream(scriptsDir, "*.java")) {
+            StringBuilder sb = new StringBuilder();
+            var sca = JavaInterpreter.jshell.sourceCodeAnalysis();
+            for (Path jscript : dirstr) {
+                try (var reader = Files.newBufferedReader(jscript)) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        sb.append(line);
+                        String str = sb.toString();
+                        var status = sca.analyzeCompletion(str);
+                        var comp = status.completeness();
+
+                        if (comp.isComplete()) {
+                            JavaInterpreter.executeSync(str, _ -> {});
+                            sb.setLength(0);
+                        }
+                    }
+                } catch (IOException e) {
+                    log.error("Failed to read script '{}'", jscript, e);
+                } catch (Exception e) {
+                    log.error("Failed to load script '{}'", jscript, e);
+                }
+            }
+        } catch (IOException e) {
+            log.error("Failed to read directory '{}'", scriptsDir, e);
         }
     }
 
-    public static void execute(String snippet) {
-        Thread.ofVirtual().name("JShell Thread", 0).start(() -> {
-            Thread.currentThread().setName("JShell Thread");
-            var out = new StringJoiner("\\n").setEmptyValue("");
-            execute0(snippet, out);
+    public static void execute(String snippet, Console console) {
+        Thread.ofVirtual().name("JShellThread", 0).start(() -> {
+            var outLines = new ObjectArrayList<String>();
+            executeSync(snippet, outLines::add);
+            Global.scheduler.post(() -> {
+                outLines.forEach(console::add);
+            });
         });
     }
 
-    public static void execute0(String snippet, @Nullable StringJoiner out) {
-        for (SnippetEvent snippetEvent : jshell.eval(snippet)) {
-            // log.debug(snippetEvent);
+    public static void executeSync(String snippet, Consumer<String> out) {
+        for (var snippetEvent : jshell.eval(snippet)) {
             switch (snippetEvent.status()) {
                 case VALID, OVERWRITTEN -> {
                     if (snippetEvent.value() != null && !snippetEvent.value().isEmpty()) {
                         log.info("{} ==> {}", snippetEvent.snippet().id(), snippetEvent.value());
-                        if (out != null) {
-                            out.add(snippetEvent.snippet().id() + " ==> " + snippetEvent.value());
-                        }
+                        out.accept(snippetEvent.snippet().id() + " ==> " + snippetEvent.value());
                     } else {
                         if (snippetEvent.exception() != null) {
-                            log.error(snippetEvent.exception());
+                            log.error("", snippetEvent.exception());
+                            if (out != null) {
+                                StringWriter sw = new StringWriter();
+                                var str = new PrintWriter(sw);
+                                snippetEvent.exception().printStackTrace(str);
+                                for (String s : sw.toString().split("\n")) {
+                                    out.accept(s);
+                                }
+                            }
+                        } else {
+                            log.trace("OK");
+                            if (log.isTraceEnabled()) {
+                                out.accept("OK");
+                            }
                         }
                     }
                 }
@@ -92,28 +138,20 @@ public class JavaInterpreter {
                             .forEach(diag -> {
                                 if (diag.isError()) {
                                     log.error("Error:");
-                                    if (out != null) {
-                                        out.add("Error:");
-                                    }
+                                    out.accept("Error:");
                                     for (String line : diag.getMessage(Locale.US).split("\n")) {
                                         log.error(line);
-                                        if (out != null) {
-                                            out.add(line);
-                                        }
+                                        out.accept(line);
                                     }
                                     long start = diag.getStartPosition();
                                     long end = diag.getEndPosition();
                                     long pos = diag.getPosition();
                                     String source = snippetEvent.snippet().source();
                                     log.error(source);
-                                    if (out != null) {
-                                        out.add(source);
-                                    }
+                                    out.accept(source);
                                     String caret = "^".repeat(Math.toIntExact(end - pos));
                                     log.error("{}{}", " ".repeat(Math.toIntExact(start)), caret);
-                                    if (out != null) {
-                                        out.add(" ".repeat(Math.toIntExact(start)) + caret);
-                                    }
+                                    out.accept(" ".repeat(Math.toIntExact(start)) + caret);
                                 }
                             });
 
@@ -123,9 +161,10 @@ public class JavaInterpreter {
     }
 
     public static void close() {
-        if (jshell != null) {
-            jshell.stop();
-            jshell.close();
+        var jsh = jshell;
+        if (jsh != null) {
+            jsh.stop();
+            jsh.close();
         }
     }
 }

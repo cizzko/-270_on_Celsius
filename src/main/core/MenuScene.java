@@ -1,9 +1,8 @@
 package core;
 
-import core.UI.Styles;
 import core.assets.AssetsManager;
 import core.g2d.*;
-import core.g2d.Render;
+import core.ui.Styles;
 import core.util.Commandline;
 import core.util.Debug;
 
@@ -21,9 +20,6 @@ public final class MenuScene extends GameScene {
     @Override
     public void onInit() {
         Debug.initMenu();
-
-        camera.setToOrthographic(input.getWidth(), input.getHeight());
-        StackfulRender.camera(camera);
     }
 
     @Override
@@ -41,6 +37,7 @@ public final class MenuScene extends GameScene {
     protected void inputUpdate() {
         Debug.menuHotKeys();
         Commandline.inputUpdate();
+        Hotkeys.inputUpdate();
     }
 
     @Override
@@ -64,6 +61,6 @@ public final class MenuScene extends GameScene {
     @Override
     protected void drawLoading() {
         StackfulRender.z(Render.LAYER_BACKGROUND);
-        StackfulRender.draw(backgroundTex, 0, 0, input.getWidth(), input.getHeight());
+        StackfulRender.draw(backgroundTex, 0, 0, input.viewportWidth(), input.viewportHeight());
     }
 }

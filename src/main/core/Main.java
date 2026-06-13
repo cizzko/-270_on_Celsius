@@ -15,6 +15,8 @@ public class Main {
         }
         assets = new AssetsManager(exploded, Constants.appName);
 
-        new Window().run();
+        var window = new Window();
+        Global.app = window;
+        window.run();
     }
 }

@@ -1,18 +1,15 @@
 package core;
 
 import com.sun.management.OperatingSystemMXBean;
-import core.EventHandling.Config;
+import core.util.Config;
 import core.assets.AssetsManager;
-import core.content.EntityPool;
 import core.g2d.*;
 import core.input.InputHandler;
-import core.lang.LangTranslation;
 import core.util.Debug;
-import core.util.FutureUtil;
+import core.util.JavaInterpreter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.io.IoBuilder;
-import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
 import org.lwjgl.opengl.GLUtil;
@@ -31,8 +28,9 @@ import static org.lwjgl.opengl.GL46.*;
 public final class Window extends Application {
     private static final Logger lwjglLogger = LogManager.getLogger("LWJGL");
 
-    public static int defaultWidth = 1920, defaultHeight = 1080;
-    public static Mode defaultMode = Mode.FULLSCREEN;
+    public static int targetWidth = 1920, targetHeight = 1080;
+    public static float targetAspect = (float)targetWidth / targetHeight;
+    public static Mode defaultMode = Mode.WINDOW;
 
     public enum Mode {
         WINDOW,
@@ -41,28 +39,18 @@ public final class Window extends Application {
     }
 
     public static boolean windowFocused = true;
-    public static long glfwWindow;
+    public static long glfwHandle;
     public static Font defaultFont;
 
-    private static final int GLFW_PLATFORM_FLAG = switch (System.getenv("XDG_SESSION_TYPE")) {
-        case "wayland" -> GLFW_PLATFORM_WAYLAND;
-        case "x11" -> GLFW_PLATFORM_X11;
-        case null, default -> 0;
+    private static final boolean GLFW_PLATFORM_IS_WAYLAND = switch (System.getenv("XDG_SESSION_TYPE")) {
+        case "wayland" -> true;
+        case null, default -> false;
     };
-
-    public static void setClipboardText(@Nullable CharSequence text) {
-        glfwSetClipboardString(glfwWindow, text);
-    }
-
-    public static @Nullable String getClipboardText() {
-        return glfwGetClipboardString(glfwWindow);
-    }
 
     private static boolean isFullscreen = defaultMode == Mode.FULLSCREEN;
 
     private static String windowTitle = "-270 on Celsius";
     private static int windowedX, windowedY;
-    private static int windowedWidth = defaultWidth, windowedHeight = defaultHeight;
     private static int minWindowWidth = 640, minWindowHeight = 360;
     private static int maxWindowWidth = GLFW_DONT_CARE, maxWindowHeight = GLFW_DONT_CARE;
 
@@ -77,34 +65,35 @@ public final class Window extends Application {
             if (vidMode == null) return;
 
             setWindowPos();
+            input.updateSize();
 
+            glfwSetWindowMonitor(glfwHandle, monitor, 0, 0, vidMode.width(), vidMode.height(), vidMode.refreshRate());
+            isFullscreen = true;
+        } else {
+            glfwSetWindowMonitor(glfwHandle, MemoryUtil.NULL, windowedX, windowedY, input.windowWidth(), input.windowHeight(), GLFW_DONT_CARE);
+            setWindowLimits();
             try (var st = MemoryStack.stackPush()) {
                 var pX = st.mallocInt(1);
                 var pY = st.mallocInt(1);
-                glfwGetWindowSize(glfwWindow, pX, pY);
-                windowedWidth = pX.get();
-                windowedHeight = pY.get();
+                glfwGetWindowSize(glfwHandle, pX, pY);
+                input.setSize(pX.get(), pY.get());
             }
 
-            glfwSetWindowMonitor(glfwWindow, monitor, 0, 0, vidMode.width(), vidMode.height(), vidMode.refreshRate());
-            isFullscreen = true;
-        } else {
-            glfwSetWindowMonitor(glfwWindow, MemoryUtil.NULL, windowedX, windowedY, windowedWidth, windowedHeight, GLFW_DONT_CARE);
-            setWindowLimits();
             isFullscreen = false;
         }
     }
 
     private static void setWindowLimits() {
-        glfwSetWindowSizeLimits(glfwWindow, minWindowWidth, minWindowHeight, maxWindowWidth, maxWindowHeight);
+        glfwSetWindowSizeLimits(glfwHandle, minWindowWidth, minWindowHeight, maxWindowWidth, maxWindowHeight);
+        glfwMaximizeWindow(glfwHandle);
     }
 
     private static void setWindowPos() {
-        if (GLFW_PLATFORM_FLAG != GLFW_PLATFORM_WAYLAND) {
+        if (!GLFW_PLATFORM_IS_WAYLAND) {
             try (var st = MemoryStack.stackPush()) {
                 var pX = st.mallocInt(1);
                 var pY = st.mallocInt(1);
-                glfwGetWindowPos(glfwWindow, pX, pY);
+                glfwGetWindowPos(glfwHandle, pX, pY);
                 windowedX = pX.get();
                 windowedY = pY.get();
             }
@@ -125,33 +114,30 @@ public final class Window extends Application {
             Configuration.DEBUG_STACK.set(true);
         }
 
-       glfwSetErrorCallback(keep(new GLFWErrorCallback() {
-           private final Marker GLFW = MarkerManager.getMarker("GLFW");
-           private final Int2ObjectOpenHashMap<String> ERROR_CODES;
-           {
-               ERROR_CODES = new Int2ObjectOpenHashMap<>(APIUtil.apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, org.lwjgl.glfw.GLFW.class));
-               ERROR_CODES.trim();
-           }
+        glfwSetErrorCallback(keep(new GLFWErrorCallback() {
+            private final Marker GLFW = MarkerManager.getMarker("GLFW");
+            private final Int2ObjectOpenHashMap<String> ERROR_CODES;
+            {
+                ERROR_CODES = new Int2ObjectOpenHashMap<>(APIUtil.apiClassTokens((field, value) -> 0x10000 < value && value < 0x20000, null, org.lwjgl.glfw.GLFW.class));
+                ERROR_CODES.trim();
+            }
 
-           @Override
-           public void invoke(int error, long description) {
-               String errorStr = ERROR_CODES.get(error);
-               String msg = getDescription(description);
-               lwjglLogger.error(GLFW, "error code: {}, description: {}", errorStr, msg);
+            @Override
+            public void invoke(int error, long description) {
+                String errorStr = ERROR_CODES.get(error);
+                String msg = getDescription(description);
+                lwjglLogger.error(GLFW, "error code: {}, description: {}", errorStr, msg);
 
-               StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-               for (int i = 4; i < stack.length; i++) {
-                   lwjglLogger.error(GLFW,"\tat {}", stack[i]);
-               }
-           }
-       }));
+                StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+                for (int i = 4; i < stack.length; i++) {
+                    lwjglLogger.error(GLFW,"\tat {}", stack[i]);
+                }
+            }
+        }));
 
-
-        if (GLFW_PLATFORM_FLAG == GLFW_PLATFORM_WAYLAND) {
+        if (GLFW_PLATFORM_IS_WAYLAND) {
             glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
             glfwInitHint(GLFW_WAYLAND_LIBDECOR, GLFW_WAYLAND_DISABLE_LIBDECOR);
-        } else if (GLFW_PLATFORM_FLAG == GLFW_PLATFORM_X11) {
-            // glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
         }
         if (!glfwInit()) {
             throw new RuntimeException("Failed to initialize GLFW");
@@ -186,9 +172,11 @@ public final class Window extends Application {
 
         switch (defaultMode) {
             case WINDOW -> {
-                windowWidth = defaultWidth;
-                windowHeight = defaultHeight;
+                windowWidth = targetWidth;
+                windowHeight = targetHeight;
                 monitorPtr = MemoryUtil.NULL;
+
+                glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
             }
             case FULLSCREEN -> {
                 windowWidth = mode.width();
@@ -198,7 +186,7 @@ public final class Window extends Application {
             case BORDERLESS -> {
                 windowWidth = mode.width();
                 windowHeight = mode.height();
-                if (GLFW_PLATFORM_FLAG == GLFW.GLFW_PLATFORM_WAYLAND) {
+                if (GLFW_PLATFORM_IS_WAYLAND) {
                     // TODO(Skat) у меня на wayland+kde нижняя панель не убирается
                     monitorPtr = primaryMonitorPtr;
                 } else {
@@ -208,27 +196,28 @@ public final class Window extends Application {
             default -> throw new IllegalStateException();
         }
 
-        glfwWindow = glfwCreateWindow(windowWidth, windowHeight, windowTitle, monitorPtr, MemoryUtil.NULL);
+        glfwHandle = glfwCreateWindow(windowWidth, windowHeight, windowTitle, monitorPtr, MemoryUtil.NULL);
 
         switch (defaultMode) {
             case WINDOW -> setWindowLimits();
             case BORDERLESS -> {
-                if (GLFW_PLATFORM_FLAG != GLFW_PLATFORM_WAYLAND) {
+                if (!GLFW_PLATFORM_IS_WAYLAND) {
                     try (var st = MemoryStack.stackPush()) {
+                        // Не проверялось. Нужно проверить на нескольких мониторах
                         var pX = st.mallocInt(1);
                         var pY = st.mallocInt(1);
-                        glfwGetMonitorPos(glfwWindow, pX, pY);
-                        glfwSetWindowPos(glfwWindow, pX.get(), pY.get());
+                        glfwGetMonitorPos(glfwHandle, pX, pY);
+                        glfwSetWindowPos(glfwHandle, pX.get(), pY.get());
                     }
                 }
             }
         }
 
-        if (glfwWindow == MemoryUtil.NULL) {
+        if (glfwHandle == MemoryUtil.NULL) {
             throw new RuntimeException("Failed to create window");
         }
 
-        glfwMakeContextCurrent(glfwWindow);
+        glfwMakeContextCurrent(glfwHandle);
 
         BufferedImage result;
         try (var in = Files.newInputStream(assets.assetsDir().resolve("World/Other/cursorDefault.png"))) {
@@ -239,17 +228,17 @@ public final class Window extends Application {
 
             GLFWImage glfwImg = GLFWImage.malloc(stack);
             glfwImg.set(cursorImage.width(), cursorImage.height(), cursorImage.data());
-            glfwSetCursor(glfwWindow, glfwCreateCursor(glfwImg, 0, 0));
+            glfwSetCursor(glfwHandle, glfwCreateCursor(glfwImg, 0, 0));
         }
 
         printComputerInfo();
 
-        if (Config.getBoolean("VerticalSync")) {
+        if (gameSettings.verticalSync) {
             log.info("Target Framerate: Vertical Sync");
             glfwSwapInterval(1);
         } else {
             glfwSwapInterval(0);
-            int targetFPS = Config.getInt("TargetFPS", -1);
+            int targetFPS = gameSettings.targetFps;
             if (targetFPS != -1) {
                 log.info("Target Framerate: {} FPS", targetFPS);
                 setFramerate(targetFPS);
@@ -266,18 +255,18 @@ public final class Window extends Application {
              keep(() -> glDisable(GL_DEBUG_OUTPUT));
          }
 
-        uiScene = new UIScene(defaultWidth, defaultHeight);
-        input = new InputHandler(defaultWidth, defaultHeight);
+        uiScene = new UIScene(targetWidth, targetHeight);
+        input = new InputHandler(targetWidth, targetHeight);
         input.init();
         input.addListener(uiScene);
 
-        glfwSetWindowFocusCallback(glfwWindow, keep(new GLFWWindowFocusCallback() {
+        glfwSetWindowFocusCallback(glfwHandle, keep(new GLFWWindowFocusCallback() {
             @Override
             public void invoke(long window, boolean focused) {
                 windowFocused = focused;
             }
         }));
-        glfwSetWindowCloseCallback(glfwWindow, keep(new GLFWWindowCloseCallback() {
+        glfwSetWindowCloseCallback(glfwHandle, keep(new GLFWWindowCloseCallback() {
             @Override
             public void invoke(long window) {
                 quit();
@@ -290,14 +279,13 @@ public final class Window extends Application {
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
 
-        glfwShowWindow(glfwWindow);
+        glfwShowWindow(glfwHandle);
 
-        lang = new LangTranslation();
         lang.load();
 
-        entityPool = new EntityPool(Constants.Entity.MAX_COUNT);
-
-        Debug.initDebugValuesMenu();
+        if (Debug.debugLevel >= 3) {
+            JavaInterpreter.init();
+        }
 
         setGameScene(new MenuScene());
     }
@@ -355,7 +343,7 @@ public final class Window extends Application {
     }
 
     private void swapBuffers() {
-        glfwSwapBuffers(glfwWindow);
+        glfwSwapBuffers(glfwHandle);
         glClear(GL_COLOR_BUFFER_BIT);
     }
 

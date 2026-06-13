@@ -15,7 +15,6 @@ import core.content.entity.BaseBlockEntity;
 import core.content.entity.BlockItemStorage;
 import core.g2d.Fill;
 import core.math.TmpShapes;
-import core.math.Vector2f;
 import core.util.ArrayUtils;
 import core.graphic.Color;
 

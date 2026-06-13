@@ -3,7 +3,6 @@ package core.World.Creatures;
 import core.Constants;
 import core.PlayGameScene;
 import core.Time;
-import core.WorldCoordinates;
 import core.content.blocks.Block;
 import core.content.entity.Entity;
 import core.graphic.ShadowMap;
@@ -16,13 +15,11 @@ import core.util.FixedBitset;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 
 import java.util.Arrays;
-import java.util.Map;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Player.noClip;
 import static core.content.entity.DrawComponent.GAP;
 import static java.lang.Math.*;
-import static java.lang.Math.abs;
 
 public final class Physics {
     // Для какого веса считались коэффициенты физики. Проверяли на игроке. Меньше весит - меньше влияет вес
@@ -337,7 +334,7 @@ public final class Physics {
 
         for (; minY <= maxY; minY++) {
             for (short x = minX; x <= maxX; x++) {
-                if (world.getBlockType(x, minY) == Block.Type.SOLID) {
+                if (world.isBlockType(x, minY, Block.Type.SOLID)) {
                     return true;
                 }
             }

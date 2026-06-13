@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 import core.content.items.Item;
 import core.content.items.data.ItemData;
-import core.math.MathUtil;
 import org.jetbrains.annotations.CheckReturnValue;
 import org.jetbrains.annotations.Nullable;
 

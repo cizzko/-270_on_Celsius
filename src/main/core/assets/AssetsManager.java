@@ -1,23 +1,21 @@
 package core.assets;
 
+import core.util.Config;
+import core.GameSettings;
 import core.Global;
 import core.g2d.AtlasHandler;
 import core.g2d.FontHandler;
 import core.g2d.ShaderHandler;
 import core.g2d.TextureHandler;
-import core.util.Debug;
-import core.util.JavaInterpreter;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.Platform;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -25,7 +23,7 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-import static core.EventHandling.Config.config;
+import static core.util.Config.config;
 
 public final class AssetsManager {
     static final Logger log = LogManager.getLogger("AssetsManager");
@@ -65,7 +63,7 @@ public final class AssetsManager {
         }
 
         if (exploded) {
-            this.assetsDir = workingDir.resolve("src").resolve("assets");
+            this.assetsDir = workingDir.resolve("src/assets");
         } else {
             var module = AssetsManager.class.getModule();
             this.assetsDir = Path.of(URI.create("jrt:/" + module.getName()));
@@ -78,8 +76,21 @@ public final class AssetsManager {
 
         copyFromResource(config, "configDefault.properties", "config.properties");
 
-        if (Debug.debugLevel >= 3) {
-            jscriptInit(exploded);
+        Path settingsFile = workingDir.resolve("settings.json");
+        if (Files.isRegularFile(settingsFile)) {
+            try (var is = Files.newInputStream(settingsFile)) {
+                Global.gameSettings = Config.json.readValue(is, GameSettings.class);
+            }
+
+            // Config.updateConfig("FirstLaunch", "0");
+        } else {
+            Global.gameSettings = new GameSettings();
+            try (var os = Files.newOutputStream(settingsFile)) {
+                Config.json.writerWithDefaultPrettyPrinter()
+                        .writeValue(os, Global.gameSettings);
+            }
+
+            // Config.updateConfig("FirstLaunch", "1");
         }
     }
 
@@ -107,29 +118,7 @@ public final class AssetsManager {
         map.putAll(magic);
     }
 
-    private void jscriptInit(boolean exploded) throws IOException {
-        JavaInterpreter.init(exploded);
-        try (var dirstr = Files.newDirectoryStream(assetsDir.resolve("scripts"), "*.java")) {
-            StringBuilder sb = new StringBuilder();
-            for (Path jscript : dirstr) {
-                try (var reader = Files.newBufferedReader(jscript)) {
-                    String line;
-                    while ((line = reader.readLine()) != null) {
-                        sb.append(line);
-                        String str = sb.toString();
-                        var status = JavaInterpreter.jshell.sourceCodeAnalysis().analyzeCompletion(str);
-                        var comp = status.completeness();
-
-                        if (comp.isComplete()) {
-                            JavaInterpreter.execute0(str, null);
-                            sb.setLength(0);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
+    /// @return `true` если ассеты не запакованы в архив
     public boolean isExploded() { return exploded; }
 
     public void register(AssetHandler<?, ?, ?> loader) {

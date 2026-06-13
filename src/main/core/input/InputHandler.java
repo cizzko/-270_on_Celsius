@@ -1,18 +1,21 @@
 package core.input;
 
-import core.GameState;
-import core.Global;
+import core.Window;
+import core.math.MathUtil;
 import core.math.Point2i;
 import core.math.Vector2d;
 import core.math.Vector2f;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.*;
+import org.lwjgl.system.MemoryStack;
 
 import java.util.Arrays;
 
-import static core.Window.*;
+import static core.Global.*;
+import static core.Window.glfwHandle;
 import static core.WorldCoordinates.toBlock;
 import static core.util.FixedBitset.createBitSet;
 import static org.lwjgl.glfw.GLFW.*;
@@ -32,10 +35,13 @@ public final class InputHandler {
     private final Point2i mouseBlockPos = new Point2i();
     private final Vector2d mouseWorldPos = new Vector2d();
 
-    private long lastMouseMoveTimestamp;
     private float scrollOffset = 1, scrollDelta = 0;
-    private int width, height;
     private boolean anyMouseClick;
+
+    // окно
+    private int width, height;
+    // Вьюпорт. Первая инициализация происходит в коллбеке
+    private int vx, vy, vw, vh;
 
     public InputHandler(int width, int height) {
         this.width = width;
@@ -52,25 +58,38 @@ public final class InputHandler {
         clicked = createBitSet(CLICKED_ARRAY_SIZE);
     }
 
-    public void init() {
+    public void setSize(int width, int height) {
+        this.width = width;
+        this.height = height;
+    }
 
-        glfwSetCursorPosCallback(glfwWindow, Global.app.keep(new GLFWCursorPosCallback() {
+    public void init() {
+        glfwSetWindowSizeCallback(glfwHandle, app.keep(new GLFWWindowSizeCallback() {
             @Override
-            public void invoke(long window, double xpos, double ypos) {
-                float y = (float) (height - ypos);
-                float x = (float) xpos;
-                lastMouseMoveTimestamp = System.currentTimeMillis();
-                mousePos.set(x, y);
-                updateMouseWorld();
+            public void invoke(long window, int width, int height) {
+                InputHandler.this.width = width;
+                InputHandler.this.height = height;
+            }
+        }));
+        glfwSetCursorPosCallback(glfwHandle, app.keep(new GLFWCursorPosCallback() {
+            @Override
+            public void invoke(long window, double rawX, double rawY) {
+                double localX = rawX - vx;
+                double localY = height - rawY - vy;
+
+                float mx = (float)Math.clamp(localX, 0, vw);
+                float my = (float)Math.clamp(localY, 0, vh);
+
+                updateMouse(mx, my);
 
                 if (anyMouseClick) {
-                    onMouseDragged(x, y);
+                    onMouseDragged(mx, my);
                 } else {
-                    onMouseMove(x, y);
+                    onMouseMove(mx, my);
                 }
             }
         }));
-        glfwSetKeyCallback(glfwWindow, Global.app.keep(new GLFWKeyCallback() {
+        glfwSetKeyCallback(glfwHandle, app.keep(new GLFWKeyCallback() {
             @Override
             public void invoke(long window, int key, int scancode, int action, int mods) {
                 // При запуске с xwayland я получаю несколько ивентов с таким вот интересным параметром
@@ -101,7 +120,7 @@ public final class InputHandler {
                 }
             }
         }));
-        glfwSetMouseButtonCallback(glfwWindow, Global.app.keep(new GLFWMouseButtonCallback() {
+        glfwSetMouseButtonCallback(glfwHandle, app.keep(new GLFWMouseButtonCallback() {
             @Override
             public void invoke(long window, int button, int action, int mods) {
                 switch (action) {
@@ -115,7 +134,6 @@ public final class InputHandler {
                     }
                     case GLFW_RELEASE -> {
                         unsetBit(clicked, button);
-                        // setBit(justClicked, button);
                         setBit(releasedButtons, button);
 
                         anyMouseClick = false;
@@ -124,7 +142,7 @@ public final class InputHandler {
                 }
             }
         }));
-        glfwSetScrollCallback(glfwWindow, Global.app.keep(new GLFWScrollCallback() {
+        glfwSetScrollCallback(glfwHandle, app.keep(new GLFWScrollCallback() {
             @Override
             public void invoke(long window, double xoffset, double yoffset) {
                 float xoffsetf = (float) xoffset;
@@ -134,36 +152,44 @@ public final class InputHandler {
                 onScroll(xoffsetf, yoffsetf);
             }
         }));
-        glfwSetFramebufferSizeCallback(glfwWindow, Global.app.keep(new GLFWFramebufferSizeCallback() {
+        glfwSetFramebufferSizeCallback(glfwHandle, app.keep(new GLFWFramebufferSizeCallback() {
             @Override
             public void invoke(long window, int w, int h) {
-
                 float aspect = (float) w / h;
-                float defaultAspect = (float) defaultWidth/defaultHeight;
-                if (Global.gameState == GameState.MENU) // TODO решить как поступать
-                {
-                    if (aspect >= defaultAspect) {
-                        int viewW = (int)(h * defaultAspect);
-                        glViewport((w - viewW)/2, 0, viewW, h);
-                        w = viewW;
-                    } else {
-                        int viewH = (int)(w / defaultAspect);
-                        glViewport(0, (h - viewH)/2, w, viewH);
-                        h = viewH;
-                    }
+                float targetAspect = Window.targetAspect;
+
+                int vx, vy, vw, vh;
+                if (MathUtil.equalsEps(aspect, targetAspect, 0.15f)) {
+                    vx = vy = 0;
+                    vw = w;
+                    vh = h;
+                } else if (aspect >= targetAspect) {
+                    int viewW = (int)(h * targetAspect);
+                    vx = (w - viewW)/2;
+                    vy = 0;
+                    vw = viewW;
+                    vh = h;
                 } else {
-                    glViewport(0, 0, w, h);
+                    int viewH = (int)(w / targetAspect);
+                    vx = 0;
+                    vy = (h - viewH)/2;
+                    vw = w;
+                    vh = viewH;
                 }
 
-                width = w;
-                height = h;
+                InputHandler.this.vx = vx;
+                InputHandler.this.vy = vy;
+                InputHandler.this.vw = vw;
+                InputHandler.this.vh = vh;
 
-                if (Global.gameState == GameState.PLAYING)
-                    Global.camera.resizeViewport(w, h);
-                onFramebufferResize(w, h);
+                glViewport(vx, vy, vw, vh);
+                onViewport(vx, vy, vw, vh);
+
+                camera.resizeViewport(vw, vh);
+                onFramebufferResize(vw, vh);
             }
         }));
-        glfwSetCharCallback(glfwWindow, Global.app.keep(new GLFWCharCallback() {
+        glfwSetCharCallback(glfwHandle, app.keep(new GLFWCharCallback() {
             @Override
             public void invoke(long window, int codepoint) {
                 onCodepoint(codepoint);
@@ -171,9 +197,12 @@ public final class InputHandler {
         }));
     }
 
-    private void updateMouseWorld() {
-        Global.camera.unprojectTo(mousePos, mouseWorldPos);
-        mouseBlockPos.set(toBlock(mouseWorldPos.x), toBlock(mouseWorldPos.y));
+    public void updateMouse(float x, float y) {
+        var ms = mousePos;
+        var mw = mouseWorldPos;
+        ms.set(x, y);
+        camera.unprojectTo(ms, mw);
+        mouseBlockPos.set(toBlock(mw.x), toBlock(mw.y));
     }
 
     public void update() {
@@ -184,7 +213,6 @@ public final class InputHandler {
         Arrays.fill(releasedKeys, 0);
 
         glfwPollEvents();
-        updateMouseWorld();
     }
 
     public void addListener(InputListener listener) {
@@ -199,14 +227,12 @@ public final class InputHandler {
     // endregion
     // region Public API
 
-    public int getWidth() {
-        return width;
-    }
-    public int getHeight() {
-        return height;
-    }
+    public int windowWidth()    { return width; }
+    public int windowHeight()   { return height; }
+    public int viewportWidth()  { return vw; }
+    public int viewportHeight() { return vh; }
 
-    public float getScrollOffset() {
+    public float scrollOffset() {
         return scrollOffset;
     }
 
@@ -214,9 +240,9 @@ public final class InputHandler {
         return scrollDelta;
     }
 
-    public long getLastMouseMoveTimestamp() {
-        return lastMouseMoveTimestamp;
-    }
+    // Не модифицируйте содержимое векторов возвращаемых методами
+    // mouseBlockPos(), mouseWorldPos(), mousePos()
+    // А если захотели - будьте добры, делайте это через updateMouse(x, y)
 
     public Point2i mouseBlockPos() { return mouseBlockPos; }
 
@@ -246,7 +272,6 @@ public final class InputHandler {
         return isSet(clicked, button);
     }
 
-    //для мыши
     public boolean justClicked(int button) {
         return isSet(justClicked, button);
     }
@@ -269,6 +294,10 @@ public final class InputHandler {
     }
 
     // endregion
+
+    private void onViewport(int x, int y, int w, int h) {
+        listeners.forEach(i -> i.onViewport(x, y, w, h));
+    }
 
     private void onFramebufferResize(int w, int h) {
         listeners.forEach(i -> i.onFramebufferResize(w, h));
@@ -336,5 +365,22 @@ public final class InputHandler {
 
     private void onKeyDown(int key, int scancode) {
         listeners.forEach(listener -> listener.onKeyDown(key, scancode));
+    }
+
+    public void setClipboardText(@Nullable CharSequence text) {
+        glfwSetClipboardString(glfwHandle, text);
+    }
+
+    public @Nullable String getClipboardText() {
+        return glfwGetClipboardString(glfwHandle);
+    }
+
+    public void updateSize() {
+        try (var st = MemoryStack.stackPush()) {
+            var pX = st.mallocInt(1);
+            var pY = st.mallocInt(1);
+            glfwGetWindowSize(glfwHandle, pX, pY);
+            setSize(pX.get(), pY.get());
+        }
     }
 }

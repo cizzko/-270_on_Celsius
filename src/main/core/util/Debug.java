@@ -1,18 +1,15 @@
 package core.util;
 
-import core.EventHandling.Config;
 import core.GameState;
 import core.PlayGameScene;
 import core.Time;
-import core.UI.Dialog;
-import core.UI.Styles;
-import core.UI.TextArea;
 import core.World.TemperatureMap;
 import core.World.Weather.Sun;
 import core.content.blocks.Block;
 import core.content.blocks.data.TileData;
 import core.content.items.Item;
 import core.g2d.Fill;
+import core.g2d.Font;
 import core.g2d.Render;
 import core.g2d.StackfulRender;
 import core.graphic.Color;
@@ -20,6 +17,8 @@ import core.graphic.GuiDrawing;
 import core.graphic.ShadowMap;
 import core.math.TmpShapes;
 import core.math.Vector2d;
+import core.ui.Styles;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 
 import javax.imageio.ImageIO;
@@ -40,6 +39,7 @@ import static core.WorldCoordinates.toWorld;
 import static core.content.ItemStack.itemStack;
 import static core.content.entity.DrawComponent.GAP;
 import static core.graphic.Color.*;
+import static core.graphic.GuiDrawing.drawTextUncached;
 import static org.lwjgl.glfw.GLFW.*;
 
 public class Debug {
@@ -58,12 +58,13 @@ public class Debug {
         throw (T) t;
     }
 
-    // region GameState.MENU
+    // region .MENU
     public static void initMenu() {
-        if (debugLevel < 2) {
+        if (debugLevel < 2 || once2) {
             return;
         }
-
+        once2 = true;
+        Debug.initDebugValuesMenu();
     }
 
     // endregion
@@ -98,7 +99,7 @@ public class Debug {
         return FLOATS.format((double)x + offsetX) + " / " + FLOATS.format((double)y + offsetY);
     }
 
-    static boolean once;
+    static boolean once, once2;
 
     public static void initDebugValuesGame() {
         if (debugLevel < 2 || once) {
@@ -106,11 +107,6 @@ public class Debug {
         }
         once = true;
 
-        setDebugValue(GameState.PLAYING, () -> {
-            var gs = (PlayGameScene) gameScene;
-            Sun sun = gs.sun;
-            return "Sun y: " + (int) (sun.y * 100) / 100f;
-        });
         setDebugValue(GameState.PLAYING, () -> {
             var worldPos = TmpShapes.v1d.set(player.lastX(), player.lastY());
             return "Last XY: " + formatWorldPos(worldPos);
@@ -121,13 +117,20 @@ public class Debug {
         });
         setDebugValue(GameState.PLAYING, () -> "Camera: " + formatWorldPos(camera.position));
         setDebugValue(GameState.PLAYING, () -> "Velocity: " + player.velocity());
-        setDebugValue(GameState.PLAYING, () -> "HP: " + player.hp() + "/" + player.maxHp() + " (" + player.hpFract() + ")");
+        setDebugValue(GameState.PLAYING, () ->
+                "HP: " + FLOATS.format(player.hp()) +
+                "/" + FLOATS.format(player.maxHp()) + " (" + FLOATS.format(player.hpFract()) + ")");
         setDebugValue(GameState.PLAYING, () -> {
             var mouseBlockPos = input.mouseBlockPos();
             var mouseBlock = world.getBlock(mouseBlockPos);
             String blockId = mouseBlock != null ? mouseBlock.key + " (BID: " + mouseBlock.id + ")" : "<void>";
             return "Mouse: " + mouseBlockPos + " ID: " + blockId + " HP: " + world.getHp(mouseBlockPos) +
                    " Shadow: " + ShadowMap.getColorTo(mouseBlockPos.x, mouseBlockPos.y, TmpShapes.c1);
+        });
+        setDebugValue(GameState.PLAYING, () -> {
+            var gs = (PlayGameScene) gameScene;
+            Sun sun = gs.sun;
+            return "Sun y: " + FLOATS.format((int)(sun.y * 100f) / 100f);
         });
     }
 
@@ -362,44 +365,29 @@ public class Debug {
         Fill.resetLineWidth();
     }
 
-    static final class DebugBox extends TextArea {
-        static final int background = Color.rgba8888(0, 0, 0, 255 / 2);
-
-        final GameState state;
-        final Supplier<String> format;
-
-        DebugBox(GameState state, Supplier<String> format) {
-            super(debugValues, Styles.DEBUG_TEXT);
-            this.state = state;
-            this.format = format;
-        }
-
-        @Override
-        public void updateThis(float dt) { if (state == null || gameState == state) setText(format.get()); }
-
-        @Override
-        public void draw() {
-            Fill.rect(x, y, cache.rect.width, cache.rect.height, background);
-            super.draw();
-        }
-    }
-    static final Dialog debugValues = new Dialog();
+    static final ObjectArrayList<Supplier<String>> debugValues = new ObjectArrayList<>();
 
     ///фактически можно вызывать откуда угодно, но рекомендуется ставить в DebugTools.initDebugValuesGame() или DebugTools.initDebugValuesMenu()
     public static void setDebugValue(Supplier<String> format) {
-        setDebugValue(null, format);
+        if (Debug.debugLevel <= 0) {
+            return;
+        }
+        debugValues.add(format);
     }
 
-    public static void setDebugValue(@Nullable GameState state, Supplier<String> format) {
+    public static void setDebugValue(GameState state, Supplier<String> format) {
         if (Debug.debugLevel <= 0) {
             return;
         }
 
-        var elem = new DebugBox(state, format);
-        debugValues.add(elem);
-        int i = debugValues.children().size();
-        elem.setPosition(5, 1080 - (25 * i));
+        debugValues.add(() -> {
+            if (state == gameState)
+                return format.get();
+            return null;
+        });
     }
+
+    static final int debugTextBackColor = Color.rgba8888(0, 0, 0, 255 / 2);
 
     public static void drawTextValues() {
         if (Debug.debugLevel <= 0) {
@@ -407,8 +395,77 @@ public class Debug {
         }
         StackfulRender.z(Render.LAYER_DEBUG);
         StackfulRender.blending(Render.BLENDING_PREMUL);
-        debugValues.update(42);
-        debugValues.draw();
+        var font = Styles.DEBUG_TEXT.font;
+        int color = Styles.DEBUG_TEXT.color.rgba8888();
+
+        float bx = 0;
+        float by = input.viewportHeight() - font.lineHeight();
+        var list = debugValues;
+        {
+            float y = by;
+            for (var debugValue : list) {
+                String value = debugValue.get();
+                if (value == null) continue;
+                float textWidth = textWidth(font, value);
+                Fill.rect(bx, y, textWidth, font.lineHeight(), debugTextBackColor);
+                y -= font.lineHeight();
+            }
+        }
+        for (var debugValue : list) {
+            String value = debugValue.get();
+            if (value == null) continue;
+            drawTextUncached(font, bx, by, value, color);
+            by -= font.lineHeight();
+        }
+        // float width = 200;
+        // float height = 100;
+        // renderFrameTimeGraph(input.width() - width, input.height() - height, width, height);
         StackfulRender.blending(Render.BLENDING_NORMAL);
     }
+
+    static float textWidth(Font font, String text) {
+        float w = 0;
+        for (int i = 0, n = text.length(); i < n; i++) {
+            char c = text.charAt(i);
+            w += font.getGlyph(c).width();
+        }
+        return w;
+    }
+
+    /*
+    static final int background2 = Color.rgba8888(0, 0, 0, 255 / 3);
+
+    public static void renderFrameTimeGraph(float x, float y, float width, float height) {
+        Fill.rect(x, y, width, height, background2);
+        Fill.lineWidth(1);
+
+        var profiler = app.profiler;
+        int samples = profiler.maxSamples();
+        float xStep = width / (samples - 1);
+
+        int targetFrametime = app.framerate() > 0 ? app.framerate() : 60;
+        float targetMs = 1000f / targetFrametime;
+        float maxVisibleMs = targetMs * 2f;
+
+        float targetY = y + targetMs / maxVisibleMs * height;
+        Fill.line(x, targetY, x + width, targetY, green);
+        Fill.lineWidth(1.85f);
+
+        for (int i = 0; i < samples - 1; i++) {
+            float currentMs = profiler.getSample(i);
+            float nextMs = profiler.getSample(i + 1);
+
+            float x1 = x + i * xStep;
+            float x2 = x + (i + 1) * xStep;
+
+            float y1 = y + Math.min(currentMs / maxVisibleMs, 1f) * height;
+            float y2 = y + Math.min(nextMs / maxVisibleMs, 1f) * height;
+
+            int color = currentMs > targetMs + 1.0f ? red : white;
+
+            Fill.line(x1, y1, x2, y2, color);
+        }
+
+        Fill.resetLineWidth();
+    }*/
 }

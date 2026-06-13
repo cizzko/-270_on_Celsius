@@ -1,7 +1,7 @@
 package core.content.creatures;
 
 import core.Constants;
-import core.EventHandling.Config;
+import core.util.Config;
 import core.Global;
 import core.Time;
 import core.World.Creatures.Physics;
@@ -13,16 +13,13 @@ import core.content.entity.BaseCreatureEntity;
 import core.content.entity.HitboxComponent;
 import core.content.entity.InventoryComponent;
 import core.g2d.StackfulRender;
-import core.math.MathUtil;
 import core.math.Point2i;
 import core.math.Vector2f;
 import core.util.Debug;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.glfw.GLFW;
 
 import static core.Global.*;
-import static core.PlayGameScene.*;
 import static core.World.Creatures.Physics.GRAVITY;
 import static core.World.Creatures.Player.Player.noClip;
 import static core.WorldCoordinates.toWorld;
@@ -74,8 +71,8 @@ public class PlayerEntity
         camera.update();
     }
 
-    public double centerX() { return x + weight() / 2f; }
-    public double centerY() { return y + height() / 2f; }
+    public double centerX() { return x + width() / 2d; }
+    public double centerY() { return y + height() / 2d; }
 
     public void draw(float dx) {
         var tex = creature.texture;
@@ -120,7 +117,7 @@ public class PlayerEntity
         }
 
         if (noClip) {
-            speed *= Math.max(0, input.getScrollOffset());
+            speed *= Math.max(0, input.scrollOffset());
         }
 
         int xf = input.axis(GLFW_KEY_A, GLFW_KEY_D);

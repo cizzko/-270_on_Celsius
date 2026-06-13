@@ -10,17 +10,14 @@ import core.graphic.GuiDrawing;
 import core.content.ItemGrid;
 import core.content.ItemStack;
 import core.content.entity.BaseBlockEntity;
-import core.g2d.Atlas;
 import core.g2d.Render;
 import core.g2d.StackfulRender;
 import core.math.Point2i;
 import core.math.TmpShapes;
-import core.math.Vector2f;
 
 import java.io.IOException;
 
 import static core.Global.*;
-import static core.WorldCoordinates.toPixels;
 import static core.WorldCoordinates.toWorld;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 

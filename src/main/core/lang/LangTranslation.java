@@ -1,6 +1,6 @@
 package core.lang;
 
-import core.EventHandling.Config;
+import core.util.Config;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -15,6 +15,7 @@ import java.util.*;
 import java.util.stream.Stream;
 
 import static core.Global.assets;
+import static core.Global.gameSettings;
 
 public final class LangTranslation {
     private static final Logger log = LogManager.getLogger("Lang");
@@ -34,24 +35,24 @@ public final class LangTranslation {
             settings = Config.json.readValue(is, LanguageSettings.class);
         }
 
-        if (Config.getBoolean("DetectLanguage")) {
-            String detected = null;
-            for (String candidate : new String[]{Locale.getDefault().getLanguage(), Config.getString("Language", "en")}) {
-                if (settings.supports(candidate)) {
-                    detected = candidate;
-                    break;
-                }
-            }
-            if (detected != null) {
-                Config.updateConfig("Language", detected);
-            } else {
-                detected = REFERENCE_LOCALE;
-            }
-
-            language = detected;
-        } else {
-            language = Config.getString("Language", "en");
-        }
+        // if (Config.getBoolean("DetectLanguage")) {
+        //     String detected = null;
+        //     for (String candidate : new String[]{Locale.getDefault().getLanguage(), Config.getString("Language", "en")}) {
+        //         if (settings.supports(candidate)) {
+        //             detected = candidate;
+        //             break;
+        //         }
+        //     }
+        //     if (detected == null) {
+        //         detected = REFERENCE_LOCALE;
+        //     }
+        //
+        //     language = detected;
+        //     gameSettings.language = language;
+        //     gameSettings.save();
+        // } else {
+        // }
+        language = gameSettings.language;
 
         reloadSource();
         log.info("Loaded language: {}", language);
@@ -88,7 +89,7 @@ public final class LangTranslation {
         }
     }
 
-    public String getCurrentLanguage() {
+    public String currentLanguage() {
         return language;
     }
 

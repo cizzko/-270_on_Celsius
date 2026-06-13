@@ -1,13 +1,11 @@
 package core.g2d;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import core.EventHandling.Config;
+import core.util.Config;
 import core.assets.AssetHandler;
 import core.assets.AssetReleaser;
 import core.assets.AssetResolver;
-import core.math.MathUtil;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;

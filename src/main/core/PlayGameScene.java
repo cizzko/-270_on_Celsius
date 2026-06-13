@@ -1,6 +1,5 @@
 package core;
 
-import core.EventHandling.Config;
 import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
@@ -14,10 +13,9 @@ import core.graphic.WorldDrawing;
 import core.util.Commandline;
 import core.util.Debug;
 
-import static core.EventHandling.EventHandler.updateHotkeys;
 import static core.Global.*;
+import static core.UIMenus.hudGroup;
 import static core.World.Creatures.Player.Player.*;
-import static core.WorldCoordinates.toWorld;
 import static core.g2d.Render.*;
 
 public final class PlayGameScene extends GameScene {
@@ -40,15 +38,14 @@ public final class PlayGameScene extends GameScene {
     @Override
     public void onInit() {
         Debug.initPlaying();
-
-        UIMenus.headUpDisplay().show();
+        uiScene.add(hudGroup);
     }
 
     @Override
     protected void inputUpdate() {
-        AutoSaveController.update();
+        Hotkeys.inputUpdate();
 
-        updateHotkeys(this);
+        Hotkeys.updateHotkeys(this);
         WorkbenchLogic.updateInput();
         Commandline.inputUpdate();
         updateToolInteraction();
@@ -57,6 +54,7 @@ public final class PlayGameScene extends GameScene {
 
     @Override
     protected void update() {
+        AutoSaveController.update();
         Physics.updatePhysics(this);
         player.updateCamera();
         sun.update();
@@ -107,6 +105,7 @@ public final class PlayGameScene extends GameScene {
     @Override
     public void onUnloaded() {
         super.onUnloaded();
+        uiScene.remove(hudGroup);
         player = null;
         world = null;
         entityPool.clear();

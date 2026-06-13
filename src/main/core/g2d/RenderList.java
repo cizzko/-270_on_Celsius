@@ -5,13 +5,11 @@ import core.util.Disposable;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static core.g2d.Render.*;
 import static core.g2d.RenderQueue.*;
 import static core.g2d.StackfulRender.defaultShader;
-import static core.graphic.Color.toGLBits;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 

@@ -3,7 +3,6 @@ package core.content.entity;
 import core.World.Creatures.Physics;
 import core.content.blocks.Block;
 import core.content.creatures.Creature;
-import core.g2d.Atlas;
 import core.g2d.StackfulRender;
 import core.math.*;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;

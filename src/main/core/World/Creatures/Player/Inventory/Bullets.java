@@ -1,7 +1,6 @@
 package core.World.Creatures.Player.Inventory;
 
 import core.Global;
-import core.UI.Sounds.Sound;
 import core.content.items.ItemWeapon;
 import core.content.items.data.ItemData;
 import core.g2d.Atlas;

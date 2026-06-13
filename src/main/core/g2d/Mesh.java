@@ -4,7 +4,6 @@ import core.util.Debug;
 import core.util.Disposable;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 
 import static org.lwjgl.opengl.GL15C.glBindBuffer;

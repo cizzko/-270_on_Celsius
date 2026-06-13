@@ -5,16 +5,15 @@ import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import core.Global;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
 import core.content.entity.BaseBlockEntity;
 
 import java.io.IOException;
 
-import static core.Global.player;
-
 public class WorkbenchEntity extends BaseBlockEntity<Workbench> {
 
-    public static final float range = 1.15f;
+    public static final float range = 1.25f;
 
     public WorkbenchEntity(Workbench workbench) {
         super(workbench);
@@ -22,9 +21,10 @@ public class WorkbenchEntity extends BaseBlockEntity<Workbench> {
 
     @Override
     public void update() {
-        float cx = centerX() + (block.tileCountX-1)/2f;
-        float cy = centerY() + (block.tileCountY-1)/2f;
-        if (Math.abs(player.centerX() - cx) <= block.tileCountX / range && Math.abs(player.centerY() - cy) <= block.tileCountY / range) {
+        double cx = centerX() + block.tileCountX/2d;
+        double cy = centerY() + block.tileCountY/2d;
+        float effectiveRange = Math.max(block.tileCountX, block.tileCountY) * range;
+        if (Global.player.dstSq(cx, cy) <= effectiveRange*effectiveRange) {
             WorkbenchLogic.nearbyWorkbench.put(block.tier, block);
         }
     }

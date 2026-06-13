@@ -2,98 +2,89 @@
   "Basic": {
     "text": "Basic",
     "comments": [
-      "src/main/core/UI/menu/CreatePlanet.java:45",
-      "src/main/core/UI/menu/Settings.java:32"
+      "src/main/core/ui/menu/CreatePlanet.java:78",
+      "src/main/core/ui/menu/Settings.java:94"
     ]
   },
   "Continue": {
     "text": "Continue",
-    "comments": [ "src/main/core/UI/menu/Pause.java:15" ]
+    "comments": [ "src/main/core/ui/menu/Pause.java:46" ]
   },
   "Exit": {
     "text": "Exit",
     "comments": [
-      "src/main/core/UI/menu/MainMenu.java:31",
-      "src/main/core/UI/menu/Pause.java:31"
+      "src/main/core/ui/menu/MainMenu.java:55",
+      "src/main/core/ui/menu/Pause.java:29"
     ]
   },
   "Experimental worl gen": {
     "text": "Experimental worl gen",
-    "comments": [ "src/main/core/UI/menu/CreatePlanet.java:77" ]
+    "comments": [ "src/main/core/ui/menu/CreatePlanet.java:54" ]
   },
   "Generate flat world": {
     "text": "Generate flat world",
-    "comments": [ "src/main/core/UI/menu/CreatePlanet.java:86" ]
+    "comments": [ "src/main/core/ui/menu/CreatePlanet.java:71" ]
   },
   "Generate world": {
     "text": "Generate world",
-    "comments": [ "src/main/core/UI/menu/CreatePlanet.java:55" ]
+    "comments": [ "src/main/core/ui/menu/CreatePlanet.java:46" ]
   },
   "Generation": {
     "text": "Generation",
-    "comments": [ "src/main/core/UI/menu/CreatePlanet.java:48" ]
+    "comments": [ "src/main/core/ui/menu/CreatePlanet.java:81" ]
   },
   "Graphics": {
     "text": "Graphics",
-    "comments": [ "src/main/core/UI/menu/Settings.java:40" ]
+    "comments": [ "src/main/core/ui/menu/Settings.java:100" ]
   },
   "Language": {
     "text": "Language",
-    "comments": [ "src/main/core/UI/menu/Settings.java:96" ]
+    "comments": [ "src/main/core/ui/menu/Settings.java:67" ]
   },
   "Load save": {
     "text": "Load save",
-    "comments": [ "src/main/core/UI/menu/MainMenu.java:23" ]
-  },
-  "Load world": {
-    "text": "Load world",
-    "comments": [ "src/main/core/UI/menu/LoadSave.java:83" ]
+    "comments": [ "src/main/core/ui/menu/MainMenu.java:39" ]
   },
   "Menu": {
     "text": "Menu",
-    "comments": [ "src/main/core/UI/menu/Pause.java:27" ]
+    "comments": [ "src/main/core/ui/menu/Pause.java:34" ]
   },
   "New game": {
     "text": "New game",
-    "comments": [ "src/main/core/UI/menu/MainMenu.java:20" ]
+    "comments": [ "src/main/core/ui/menu/MainMenu.java:34" ]
   },
   "Other": {
     "text": "Other",
-    "comments": [ "src/main/core/UI/menu/Settings.java:36" ]
+    "comments": [ "src/main/core/ui/menu/Settings.java:97" ]
   },
   "Physics": {
     "text": "Physics",
-    "comments": [ "src/main/core/UI/menu/CreatePlanet.java:51" ]
+    "comments": [ "src/main/core/ui/menu/CreatePlanet.java:82" ]
   },
   "Return": {
     "text": "Return",
     "comments": [
-      "src/main/core/UI/menu/CreatePlanet.java:39",
-      "src/main/core/UI/menu/LoadSave.java:79",
-      "src/main/core/UI/menu/Settings.java:27"
+      "src/main/core/ui/menu/CreatePlanet.java:105",
+      "src/main/core/ui/menu/Settings.java:116"
     ]
   },
   "Save": {
     "text": "Save",
-    "comments": [ "src/main/core/UI/menu/Settings.java:48" ]
+    "comments": [ "src/main/core/ui/menu/Settings.java:30" ]
   },
   "Save world": {
     "text": "Save world",
-    "comments": [ "src/main/core/UI/menu/Pause.java:19" ]
+    "comments": [ "src/main/core/ui/menu/Pause.java:42" ]
   },
   "Settings": {
     "text": "Settings",
     "comments": [
-      "src/main/core/UI/menu/MainMenu.java:27",
-      "src/main/core/UI/menu/Pause.java:23"
+      "src/main/core/ui/menu/MainMenu.java:44",
+      "src/main/core/ui/menu/Pause.java:38"
     ]
-  },
-  "System language": {
-    "text": "System language",
-    "comments": [ "src/main/core/UI/menu/Settings.java:101" ]
   },
   "Vertical sync": {
     "text": "Vertical sync",
-    "comments": [ "src/main/core/UI/menu/Settings.java:56" ]
+    "comments": [ "src/main/core/ui/menu/Settings.java:79" ]
   }
 }

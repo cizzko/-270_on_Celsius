@@ -8,7 +8,6 @@ import core.content.serialize.SerializableContent;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import java.io.IOException;
-import java.util.Arrays;
 
 public final class BlockItemStorage implements SerializableContent {
     public final ObjectArrayList<ItemStack> items;

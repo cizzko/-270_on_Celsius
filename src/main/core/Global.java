@@ -19,10 +19,11 @@ public final class Global {
     public static Atlas atlas;
     public static AssetsManager assets;
     public static UIScene uiScene;
-    public static LangTranslation lang;
-    public static EntityPool entityPool;
+    public static final LangTranslation lang = new LangTranslation();
+    public static final EntityPool entityPool = new EntityPool(Constants.Entity.MAX_COUNT);
     public static PlayerEntity player;
     public static final Camera2 camera = new Camera2(WorldCoordinates.BLOCK_SIZE);
+    public static GameSettings gameSettings;
 
     public static World world;
     public static GameState gameState = GameState.MENU;
