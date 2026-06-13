@@ -197,6 +197,14 @@ public final class Window extends Application {
         }
 
         glfwHandle = glfwCreateWindow(windowWidth, windowHeight, windowTitle, monitorPtr, MemoryUtil.NULL);
+        if (glfwHandle == MemoryUtil.NULL) {
+            throw new RuntimeException("Failed to create window");
+        }
+
+        uiScene = new UIScene(targetWidth, targetHeight);
+        input = new InputHandler(targetWidth, targetHeight);
+        input.init();
+        input.addListener(uiScene);
 
         switch (defaultMode) {
             case WINDOW -> setWindowLimits();
@@ -213,11 +221,16 @@ public final class Window extends Application {
             }
         }
 
-        if (glfwHandle == MemoryUtil.NULL) {
-            throw new RuntimeException("Failed to create window");
-        }
-
         glfwMakeContextCurrent(glfwHandle);
+        GL.createCapabilities();
+
+        try (var stack = MemoryStack.stackPush()) {
+            var xptr = stack.mallocInt(1);
+            var yptr = stack.mallocInt(1);
+            glfwGetFramebufferSize(glfwHandle, xptr, yptr);
+            input.setViewportSize(xptr.get(), yptr.get());
+        }
+        input.updateSize();
 
         BufferedImage result;
         try (var in = Files.newInputStream(assets.assetsDir().resolve("World/Other/cursorDefault.png"))) {
@@ -247,18 +260,11 @@ public final class Window extends Application {
             }
         }
 
-        GL.createCapabilities();
-
          if (Debug.debugLevel >= 5) {
              glEnable(GL_DEBUG_OUTPUT);
              keep(GLUtil.setupDebugMessageCallback());
              keep(() -> glDisable(GL_DEBUG_OUTPUT));
          }
-
-        uiScene = new UIScene(targetWidth, targetHeight);
-        input = new InputHandler(targetWidth, targetHeight);
-        input.init();
-        input.addListener(uiScene);
 
         glfwSetWindowFocusCallback(glfwHandle, keep(new GLFWWindowFocusCallback() {
             @Override

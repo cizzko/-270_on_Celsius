@@ -9,14 +9,16 @@ log.txt
 *.atlas
 *.atlas.meta
 *.atlas.hash
-tmp
 
 *.patch
 *.diff
 
+tmp
 logs
+
 config.properties
-fastCommands.properties
-worldImage.png
 open_worl*.json
 open_worl.json
+
+settings.json
+settings.json.bak

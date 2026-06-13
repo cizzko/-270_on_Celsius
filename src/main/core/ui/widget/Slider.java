@@ -87,6 +87,11 @@ public class Slider extends LayoutElement<Slider> {
     private static final Color tmp = new Color();
 
     @Override
+    protected void updateThis(float dt) {
+        sliderPos();
+    }
+
+    @Override
     public void draw() {
         float sliderX = sliderPos();
 
@@ -101,7 +106,7 @@ public class Slider extends LayoutElement<Slider> {
         int rectBrightness = 170;
         int rectY = 45;
         float rectWidth = 1.75f;
-        if (MathUtil.equalsEps(prevSliderPos, sliderX, 1e-3f)) {
+        if (MathUtil.equalsEps(prevSliderPos, sliderX, 1e-4f)) {
             rectHeight = 26;
             rectWidth = 2.5f;
             rectY = 40;

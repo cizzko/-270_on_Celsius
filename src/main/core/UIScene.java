@@ -44,12 +44,6 @@ public final class UIScene implements InputListener {
         }
 
         @Override
-        public void onFramebufferResize(int width, int height) {
-            super.onFramebufferResize(width, height);
-            prefSize(width, height);
-        }
-
-        @Override
         public void layout() {
             set(x, y, prefWidth, prefHeight);
         }
@@ -173,7 +167,7 @@ public final class UIScene implements InputListener {
     public void onViewport(int vpX, int vpY, int vpW, int vpH) {
         view.setToOrthographic(vpW, vpH);
 
-        rootElement.onFramebufferResize(vpW, vpH);
+        rootElement.prefSize(vpW, vpH);
     }
 
     @Override

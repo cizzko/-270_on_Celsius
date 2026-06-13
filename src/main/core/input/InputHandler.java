@@ -177,16 +177,7 @@ public final class InputHandler {
                     vh = viewH;
                 }
 
-                InputHandler.this.vx = vx;
-                InputHandler.this.vy = vy;
-                InputHandler.this.vw = vw;
-                InputHandler.this.vh = vh;
-
-                glViewport(vx, vy, vw, vh);
                 onViewport(vx, vy, vw, vh);
-
-                camera.resizeViewport(vw, vh);
-                onFramebufferResize(vw, vh);
             }
         }));
         glfwSetCharCallback(glfwHandle, app.keep(new GLFWCharCallback() {
@@ -295,12 +286,17 @@ public final class InputHandler {
 
     // endregion
 
-    private void onViewport(int x, int y, int w, int h) {
-        listeners.forEach(i -> i.onViewport(x, y, w, h));
-    }
+    private void onViewport(int vx, int vy, int vw, int vh) {
 
-    private void onFramebufferResize(int w, int h) {
-        listeners.forEach(i -> i.onFramebufferResize(w, h));
+        this.vx = vx;
+        this.vy = vy;
+        this.vw = vw;
+        this.vh = vh;
+
+        glViewport(vx, vy, vw, vh);
+        camera.resizeViewport(vw, vh);
+
+        listeners.forEach(i -> i.onViewport(vx, vy, vw, vh));
     }
 
     private static void setBit(long[] bits, int i) {
@@ -382,5 +378,31 @@ public final class InputHandler {
             glfwGetWindowSize(glfwHandle, pX, pY);
             setSize(pX.get(), pY.get());
         }
+    }
+
+    public void setViewportSize(int w, int h) {
+        float aspect = (float) w / h;
+        float targetAspect = Window.targetAspect;
+
+        int vx, vy, vw, vh;
+        if (MathUtil.equalsEps(aspect, targetAspect, 0.15f)) {
+            vx = vy = 0;
+            vw = w;
+            vh = h;
+        } else if (aspect >= targetAspect) {
+            int viewW = (int)(h * targetAspect);
+            vx = (w - viewW)/2;
+            vy = 0;
+            vw = viewW;
+            vh = h;
+        } else {
+            int viewH = (int)(w / targetAspect);
+            vx = 0;
+            vy = (h - viewH)/2;
+            vw = w;
+            vh = viewH;
+        }
+
+        onViewport(vx, vy, vw, vh);
     }
 }

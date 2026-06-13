@@ -3,8 +3,6 @@ package core.input;
 public interface InputListener {
     default void onViewport(int x, int y, int w, int h) {}
 
-    default void onFramebufferResize(int width, int height) {}
-
     default void onTouchDown(float x, float y, int button) {}
 
     default void onTouchUp(float x, float y, int button) {}

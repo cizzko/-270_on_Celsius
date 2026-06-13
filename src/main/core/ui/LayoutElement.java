@@ -211,12 +211,6 @@ public abstract class LayoutElement<This extends LayoutElement<This>>
 
     // region InputListener
 
-
-    @Override
-    public void onFramebufferResize(int width, int height) {
-        inputListeners.forEach(listener -> listener.onFramebufferResize(width, height));
-    }
-
     @Override
     public void onTouchDown(float x, float y, int button) {
         inputListeners.forEach(listener -> listener.onTouchDown(x, y, button));
