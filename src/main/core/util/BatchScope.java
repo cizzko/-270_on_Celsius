@@ -7,21 +7,25 @@ import java.util.concurrent.*;
 
 /// Класс для разделения чанковых задач в [ForkJoinPool]
 public final class BatchScope implements Disposable, Executor {
+    private static final int DEFAULT_LOAD_FACTOR = 4;
+
     private final ForkJoinPool pool;
     private final ObjectArrayList<ForkJoinTask<?>> futures;
 
-    private final int workSize;
-    private final int poolSize;
+    private int loadFactor;
 
-    public BatchScope(ForkJoinPool pool, int workSize) {
-        this(pool, pool.getParallelism(), workSize);
+    public BatchScope(ForkJoinPool pool) {
+        this(pool, DEFAULT_LOAD_FACTOR);
     }
 
-    public BatchScope(ForkJoinPool pool, int poolSize, int workSize) {
+    public BatchScope(ForkJoinPool pool, int loadFactor) {
         this.pool = pool;
-        this.futures = new ObjectArrayList<>(poolSize);
-        this.poolSize = poolSize;
-        this.workSize = workSize;
+        this.futures = new ObjectArrayList<>(pool.getParallelism());
+        this.loadFactor = loadFactor;
+    }
+
+    public void setLoadFactor(int loadFactor) {
+        this.loadFactor = loadFactor;
     }
 
     /// @param lo Базовое смещение координаты слева
@@ -29,15 +33,15 @@ public final class BatchScope implements Disposable, Executor {
     /// @param task Шаблон задачи который будет применен при разделении `workSize`
     public BatchScope submit(int lo, int hi, IntIntBiConsumer task) {
         if (lo >= hi) return this;
-        int length = hi - lo;
-        int targetChunkSize = Math.max(1, length / (poolSize * 4));
+        int size = hi - lo;
+        int threshold = Math.max(1, size / (pool.getParallelism() * loadFactor));
 
-        pool.invoke(new CountedChunkTask(null, lo, hi, targetChunkSize, task));
+        pool.invoke(new CountedChunkTask(null, lo, hi, threshold, task));
         return this;
     }
 
-    public BatchScope submit(IntIntBiConsumer task) {
-        return submit(0, workSize, task);
+    public void execute(Runnable task) {
+        futures.add(pool.submit(task));
     }
 
     /// Заблокироваться и ожидать выполнения всех задач
@@ -77,25 +81,6 @@ public final class BatchScope implements Disposable, Executor {
         }
     }
 
-    public void execute(Runnable task) {
-        futures.add(pool.submit(task));
-    }
-
-    static final class FlatChunkTask extends RecursiveAction {
-        final IntIntBiConsumer task;
-        final int chunkBegin, chunkEnd;
-
-        FlatChunkTask(IntIntBiConsumer task, int chunkBegin, int chunkEnd) {
-            this.task = task;
-            this.chunkBegin = chunkBegin;
-            this.chunkEnd = chunkEnd;
-        }
-
-        protected void compute() {
-            task.accept(chunkBegin, chunkEnd);
-        }
-    }
-
     static final class CountedChunkTask extends CountedCompleter<Void> {
         final int lo, hi;
         final int threshold;
@@ -127,33 +112,6 @@ public final class BatchScope implements Disposable, Executor {
 
             task.accept(l, h);
             propagateCompletion();
-        }
-    }
-
-    static final class SplitTask extends RecursiveAction {
-        final IntIntBiConsumer task;
-        final int start, end;
-        final int threshold;
-
-        SplitTask(IntIntBiConsumer task, int start, int end, int threshold) {
-            this.task = task;
-            this.start = start;
-            this.end = end;
-            this.threshold = threshold;
-        }
-
-        @Override
-        protected void compute() {
-            if ((end - start) <= threshold) {
-                task.accept(start, end);
-                return;
-            }
-
-            int mid = (start + end) >>> 1;
-            SplitTask left = new SplitTask(task, start, mid, threshold);
-            SplitTask right = new SplitTask(task, mid, end, threshold);
-
-            invokeAll(left, right);
         }
     }
 }

@@ -12,7 +12,7 @@ import static java.lang.Math.clamp;
 
 //счас по упрощенной модели - не считает диагонали, большие клампы
 //возможно, в будущем появится галочка обычной или упрощенной модели
-public class TemperatureMap {
+public final class TemperatureMap {
     //column-major массивы
     //Внешний цикл по x, внутренний по y
     private static float[] temps;
@@ -76,10 +76,7 @@ public class TemperatureMap {
             }
         }
 
-        final int leftBorder = 0;
-        final int rightBorder = world.sizeX - COPY_SIZE;
-        final int activeWidth = rightBorder - leftBorder;
-        var scope = new BatchScope(world.genPool, activeWidth);
+        var scope = new BatchScope(world.genPool);
         for (int i = 0; i < 2000; i++) {
             update(scope);
         }

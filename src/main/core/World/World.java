@@ -614,10 +614,10 @@ public final class World {
         if (!(cellX >= 0 && cellX < world.sizeX)) // TODO generateCaves
             return -1;
         for (int y = world.sizeY - 1; y > 0; y -= period) {
-            if (world.getBlockType(cellX, y) == Block.Type.SOLID) {
+            if (world.isBlockType(cellX, y, Block.Type.SOLID)) {
                 for (int i = y + period; i > y - 1; i--) {
                     //если сверху вниз, то первый блок и будет солид, нет смысла проверять над ним
-                    if (world.getBlockType(cellX, i) == Block.Type.SOLID) {
+                    if (world.isBlockType(cellX, i, Block.Type.SOLID)) {
                         return i + 1;
                     }
                 }

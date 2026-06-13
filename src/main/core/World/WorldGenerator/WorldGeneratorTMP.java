@@ -200,7 +200,7 @@ public class WorldGeneratorTMP {
     private static void generateFlatWorld(World world) {
         int worldWidth = world.sizeX;
         //карта высот
-        float[] worldHeights = new float[worldWidth];
+        short[] worldHeights = new short[worldWidth];
         //карта биомов
         Biomes[] worldXBiomes = new Biomes[worldWidth];
         //карта смешиваний
@@ -210,7 +210,7 @@ public class WorldGeneratorTMP {
         Biomes currentBiomes = Biomes.getRand();
 
         int lastX = 0;
-        float lastY = world.sizeY / 2f;
+        int lastY = world.sizeY / 2;
 
         int lastSwapBiomes = 0;
         final int minSwapBiomes = 100;
@@ -221,7 +221,7 @@ public class WorldGeneratorTMP {
             for (int j = 0; j < iters; j++) {
                 if (lastX >= 0 && lastX < worldWidth && lastY > 0) {
                     worldXBiomes[lastX] = currentBiomes;
-                    worldHeights[lastX] = lastY;
+                    worldHeights[lastX] = (short)lastY;
                     lastSwapBiomes++;
 
                     if (lastSwapBiomes > minSwapBiomes) {
@@ -240,12 +240,12 @@ public class WorldGeneratorTMP {
             }
         } while (lastX < world.sizeX);
 
-        var scope = new BatchScope(world.genPool, worldWidth);
-        scope.submit((startChunkX, endChunkX) -> {
+        var scope = new BatchScope(world.genPool);
+        scope.submit(0, world.sizeX, (startChunkX, endChunkX) -> {
             Biomes defaultBiome = Biomes.getDefault();
 
             for (int x = startChunkX; x < endChunkX; x++) {
-                float targetY = worldHeights[x];
+                short targetY = worldHeights[x];
 
                 Biomes blockBiome = worldXBiomes[x];
                 if (blockBiome == null) {
@@ -260,7 +260,7 @@ public class WorldGeneratorTMP {
                 int maxBlockIdx = activeBlocksSet.length - 1;
 
                 //зона перехода (когда уникальные блоки биома кончились)
-                int transitionZone = (int) (targetY - maxBlockIdx);
+                int transitionZone = targetY - maxBlockIdx;
                 //ставит блоки биома (напр: слой травы, грязи, итд)
                 if (transitionZone > 0) {
                     var fillerBlock = content.blocksRegistry.typeById(activeBlocksSet[maxBlockIdx]);
@@ -372,8 +372,8 @@ public class WorldGeneratorTMP {
 
         smoothHeights(lastY, worldHeights);
 
-        var scope = new BatchScope(world.genPool, worldWidth);
-        scope.submit((startChunkX, endChunkX) -> {
+        var scope = new BatchScope(world.genPool);
+        scope.submit(0, world.sizeX, (startChunkX, endChunkX) -> {
             Biomes defaultBiome = Biomes.getDefault();
 
             for (int x = startChunkX; x < endChunkX; x++) {
@@ -523,7 +523,7 @@ public class WorldGeneratorTMP {
         float angle = startAngle;
         int totalIters = 0;
 
-        var rnd = ThreadLocalRandom.current();
+        var rnd = RNG;
         float wx = bx;
         float wy = by;
         int lastShot = 0;
@@ -604,8 +604,8 @@ public class WorldGeneratorTMP {
             return;
         }
 
-        int endX = bx + radius;
-        int endY = by + radius;
+        int endX = Math.clamp(bx + radius, 0, world.sizeX - 1);
+        int endY = Math.clamp(by + radius, 0, world.sizeY - 1);
 
         for (int y = beginY; y <= endY; y++) {
             for (int x = beginX; x <= endX; x++) {
@@ -635,7 +635,7 @@ public class WorldGeneratorTMP {
     public static void clearFloatingIslands(short[] tiles, int sizeX, int sizeY, int minSize) {
         //Какая то сложнючая но быстрая дичь которую наверняка можно сделать лучше/красивее
 
-        var scope = new BatchScope(world.genPool, sizeX);
+        var scope = new BatchScope(world.genPool);
         scope.submit(0, sizeX, (startChunkX, endChunkX) -> {
             IntArrayList localStack = new IntArrayList(LOCAL_STACK_CAPACITY);
             int[] islandBuffer = new int[minSize];

@@ -89,5 +89,7 @@ public final class Vector2d {
         return Double.isFinite(x) && Double.isFinite(y);
     }
 
-
+    public String toString() {
+        return '{' + x + ", " + y + '}';
+    }
 }

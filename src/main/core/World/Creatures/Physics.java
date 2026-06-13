@@ -24,7 +24,7 @@ import static core.content.entity.DrawComponent.GAP;
 import static java.lang.Math.*;
 import static java.lang.Math.abs;
 
-public class Physics {
+public final class Physics {
     // Для какого веса считались коэффициенты физики. Проверяли на игроке. Меньше весит - меньше влияет вес
     public static final float WEIGHT_FACTOR   = 1f / 80;
     // 44 блока / секунда²

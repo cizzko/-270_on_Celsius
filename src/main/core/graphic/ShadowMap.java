@@ -8,10 +8,9 @@ import core.util.BatchScope;
 import java.util.HashMap;
 
 import static core.Global.*;
-import static core.WorldCoordinates.toBlock;
 import static core.graphic.WorldDrawing.viewport;
 
-public class ShadowMap {
+public final class ShadowMap {
     private static byte[] shadows;
     private static HashMap<CreatureEntity, Color> shadowsDynamic = new HashMap<>();
     private static Color deletedColor = Color.CLEAR, deletedColorDynamic = Color.CLEAR, addedColor = Color.CLEAR, addedColorDynamic = Color.CLEAR;
@@ -64,7 +63,7 @@ public class ShadowMap {
     }
 
     public static void generate() {
-        var scope = new BatchScope(world.genPool, world.sizeX);
+        var scope = new BatchScope(world.genPool);
         scope.submit(1, world.sizeY, (loY, hiY) -> {
             for (int y = loY; y < hiY; y++) {
                 for (int x = 0; x < world.sizeX; x++) {

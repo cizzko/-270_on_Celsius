@@ -6,7 +6,8 @@ import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 
-public class TextureLoader {
+public final class TextureLoader {
+    private TextureLoader() {}
 
     public static BitMap decodeImage(BufferedImage image) {
         int width = image.getWidth();
