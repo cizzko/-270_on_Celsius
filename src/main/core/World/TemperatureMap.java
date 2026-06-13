@@ -1,6 +1,7 @@
 package core.World;
 
 import core.Constants;
+import core.World.WorldGenerator.WorldGeneratorTMP;
 import core.content.blocks.Block;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ public class TemperatureMap {
     private static float[][] density;
 
     //ем выше, тем 'взрывоопаснее' газы (температура больше влияет на расширение)
-    public static final float R = 500.05f;
+    public static final float R = 250.05f;
     //todo почти все тут нужно делать динамически
     //Чем выше , тем быстрее выравнивается давление
     public static final float SIM_K = 0.2f;
@@ -29,6 +30,10 @@ public class TemperatureMap {
     public static final float MIN_DENSITY_THRESHOLD = 0.01f;
     //тепло сосед-сосед
     public static final float HEAT_DIFFUSION_K = 0.2f;
+    //для статического напряжения (ну типа давление но в блоках)
+    private static final float SOLID_BASE_PRESSURE = 10000.0f;
+    //зависимость напряжения от температуры
+    private static final float SOLID_SHRINK = 2.5f;
 
     //todo
     //Множитель теплоемкости блоков
@@ -315,7 +320,11 @@ public class TemperatureMap {
     }
 
     public static float getPressure(int x, int y) {
-        return getDensity(x, y) * (temps[x][y] + 273.15f) * R;
+        if (world.getBlockType(x, y) == Block.Type.SOLID) {
+            return SOLID_BASE_PRESSURE * (float) Math.pow((temps[x][y] + 273.15f) / 273.15f, SOLID_SHRINK);
+        }
+
+        return density[x][y] * (temps[x][y] + 273.15f) * R;
     }
 
     public static float getTempCell(int x, int y) {
