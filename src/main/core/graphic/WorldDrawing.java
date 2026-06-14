@@ -5,8 +5,7 @@ import core.Window;
 import core.World.TemperatureMap;
 import core.content.blocks.Block;
 import core.content.blocks.data.TileData;
-import core.content.entity.DrawComponent;
-import core.content.entity.Entity;
+import core.content.entity.LivingEntity;
 import core.g2d.*;
 import core.math.AABB;
 import core.math.Point2i;
@@ -356,37 +355,35 @@ public final class WorldDrawing {
     // region Entities
     public static void drawEntities() {
         camera.boundsTo(viewport);
-        entityPool.forEach(WorldDrawing::drawEntity);
+        entityPool.forEachType(LivingEntity.class, WorldDrawing::drawEntity);
     }
 
-    private static void drawEntity(Entity ent) {
-        if (ent instanceof DrawComponent d) {
+    private static void drawEntity(LivingEntity ent) {
+        if (ent.isVisible(viewport)) {
+            ent.draw(0);
+        } else { // TODO как-то несправедливо игнорировать isVisible тут
             var hitbox = TmpShapes.aabb1;
             ent.hitboxTo(hitbox);
 
-            if (ent == player || viewport.overlaps(hitbox)) {
-                d.draw(0);
-            } else {
-                final int leftBorder = SWAP_AREA;
-                int rightBorder = world.sizeX - SWAP_AREA;
-                float dx = rightBorder - leftBorder;
+            final int leftBorder = SWAP_AREA;
+            int rightBorder = world.sizeX - SWAP_AREA;
+            float dx = rightBorder - leftBorder;
 
-                // |swap|swap|
-                //      ^ rightBorder
-                //           ^  rightBorder + swap
-                // ^ rightBorder - swap
+            // |swap|swap|
+            //      ^ rightBorder
+            //           ^  rightBorder + swap
+            // ^ rightBorder - swap
 
-                if (hitbox.maxX >= (rightBorder - SWAP_AREA) && hitbox.maxX <= (rightBorder + SWAP_AREA)) {
-                    hitbox.minX -= dx;
-                    hitbox.maxX -= dx;
-                    if (viewport.overlaps(hitbox))
-                        d.draw(-dx);
-                } else if (hitbox.minX >= (leftBorder - SWAP_AREA) && hitbox.minX <= (leftBorder + SWAP_AREA)) {
-                    hitbox.minX += dx;
-                    hitbox.maxX += dx;
-                    if (viewport.overlaps(hitbox))
-                        d.draw(dx);
-                }
+            if (hitbox.maxX >= (rightBorder - SWAP_AREA) && hitbox.maxX <= (rightBorder + SWAP_AREA)) {
+                hitbox.minX -= dx;
+                hitbox.maxX -= dx;
+                if (viewport.overlaps(hitbox))
+                    ent.draw(-dx);
+            } else if (hitbox.minX >= (leftBorder - SWAP_AREA) && hitbox.minX <= (leftBorder + SWAP_AREA)) {
+                hitbox.minX += dx;
+                hitbox.maxX += dx;
+                if (viewport.overlaps(hitbox))
+                    ent.draw(dx);
             }
         }
     }

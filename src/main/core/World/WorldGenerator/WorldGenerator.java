@@ -177,8 +177,9 @@ public class WorldGenerator {
         //карта смешиваний
         long[] useLastBiomeFlag = FixedBitset.createBitSet(world.sizeX);
 
+        var rnd = ThreadLocalRandom.current();
         Biomes lastBiomes = Biomes.getDefault();
-        Biomes currentBiomes = Biomes.getRand();
+        Biomes currentBiomes = Biomes.getRand(rnd);
 
         float lastX = 0;
         float lastY = world.sizeY / 2f;
@@ -191,7 +192,6 @@ public class WorldGenerator {
         //todo динамически
         final int minSwapBiomes = 200;
 
-        var rnd = ThreadLocalRandom.current();
         do {
             angle = Math.clamp(
                     angle + (rnd.nextFloat() * blockGradient - blockGradient / 2f),
@@ -215,7 +215,7 @@ public class WorldGenerator {
 
                     if (lastSwapBiomes > minSwapBiomes && rnd.nextFloat() * lastSwapBiomes - minSwapBiomes > 30) {
                         lastBiomes = currentBiomes;
-                        currentBiomes = Biomes.getRand();
+                        currentBiomes = Biomes.getRand(rnd);
                         lastSwapBiomes = 0;
                         upperBorder = currentBiomes.getUpperBorder();
                         bottomBorder = currentBiomes.getBottomBorder();

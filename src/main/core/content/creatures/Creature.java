@@ -7,6 +7,8 @@ import core.content.Loadable;
 import core.content.entity.CreatureEntity;
 import core.g2d.Atlas;
 
+import static core.util.TypeUtil.canonicalNameOrParent;
+
 public abstract class Creature implements ContentType, Loadable {
     public final String key;
     public short id;
@@ -50,7 +52,7 @@ public abstract class Creature implements ContentType, Loadable {
     protected abstract CreatureEntity constructEntity();
 
     @Override
-    public boolean equals(Object o) {
+    public final boolean equals(Object o) {
         if (this == o) {
             return true;
         }
@@ -61,7 +63,12 @@ public abstract class Creature implements ContentType, Loadable {
     }
 
     @Override
-    public int hashCode() {
+    public final int hashCode() {
         return key.hashCode();
+    }
+
+    @Override
+    public final String toString() {
+        return canonicalNameOrParent(getClass()) + "['" + key + "']";
     }
 }

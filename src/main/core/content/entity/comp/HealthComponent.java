@@ -1,4 +1,4 @@
-package core.content.entity;
+package core.content.entity.comp;
 
 public interface HealthComponent {
     float maxHp();

@@ -10,6 +10,7 @@ import core.g2d.Texture;
 import core.util.FutureUtil;
 
 import java.io.IOException;
+import java.util.random.RandomGenerator;
 
 public enum Biomes implements SerializableContent {
     //чем ближе к 90 тем меньше максимальный угол наклона линии генерации
@@ -19,10 +20,10 @@ public enum Biomes implements SerializableContent {
     desert(30, 60, 120, 1, getDesert(), "World/Backdrops/backDesert.png"),
     snowed(30, 60, 120, 1, getSnowed(), "World/Backdrops/backSnowed.png");
 
-    private Texture backdropTex = null;
     private static final Biomes defaultBiome = forest;
+
+    private final Texture backdropTex;
     private final int blockGradientChance, upperBorder, bottomBorder, chanceDecrease;
-    private final String backdrop;
     private final short[] blocks;
 
     //int blockGradientChance - насколько острым могут быть углы,
@@ -33,11 +34,12 @@ public enum Biomes implements SerializableContent {
         this.upperBorder = upperBorder;
         this.bottomBorder = bottomBorder;
         this.blocks = blocks;
-        this.backdrop = backdrop;
         this.chanceDecrease = chanceDecrease;
 
         if (backdrop != null) {
             this.backdropTex = FutureUtil.join(Global.assets.load(Texture.class, backdrop, AssetsManager.LoadType.SYNC));
+        } else {
+            this.backdropTex = null;
         }
     }
 
@@ -71,8 +73,8 @@ public enum Biomes implements SerializableContent {
 
     private static final Biomes[] values = Biomes.values();
 
-    public static Biomes getRand() {
-        return values[(int) (Math.random() * values.length)];
+    public static Biomes getRand(RandomGenerator gen) {
+        return values[gen.nextInt(0, values.length)];
     }
 
     private static short shortIdByName(String name) {

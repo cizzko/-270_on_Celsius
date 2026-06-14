@@ -6,7 +6,7 @@ import core.Time;
 import core.content.blocks.Block;
 import core.content.entity.Entity;
 import core.graphic.ShadowMap;
-import core.content.entity.HealthComponent;
+import core.content.entity.comp.HealthComponent;
 import core.content.entity.LivingEntity;
 import core.math.AABB;
 import core.math.MathUtil;
@@ -18,7 +18,7 @@ import java.util.Arrays;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Player.noClip;
-import static core.content.entity.DrawComponent.GAP;
+import static core.content.entity.comp.DrawComponent.GAP;
 import static java.lang.Math.*;
 
 public final class Physics {
@@ -83,7 +83,7 @@ public final class Physics {
         completedCollisions.clear();
         entityPool.updatePositions();
 
-        entityPool.forEach(me -> {
+        entityPool.forEachType(LivingEntity.class, me -> {
             entityPool.index().intersect(me, them -> {
                 if (me == them) {
                     return;
@@ -191,10 +191,10 @@ public final class Physics {
     }
 
     private static void simulate() {
-        entityPool.forEach(Physics::simulateEntity);
+        entityPool.forEachType(LivingEntity.class, Physics::simulateEntity);
     }
 
-    private static void simulateEntity(Entity ent) {
+    private static void simulateEntity(LivingEntity ent) {
         final float dt = FDT;
         final int leftBorder = Constants.World.SWAP_AREA;
 
@@ -220,21 +220,17 @@ public final class Physics {
             return;
         }
 
-        if (!(ent instanceof LivingEntity livingEntity)) {
-            return;
-        }
-
-        livingEntity.updateLastPosition();
+        ent.updateLastPosition();
 
         boolean hasFloor = ent.hasFloor();
-        Vector2f vel = livingEntity.velocity();
+        Vector2f vel = ent.velocity();
         if (!hasFloor) {
-            vel.y -= (livingEntity.weight() * WEIGHT_FACTOR) * GRAVITY * dt;
+            vel.y -= (ent.mass() * WEIGHT_FACTOR) * GRAVITY * dt;
         }
 
         if (hasFloor) {
-            float k = calculateFriction(livingEntity);
-            float frictionCoefficient = k * livingEntity.weight() * WEIGHT_FACTOR * FRICTION_FACTOR;
+            float k = calculateFriction(ent);
+            float frictionCoefficient = k * ent.mass() * WEIGHT_FACTOR * FRICTION_FACTOR;
             vel.x *= (float) exp(-frictionCoefficient * dt);
         } else {
             // TODO по сути это сопротивление в газах (воздух в т.ч.)
@@ -252,7 +248,7 @@ public final class Physics {
         if (abs(vel.y) >= MAX_SPEED) {
             vel.y = signum(vel.y) * MAX_SPEED;
         }
-        move(livingEntity);
+        move(ent);
 
         if (abs(vel.x) <= MathUtil.EPSILON) vel.x = 0;
     }
@@ -272,7 +268,7 @@ public final class Physics {
 
         var vel = ent.velocity();
         if (vel.y < -FALL_DAMAGE_SPEED_THRESHOLD && ent.hasFloor()) {
-            float impact = (ent.weight() * WEIGHT_FACTOR) * (vel.y*vel.y)/2f;
+            float impact = (ent.mass() * WEIGHT_FACTOR) * (vel.y * vel.y) / 2f;
             int damage = (int) floor(impact * FALL_DAMAGE_MULTIPLIER);
 
             // TODO: Необходимо что-то придумать с распределением урона по площади контакта

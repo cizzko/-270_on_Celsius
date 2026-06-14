@@ -6,15 +6,13 @@ import core.content.ItemStack;
 import core.content.items.Item;
 import core.content.items.ItemBlock;
 import core.World.WorldUtils;
-import core.content.entity.InventoryComponent;
+import core.content.entity.comp.InventoryComponent;
 import core.g2d.Atlas;
 import core.g2d.StackfulRender;
 import core.graphic.WorldDrawing;
 import core.math.Point2i;
 import core.math.Rectangle;
 import org.jetbrains.annotations.Nullable;
-
-import java.beans.EventHandler;
 
 import static core.Global.*;
 import static core.graphic.GuiDrawing.*;

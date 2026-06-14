@@ -13,6 +13,7 @@ import static core.WorldCoordinates.toBlock;
 import static core.WorldCoordinates.toWorld;
 import static core.math.MathUtil.toByteExact;
 import static core.math.MathUtil.toShortExact;
+import static core.util.TypeUtil.canonicalNameOrParent;
 
 public class Block implements ContentType, Loadable {
     public static Block AIR;
@@ -57,7 +58,7 @@ public class Block implements ContentType, Loadable {
     @Override
     @MustBeInvokedByOverriders
     public void resolve(ContentResolver res) {
-        this.requirements = res.resolveItemStacks(requirements);
+        res.resolveItemStacks(requirements);
         if (createWith != null) {
             this.createWith = res.resolveBlock(createWith);
         }
@@ -75,7 +76,7 @@ public class Block implements ContentType, Loadable {
     public @Nullable BlockEntity createEntity(int x, int y) {
         var ent = constructEntity();
         if (ent != null) {
-            ent.setPosition(MathUtil.toShortExact(x), MathUtil.toShortExact(y));
+            ent.setPosition(x, y);
             ent.init();
         }
         return ent;
@@ -101,7 +102,7 @@ public class Block implements ContentType, Loadable {
 
     @Override
     public final String toString() {
-        return getClass().getSimpleName() + "['" + key + "']";
+        return canonicalNameOrParent(getClass()) + "['" + key + "']";
     }
 
     // Никогда не переставляйте порядок констант в этом перечислении

@@ -7,11 +7,9 @@ import core.World.TemperatureMap;
 import core.World.Weather.Sun;
 import core.content.blocks.Block;
 import core.content.blocks.data.TileData;
+import core.content.entity.LivingEntity;
 import core.content.items.Item;
-import core.g2d.Fill;
-import core.g2d.Font;
-import core.g2d.Render;
-import core.g2d.StackfulRender;
+import core.g2d.*;
 import core.graphic.Color;
 import core.graphic.GuiDrawing;
 import core.graphic.ShadowMap;
@@ -34,10 +32,9 @@ import java.util.function.Supplier;
 
 import static core.Application.log;
 import static core.Global.*;
-import static core.WorldCoordinates.toBlock;
-import static core.WorldCoordinates.toWorld;
+import static core.WorldCoordinates.*;
 import static core.content.ItemStack.itemStack;
-import static core.content.entity.DrawComponent.GAP;
+import static core.content.entity.comp.DrawComponent.GAP;
 import static core.graphic.Color.*;
 import static core.graphic.GuiDrawing.drawTextUncached;
 import static org.lwjgl.glfw.GLFW.*;
@@ -142,9 +139,9 @@ public class Debug {
 
         StackfulRender.z(Render.LAYER_DEBUG);
 
-        entityPool.forEach(ent -> {
+        entityPool.forEachType(LivingEntity.class, ent -> {
             var pos = camera.projectTo(ent.posTo(TmpShapes.v1d), TmpShapes.v1f);
-            Fill.rectangleBorder(pos.x, pos.y, ent.width(), ent.height(), white);
+            Fill.rectangleBorder(pos.x, pos.y, toPixels(ent.width()), toPixels(ent.height()), white);
             GuiDrawing.drawText(pos.x, pos.y, "HasFloor: " + ent.hasFloor(), black);
         });
     }

@@ -221,9 +221,6 @@ public final class ContentManager {
             if (blockId >= start && blockId <= end) {
                 return Block.Type.VALUES[i];
             }
-            // else if (i != 0) {
-            //     System.out.println("| " + Block.Type.VALUES[i] + " | start = " + start + " | end = " + end + " | blockId = " + blockId);
-            // }
         }
         throw new IllegalArgumentException("Invalid block id: " + blockId);
     }

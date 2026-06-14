@@ -118,7 +118,7 @@ public class WorldGeneratorTMP {
                         Debug.saveWorldImage();
                         scheduler.post(() -> startGame(playGameScene));
                     })
-                    .whenComplete((__, e) -> {
+                    .whenComplete((_, e) -> {
                         if (e != null) {
                             log.error("Failed to generate world", e);
                         }
@@ -206,8 +206,9 @@ public class WorldGeneratorTMP {
         //карта смешиваний
         Biomes[] blendBiomes = new Biomes[worldWidth];
 
+        var rng = RNG;
         Biomes lastBiomes = Biomes.getDefault();
-        Biomes currentBiomes = Biomes.getRand();
+        Biomes currentBiomes = Biomes.getRand(rng);
 
         int lastX = 0;
         int lastY = world.sizeY / 2;
@@ -226,7 +227,7 @@ public class WorldGeneratorTMP {
 
                     if (lastSwapBiomes > minSwapBiomes) {
                         lastBiomes = currentBiomes;
-                        currentBiomes = Biomes.getRand();
+                        currentBiomes = Biomes.getRand(rng);
                         lastSwapBiomes = 0;
                     }
 
@@ -288,7 +289,7 @@ public class WorldGeneratorTMP {
      * <li>Угол наклона случайно меняется, но ограничен в рамках текущего биома</li>
      * <li>Чем больше отклонение {@code angle} от {@code 90}, тем меньше он может продолжаться (защита от пилообразного мира)</li>
      * </ul>
-     * После прохождения {@link WorldGeneratorConstants#MIN_SWAP_BIOMES MIN_SWAP_BIOMES} биом меняется на {@link Biomes#getRand()},
+     * После прохождения {@link WorldGeneratorConstants#MIN_SWAP_BIOMES MIN_SWAP_BIOMES} биом меняется на {@link Biomes#getRand(RandomGenerator)},
      * В конце вызывается {@link #smoothHeights} для сглаживания высот
      * </p>
      * @param world мир
@@ -303,8 +304,9 @@ public class WorldGeneratorTMP {
         //карта смешиваний
         Biomes[] blendBiomes = new Biomes[worldWidth];
 
+        var rng = RNG;
         Biomes lastBiomes = Biomes.getDefault();
-        Biomes currentBiomes = Biomes.getRand();
+        Biomes currentBiomes = Biomes.getRand(rng);
 
         float lastX = 0;
         float lastY = world.sizeY / 2f;
@@ -318,7 +320,7 @@ public class WorldGeneratorTMP {
 
         do {
             angle = Math.clamp(
-                    angle + (RNG.nextFloat() * blockGradient - blockGradient / 2f),
+                    angle + (rng.nextFloat() * blockGradient - blockGradient / 2f),
                     Math.clamp(upperBorder + (lastY - world.sizeY / 2f), upperBorder, RELIEF_BASE_ANGLE),
                     Math.clamp(bottomBorder - (world.sizeY / 2f - lastY), RELIEF_BASE_ANGLE, bottomBorder)
             );
@@ -330,7 +332,7 @@ public class WorldGeneratorTMP {
             }
 
             //todo RELIEF_ITERS_MULTIPLIER динамически
-            int iters = (int) (RNG.nextFloat() * RELIEF_ITERS_MULTIPLIER / denominator);
+            int iters = (int) (rng.nextFloat() * RELIEF_ITERS_MULTIPLIER / denominator);
 
             double rad = Math.toRadians(angle);
             float deltaX = (float) Math.sin(rad);
@@ -352,16 +354,16 @@ public class WorldGeneratorTMP {
                     worldHeights[currentIntX] = lastY;
                     lastSwapBiomes++;
 
-                    if (lastSwapBiomes > minSwapBiomes && RNG.nextFloat() * lastSwapBiomes - minSwapBiomes > BIOME_SWAP_MULTIPLIER) {
+                    if (lastSwapBiomes > minSwapBiomes && rng.nextFloat() * lastSwapBiomes - minSwapBiomes > BIOME_SWAP_MULTIPLIER) {
                         lastBiomes = currentBiomes;
-                        currentBiomes = Biomes.getRand();
+                        currentBiomes = Biomes.getRand(rng);
                         lastSwapBiomes = 0;
                         upperBorder = currentBiomes.getUpperBorder();
                         bottomBorder = currentBiomes.getBottomBorder();
                         blockGradient = currentBiomes.getBlockGradientChance();
                     }
 
-                    if (lastSwapBiomes < BIOME_SWAP_MAX_THRESHOLD && RNG.nextFloat() * lastSwapBiomes < BIOME_SWAP_CHANCE) {
+                    if (lastSwapBiomes < BIOME_SWAP_MAX_THRESHOLD && rng.nextFloat() * lastSwapBiomes < BIOME_SWAP_CHANCE) {
                         blendBiomes[currentIntX] = lastBiomes;
                     }
                 } else if (currentIntX > worldWidth) {
@@ -748,17 +750,17 @@ public class WorldGeneratorTMP {
     }
 
     /**
-     * Разбрасывает мелкие декоративные камни с шансом {@code Math.random()} * {@link WorldGeneratorConstants#DECOR_STONE_SPAWN_CHANCE DECOR_STONE_SPAWN_CHANCE} < 1
+     * Разбрасывает мелкие декоративные камни с шансом {@code RandomGenerator.nextFloat()} * {@link WorldGeneratorConstants#DECOR_STONE_SPAWN_CHANCE DECOR_STONE_SPAWN_CHANCE} < 1
      * @param world мир
      */
 
     //todo а почему тут кстати не генератефорсет
     private static void gemerateSmallStone(World world) {
         var smallStone = Global.content.blockById("smallStone");
-        float chance = DECOR_STONE_SPAWN_CHANCE;
 
+        var rng = RNG;
         for (int x = 0; x < world.sizeX; x++) {
-            if (Math.random() * chance < 1) {
+            if (rng.nextFloat() * DECOR_STONE_SPAWN_CHANCE < 1) {
                 int y = findSurfaceY(x, 3);
                 if (y - 1 > 0 && world.inBounds(x, y - 1)) {
                     if (world.isBlockType(x, y - 1, Type.SOLID)) {
@@ -797,13 +799,15 @@ public class WorldGeneratorTMP {
         float lastForest = 0;
         float lastForestSize = 0;
 
+        var rng = RNG;
+
         //(maximum size + minimum) should not exceed 127
         //the first stage - plants seeds for the forests and sets the size
         for (int x = 0; x < world.sizeX; x++) {
-            if (Math.random() * chance < 1 && lastForest != x && lastForest + lastForestSize < x) {
-                forests[x] = (byte) ((Math.random() * maxForestSize) + minForestSize);
+            if (rng.nextFloat() * chance < 1 && lastForest != x && lastForest + lastForestSize < x) {
+                forests[x] = (byte) ((rng.nextFloat() * maxForestSize) + minForestSize);
                 lastForest = x;
-                lastForestSize = (float) ((forests[x] * Math.random() * FOREST_SIZE_MULT) + FOREST_SIZE_OFFSET);
+                lastForestSize = (forests[x] * rng.nextFloat() * FOREST_SIZE_MULT) + FOREST_SIZE_OFFSET;
             }
         }
 
@@ -811,8 +815,8 @@ public class WorldGeneratorTMP {
         for (int x = 0; x < forests.length; x++) {
             if (forests[x] > 0) {
                 for (int i = 0; i < forests[x]; i++) {
-                    String name = structuresName[(int) (Math.random() * structuresName.length)];
-                    int distance = (int) (Math.random() * (maxSpawnDistance - minSpawnDistance)) + minSpawnDistance;
+                    String name = structuresName[rng.nextInt(0, structuresName.length)];
+                    int distance = (int) (rng.nextFloat() * (maxSpawnDistance - minSpawnDistance)) + minSpawnDistance;
                     int xStruct = x + (i * distance);
                     int yStruct = findSurfaceY(x + (i * distance), 3);
 

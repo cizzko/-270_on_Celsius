@@ -5,6 +5,7 @@ import core.content.blocks.Block;
 import core.content.creatures.Creature;
 import core.g2d.StackfulRender;
 import core.math.*;
+import core.util.TypeUtil;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
 import static core.Global.camera;
@@ -12,11 +13,13 @@ import static core.Global.world;
 import static core.WorldCoordinates.*;
 
 public abstract class BaseCreatureEntity<C extends Creature> implements CreatureEntity {
-    private static final byte FLAG_DEAD = 1 << 0;
+    protected static final byte FLAG_DEAD           = 1 << 0;
+    protected static final byte FLAG_ALWAYS_VISIBLE = 1 << 1;
 
-    public short id;
     public final C creature;
-    public long flags;
+
+    protected short id;
+    protected long flags;
 
     protected double x, y;
     protected double lastX, lastY;
@@ -50,9 +53,6 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
         this.id = id;
     }
 
-    public abstract double centerX();
-    public abstract double centerY();
-
     public void updateLastPosition() {
         lastX = x;
         lastY = y;
@@ -67,13 +67,12 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
         return creature;
     }
 
-    public final float weight() {
+    public final float mass() {
         return creature.weight;
     }
 
     public void hitboxTo(AABB out) {
-        var tex = creature.texture;
-        out.setRectangle(x, y, toWorld(tex.width()), toWorld(tex.height()));
+        out.setRectangle(x, y, width(), height());
     }
 
     public float maxHp() {
@@ -116,12 +115,6 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
         acceleration.set(0, 0);
     }
 
-    public final short blockX()   { return toBlock(x); }
-    public final short blockY()   { return toBlock(y); }
-
-    public final float offsetX() { return (float) (x - blockX()); }
-    public final float offsetY() { return (float) (y - blockY()); }
-
     public final double x() { return x; }
     public final double y() { return y; }
 
@@ -144,45 +137,19 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
     public final Vector2f velocity() { return velocity; }
     public final Vector2f acceleration() { return acceleration; }
 
-    public float width()  { return creature.texture.width(); }
-    public float height() { return creature.texture.height(); }
+    public float width()  { return toWorld(creature.texture.width()); }
+    public float height() { return toWorld(creature.texture.height()); }
+
+    public boolean isVisible(AABB viewport) {
+        return isFlag(FLAG_ALWAYS_VISIBLE) || viewport.overlaps(x, y, x+width(), y+height());
+    }
 
     public void draw(float dx) {
-        var tex = creature.texture;
         double rx = Physics.applyAlpha(lastX, x) + dx;
         double ry = Physics.applyAlpha(lastY, y);
         var rel = camera.relativize(rx, ry);
-        StackfulRender.draw(tex, rel.x, rel.y, toWorld(tex.width()), toWorld(tex.height()));
-    }
-
-    public boolean hasFloor() {
-        var hitbox = TmpShapes.aabb1;
-        hitboxTo(hitbox);
-        hitbox.maxY = hitbox.minY;
-        hitbox.minY -= GAP;
-        hitbox.maxX -= GAP;
-        hitbox.minX += GAP;
-
-        short minX = hitbox.blockMinX();
-        short maxX = hitbox.blockMaxX();
-        short minY = hitbox.blockMinY();
-        short maxY = hitbox.blockMaxY();
-
-        for (; minY <= maxY; minY++) {
-            for (short x = minX; x <= maxX; x++) {
-                var block = world.getBlock(x, minY);
-                if (block == null || block.type == Block.Type.SOLID) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
-    public final double dstSq(double x, double y) {
-        double dx = x - this.x;
-        double dy = y - this.y;
-        return dx * dx + dy * dy;
+        var tex = creature.texture;
+        StackfulRender.draw(tex, rel.x, rel.y, width(), height());
     }
 
     public final boolean equals(Object o) {
@@ -200,7 +167,7 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
     }
 
     public String toString() {
-        return getClass().getSimpleName() + "#" + id;
+        return TypeUtil.canonicalNameOrParent(getClass()) + "#" + id;
     }
 
     // region to override

@@ -1,6 +1,7 @@
 package core.content;
 
 import core.content.entity.Entity;
+import core.content.entity.LivingEntity;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.shorts.ShortArrayList;
 import org.jetbrains.annotations.Nullable;
@@ -29,7 +30,7 @@ public final class EntityPool {
         needIndexRebuild = false;
         index.clear();
         index.presize(entityCount());
-        forEachImpl(index::insert); // при CME мы сами себе злобные буратины
+        forEachImpl(entity -> index.insert((LivingEntity) entity)); // при CME мы сами себе злобные буратины
         index.build();
     }
 

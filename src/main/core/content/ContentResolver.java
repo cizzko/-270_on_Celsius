@@ -5,6 +5,7 @@ import core.content.blocks.Block;
 import core.content.items.Item;
 import core.content.items.ItemUnresolved;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
+import org.jetbrains.annotations.Contract;
 
 import java.util.HashMap;
 import java.util.Objects;
@@ -16,19 +17,12 @@ public final class ContentResolver {
         this.contentMap = contentMap;
     }
 
-    public ItemStack[] resolveItemStacks(ItemStack[] itemStacks) {
-        if (itemStacks == null) {
-            return null;
-        }
+    public void resolveItemStacks(ItemStack[] itemStacks) {
         for (ItemStack itemStack : itemStacks) {
-            if (itemStack == null) {
-                continue;
-            }
             if (itemStack.item() instanceof ItemUnresolved r) {
                 itemStack.setItem(ContentManager.content(contentMap, Item.class).get(r.key()));
             }
         }
-        return itemStacks;
     }
 
     public Block resolveBlock(Block block) {
@@ -38,19 +32,12 @@ public final class ContentResolver {
         return block;
     }
 
-    public ItemStackPredicate[] resolveItemStacksPredicates(ItemStackPredicate[] itemStacks) {
-        if (itemStacks == null) {
-            return null;
-        }
+    public void resolveItemStacksPredicates(ItemStackPredicate[] itemStacks) {
         for (var itemStack : itemStacks) {
-            if (itemStack == null) {
-                continue;
-            }
             if (itemStack.ref() instanceof TagReference.OfUnresolved<Item> ref) {
                 itemStack.setRef(resolveTagReference(ref));
             }
         }
-        return itemStacks;
     }
 
     private <C extends ContentType> TagReference<C> resolveTagReference(TagReference.OfUnresolved<C> ref) {

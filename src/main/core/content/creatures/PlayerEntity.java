@@ -10,8 +10,8 @@ import core.World.WorldUtils;
 import core.content.ItemGrid;
 import core.content.ItemStack;
 import core.content.entity.BaseCreatureEntity;
-import core.content.entity.HitboxComponent;
-import core.content.entity.InventoryComponent;
+import core.content.entity.comp.PhysicalBody;
+import core.content.entity.comp.InventoryComponent;
 import core.g2d.StackfulRender;
 import core.math.Point2i;
 import core.math.Vector2f;
@@ -52,6 +52,8 @@ public class PlayerEntity
     protected PlayerEntity(PlayerType creature) {
         super(creature);
 
+        setFlag(FLAG_ALWAYS_VISIBLE, true);
+
         this.items = new ObjectArrayList<>(creature.inventoryWidth);
         for (byte i = 0; i < creature.inventoryWidth; i++) {
             var array = new ObjectArrayList<ItemStack>(creature.inventoryHeight);
@@ -70,9 +72,6 @@ public class PlayerEntity
         camera.position.set(x + Constants.Camera.OFFSET_X, y + Constants.Camera.OFFSET_Y);
         camera.update();
     }
-
-    public double centerX() { return x + width() / 2d; }
-    public double centerY() { return y + height() / 2d; }
 
     public void draw(float dx) {
         var tex = creature.texture;
@@ -184,7 +183,7 @@ public class PlayerEntity
         }
     }
 
-    public CollisionResult onCollide(HitboxComponent them) {
+    public CollisionResult onCollide(PhysicalBody them) {
         return CollisionResult.WALKTHROUGH;
     }
 

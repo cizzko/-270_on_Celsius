@@ -2,7 +2,9 @@ package core.g2d;
 
 import core.pool.Pool;
 import core.util.Disposable;
+import core.util.TimSort;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.intellij.lang.annotations.MagicConstant;
@@ -11,6 +13,7 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.IntSummaryStatistics;
 
 import static core.g2d.Render.*;
 import static core.g2d.RenderList.KIND_DYNAMIC;
@@ -36,7 +39,11 @@ public final class RenderQueue implements Disposable {
     private final ObjectArrayList<RenderList> created = new ObjectArrayList<>();
     private final UniformBuffer uniformBuffer = new UniformBuffer();
 
+    private final RenderItem[] tmp;
+    private final TimSort<RenderItem> sorter = new TimSort<>();
+
     public RenderQueue(int itemCount, int vertexCount) {
+        this.tmp = new RenderItem[itemCount];
         this.rlistAlloc = new Pool<>(() -> {
             var list = new RenderList(rlistCount++, itemCount, vertexCount);
             created.add(list);
@@ -132,8 +139,7 @@ public final class RenderQueue implements Disposable {
         }
 
         var items = rlist.items;
-
-        Arrays.parallelSort(items, 0, rlist.itemCount, RenderItem.Comparator.INSTANCE);
+        sorter.sort(items, tmp, RenderItem.Comparator.INSTANCE, 0, rlist.itemCount);
 
         var vertices = rlist.vertices;
         var mesh = rlist.mesh;
@@ -142,7 +148,6 @@ public final class RenderQueue implements Disposable {
         vertices.flip();
 
         int currentPrimitiveType = -1;
-        int currentLayer = -1;
         int currentBlending = -1;
         int currentTextureId = -1;
         int currentShaderId = -1;
@@ -154,26 +159,15 @@ public final class RenderQueue implements Disposable {
         int groupIndexCount = 0;
         int groupVertexCount = 0;
 
-        VertexFormat currentVertexFormat = defaultShader.vertexFormat();
+        var currentVertexFormat = defaultShader.vertexFormat();
+        long prevSortKey = 0;
 
         //noinspection ForLoopReplaceableByForEach
         for (int i = 0, n = rlist.itemCount; i < n; ++i) {
             var item = items[i];
 
-            byte primitiveType = getPrimitiveType(item.sortKey);
-            byte layer = getLayer(item.sortKey);
-            byte blending = getBlending(item.sortKey);
-            short textureId = getTextureId(item.sortKey);
-            byte shaderId = getShaderId(item.sortKey);
-            byte ublock = getUblock(item.sortKey);
-
-            boolean sameGroup = (
-                    primitiveType == currentPrimitiveType &&
-                    layer == currentLayer &&
-                    blending == currentBlending &&
-                    textureId == currentTextureId &&
-                    shaderId == currentShaderId &&
-                    ublock == currentUblock) &&
+            boolean sameGroup =
+                    (prevSortKey & EXCLUDE_INDEX_MASK) == (item.sortKey & EXCLUDE_INDEX_MASK) &&
                     // разрыв, придётся отдельным вызовом сделать
                     (groupVertexOffset + groupVertexCount == item.vertexOffset);
 
@@ -181,6 +175,11 @@ public final class RenderQueue implements Disposable {
                 groupIndexCount  += item.indexCount;
                 groupVertexCount += item.vertexCount;
             } else {
+                byte primitiveType = getPrimitiveType(item.sortKey);
+                byte blending = getBlending(item.sortKey);
+                short textureId = getTextureId(item.sortKey);
+                byte shaderId = getShaderId(item.sortKey);
+                byte ublock = getUblock(item.sortKey);
 
                 mesh.draw(toGlType(currentPrimitiveType),
                         vertices, groupVertexOffset, groupVertexCount,
@@ -209,13 +208,14 @@ public final class RenderQueue implements Disposable {
                 }
 
                 currentPrimitiveType = primitiveType;
-                currentLayer = layer;
                 currentBlending = blending;
                 currentTextureId = textureId;
                 currentShaderId = shaderId;
                 currentUblock = ublock;
 
                 currentVertexFormat = shader.vertexFormat();
+
+                prevSortKey = item.sortKey;
 
                 groupVertexOffset = item.vertexOffset;
                 groupIndexOffset = item.indexOffset;

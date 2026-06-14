@@ -16,7 +16,7 @@ public final class Registry<T extends ContentType> {
         this.id2Type = id2Type;
     }
 
-    public T typeByName(String name) {
+    public @Nullable T typeByName(String name) {
         return name2Type.get(name);
     }
 

@@ -42,9 +42,9 @@ public class Factory extends Block {
     @Override
     public void resolve(ContentResolver res) {
         super.resolve(res);
-        this.input = res.resolveItemStacksPredicates(input);
-        this.fuel = res.resolveItemStacksPredicates(fuel);
-        this.output = res.resolveItemStacks(output);
+        res.resolveItemStacksPredicates(input);
+        res.resolveItemStacksPredicates(fuel);
+        res.resolveItemStacks(output);
     }
 
     @Override

@@ -2,6 +2,7 @@ package core.util;
 
 import it.unimi.dsi.fastutil.ints.IntIntBiConsumer;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.jetbrains.annotations.Blocking;
 
 import java.util.concurrent.*;
 
@@ -31,6 +32,7 @@ public final class BatchScope implements Disposable, Executor {
     /// @param lo Базовое смещение координаты слева
     /// @param hi Правая граница для задач
     /// @param task Шаблон задачи который будет применен при разделении `workSize`
+    @Blocking
     public BatchScope submit(int lo, int hi, IntIntBiConsumer task) {
         if (lo >= hi) return this;
         int size = hi - lo;
@@ -48,12 +50,17 @@ public final class BatchScope implements Disposable, Executor {
     /// Этот метод собирает все исключения задач через [Throwable#addSuppressed(java.lang.Throwable)]
     /// и выбрасывает в конце
     /// После выполнения этого метода класс можно переиспользовать
+    @Blocking
     public void awaitAll() {
         close();
     }
 
+    @Blocking
     public void close() {
         var tasks = futures;
+        if (tasks.isEmpty()) {
+            return;
+        }
         try {
             for (int i = tasks.size() - 1; i >= 0; --i) {
                 var task = tasks.get(i);
@@ -106,8 +113,8 @@ public final class BatchScope implements Disposable, Executor {
 
                 addToPendingCount(1);
 
-                new CountedChunkTask(this, l, mid, thresh, task).fork();
-                l = mid;
+                new CountedChunkTask(this, mid, h, thresh, task).fork();
+                h = mid;
             }
 
             task.accept(l, h);

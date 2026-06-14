@@ -22,7 +22,7 @@ public final class UIScene implements InputListener {
 
     public static boolean debugBorders = false;
 
-    public void toggleDebug() {
+    public static void toggleDebug() {
         debugBorders = !debugBorders;
     }
 

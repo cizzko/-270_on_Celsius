@@ -57,21 +57,24 @@ public final class TemperatureMap {
         if (true)
             return;
 
-        int halfSize = 40;
-        int spawnX = world.sizeX / 2;
-        int spawnY = world.sizeY / 2;
+        int sizeX = world.sizeX;
+        int sizeY = world.sizeY;
+        int spawnX = sizeX / 2;
+        int spawnY = sizeY / 2;
 
         {
-            int startX = clamp(spawnX - halfSize, 0, world.sizeY - 1);
-            int endX   = clamp(spawnX + halfSize, 0, world.sizeY - 1);
-            int startY = clamp(spawnY - halfSize, 0, world.sizeX - 1);
-            int endY   = clamp(spawnY + halfSize, 0, world.sizeX - 1);
+            final int halfSize = 40;
+            int startX = clamp(spawnX - halfSize, 0, sizeY - 1);
+            int endX   = clamp(spawnX + halfSize, 0, sizeX - 1);
+            int startY = clamp(spawnY - halfSize, 0, sizeY - 1);
+            int endY   = clamp(spawnY + halfSize, 0, sizeX - 1);
 
             for (int x = startX; x < endX; x++) {
+                int baseIdx = x * sizeY + startY;
                 for (int y = startY; y < endY; y++) {
-                    int idx = pos2index(x, y);
-                    temps[idx] = 1000.0f;
-                    density[idx] = 7f;
+                    temps[baseIdx] = 1000.0f;
+                    density[baseIdx] = 7f;
+                    baseIdx++;
                 }
             }
         }
@@ -98,19 +101,27 @@ public final class TemperatureMap {
 
     public static void update(BatchScope scope) {
         //todo такт не надо, ведь точно можем узнать что где и когда но пока лень
-        for (int x = 0; x < world.sizeX; x++) {
-            for (int y = 0; y < world.sizeY; y++) {
-                if (x < COPY_SIZE) {
-                    int targetX = world.sizeX - COPY_SIZE + x;
-                    temps[pos2index(targetX, y)] = temps[pos2index(x, y)];
-                    density[pos2index(targetX, y)] = density[pos2index(x, y)];
-                } else if (x > world.sizeX - COPY_SIZE) {
-                    int targetX = x - (world.sizeX - COPY_SIZE);
-                    temps[pos2index(targetX, y)] = temps[pos2index(x, y)];
-                    density[pos2index(targetX, y)] = density[pos2index(x, y)];
-                }
-            }
+        int sizeY = world.sizeY;
+        int targetOffsetLeft = (world.sizeX - COPY_SIZE) * sizeY;
+
+        for (int x = 0; x < COPY_SIZE; x++) {
+            int srcOffset = x * sizeY;
+            int targetOffsetRight = targetOffsetLeft + srcOffset;
+
+            // Копируем левый край на правый
+            System.arraycopy(temps, srcOffset, temps, targetOffsetRight, sizeY);
+            System.arraycopy(density, srcOffset, density, targetOffsetRight, sizeY);
         }
+
+        for (int x = world.sizeX - COPY_SIZE + 1; x < world.sizeX; x++) {
+            int srcOffset = x * sizeY;
+            int targetOffsetLeftBound = (x - (world.sizeX - COPY_SIZE)) * sizeY;
+
+            // Копируем правый край на левый
+            System.arraycopy(temps, srcOffset, temps, targetOffsetLeftBound, sizeY);
+            System.arraycopy(density, srcOffset, density, targetOffsetLeftBound, sizeY);
+        }
+
 
         flip = !flip;
 
@@ -151,27 +162,26 @@ public final class TemperatureMap {
     }
 
     private static void processHorizontalFlow(int i, int j, int leftBorder, int activeWidth) {
-        //todo хихи хаха
         int nextI = leftBorder + ((i - leftBorder + 1) % activeWidth);
 
-        int idx = pos2index(i, j);
-        int nextIdx = pos2index(nextI, j);
+        int idx = i * world.sizeY + j;
+        int nextIdx = nextI * world.sizeY + j;
 
-        float deltaT = temps[idx] - temps[nextIdx];
+        float tIdx = temps[idx];
+        float tNextIdx = temps[nextIdx];
+
+        float deltaT = tIdx - tNextIdx;
         if (Math.abs(deltaT) > 0.01f) {
             float conduct = getConductivity(i, j, nextI, j);
             float ht = deltaT * HEAT_DIFFUSION_K * conduct;
 
-            temps[idx] -= ht / getHeatCapacity(i, j);
-            temps[nextIdx] += ht / getHeatCapacity(nextI, j);
+            tIdx -= ht / getHeatCapacity(i, j);
+            tNextIdx += ht / getHeatCapacity(nextI, j);
         }
 
-        boolean isLeftSolid = world.isBlockType(i, j, Block.Type.SOLID);
-        if (isLeftSolid) {
-            return;
-        }
-        boolean isRightSolid = world.isBlockType(nextI, j, Block.Type.SOLID);
-        if (isRightSolid) {
+        if (world.isBlockType(i, j, Block.Type.SOLID) || world.isBlockType(nextI, j, Block.Type.SOLID)) {
+            temps[idx] = tIdx;
+            temps[nextIdx] = tNextIdx;
             return;
         }
 
@@ -182,70 +192,73 @@ public final class TemperatureMap {
         if (Math.abs(deltaP) > MIN_PRESSURE_DELTA) {
             float flow = deltaP * SIM_K;
 
-            //флов показывает влево или вправо
-            if (flow > 0) {
-                float maxFlow = density[idx] * MAX_FLOW_RESTR;
-                if (flow > maxFlow) {
-                    flow = maxFlow;
-                }
+            boolean isLeftToRight = flow > 0;
+            int srcIdx = isLeftToRight ? idx : nextIdx;
+            int dstIdx = isLeftToRight ? nextIdx : idx;
 
-                float energy = flow * temps[idx];
-                float energyLeft = (density[idx] * temps[idx]) - energy;
-                float energyRight = (density[nextIdx] * temps[nextIdx]) + energy;
+            float tSrc = isLeftToRight ? tIdx : tNextIdx;
+            float tDst = isLeftToRight ? tNextIdx : tIdx;
 
-                density[idx] -= flow;
-                density[nextIdx] += flow;
+            float dSrc = density[srcIdx];
+            float dDst = density[dstIdx];
 
-                if (density[idx] > MIN_DENSITY_THRESHOLD) {
-                    temps[idx] = energyLeft / density[idx];
-                }
-                if (density[nextIdx] > MIN_DENSITY_THRESHOLD) {
-                    temps[nextIdx] = energyRight / density[nextIdx];
-                }
+            float absFlow = Math.abs(flow);
 
+            float maxFlow = dSrc * MAX_FLOW_RESTR;
+            if (absFlow > maxFlow) {
+                absFlow = maxFlow;
+            }
+
+            float energy    = absFlow * tSrc;
+            float energySrc = (dSrc * tSrc) - energy;
+            float energyDst = (dDst * tDst) + energy;
+
+            dSrc -= absFlow;
+            dDst += absFlow;
+
+            if (dSrc > MIN_DENSITY_THRESHOLD) {
+                tSrc = energySrc / dSrc;
+            }
+            if (dDst > MIN_DENSITY_THRESHOLD) {
+                tDst = energyDst / dDst;
+            }
+
+            density[srcIdx] = dSrc;
+            density[dstIdx] = dDst;
+
+            if (isLeftToRight) {
+                tIdx = tSrc;
+                tNextIdx = tDst;
             } else {
-                flow = -flow;
-                float maxFlow = density[nextIdx] * MAX_FLOW_RESTR;
-                if (flow > maxFlow) {
-                    flow = maxFlow;
-                }
-
-                float energy = flow * temps[nextIdx];
-                float energyRight = (density[nextIdx] * temps[nextIdx]) - energy;
-                float energyLeft = (density[idx] * temps[idx]) + energy;
-
-                density[nextIdx] -= flow;
-                density[idx] += flow;
-
-                if (density[nextIdx] > MIN_DENSITY_THRESHOLD) {
-                    temps[nextIdx] = energyRight / density[nextIdx];
-                }
-                if (density[idx] > MIN_DENSITY_THRESHOLD) {
-                    temps[idx] = energyLeft / density[idx];
-                }
+                tNextIdx = tSrc;
+                tIdx = tDst;
             }
         }
+
+        temps[idx] = tIdx;
+        temps[nextIdx] = tNextIdx;
     }
 
-    private static void processVerticalFlow(int i, int j) {
-        int idx = pos2index(i, j);
-        int nextIdx = pos2index(i, j + 1);
 
-        float deltaT = temps[idx] - temps[nextIdx];
+    private static void processVerticalFlow(int i, int j) {
+        int idx = i * world.sizeY + j;
+        int nextIdx = idx + 1;
+
+        float tIdx = temps[idx];
+        float tNextIdx = temps[nextIdx];
+
+        float deltaT = tIdx - tNextIdx;
         if (Math.abs(deltaT) > 0.01f) {
             float conduct = getConductivity(i, j, i, j + 1);
             float heatTransfer = deltaT * HEAT_DIFFUSION_K * conduct;
 
-            temps[idx] -= heatTransfer / getHeatCapacity(i, j);
-            temps[nextIdx] += heatTransfer / getHeatCapacity(i, j + 1);
+            tIdx -= heatTransfer / getHeatCapacity(i, j);
+            tNextIdx += heatTransfer / getHeatCapacity(i, j + 1);
         }
 
-        boolean isUpSolid = world.isBlockType(i, j, Block.Type.SOLID);
-        if (isUpSolid) {
-            return;
-        }
-        boolean isDownSolid = world.isBlockType(i, j + 1, Block.Type.SOLID);
-        if (isDownSolid) {
+        if (world.isBlockType(i, j, Block.Type.SOLID) || world.isBlockType(i, j + 1, Block.Type.SOLID)) {
+            temps[idx] = tIdx;
+            temps[nextIdx] = tNextIdx;
             return;
         }
 
@@ -256,49 +269,53 @@ public final class TemperatureMap {
         if (Math.abs(deltaP) > MIN_PRESSURE_DELTA) {
             float flow = deltaP * SIM_K;
 
-            if (flow > 0) {
-                float maxFlow = density[idx] * MAX_FLOW_RESTR;
-                if (flow > maxFlow) {
-                    flow = maxFlow;
-                }
+            boolean isDownwards = flow > 0;
+            int srcIdx = isDownwards ? idx : nextIdx;
+            int dstIdx = isDownwards ? nextIdx : idx;
 
-                float energy = flow * temps[idx];
-                float energyUp = (density[idx] * temps[idx]) - energy;
-                float energyDown = (density[nextIdx] * temps[nextIdx]) + energy;
+            float tSrc = isDownwards ? tIdx : tNextIdx;
+            float tDst = isDownwards ? tNextIdx : tIdx;
 
-                density[idx] -= flow;
-                density[nextIdx] += flow;
+            float dSrc = density[srcIdx];
+            float dDst = density[dstIdx];
 
-                if (density[idx] > MIN_DENSITY_THRESHOLD) {
-                    temps[idx] = energyUp / density[idx];
-                }
-                if (density[nextIdx] > MIN_DENSITY_THRESHOLD) {
-                    temps[nextIdx] = energyDown / density[nextIdx];
-                }
+            float absFlow = Math.abs(flow);
 
+            float maxFlow = dSrc * MAX_FLOW_RESTR;
+            if (absFlow > maxFlow) {
+                absFlow = maxFlow;
+            }
+
+            float energy = absFlow * tSrc;
+            float energySrc = (dSrc * tSrc) - energy;
+            float energyDst = (dDst * tDst) + energy;
+
+            dSrc -= absFlow;
+            dDst += absFlow;
+
+            if (dSrc > MIN_DENSITY_THRESHOLD) {
+                tSrc = energySrc / dSrc;
+            }
+            if (dDst > MIN_DENSITY_THRESHOLD) {
+                tDst = energyDst / dDst;
+            }
+
+            density[srcIdx] = dSrc;
+            density[dstIdx] = dDst;
+
+            if (isDownwards) {
+                tIdx = tSrc;
+                tNextIdx = tDst;
             } else {
-                flow = -flow;
-                float maxFlow = density[nextIdx] * MAX_FLOW_RESTR;
-                if (flow > maxFlow) {
-                    flow = maxFlow;
-                }
-
-                float energy = flow * temps[nextIdx];
-                float energyDown = (density[nextIdx] * temps[nextIdx]) - energy;
-                float energyUp = (density[idx] * temps[idx]) + energy;
-
-                density[nextIdx] -= flow;
-                density[idx] += flow;
-
-                if (density[nextIdx] > MIN_DENSITY_THRESHOLD) {
-                    temps[nextIdx] = energyDown / density[nextIdx];
-                }
-                if (density[idx] > MIN_DENSITY_THRESHOLD) {
-                    temps[idx] = energyUp / density[idx];
-                }
+                tNextIdx = tSrc;
+                tIdx = tDst;
             }
         }
+
+        temps[idx] = tIdx;
+        temps[nextIdx] = tNextIdx;
     }
+
 
     private static float getHeatCapacity(int x, int y) {
         if (world.isBlockType(x, y, Block.Type.SOLID)) {

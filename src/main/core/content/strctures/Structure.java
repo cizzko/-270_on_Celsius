@@ -11,6 +11,7 @@ import core.content.blocks.BlockUnresolved;
 import java.util.ArrayList;
 
 import static core.math.MathUtil.toShortExact;
+import static core.util.TypeUtil.canonicalNameOrParent;
 
 public class Structure implements ContentType, Loadable {
 
@@ -96,6 +97,6 @@ public class Structure implements ContentType, Loadable {
 
     @Override
     public final String toString() {
-        return getClass().getSimpleName() + "['" + key + ']';
+        return canonicalNameOrParent(getClass()) + "['" + key + "']";
     }
 }

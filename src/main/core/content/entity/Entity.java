@@ -4,7 +4,7 @@ import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
 import static core.Global.entityPool;
 
-public interface Entity extends HitboxComponent {
+public interface Entity {
 
     // TODO unsigned short внутри
     short id();

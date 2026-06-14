@@ -30,6 +30,7 @@ open module core.main {
     exports core.content.blocks.data;
     exports core.content.blocks;
     exports core.content.creatures;
+    exports core.content.entity.comp;
     exports core.content.entity;
     exports core.content.items.data;
     exports core.content.items;

@@ -5,7 +5,7 @@ import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.content.ItemStack;
 import core.content.blocks.Block;
-import core.content.entity.HitboxComponent;
+import core.content.entity.comp.PhysicalBody;
 import core.content.entity.LivingEntity;
 import core.g2d.Fill;
 import core.g2d.StackfulRender;
@@ -61,14 +61,11 @@ public final class ItemEntity implements LivingEntity {
 
     public float hp() { return hp; }
 
-    public double centerX() { return x + toWorld(ITEM_DROPPED_SIZE) / 2f; }
-    public double centerY() { return y + toWorld(ITEM_DROPPED_SIZE) / 2f; }
-
     public void hitboxTo(AABB out) {
-        out.setRectangle(x, y, toWorld(ITEM_DROPPED_SIZE), toWorld(ITEM_DROPPED_SIZE));
+        out.setRectangle(x, y, width(), height());
     }
 
-    public CollisionResult onCollide(HitboxComponent them) {
+    public CollisionResult onCollide(PhysicalBody them) {
         if (them instanceof PlayerEntity) {
             Inventory.addItemStack(itemStack);
             remove();
@@ -106,7 +103,7 @@ public final class ItemEntity implements LivingEntity {
         if (dstToPlayer <= MOVE_DST && dstToPlayer > 0.01f &&
                     raycastTo(player.blockX(), player.blockY(), (x, y) ->
                             world.getBlockId(x, y) != 0)) {
-            float acceleration = Math.min(3, 1.45f * (weight() * Physics.WEIGHT_FACTOR) * (1f - (dstToPlayer / MOVE_DST)));
+            float acceleration = Math.min(3, 1.45f * (mass() * Physics.WEIGHT_FACTOR) * (1f - (dstToPlayer / MOVE_DST)));
             var dir = TmpShapes.v1d.set(pcx, pcy)
                     .sub(x, y)
                     .nor()
@@ -156,6 +153,11 @@ public final class ItemEntity implements LivingEntity {
         } while (true);
     }
 
+    @Override
+    public boolean isVisible(AABB viewport) {
+        return viewport.overlaps(x, y, x+width(), y+height());
+    }
+
     public void draw(float dx) {
         final float amplitude = 1 / 4f;
         final float frequency = 0.45f;
@@ -173,36 +175,12 @@ public final class ItemEntity implements LivingEntity {
         double ry = Physics.applyAlpha(lastY, y) + yOffset;
         var pos = camera.relativize(rx, ry);
 
-        float w = toWorld(ITEM_DROPPED_SIZE);
+        float w = width();
         StackfulRender.draw(tex, pos.x, pos.y, w, w);
         Fill.rectangleBorder(pos.x, pos.y, w, w, toWorld(1), Color.white);
         if (itemStack.count() > 1) {
             WorldDrawing.drawGameText(pos.x, pos.y, String.valueOf(itemStack.count()), Color.white);
         }
-    }
-
-    public boolean hasFloor() {
-        var hitbox = TmpShapes.aabb1;
-        hitboxTo(hitbox);
-        hitbox.maxY = hitbox.minY;
-        hitbox.minY -= GAP;
-        hitbox.maxX -= GAP;
-        hitbox.minX += GAP;
-
-        short minX = hitbox.blockMinX();
-        short maxX = hitbox.blockMaxX();
-        short minY = hitbox.blockMinY();
-        short maxY = hitbox.blockMaxY();
-
-        for (; minY <= maxY; minY++) {
-            for (short x = minX; x <= maxX; x++) {
-                var block = world.getBlock(x, minY);
-                if (block == null || block.type == Block.Type.SOLID) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     public float maxHp() {
@@ -231,12 +209,6 @@ public final class ItemEntity implements LivingEntity {
         }
     }
 
-    public short blockX()   { return toBlock(x); }
-    public short blockY()   { return toBlock(y); }
-
-    public float offsetX() { return toOffset(x); }
-    public float offsetY() { return toOffset(y); }
-
     public double x() { return x; }
     public double y() { return y; }
 
@@ -260,7 +232,7 @@ public final class ItemEntity implements LivingEntity {
         return acceleration;
     }
 
-    public float weight() {
+    public float mass() {
         return itemStack.item().weight;
     }
 

@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public interface BlockEntity extends BlockDrawComponent {
 
-    void setPosition(short x, short y);
+    void setPosition(int x, int y);
 
     short x();
     short y();

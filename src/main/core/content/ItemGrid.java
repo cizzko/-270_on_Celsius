@@ -2,7 +2,7 @@ package core.content;
 
 import core.content.items.Item;
 import core.content.entity.BlockEntity;
-import core.content.entity.InventoryComponent.TransitionResult;
+import core.content.entity.comp.InventoryComponent.TransitionResult;
 import core.math.Point2i;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.CheckReturnValue;

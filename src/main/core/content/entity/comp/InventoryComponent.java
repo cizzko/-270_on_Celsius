@@ -1,4 +1,4 @@
-package core.content.entity;
+package core.content.entity.comp;
 
 import core.content.ItemStack;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;

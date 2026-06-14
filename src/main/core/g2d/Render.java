@@ -53,13 +53,15 @@ public final class Render {
     private static final byte SHADER_SHIFT  = 32;
     private static final byte UBLOCK_SHIFT  = 24;
 
-    private static final byte  PRIMITIVE_TYPE_MASK = (byte) 0b11; // 2 бита
-    private static final byte  LAYER_MASK = (byte) 0x7;           // 3 бита
-    private static final byte  BLEND_MASK = (byte) 0x7;           // 3 бита
-    private static final short TEXTURE_MASK = (short) 0xFFFF;     // 16 битов
-    private static final byte  SHADER_MASK = (byte) 0xFF;         // 8 битов
-    private static final int   UBLOCK_MASK = (byte) 0xFF;         // 8 битов
-    private static final int   INDEX_MASK = 0xFFFFFF;             // 24 бита
+    static final byte  PRIMITIVE_TYPE_MASK = (byte) 0b11; // 2 бита
+    static final byte  LAYER_MASK = (byte) 0x7;           // 3 бита
+    static final byte  BLEND_MASK = (byte) 0x7;           // 3 бита
+    static final short TEXTURE_MASK = (short) 0xFFFF;     // 16 битов
+    static final byte  SHADER_MASK = (byte) 0xFF;         // 8 битов
+    static final int   UBLOCK_MASK = (byte) 0xFF;         // 8 битов
+    static final int   INDEX_MASK = 0xFFFFFF;             // 24 бита
+
+    static final long  EXCLUDE_INDEX_MASK = ~((long) INDEX_MASK);
 
     public static int toGlType(@PrimitiveType int primitiveType) {
         return switch (primitiveType) {
@@ -72,16 +74,19 @@ public final class Render {
         };
     }
 
+    @SuppressWarnings("MagicConstant")
     @PrimitiveType
     public static byte getPrimitiveType(long sortKey) {
         return (byte) ((sortKey >>> PRIMITIVE_TYPE_SHIFT) & PRIMITIVE_TYPE_MASK);
     }
 
+    @SuppressWarnings("MagicConstant")
     @Layer
     public static byte getLayer(long sortKey) {
         return (byte) ((sortKey >>> LAYER_SHIFT) & LAYER_MASK);
     }
 
+    @SuppressWarnings("MagicConstant")
     @Blending
     public static byte getBlending(long sortKey) {
         return (byte) ((sortKey >>> BLEND_SHIFT) & BLEND_MASK);

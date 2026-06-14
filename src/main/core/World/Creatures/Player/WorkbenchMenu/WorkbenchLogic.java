@@ -4,7 +4,7 @@ import core.Hotkeys;
 import core.content.ItemStack;
 import core.content.blocks.Factory;
 import core.content.blocks.Workbench;
-import core.content.entity.InventoryComponent;
+import core.content.entity.comp.InventoryComponent;
 import core.content.items.Item;
 import core.content.items.ItemBlock;
 import core.g2d.Fill;

@@ -1,6 +1,7 @@
 package core.content;
 
 import core.content.entity.Entity;
+import core.content.entity.LivingEntity;
 import core.math.AABB;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
@@ -8,7 +9,7 @@ import java.util.Comparator;
 import java.util.function.Consumer;
 
 import static core.WorldCoordinates.*;
-import static core.content.entity.DrawComponent.GAP;
+import static core.content.entity.comp.DrawComponent.GAP;
 
 /// Линейное Квадродерево на основе кодов Мортона
 public final class EntityIndex {
@@ -20,17 +21,17 @@ public final class EntityIndex {
     }
 
     static final class EntityRef {
-        final Entity entity;
+        final LivingEntity entity;
         final int mortonStart, mortonEnd;
 
-        EntityRef(Entity entity, int mortonStart, int mortonEnd) {
+        EntityRef(LivingEntity entity, int mortonStart, int mortonEnd) {
             this.entity = entity;
             this.mortonStart = mortonStart;
             this.mortonEnd = mortonEnd;
         }
     }
 
-    public void insert(Entity entity) {
+    public void insert(LivingEntity entity) {
         entity.hitboxTo(tmp);
 
         tmp.minX += GAP;
@@ -52,7 +53,7 @@ public final class EntityIndex {
         elements.sort(MortonComparator.INSTANCE);
     }
 
-    public void intersect(Entity entity, Consumer<Entity> action) {
+    public void intersect(LivingEntity entity, Consumer<LivingEntity> action) {
         entity.hitboxTo(tmp);
         intersect(tmp.minX, tmp.minY, tmp.width(), tmp.height(), action);
     }
@@ -91,7 +92,7 @@ public final class EntityIndex {
         return false;
     }
 
-    public void intersect(double x, double y, float width, float height, Consumer<Entity> action) {
+    public void intersect(double x, double y, float width, float height, Consumer<LivingEntity> action) {
 
         short minX = toBlock(x);
         short minY = toBlock(y);

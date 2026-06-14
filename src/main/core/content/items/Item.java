@@ -1,10 +1,12 @@
 package core.content.items;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.databind.util.ClassUtil;
 import core.Global;
 import core.content.*;
 import core.content.blocks.Block;
 import core.g2d.Atlas;
+import org.apache.logging.log4j.core.util.TypeUtil;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
 
@@ -12,6 +14,7 @@ import java.util.Objects;
 
 import static core.graphic.GuiDrawing.itemSize;
 import static core.math.MathUtil.toShortExact;
+import static core.util.TypeUtil.canonicalNameOrParent;
 
 public sealed class Item implements ContentType, Loadable
         permits ItemBlock, ItemTool, ItemUnresolved, ItemWeapon {
@@ -61,7 +64,7 @@ public sealed class Item implements ContentType, Loadable
 
     @Override
     public void resolve(ContentResolver res) {
-        this.requirements = res.resolveItemStacks(requirements);
+        res.resolveItemStacks(requirements);
         if (createWith != null) {
             this.createWith = res.resolveBlock(createWith);
         }
@@ -96,7 +99,7 @@ public sealed class Item implements ContentType, Loadable
     }
 
     @Override
-    public String toString() {
-        return "Item['" + key + "']";
+    public final String toString() {
+        return canonicalNameOrParent(getClass()) + "['" + key + "']";
     }
 }
