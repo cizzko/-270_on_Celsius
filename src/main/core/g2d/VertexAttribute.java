@@ -15,6 +15,22 @@ public final class VertexAttribute {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof VertexAttribute that)) return false;
+        return size == that.size && type == that.type && format == that.format;
+    }
+
+    @Override
+    public int hashCode() {
+        int h = 5381;
+        h += (h << 5) + h + size;
+        h += (h << 5) + h + type.hashCode();
+        h += (h << 5) + h + format.hashCode();
+        return h;
+    }
+
+    @Override
     public String toString() {
         return "VertexAttribute{" +
                "size=" + size +
@@ -31,6 +47,16 @@ public final class VertexAttribute {
         return size * type.byteSize;
     }
 
+    public void enable(int vao, int index, int vertexByteSize, int offset) {
+
+        GL46.glEnableVertexArrayAttrib(vao, index);
+
+        // 2. Настраиваем формат (вызов уходит в твой enum/класс format)
+        format.enable(vao, index, size, type.glType, vertexByteSize, offset);
+        // 3. Стягиваем атрибут и точку привязки буфера в один индекс (для простоты делаем их одинаковыми)
+        GL46.glVertexArrayAttribBinding(vao, index, 0);
+    }
+
     public void enable(int index, int vertexByteSize, int offset) {
         GL46.glEnableVertexAttribArray(index);
         format.enable(index, size, type.glType, vertexByteSize, offset);
@@ -39,9 +65,13 @@ public final class VertexAttribute {
     public void disable(int index) {
         GL46.glDisableVertexAttribArray(index);
     }
-
     public enum Format {
         DIRECT_FLOAT {
+            @Override
+            void enable(int vao, int index, int size, int glType, int vertexByteSize, int offset) {
+                GL46.glVertexArrayAttribFormat(vao, index, size, glType, false, offset);
+            }
+
             @Override
             void enable(int index, int size, int glType, int vertexByteSize, int offset) {
                 GL46.glVertexAttribPointer(index, size, glType, false, vertexByteSize, offset);
@@ -49,11 +79,21 @@ public final class VertexAttribute {
         },
         INTEGRAL {
             @Override
+            void enable(int vao, int index, int size, int glType, int vertexByteSize, int offset) {
+                GL46.glVertexArrayAttribIFormat(vao, index, size, glType, offset);
+            }
+
+            @Override
             void enable(int index, int size, int glType, int vertexByteSize, int offset) {
                 GL46.glVertexAttribIPointer(index, size, glType, vertexByteSize, offset);
             }
         },
         NORMALIZED {
+            @Override
+            void enable(int vao, int index, int size, int glType, int vertexByteSize, int offset) {
+                GL46.glVertexArrayAttribFormat(vao, index, size, glType, true, offset);
+            }
+
             @Override
             void enable(int index, int size, int glType, int vertexByteSize, int offset) {
                 GL46.glVertexAttribPointer(index, size, glType, true, vertexByteSize, offset);
@@ -61,6 +101,8 @@ public final class VertexAttribute {
         };
 
         abstract void enable(int index, int size, int glType, int vertexByteSize, int offset);
+
+        abstract void enable(int vao, int index, int size, int glType, int vertexByteSize, int offset);
     }
 
     public enum Type {

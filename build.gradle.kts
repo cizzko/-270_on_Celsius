@@ -1,4 +1,5 @@
 import groovy.json.JsonSlurper
+import core.gen.glsl.GLSLPreprocessorTask;
 
 plugins {
     java
@@ -9,10 +10,16 @@ plugins {
 val MAIN_CLASS  = "core.Main"
 val MAIN_MODULE = "core.main"
 
+val generateUniforms = tasks.register<GLSLPreprocessorTask>("generateUniforms") {
+    shadersDir.set(layout.projectDirectory.dir("src/assets/shaders"))
+    outputDir.set(layout.buildDirectory.dir("generated/sources/generated/java/main"))
+}
+
 sourceSets {
     main {
         java {
             srcDir("src/main")
+            srcDir(generateUniforms.flatMap { it.outputDir })
         }
         resources {
             srcDir("src/assets")
@@ -56,6 +63,7 @@ val genAtlas = tasks.register<JavaExec>("genAtlas") {
 
 tasks.classes {
     finalizedBy(genAtlas)
+    dependsOn(generateUniforms)
 }
 
 val lwjglVersion = "3.4.1"

@@ -7,7 +7,7 @@ import core.World.Weather.Sun;
 import core.World.WorldGenerator.Background;
 import core.g2d.Shaders;
 import core.g2d.StackfulRender;
-import core.g2d.UniformBuffer;
+import core.gen.Uniforms;
 import core.graphic.GuiDrawing;
 import core.graphic.WorldDrawing;
 import core.util.Commandline;
@@ -48,7 +48,7 @@ public final class PlayGameScene extends GameScene {
         Hotkeys.updateHotkeys(this);
         WorkbenchLogic.updateInput();
         Commandline.inputUpdate();
-        updateToolInteraction();
+        updateInventoryInteraction();
         Inventory.inputUpdate();
     }
 
@@ -59,7 +59,6 @@ public final class PlayGameScene extends GameScene {
         player.updateCamera();
         sun.update();
         Background.update();
-        updateInventoryInteraction();
         world.update();
         Inventory.updateStaticBlocksPreview();
     }
@@ -80,7 +79,7 @@ public final class PlayGameScene extends GameScene {
             state.shader = worldShader;
             var uniformBuffer = queue().uniformBuffer();
             var ublock = uniformBuffer.allocate(worldShader);
-            ublock.push(UniformBuffer.Uniform.of("u_logical_ratio", Global.camera.projectionScale));
+            ublock.pushVec2f(Uniforms.WorldShader.u_logical_ratio, Global.camera.projectionScale);
             uniformBuffer.push(ublock);
 
             state.uniformBlock(ublock);

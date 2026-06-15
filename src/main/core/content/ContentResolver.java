@@ -5,7 +5,6 @@ import core.content.blocks.Block;
 import core.content.items.Item;
 import core.content.items.ItemUnresolved;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
-import org.jetbrains.annotations.Contract;
 
 import java.util.HashMap;
 import java.util.Objects;

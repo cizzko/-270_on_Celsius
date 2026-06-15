@@ -1,11 +1,13 @@
 package core.g2d;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import org.intellij.lang.annotations.MagicConstant;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
 
 public final class Render {
 
@@ -139,5 +141,36 @@ public final class Render {
         StackfulRender.state().shader = StackfulRender.defaultShader;
     }
 
+    private static final ObjectOpenHashSet<VertexFormat> cache = new ObjectOpenHashSet<>();
+
+    public static void dispose() {
+        for (var vertexFormat : cache) {
+            glDeleteVertexArrays(vertexFormat.vao);
+        }
+        cache.clear();
+    }
+
     public static RenderQueue queue() { return queue; }
+
+    public static void dispose(VertexFormat format) {
+        if (cache.remove(format)) {
+            if (--format.refCount == 0) {
+                glDeleteVertexArrays(format.vao);
+            }
+        }
+    }
+
+    public static VertexFormat setupVAO(VertexFormat vertexFormat) {
+        var ex = cache.addOrGet(vertexFormat);
+        if (ex != null && vertexFormat != ex) {
+            ex.refCount++;
+            return ex;
+        }
+        vertexFormat.vao = OpenGL.createVertexArrays();
+        vertexFormat.enableAttributes();
+        if (queue.ebo != null) {
+            vertexFormat.bindEBO(queue.ebo.id);
+        }
+        return vertexFormat;
+    }
 }

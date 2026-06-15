@@ -1,19 +1,18 @@
 package core.g2d;
 
+import core.gen.Uniforms;
 import core.pool.Pool;
 import core.util.Disposable;
 import core.util.TimSort;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.system.MemoryUtil;
 
+import java.lang.foreign.Arena;
 import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.IntSummaryStatistics;
 
 import static core.g2d.Render.*;
 import static core.g2d.RenderList.KIND_DYNAMIC;
@@ -41,11 +40,12 @@ public final class RenderQueue implements Disposable {
 
     private final RenderItem[] tmp;
     private final TimSort<RenderItem> sorter = new TimSort<>();
+    private final Arena renderArena = Arena.ofConfined();
 
     public RenderQueue(int itemCount, int vertexCount) {
         this.tmp = new RenderItem[itemCount];
         this.rlistAlloc = new Pool<>(() -> {
-            var list = new RenderList(rlistCount++, itemCount, vertexCount);
+            var list = new RenderList(rlistCount++, renderArena, itemCount, vertexCount);
             created.add(list);
             return list;
         }, 10);
@@ -67,8 +67,7 @@ public final class RenderQueue implements Disposable {
             }
 
             indices.flip();
-            ebo = new  ElementBufferObject(indices);
-            ebo.bind();
+            ebo = new ElementBufferObject(indices);
             ebo.upload(GL_STATIC_DRAW);
         }
     }
@@ -144,9 +143,6 @@ public final class RenderQueue implements Disposable {
         var vertices = rlist.vertices;
         var mesh = rlist.mesh;
 
-        int vapos = vertices.position(), vacount = vertices.limit();
-        vertices.flip();
-
         int currentPrimitiveType = -1;
         int currentBlending = -1;
         int currentTextureId = -1;
@@ -159,7 +155,8 @@ public final class RenderQueue implements Disposable {
         int groupIndexCount = 0;
         int groupVertexCount = 0;
 
-        var currentVertexFormat = defaultShader.vertexFormat();
+        mesh.setVertexFormat(defaultShader.vertexFormat());
+
         long prevSortKey = 0;
 
         //noinspection ForLoopReplaceableByForEach
@@ -181,10 +178,9 @@ public final class RenderQueue implements Disposable {
                 byte shaderId = getShaderId(item.sortKey);
                 byte ublock = getUblock(item.sortKey);
 
-                mesh.draw(toGlType(currentPrimitiveType),
+                mesh.draw(currentPrimitiveType,
                         vertices, groupVertexOffset, groupVertexCount,
-                        ebo, groupIndexOffset, groupIndexCount,
-                        currentVertexFormat);
+                        ebo, groupIndexOffset, groupIndexCount);
 
                 if (currentBlending != blending) {
                     setBlending(blending);
@@ -194,26 +190,24 @@ public final class RenderQueue implements Disposable {
 
                 if (currentShaderId != shaderId) {
                     shader.use();
-                    mesh.bindVao();
-                    shader.vertexFormat().enableAttributes();
                 }
+
+                mesh.setVertexFormat(shader.vertexFormat);
 
                 if (currentUblock != ublock) {
-                    var block = uniformBuffer.blockSet.id2blocks[ublock];
-                    block.setTo(shader);
+                    var block = uniformBuffer.id2blocks[ublock];
+                    block.use(shaderId);
                 }
 
-                if (currentTextureId != textureId) {
-                    shader.setUniformTexture2d("u_texture", textureId, 0);
+                if (OpenGL.GL_ARB_bindless_texture || currentTextureId != textureId) {
+                    OpenGL.bindTexture(shaderId, Uniforms.DefaultShader.u_texture, textureId, 0);
                 }
 
-                currentPrimitiveType = primitiveType;
+                currentPrimitiveType = toGlType(primitiveType);
                 currentBlending = blending;
                 currentTextureId = textureId;
                 currentShaderId = shaderId;
                 currentUblock = ublock;
-
-                currentVertexFormat = shader.vertexFormat();
 
                 prevSortKey = item.sortKey;
 
@@ -225,18 +219,12 @@ public final class RenderQueue implements Disposable {
             }
         }
 
-        mesh.draw(toGlType(currentPrimitiveType),
+        mesh.draw(currentPrimitiveType,
                 vertices, groupVertexOffset, groupVertexCount,
-                ebo, groupIndexOffset, groupIndexCount,
-                currentVertexFormat);
+                ebo, groupIndexOffset, groupIndexCount);
 
-        switch (rlist.kind) {
-            // восстанавливаем write-mode
-            case RenderList.KIND_STATIC -> {
-                vertices.position(vapos);
-                vertices.limit(vacount);
-            }
-            case RenderList.KIND_DYNAMIC -> rlistAlloc.freeAndReset(rlist);
+        if (rlist.kind == KIND_DYNAMIC) {
+            rlistAlloc.freeAndReset(rlist);
         }
     }
 
@@ -266,5 +254,6 @@ public final class RenderQueue implements Disposable {
         for (RenderList renderList : created) {
             renderList.close();
         }
+        renderArena.close();
     }
 }

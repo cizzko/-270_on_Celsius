@@ -106,19 +106,11 @@ public class GuiDrawing {
     }
 
     public static Point2i calculateTextSize(String text) {
-        String longestLine = "";
         int width = 12;
         int linesCount = 0;
 
-        for (String line : text.split("\\\\n")) {
-            linesCount++;
-            if (line.length() >= longestLine.replaceAll("\\s+", "").length()) {
-                longestLine = line;
-            }
-        }
-
-        for (int i = 0; i < longestLine.length(); i++) {
-            char c = longestLine.charAt(i);
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
             width += Window.defaultFont.getGlyph(c).width();
         }
         return textSize.set(width, linesCount * 28 + 16);

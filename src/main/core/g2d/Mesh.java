@@ -4,82 +4,82 @@ import core.util.Debug;
 import core.util.Disposable;
 import org.jetbrains.annotations.Nullable;
 
-import java.nio.IntBuffer;
+import java.lang.foreign.MemorySegment;
 
 import static org.lwjgl.opengl.GL15C.glBindBuffer;
 import static org.lwjgl.opengl.GL46.*;
-import static org.lwjgl.system.MemoryUtil.memAddress;
 
 public final class Mesh implements Disposable {
 
-    static int lastVbo = -1, lastVao = -1;
+    int vbo;
 
-    private final int vao, vbo;
-
-    private boolean dirty = true;
+    boolean dirty = true;
+    boolean atLeastOneBind = true;
+    boolean vertexFormatChanged = true;
+    VertexFormat vertexFormat;
 
     public Mesh() {
-        vao = glGenVertexArrays();
-        vbo = glGenBuffers();
+        vbo = OpenGL.createBuffer();
     }
 
     public void setDirty(boolean state) { dirty = state; }
 
-    public void bindVbo() {
-        if (lastVbo == vbo) {
-            return;
+    public void setup(VertexFormat format, @Nullable ElementBufferObject ebo) {
+        if (atLeastOneBind) {
+            atLeastOneBind = false;
+        } else {
+            if (!vertexFormatChanged) {
+                return;
+            }
+            vertexFormatChanged = false;
         }
-        lastVbo = vbo;
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+        glBindVertexArray(format.vao);
+
+        if (OpenGL.DSA) {
+            format.bindVBO(vbo);
+        } else {
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+            format.enableAttributes();
+            // if (ebo != null) ebo.bind();
+        }
     }
 
-    public void bindVao() {
-        if (lastVao == vao) {
-            return;
-        }
-        lastVao = vao;
-        glBindVertexArray(vao);
+    public void vboUpload(MemorySegment buffer) { // не забудь vao
+        OpenGL.setBufferData(vbo, GL_ARRAY_BUFFER, buffer, GL_DYNAMIC_DRAW);
     }
 
-    public void vboUpload(IntBuffer buffer) { // не забудь vao
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, buffer, GL_DYNAMIC_DRAW);
+    public void setVertexFormat(VertexFormat vertexFormat) {
+        if (vertexFormat != this.vertexFormat) {
+            this.vertexFormat = vertexFormat;
+            vertexFormatChanged = true;
+        } else {
+            vertexFormatChanged = false;
+        }
     }
 
     public boolean draw(int primitiveType,
-                        IntBuffer vertices, int vertexOffset, int vertexCount,
-                        @Nullable ElementBufferObject ebo, int indexOffset, int indexCount,
-                        VertexFormat format) {
+                        MemorySegment vertices, int vertexOffset, int vertexCount,
+                        @Nullable ElementBufferObject ebo, int indexOffset, int indexCount) {
 
         if (vertexCount == 0) {
             return false;
         }
 
-        bindVao();
-        bindVbo();
+        var format = vertexFormat;
+        setup(format, ebo);
 
         if (dirty) {
             int stride = format.vertexByteSize();
-            int byteOffset = vertexOffset * stride;
-            int byteSize = vertexCount * stride;
-            int oldPos = vertices.position();
-            int oldLim = vertices.limit();
-
-            vertices.position(byteOffset / Float.BYTES);
-            vertices.limit((byteOffset + byteSize) / Float.BYTES);
-            try {
-                nglBufferSubData(GL_ARRAY_BUFFER, byteOffset, byteSize, memAddress(vertices));
-            } finally {
-                vertices.position(oldPos);
-                vertices.limit(oldLim);
-            }
+            long byteOffset = (long) vertexOffset * stride;
+            long byteSize = (long) vertexCount * stride;
+            OpenGL.bufferSubData(vbo, GL_ARRAY_BUFFER, byteOffset, byteSize, vertices);
         }
 
         if (Debug.debugMesh) {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         }
-        if (ebo != null && primitiveType != GL_TRIANGLE_STRIP) {
-            ebo.bind();
+        if (ebo != null) {
             long byteOffsetInEBO = (long) indexOffset * Integer.BYTES;
             glDrawElements(primitiveType, indexCount, GL_UNSIGNED_INT, byteOffsetInEBO);
         } else {
@@ -92,9 +92,14 @@ public final class Mesh implements Disposable {
         return true;
     }
 
+    public void reset() {
+        atLeastOneBind = true;
+        vertexFormatChanged = true;
+        vertexFormat = null;
+    }
+
     @Override
     public void close() {
         glDeleteBuffers(vbo);
-        glDeleteVertexArrays(vao);
     }
 }

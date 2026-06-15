@@ -1,7 +1,5 @@
 package core.ui.menu;
 
-import core.ui.*;
-
 public final class LoadSave extends core.ui.widget.Dialog {
     // private ImageElement planet;
     // private Button loadSave;

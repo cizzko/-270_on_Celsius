@@ -1,6 +1,5 @@
 package core.content;
 
-import core.content.entity.Entity;
 import core.content.entity.LivingEntity;
 import core.math.AABB;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;

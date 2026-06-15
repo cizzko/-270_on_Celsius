@@ -31,31 +31,51 @@ public class Player {
             timeFromZero = System.currentTimeMillis();
 
     public static void updateInventoryInteraction() {
-        updatePlaceableInteraction();
-    }
-
-    // todo это наверное все же инвентарь, нежели игрок?
-    //todo хотелось бы иметь рисование и взаимодействие поближе
-    private static void updatePlaceableInteraction() {
+        if (player.isDead()) {
+            return;
+        }
         if (player.hasDraggingItem()) {
             return;
         }
-        ItemStack item = player.getItemInHand();
-        if (item == null) {
+
+        var hand = player.getItemInHand();
+        if (hand == null) {
             return;
         }
 
-        if (input.clicked(GLFW_MOUSE_BUTTON_LEFT) && item.item() instanceof ItemBlock itemBlock) {
-            if (input.mousePos().x > (Inventory.inventoryOpen ? 1487 : 1866)) {
-                if (input.mousePos().y > 756) {
-                    return;
+        switch (hand.item()) {
+            case ItemBlock itemBlock -> handleBlock(hand, itemBlock);
+            case ItemTool itemTool -> handleTool(hand, itemTool);
+            default -> {}
+        }
+    }
+
+    private static void handleBlock(ItemStack hand, ItemBlock itemBlock) {
+        if (input.clicked(GLFW_MOUSE_BUTTON_LEFT)) {
+            var mousePos = input.mousePos();
+            if (!(mousePos.x > (Inventory.inventoryOpen ? 1487 : 1866) && mousePos.y > 756)) {
+                Point2i pointedBlock = input.mouseBlockPos();
+                var block = world.getBlock(pointedBlock);
+                if (block != null && block.type == Block.Type.GAS && getDistanceToMouse() <= 9) {
+                    updatePlaceableBlock(itemBlock.block, pointedBlock.x, pointedBlock.y);
                 }
             }
-            Point2i pointedBlock = input.mouseBlockPos();
-            var block = world.getBlock(pointedBlock);
-            if (block != null && block.type == Block.Type.GAS && getDistanceToMouse() <= 9) {
-                updatePlaceableBlock(itemBlock.block, pointedBlock.x, pointedBlock.y);
-            }
+        }
+    }
+
+    private static void handleTool(ItemStack hand, ItemTool tool) {
+        Point2i blockPos = input.mouseBlockPos();
+        int blockId = world.getBlockId(blockPos);
+        if (blockId <= 0) {
+            return;
+        }
+
+        var data = hand.getOrCreateData(ItemData.Tool::new);
+        var block = world.getBlock(blockPos);
+        if (block.isMultiblock()) {
+            updateMultiblockByTool(blockPos.x, blockPos.y, block, tool, data);
+        } else {
+            updateBlockByTool(blockPos.x, blockPos.y, block, tool, data);
         }
     }
 

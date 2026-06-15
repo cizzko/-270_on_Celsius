@@ -1,8 +1,6 @@
-#version 330 core
-
 uniform sampler2D u_texture;
 
-in vec4 v_color;
+in flat vec4 v_color;
 in vec2 v_uv;
 
 out vec4 fragColor;

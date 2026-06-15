@@ -12,7 +12,7 @@ public final class ElementBufferObject implements Disposable {
     final IntBuffer buffer;
 
     ElementBufferObject(IntBuffer buffer) {
-        this.id = glGenBuffers();
+        this.id = OpenGL.createBuffer();
         this.buffer = buffer;
     }
 
@@ -21,12 +21,11 @@ public final class ElementBufferObject implements Disposable {
     }
 
     public void bind() {
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
+        OpenGL.bindBuffer(GL_ELEMENT_ARRAY_BUFFER, id);
     }
 
     public void upload(int usage) { // не забудь vao
-        bind();
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, buffer, usage);
+        OpenGL.setBufferData(id, GL_ELEMENT_ARRAY_BUFFER, buffer, usage);
     }
 
     @Override

@@ -3,9 +3,10 @@ package core.g2d;
 import core.pool.Poolable;
 import core.util.Disposable;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.system.MemoryUtil;
 
-import java.nio.IntBuffer;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
 
 import static core.g2d.Render.*;
 import static core.g2d.RenderQueue.*;
@@ -17,7 +18,7 @@ public final class RenderList implements Disposable, Poolable {
     public static final int KIND_STATIC  = 1;
     public static final int KIND_DYNAMIC = 2;
 
-    private static final int PRIMITIVE_BYTES = Float.BYTES;
+    private static final ValueLayout.OfInt PRIMITIVE = ValueLayout.JAVA_INT;
 
     final int id;
 
@@ -26,8 +27,8 @@ public final class RenderList implements Disposable, Poolable {
 
     final int vertexCapacity;
     final RenderItem[] items;
-    int itemCount;
-    final IntBuffer vertices;
+    int itemCount, vertexCount;
+    final MemorySegment vertices;
     final Mesh mesh;
 
     public void setDirty(boolean state) {
@@ -52,32 +53,30 @@ public final class RenderList implements Disposable, Poolable {
                '}';
     }
 
-    RenderList(int id, int itemCount, int vertexCount) {
+    RenderList(int id, Arena renderArena, int itemCapacity, int vertexCapacity) {
         this.id = id;
-        this.vertexCapacity = vertexCount;
-        this.items = new RenderItem[itemCount];
+        this.vertexCapacity = vertexCapacity;
+        this.items = new RenderItem[itemCapacity];
         for (int i = 0; i < items.length; i++) {
             items[i] = new RenderItem();
         }
 
         // 6 на прямоугольник в случае без индексов, с ними 4
         var vertexFormat = defaultShader.vertexFormat();
-        this.vertices = MemoryUtil.memAllocInt(vertexCount * vertexFormat.vertexSizeIn(PRIMITIVE_BYTES));
+        this.vertices = renderArena.allocate(PRIMITIVE, Math.multiplyExact(vertexCapacity, vertexFormat.vertexSizeIn(PRIMITIVE)));
         this.mesh     = new Mesh();
 
-        mesh.bindVao();
-        vertexFormat.enableAttributes();
         mesh.vboUpload(vertices);
     }
 
     public int getItemIndex()   { return itemCount; }
-    public int getVertexIndex() { return vertices.position() / defaultShader.vertexFormat().vertexSizeIn(PRIMITIVE_BYTES); }
+    public int getVertexIndex() { return vertexCount; }
 
     public RenderItem allocItem() { return items[itemCount]; }
 
-    public boolean hasSpace(int itemCount, int vertexCount) {
-        return this.itemCount + itemCount < items.length &&
-               vertices.remaining() >= vertexCount * defaultShader.vertexFormat().vertexSizeIn(PRIMITIVE_BYTES);
+    public boolean hasSpace(int itemDelta, int vertexDelta) {
+        return this.itemCount + itemDelta < items.length &&
+               this.vertexCount + vertexDelta < vertexCapacity;
     }
 
     public RenderList checkSpace(int itemCount, int vertexCount) {
@@ -97,12 +96,12 @@ public final class RenderList implements Disposable, Poolable {
     }
 
     public boolean isEmpty() {
-        return itemCount == 0 && vertices.position() == 0;
+        return itemCount == 0 && vertexCount == 0;
     }
 
     public void clear() {
         itemCount = 0;
-        vertices.clear();
+        vertexCount = 0;
     }
 
     public void addRectangle(int primitiveType, int rgba8888,
@@ -115,7 +114,7 @@ public final class RenderList implements Disposable, Poolable {
         if (primitiveType == PRIMITIVE_TYPE_TRIANGLE_STRIP) {
             addRectangleStripes(rgba8888, x, y, x2, y2, x3, y3, x4, y4, u, v, u2, v2);
         } else {
-            addRectangle(primitiveType, x, y, x2, y2, x3, y3, x4, y4, u, v, u2, v2, (rgba8888));
+            addRectangle(x, y, x2, y2, x3, y3, x4, y4, u, v, u2, v2, (rgba8888));
         }
     }
 
@@ -131,74 +130,72 @@ public final class RenderList implements Disposable, Poolable {
         float minY = min(min(y, y2), min(y3, y4));
         float maxY = max(max(y, y2), max(y3, y4));
 
-        int c = (rgba8888);
         var va = vertices;
-        addVertex0(va, minX, maxY, u, v,   c);  // TL
-        addVertex0(va, maxX, maxY, u2, v,   c);  // TR
-        addVertex0(va, minX, minY, u, v2,  c);  // BL
-        addVertex0(va, maxX, minY, u2, v2,  c);  // BR
+        //addVertex0(va, minX, maxY, u, v, rgba8888);  // TL
+        //addVertex0(va, maxX, maxY, u2, v, rgba8888);  // TR
+        //addVertex0(va, minX, minY, u, v2, rgba8888);  // BL
+        //addVertex0(va, maxX, minY, u2, v2, rgba8888);  // BR
+
+        vertexCount += 4;
     }
 
-    public void addRectangle(int primitiveType, int rgba8888,
-                            float x1, float y1,
-                            float x2, float y2,
-                            float u1, float v1,
-                            float u2, float v2) {
+    public void addRectangle(int rgba8888,
+                             float x1, float y1,
+                             float x2, float y2,
+                             float u1, float v1,
+                             float u2, float v2) {
 
-        int c = (rgba8888);
-        if (primitiveType == PRIMITIVE_TYPE_TRIANGLE_STRIP) {
-            var va = vertices;
-            addVertex0(va, x1, y1, u1, v1, c); // BL
-            addVertex0(va, x1, y2, u1, v2, c); // TL
-            addVertex0(va, x2, y2, u2, v2, c); // TR
-            addVertex0(va, x2, y1, u2, v1, c); // BR
-        } else {
-            addRectangle(primitiveType,
-                    x1, y1, x1, y2, x2, y2, x2, y1,
-                    u1, v1, u2, v2, c);
-        }
+        addRectangle(
+                x1, y1, x1, y2,
+                x2, y2, x2, y1,
+                u1, v1, u2, v2,
+                rgba8888);
     }
 
-    public void addRectangle(int primitiveType, float x1, float y1,
-                            float x2, float y2,
-                            float x3, float y3,
-                            float x4, float y4,
-                            float u1, float v1,
-                            float u2, float v2,
-                            int c) {
+    public void addRectangle(float x1, float y1,
+                             float x2, float y2,
+                             float x3, float y3,
+                             float x4, float y4,
+                             float u1, float v1,
+                             float u2, float v2,
+                             int c) {
+        int vc = vertexCount;
         var va = vertices;
-        if (primitiveType == PRIMITIVE_TYPE_TRIANGLE_STRIP) {
-            addVertex0(va, x1, y1, u1,  v1,  c);  // TL
-            addVertex0(va, x2, y2, u2, v1,   c);  // TR
-            addVertex0(va, x3, y3, u1,  v2,  c);  // BL
-            addVertex0(va, x4, y4, u2, v2,   c);  // BR
-            return;
-        }
-
         if (!USE_INDEXES) {
-            addVertex0(va, x1, y1, u1, v2, c); // v1
-            addVertex0(va, x2, y2, u1, v1, c); // v2
-            addVertex0(va, x3, y3, u2, v1, c); // v3
-            addVertex0(va, x1, y1, u1, v2, c); // v1
-            addVertex0(va, x3, y3, u2, v1, c); // v3
-            addVertex0(va, x4, y4, u2, v2, c); // v4
+            addVertex0(va, vc + 0, x1, y1, u1, v2, c); // v1
+            addVertex0(va, vc + 1, x2, y2, u1, v1, c); // v2
+            addVertex0(va, vc + 2, x3, y3, u2, v1, c); // v3
+            addVertex0(va, vc + 3, x1, y1, u1, v2, c); // v1
+            addVertex0(va, vc + 4, x3, y3, u2, v1, c); // v3
+            addVertex0(va, vc + 5, x4, y4, u2, v2, c); // v4
+
+            vertexCount += 6;
         } else {
-            addVertex0(va, x1, y1, u1, v2, c);
-            addVertex0(va, x2, y2, u1, v1, c);
-            addVertex0(va, x3, y3, u2, v1, c);
-            addVertex0(va, x4, y4, u2, v2, c);
+            addVertex0(va, vc + 0, x1, y1, u1, v2, c);
+            addVertex0(va, vc + 1, x2, y2, u1, v1, c);
+            addVertex0(va, vc + 2, x3, y3, u2, v1, c);
+            addVertex0(va, vc + 3, x4, y4, u2, v2, c);
+
+            vertexCount += 4;
         }
     }
 
-    private void addVertex0(IntBuffer va, float x, float y, float u, float v, int color) {
-        va.put(Float.floatToIntBits(x));
-        va.put(Float.floatToIntBits(y));
-        va.put(Integer.reverseBytes(color));
-        va.put(BytePack.packB16toInt32((short) u, (short) v));
+    private void addVertex0(MemorySegment va, int vertexOffset,
+                            float x, float y, float u, float v, int color) {
+        long offset = vertexOffset * 4L;
+        va.setAtIndex(ValueLayout.JAVA_FLOAT, offset + 0, x);
+        va.setAtIndex(ValueLayout.JAVA_FLOAT, offset + 1, y);
+        va.setAtIndex(PRIMITIVE, offset + 2, Integer.reverseBytes(color));
+        va.setAtIndex(PRIMITIVE, offset + 3, BytePack.packB16toInt32((short) u, (short) v));
     }
 
     public void addVertex(float x, float y, float u, float v, int color) {
-        addVertex0(vertices, x,  y, u, v, color);
+        addVertex0(vertices, vertexCount, x,  y, u, v, color);
+        vertexCount++;
+    }
+
+    public void advance() {
+        itemCount++;
     }
 
     public void push(RenderItem item) {
@@ -207,7 +204,6 @@ public final class RenderList implements Disposable, Poolable {
 
     @Override
     public void close() {
-        MemoryUtil.memFree(vertices);
         // items это массив в куче, так что пусть сборщик сделает своё дело
         // Arrays.fill(items, null);
     }
@@ -216,7 +212,7 @@ public final class RenderList implements Disposable, Poolable {
         if (log.isDebugEnabled()) {
             log.debug("HasSpace : {}", hasSpace(1, 1));
             log.debug("Items    : {}/{}", itemCount, items.length);
-            log.debug("Vertices : {}/{}", vertices.position(), vertices.capacity());
+            log.debug("Vertices : {}/{}", vertexCount, vertexCapacity);
         }
     }
 

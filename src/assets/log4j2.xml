@@ -25,6 +25,7 @@
         <Logger name="core.UIScene" level="DEBUG"/>
         <Logger name="Console" level="INFO"/>
         <Logger name="core.g2d" level="ERROR"/>
+        <Logger name="Shader" level="TRACE"/>
         <Logger name="AutoLoader" level="ERROR"/>
         <Logger name="AssetsManager" level="ERROR"/>
     </Loggers>

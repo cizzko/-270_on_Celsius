@@ -18,7 +18,6 @@ import static core.Global.*;
 import static core.Window.glfwHandle;
 import static core.WorldCoordinates.toBlock;
 import static core.input.InputEvent.*;
-import static core.input.InputEvent.TYPE_MOUSE_DRAG;
 import static core.util.FixedBitset.createBitSet;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;

@@ -1,12 +1,12 @@
 package core.g2d;
 
 import core.Global;
-import core.g2d.UniformBuffer.Uniform;
+import core.gen.Uniforms;
 import core.graphic.Camera;
+import core.graphic.Color;
 import core.math.Vector2f;
 import core.pool.Pool;
 import core.pool.Poolable;
-import core.graphic.Color;
 import core.util.Disposable;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
@@ -42,12 +42,12 @@ public final class StackfulRender {
         float v2 = BytePack.fromB16toFloat32(texture.v2);
 
         var ublockObj = queue.uniformBuffer().allocate(Shaders.repeat);
-        ublockObj.push(Uniform.of("u_logical_ratio", Global.camera.projectionScale));
+        ublockObj.pushVec2f(Uniforms.RepeatShader.u_logical_ratio, Global.camera.projectionScale);
         // Здесь допустимо отсечение до float, поскольку рендерятся группы тайлов
         var camPos = Global.camera.position;
-        ublockObj.push(Uniform.of("u_camera_pos", camPos.xf(), camPos.yf()));
-        ublockObj.push(Uniform.of("u_reg_uv", u1, v1));
-        ublockObj.push(Uniform.of("u_reg_size", u2 - u1, v2 - v1));
+        ublockObj.pushVec2f(Uniforms.RepeatShader.u_camera_pos, camPos.xf(), camPos.yf());
+        ublockObj.pushVec2f(Uniforms.RepeatShader.u_reg_uv, u1, v1);
+        ublockObj.pushVec2f(Uniforms.RepeatShader.u_reg_size, u2 - u1, v2 - v1);
 
         int ublock = queue.uniformBuffer().push(ublockObj);
 
@@ -121,8 +121,8 @@ public final class StackfulRender {
         int ublock() {
             if (ublock == StateFrame.UBLOCK_UNSET) {
                 var block = queue.uniformBuffer().allocate(shader);
-                block.push(Uniform.of("u_logical_ratio", logicalRatio));
-                block.push(Uniform.of("u_camera_pos", cameraPosition));
+                block.pushVec2f(Uniforms.DefaultShader.u_logical_ratio, logicalRatio);
+                block.pushVec2f(Uniforms.DefaultShader.u_camera_pos, cameraPosition);
                 return queue.uniformBuffer().push(block);
             }
             return ublock;
@@ -183,17 +183,18 @@ public final class StackfulRender {
     }
 
     public static void draw(Drawable tex, int colorRgba8888, float x, float y) {
-        float w = tex.width() * stateFrame.xScale;
-        float h = tex.height() * stateFrame.yScale;
+        var fr = stateFrame;
+        float w = tex.width() * fr.xScale;
+        float h = tex.height() * fr.yScale;
 
         draw(
-                stateFrame.rlist,
-                stateFrame.primitiveType,
-                stateFrame.layer,
-                stateFrame.blending,
+                fr.rlist,
+                fr.primitiveType,
+                fr.layer,
+                fr.blending,
                 tex.id(),
-                stateFrame.shader.id(),
-                stateFrame.ublock(),
+                fr.shader.id(),
+                fr.ublock(),
                 colorRgba8888,
                 x, y,
                 x + w, y + h,
@@ -273,7 +274,7 @@ public final class StackfulRender {
         item.sortKey = makeSortKey(primitiveType, layer, blending, texId, shader, ublock, rlist.getItemIndex());
 
         item.validate();
-        rlist.push(item);
+        rlist.advance();
     }
 
     public static void draw(
@@ -296,7 +297,7 @@ public final class StackfulRender {
         var item = rlist.allocItem();
         item.vertexOffset = rlist.getVertexIndex();
         item.vertexCount = vertexCountPerQuad;
-        rlist.addRectangle(primitiveType, rgba8888, x, y, x2, y2, u, v, u2, v2);
+        rlist.addRectangle(rgba8888, x, y, x2, y2, u, v, u2, v2);
 
         short INDICES_PER_QUAD = 6;
         short VERTICES_PER_QUAD = 4;
@@ -307,7 +308,7 @@ public final class StackfulRender {
         item.sortKey = makeSortKey(primitiveType, layer, blending, texId, shaderId, ublock, rlist.getItemIndex());
 
         item.validate();
-        rlist.push(item);
+        rlist.advance();
     }
 
     public static void rect(Drawable tex,

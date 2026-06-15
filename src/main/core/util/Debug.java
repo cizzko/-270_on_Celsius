@@ -51,7 +51,7 @@ public class Debug {
     // Директория ./tmp для созданных картинок и прочего
     public static final String TEMP_DIR = "tmp";
 
-    // Включается по нажатию F3+M английской
+    // Включается по нажатию F3 английской
     public static boolean debugMesh = false;
     public static boolean frameHistogram = false;
 

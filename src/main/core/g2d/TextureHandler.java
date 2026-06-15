@@ -49,7 +49,6 @@ public final class TextureHandler extends AssetHandler<Texture, TextureHandler.P
         return new State();
     }
 
-
     public static final class Params {
         public int target = GL_TEXTURE_2D;
         public int minFilter = GL_NEAREST;

@@ -5,8 +5,6 @@ import core.ui.*;
 import core.ui.widget.Button;
 import core.ui.widget.Dialog;
 import core.ui.widget.DropDownMenu;
-import core.ui.Align;
-import core.ui.Cell;
 
 import java.util.Locale;
 import java.util.function.Consumer;

@@ -1,4 +1,6 @@
 {
+  "vertex": "world.vert",
+  "fragment": "default.frag",
   "attributes": {
     "a_pos": {
       "size": 2,

@@ -3,23 +3,29 @@ package core.g2d;
 import core.graphic.BitMap;
 import core.util.Disposable;
 
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_S;
+import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_T;
 import static org.lwjgl.opengl.GL46.*;
 
 public final class Texture implements Drawable, Disposable {
     public static final int MAX_ID = 1 << 16; // TODO сделать безнаковым
 
-    final short glHandle;
+    final int target;
+    final short id;
 
     private final int width, height;
 
-    private Texture(short glHandle, int width, int height) {
-        this.glHandle = glHandle;
+    private Texture(int target, short id, int width, int height) {
+        this.target = target;
+        this.id = id;
         this.width = width;
         this.height = height;
     }
 
-    static short genId() {
-        int i = glGenTextures();
+    static short genId(int target) {
+        int i = OpenGL.createTextures(target);
         if (i >= MAX_ID) {
             throw new IllegalStateException("Limit of textures exceeded");
         }
@@ -29,38 +35,45 @@ public final class Texture implements Drawable, Disposable {
     static Texture load(BitMap img, int target,
                         int minFilter, int magFilter,
                         int wrapS, int wrapT) {
-        short glHandle = genId();
+        short id = genId(target);
 
-        glBindTexture(target, glHandle);
-        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, minFilter);
-        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilter);
-        glTexParameteri(target, GL_TEXTURE_WRAP_S, wrapS);
-        glTexParameteri(target, GL_TEXTURE_WRAP_T, wrapT);
+        OpenGL.bindTexture(target, id);
+
+        OpenGL.textureParameteri(target, id, GL_TEXTURE_MIN_FILTER, minFilter);
+        OpenGL.textureParameteri(target, id, GL_TEXTURE_MAG_FILTER, magFilter);
+        OpenGL.textureParameteri(target, id, GL_TEXTURE_WRAP_S, wrapS);
+        OpenGL.textureParameteri(target, id, GL_TEXTURE_WRAP_T, wrapT);
 
         int w = img.width();
         int h = img.height();
         try (img) {
-            glTexImage2D(target, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data());
+            OpenGL.texStorage2D(target, id, 1, GL_RGBA8, w, h);
+            OpenGL.texSubImage2D(target, id, 0, 0, 0, w, h, img.glFormat(), img.glType(), img.data());
         }
-        glBindTexture(target, 0);
-        var tex = new Texture(glHandle, w, h);
-        ResourceCache.texturesById.put(glHandle, tex);
+
+        OpenGL.bindTexture(target, 0);
+
+        var tex = new Texture(target, id, w, h);
+        ResourceCache.texturesById.put(id, tex);
+        OpenGL.saveHandle(id);
         return tex;
     }
 
-    @Override
-    public short id() { return glHandle; }
+    public void setParameteri(int pname, int param) {
+        OpenGL.bindTexture(target, id);
+        OpenGL.textureParameteri(target, id, pname, param);
+        OpenGL.bindTexture(target, 0);
+    }
 
-    @Override
+    public short id() { return id; }
+
     public int width() {
         return width;
     }
 
-    @Override
     public int height() {
         return height;
     }
-
 
     public float u()  { return BytePack.toB16(0f); }
     public float v()  { return BytePack.toB16(0f); }
@@ -68,13 +81,22 @@ public final class Texture implements Drawable, Disposable {
     public float v2() { return BytePack.toB16(1); }
 
     @Override
-    public String toString() {
-        return "Texture{" + "id=" + glHandle + ", w=" + width + ", h=" + height + '}';
+    public boolean equals(Object o) {
+        return this == o || o instanceof Texture texture && id == texture.id;
     }
 
     @Override
+    public int hashCode() {
+        return Short.toUnsignedInt(id);
+    }
+
+    public String toString() {
+        return "Texture{" + "id=" + id + ", w=" + width + ", h=" + height + '}';
+    }
+
     public void close() {
-        ResourceCache.texturesById.remove(glHandle);
-        glDeleteTextures(glHandle);
+        ResourceCache.texturesById.remove(id);
+        OpenGL.deleteHandle(id);
+        glDeleteTextures(id);
     }
 }

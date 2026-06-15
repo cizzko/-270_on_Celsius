@@ -3,7 +3,6 @@ package core;
 import com.sun.management.OperatingSystemMXBean;
 import core.g2d.*;
 import core.input.InputHandler;
-import core.util.Config;
 import core.util.Debug;
 import core.util.JavaInterpreter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -136,15 +135,19 @@ public final class Window extends Application {
             }
         }));
 
-        if (GLFW_PLATFORM_IS_WAYLAND) {
-            glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
-            glfwInitHint(GLFW_WAYLAND_LIBDECOR, GLFW_WAYLAND_DISABLE_LIBDECOR);
-        }
+        // if (GLFW_PLATFORM_IS_WAYLAND) {
+        //     glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
+        //     glfwInitHint(GLFW_WAYLAND_LIBDECOR, GLFW_WAYLAND_DISABLE_LIBDECOR);
+        // }
+        glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+
         if (!glfwInit()) {
             throw new RuntimeException("Failed to initialize GLFW");
         }
 
         glfwDefaultWindowHints();
+        if (Debug.debugLevel >= 5)
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
         if (defaultMode == Mode.BORDERLESS) {
@@ -152,12 +155,10 @@ public final class Window extends Application {
             glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE);
         }
 
-        if (Config.getBoolean("DebugMACOSX") || Platform.get() == Platform.MACOSX) {
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        }
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 
         long primaryMonitorPtr = glfwGetPrimaryMonitor();
         var mode = glfwGetVideoMode(primaryMonitorPtr);
@@ -240,8 +241,10 @@ public final class Window extends Application {
         try (var cursorImage = decodeImage(result);
              var stack = MemoryStack.stackPush()) {
 
-            GLFWImage glfwImg = GLFWImage.malloc(stack);
-            glfwImg.set(cursorImage.width(), cursorImage.height(), cursorImage.data());
+            var glfwImg = GLFWImage.malloc(stack);
+            glfwImg.width(cursorImage.width());
+            glfwImg.height(cursorImage.height());
+            glfwImg.pixels(cursorImage.data().asByteBuffer());
             glfwSetCursor(glfwHandle, glfwCreateCursor(glfwImg, 0, 0));
         }
 
@@ -291,31 +294,21 @@ public final class Window extends Application {
     }
 
     private void printComputerInfo() {
+        var mxbean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
+
         log.info("Game version: {}", Constants.version);
+        log.info("OS: {} {} {}", mxbean.getName(), mxbean.getVersion(), mxbean.getArch());
         log.info("GLFW version: {}", glfwGetVersionString());
+        log.info("OpenGL version: {}", glGetString(GL_VERSION));
 
-        // TODO упадёт когда доделаю оконный режим
-        long monPtr = glfwGetPrimaryMonitor();
-        if (monPtr != MemoryUtil.NULL) {
-            GLFWVidMode vidmode = glfwGetVideoMode(monPtr);
-
-            if (vidmode != null) {
-                int w = vidmode.width();
-                int h = vidmode.height();
-
-                log.info("Screen resolution: {}x{}", w, h);
-            }
-        }
-
-        // Это интел-специфичная штука
+        // Это интел-специфичная штука на винде, но Ociz так хочет
         if (Platform.get() == Platform.WINDOWS) {
             log.info("CPU: {}", System.getenv("PROCESSOR_IDENTIFIER"));
         }
-        var memMxbean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
-        double gib = 1024d * 1024d * 1024d;
+        final double gib = 1024d * 1024d * 1024d;
 
         log.info("Heap max capacity: {} GiB", Debug.FLOATS.format(Runtime.getRuntime().maxMemory() / gib));
-        log.info("Total memory size: {} GiB", Debug.FLOATS.format(memMxbean.getTotalMemorySize() / gib));
+        log.info("Total memory size: {} GiB", Debug.FLOATS.format(mxbean.getTotalMemorySize() / gib));
     }
 
     @Override

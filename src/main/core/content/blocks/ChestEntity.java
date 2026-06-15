@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.content.entity.BlockDrawComponent;
 import core.graphic.GuiDrawing;
 import core.content.ItemGrid;
 import core.content.ItemStack;

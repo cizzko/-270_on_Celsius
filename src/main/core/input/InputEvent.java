@@ -3,7 +3,6 @@ package core.input;
 import java.lang.foreign.StructLayout;
 
 import static java.lang.foreign.MemoryLayout.*;
-import static java.lang.foreign.MemoryLayout.structLayout;
 import static java.lang.foreign.ValueLayout.*;
 
 public final class InputEvent {
