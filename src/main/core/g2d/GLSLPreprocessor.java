@@ -38,7 +38,7 @@ public final class GLSLPreprocessor {
     }
 
     private static final Pattern GLSL_PATTERN = Pattern.compile(
-            "(?:layout\\s*\\(\\s*location\\s*=\\s*(\\d+)\\s*\\)\\s*)?\\b(uniform|in|out)\\s+(\\w+)\\s+(\\w+)\\s*;",
+            "(?:layout\\s*\\(\\s*location\\s*=\\s*(\\d+)\\s*\\)\\s*|\\b(flat)\\s+)?\\b(uniform|in|out)\\s+((?:(?:highp|mediump|lowp)\\s+)?\\w+)\\s+(\\w+)\\s*;",
             Pattern.CASE_INSENSITIVE
     );
 
@@ -105,9 +105,10 @@ public final class GLSLPreprocessor {
         Matcher matcher = GLSL_PATTERN.matcher(source);
         while (matcher.find()) {
             String locStr = matcher.group(1);
-            String keyword = matcher.group(2).toLowerCase(Locale.ROOT);
-            String type = matcher.group(3);
-            String name = matcher.group(4);
+
+            String keyword = matcher.group(3).toLowerCase(Locale.ROOT);
+            String type = matcher.group(4);
+            String name = matcher.group(5);
 
             int location = (locStr != null) ? Integer.parseInt(locStr) : -1;
             boolean hasLayout = locStr != null;
@@ -250,19 +251,18 @@ public final class GLSLPreprocessor {
         }
 
         while (matcher.find()) {
-            String keyword = matcher.group(2).toLowerCase(Locale.ROOT);
-            String type = matcher.group(3);
-            String name = matcher.group(4);
+            String flatModifier = matcher.group(2);
+            String keyword = matcher.group(3).toLowerCase(Locale.ROOT);
+            String type = matcher.group(4);
+            String name = matcher.group(5);
+
             int finalLocation = -1;
             VariableInfo var;
-
             boolean isSamplerOrImage = false;
 
             switch (keyword) {
                 case "uniform" -> {
                     if ((var = globalUniforms.get(name)) != null) {
-                        // Флаг bindlessSamplers может требовать модификации layout даже без явных локаций,
-                        // но локацию проставляем только если активен explicitUniformLocations
                         if (explicitUniformLocations) {
                             finalLocation = var.location;
                         }
@@ -285,7 +285,6 @@ public final class GLSLPreprocessor {
                 }
             }
 
-            // Генерируем новый layout, если нужна локация или нужно добавить bindless_sampler
             boolean needBindless = "uniform".equals(keyword) && bindlessSamplers && isSamplerOrImage;
 
             if (finalLocation != -1 || needBindless) {
@@ -299,7 +298,10 @@ public final class GLSLPreprocessor {
                 }
 
                 String layoutBody = String.join(", ", layoutParts);
-                String replacement = String.format("layout(%s) %s %s %s;", layoutBody, keyword, type, name);
+
+                String fullKeyword = (flatModifier != null) ? flatModifier + " " + keyword : keyword;
+
+                String replacement = String.format("layout(%s) %s %s %s;", layoutBody, fullKeyword, type, name);
                 matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
             } else {
                 matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group(0)));
@@ -308,6 +310,7 @@ public final class GLSLPreprocessor {
         matcher.appendTail(sb);
         return sb.toString();
     }
+
 
     private static String injectHeaderText(String content, List<String> injectedText) {
         if (injectedText.isEmpty()) return content;

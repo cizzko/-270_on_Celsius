@@ -85,7 +85,6 @@ public final class UniformCollector {
                     existing.hasLayout = true;
                 }
             } else {
-                // Создаем независимую копию для пула
                 unified.put(var.name, new VariableInfo(var.name, var.location, var.type, var.hasLayout, var.keyword));
             }
         }
@@ -153,13 +152,10 @@ public final class UniformCollector {
         var usedLocations = new IntOpenHashSet();
         var locationsMap = new Object2IntOpenHashMap<String>();
 
-        // Шаг 1: Сначала обрабатываем то, что жестко зафиксировано в глобальном реестре FIXED_LOCATIONS
-        // и то, что захардкожено через layout(location = X) прямо в GLSL-коде
         for (VariableInfo var : variables) {
             if ("uniform".equals(var.keyword) && FIXED_LOCATIONS.containsKey(var.name)) {
                 int fixedLoc = FIXED_LOCATIONS.getInt(var.name);
 
-                // Если в коде шейдера написали лаяут, конфликтующий с глобальной константой — кидаем ошибку
                 if (var.hasLayout && var.location != fixedLoc) {
                     errors.add(String.format("Конфликт: uniform '%s' имеет глобальный фиксированный ID %d, но в коде задан location = %d",
                             var.name, fixedLoc, var.location));
@@ -177,15 +173,12 @@ public final class UniformCollector {
             }
         }
 
-        // Дополнительно резервируем ВСЕ глобальные фиксированные ID в пуле uniform,
-        // чтобы обычные переменные случайно не заняли ID, например, u_texture (0), даже если u_texture нет в текущем шейдере
         if ("uniform".equals(poolLabel)) {
             for (int fixedLoc : FIXED_LOCATIONS.values()) {
                 usedLocations.add(fixedLoc);
             }
         }
 
-        // Проверка дубликатов локаций, заданных вручную
         var seenLocations = new IntOpenHashSet();
         for (VariableInfo var : withLocation) {
             if (!seenLocations.add(var.location)) {
@@ -199,7 +192,6 @@ public final class UniformCollector {
             locationsMap.put(var.name, var.location);
         }
 
-        // Шаг 2: Автоматическое назначение для оставшихся свободных переменных
         int nextLocation = 0;
         for (VariableInfo var : withoutLocation) {
             while (usedLocations.contains(nextLocation)) {

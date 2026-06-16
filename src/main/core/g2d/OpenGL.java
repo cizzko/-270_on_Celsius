@@ -1,6 +1,7 @@
 package core.g2d;
 
 import core.Application;
+import core.Global;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.lwjgl.opengl.*;
 
@@ -170,7 +171,6 @@ final class OpenGL {
         glGetIntegerv(GL_MINOR_VERSION, iptr);
         MINOR_VERSION = iptr[0];
 
-
         glGetIntegerv(GL_CONTEXT_PROFILE_MASK, iptr);
         IS_CORE_PROFILE = (iptr[0] & GL_CONTEXT_CORE_PROFILE_BIT) != 0;
 
@@ -178,15 +178,20 @@ final class OpenGL {
         var caps = GL.getCapabilities();
         var GL_ARB_explicit_uniform_location = caps.GL_ARB_explicit_uniform_location;
         var GL_ARB_separate_shader_objects = caps.GL_ARB_separate_shader_objects;
-        GL_ARB_bindless_texture = caps.GL_ARB_bindless_texture;
-        // GL_ARB_bindless_texture = false;
-        DSA = VER >= 450 || caps.GL_ARB_direct_state_access;
-        // DSA = false;
-        CAN_USE_EXPLICIT_UNIFORM_LOCATIONS =
-                VER >= 420 || GL_ARB_explicit_uniform_location
-        ;
 
-        CAN_USE_EXPLICIT_OUT_LOCATIONS = VER >= 420 || GL_ARB_separate_shader_objects;
+        var render = Global.gameSettings.render;
+
+        // Некоторые драйверы врут.
+        // Версии декларируемые ими зачастую не соответствуют возможностям
+        // или реализация содержит множество багов. Поэтому автоматическое включение
+        // многих флагов приведет в среднем только пессимизации и ужасным глюкам
+        //    Конечно, должен быть способ по железу отсеять совсем старьё...
+
+        GL_ARB_bindless_texture            = render.bindlessTextures && caps.GL_ARB_bindless_texture;
+        DSA                                = render.dsa && VER >= 450 || caps.GL_ARB_direct_state_access;
+
+        CAN_USE_EXPLICIT_UNIFORM_LOCATIONS = VER >= 420 || GL_ARB_explicit_uniform_location;
+        CAN_USE_EXPLICIT_OUT_LOCATIONS     = VER >= 420 || GL_ARB_separate_shader_objects;
 
         Application.log.trace("[OpenGL] GL_ARB_bindless_texture: {}", GL_ARB_bindless_texture);
         Application.log.trace("[OpenGL] CAN_USE_EXPLICIT_UNIFORM_LOCATIONS: {}", CAN_USE_EXPLICIT_UNIFORM_LOCATIONS);
