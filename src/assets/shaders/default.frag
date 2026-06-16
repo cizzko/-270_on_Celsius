@@ -1,6 +1,6 @@
 uniform sampler2D u_texture;
 
-in flat vec4 v_color;
+flat in vec4 v_color;
 in vec2 v_uv;
 
 out vec4 fragColor;

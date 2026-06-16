@@ -18,7 +18,7 @@ final class OpenGL {
     public static void saveHandle(short glHandle) {
         if (GL_ARB_bindless_texture) {
             long texHandle = glGetTextureHandleARB(glHandle);
-            BindlessBinding.handlesByTex[glHandle] = glHandle;
+            BindlessBinding.handlesByTex[glHandle] = texHandle;
             glMakeTextureHandleResidentARB(texHandle);
         }
     }

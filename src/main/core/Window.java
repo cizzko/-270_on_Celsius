@@ -135,11 +135,11 @@ public final class Window extends Application {
             }
         }));
 
-        // if (GLFW_PLATFORM_IS_WAYLAND) {
-        //     glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
-        //     glfwInitHint(GLFW_WAYLAND_LIBDECOR, GLFW_WAYLAND_DISABLE_LIBDECOR);
-        // }
-        glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+        if (GLFW_PLATFORM_IS_WAYLAND) {
+            glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
+            glfwInitHint(GLFW_WAYLAND_LIBDECOR, GLFW_WAYLAND_DISABLE_LIBDECOR);
+        }
+        // glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
 
         if (!glfwInit()) {
             throw new RuntimeException("Failed to initialize GLFW");

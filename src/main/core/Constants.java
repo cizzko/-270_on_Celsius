@@ -13,7 +13,7 @@ public final class Constants {
     public static final String link = "https://discord.gg/gUS9X6exAQ";
 
     //нельзя брать вообще все, иначе звуки и гуи самой ос начинают лагать
-    public static final int availableProcessors = 1;// Runtime.getRuntime().availableProcessors() - 1;
+    public static final int availableProcessors = Runtime.getRuntime().availableProcessors() - 1;
 
     public static final class Camera {
         public static final float OFFSET_X = toWorld(32f);

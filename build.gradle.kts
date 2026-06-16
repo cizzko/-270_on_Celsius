@@ -199,15 +199,13 @@ fun applyJvmArgs(aotCache: Boolean): List<String> {
     if (System.getProperty("os.name")!!.startsWith("Darwin") || System.getProperty("os.name")!!.startsWith("Mac OS X")) {
         jvmArgs.add("-XstartOnFirstThread")
     }
-    if (JavaLanguageVersion.current().canCompileOrRun(25)) {
-        jvmArgs.add("-XX:+UseCompactObjectHeaders")
-        if (aotCache)
-            jvmArgs.add("-XX:AOTCacheOutput=app.aot")
-    }
-    if (JavaLanguageVersion.current().canCompileOrRun(22)) {
-        jvmArgs.add("--enable-native-access=org.lwjgl.opengl")
-        jvmArgs.add("--enable-native-access=org.lwjgl")
-    }
+    jvmArgs.add("-XX:+UseZGC")
+    jvmArgs.add("-XX:+UseCompactObjectHeaders")
+    if (aotCache)
+        jvmArgs.add("-XX:AOTCacheOutput=app.aot")
+    jvmArgs.add("--enable-native-access=org.lwjgl.opengl")
+    jvmArgs.add("--enable-native-access=org.lwjgl")
+    jvmArgs.add("--enable-native-access=core.main")
     return jvmArgs
 }
 
@@ -247,7 +245,9 @@ tasks.run {
 //    jvmArguments.add("-Xcomp")
 
     jvmArguments.add("-ea:core.main")
-    jvmArguments.add("-XX:+UseZGC") // экспериментируем как бы
+// экспериментируем как бы
+//    jvmArguments.add("-XX:+UseShenandoahGC")
+//    jvmArguments.add("-XX:ShenandoahGCMode=generational")
 
     val mainSourceSet = project.sourceSets["main"]
     jvmArgumentProviders.add {

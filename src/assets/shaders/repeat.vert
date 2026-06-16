@@ -5,7 +5,7 @@ in vec2 a_pos;
 in vec4 a_color;
 in uint a_uv;
 
-out flat vec4 v_color;
+flat out vec4 v_color;
 out vec2 v_uv;
 
 void main() {
