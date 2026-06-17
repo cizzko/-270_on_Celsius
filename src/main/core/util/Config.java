@@ -1,6 +1,9 @@
 package core.util;
 
+import com.fasterxml.jackson.core.StreamReadFeature;
 import com.fasterxml.jackson.core.json.JsonReadFeature;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
+import com.fasterxml.jackson.core.util.Separators;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,6 +19,12 @@ public class Config {
 
     public static final ObjectMapper json =  new ObjectMapper();
     static {
+        json.setDefaultPrettyPrinter(
+                new DefaultPrettyPrinter(Separators.createDefaultInstance()
+                        .withObjectFieldValueSpacing(Separators.Spacing.AFTER)));
+
+        json.enable(StreamReadFeature.INCLUDE_SOURCE_IN_LOCATION.mappedFeature());
+
         json.enable(JsonReadFeature.ALLOW_TRAILING_COMMA.mappedFeature());
         json.enable(JsonReadFeature.ALLOW_JAVA_COMMENTS.mappedFeature());
     }

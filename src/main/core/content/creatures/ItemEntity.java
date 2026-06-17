@@ -96,11 +96,11 @@ public final class ItemEntity implements LivingEntity {
     public void update() {
         var hitbox = TmpShapes.aabb1;
         player.hitboxTo(hitbox);
-        double pcx = hitbox.maxX*2f;
-        double pcy = hitbox.minY;
+        double pcx = hitbox.centerX();
+        double pcy = hitbox.centerY();
 
         float dstToPlayer = (float) Math.sqrt(dstSq(pcx, pcy));
-        if (dstToPlayer <= MOVE_DST && dstToPlayer > 0.01f &&
+        if (dstToPlayer <= MOVE_DST && dstToPlayer > INV_BLOCK_SIZE &&
                     raycastTo(player.blockX(), player.blockY(), (x, y) ->
                             world.getBlockId(x, y) != 0)) {
             float acceleration = Math.min(3, 1.45f * (mass() * Physics.WEIGHT_FACTOR) * (1f - (dstToPlayer / MOVE_DST)));
@@ -108,7 +108,7 @@ public final class ItemEntity implements LivingEntity {
                     .sub(x, y)
                     .nor()
                     .scale(acceleration * Time.delta);
-            velocity.add((float) dir.x, (float) dir.y);
+            velocity.add(dir.xf(), dir.yf());
         }
     }
 

@@ -7,6 +7,8 @@ import core.util.Commandline;
 import core.util.Debug;
 
 import static core.Global.*;
+import static core.Window.glfwHandle;
+import static org.lwjgl.glfw.GLFW.*;
 
 public final class MenuScene extends GameScene {
 
@@ -31,6 +33,9 @@ public final class MenuScene extends GameScene {
         content.loadAll();
 
         UIMenus.mainMenu().show();
+
+        if (glfwGetWindowAttrib(glfwHandle, GLFW_VISIBLE) == GLFW_FALSE)
+            glfwShowWindow(glfwHandle);
     }
 
     @Override

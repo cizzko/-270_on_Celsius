@@ -233,8 +233,7 @@ public final class ContentManager {
                         .thenComparing(a -> a.key))
                 .toList();
 
-        // +1 из-за воздуха. см ниже
-        var blgen = new RegistryGenerator<>(Block.class, blockList.size() + 1);
+        var blgen = new RegistryGenerator<>(Block.class, blockList.size());
         for (var block : blockList) {
             blgen.putName(block);
         }
