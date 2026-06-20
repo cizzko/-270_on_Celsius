@@ -2,20 +2,21 @@ package core.content.creatures;
 
 import core.Time;
 import core.World.Creatures.Physics;
-import core.World.Creatures.Player.Inventory.Inventory;
 import core.content.ItemStack;
-import core.content.entity.comp.PhysicalBody;
 import core.content.entity.LivingEntity;
+import core.content.entity.comp.InventoryComponent;
+import core.content.entity.comp.PhysicalBody;
 import core.g2d.Fill;
 import core.g2d.StackfulRender;
-import core.graphic.Color;
+import core.graphic.ShadowMap;
 import core.graphic.WorldDrawing;
 import core.math.AABB;
 import core.math.TmpShapes;
 import core.math.Vector2f;
 
 import static core.Global.*;
-import static core.WorldCoordinates.*;
+import static core.WorldCoordinates.INV_BLOCK_SIZE;
+import static core.WorldCoordinates.toWorld;
 
 public final class ItemEntity implements LivingEntity {
     public static final int ITEM_DROPPED_SIZE   = 32; // пиксели
@@ -65,17 +66,18 @@ public final class ItemEntity implements LivingEntity {
     }
 
     public CollisionResult onCollide(PhysicalBody them) {
-        if (them instanceof PlayerEntity) {
-            Inventory.addItemStack(itemStack);
+        if (them instanceof InventoryComponent comp) {
+            comp.addItem(itemStack);
             remove();
         } else if (them instanceof ItemEntity other &&
                    other.itemStack.isSame(itemStack)) {
-            if (itemStack.count() > other.itemStack.count()) {
-                itemStack.merge(other.itemStack);
+            if (itemStack.count() > other.itemStack.count() &&
+                        itemStack.merge(other.itemStack) > 0) {
                 other.remove();
             } else {
-                other.itemStack.merge(itemStack);
-                remove();
+                if (other.itemStack.merge(itemStack) > 0) {
+                    remove();
+                }
             }
         }
         return CollisionResult.WALKTHROUGH;
@@ -175,10 +177,12 @@ public final class ItemEntity implements LivingEntity {
         var pos = camera.relativize(rx, ry);
 
         float w = width();
-        StackfulRender.draw(tex, pos.x, pos.y, w, w);
-        Fill.rectangleBorder(pos.x, pos.y, w, w, toWorld(1), Color.white);
+        var shadow = ShadowMap.getEntityColorTo(rx, ry, w, w, TmpShapes.c1);
+
+        StackfulRender.draw(tex, shadow, pos.x, pos.y, w, w);
+        Fill.rectangleBorder(pos.x, pos.y, w, w, toWorld(1), shadow.rgba8888());
         if (itemStack.count() > 1) {
-            WorldDrawing.drawGameText(pos.x, pos.y, String.valueOf(itemStack.count()), Color.white);
+            WorldDrawing.drawGameText(pos.x, pos.y, String.valueOf(itemStack.count()), shadow.rgba8888());
         }
     }
 

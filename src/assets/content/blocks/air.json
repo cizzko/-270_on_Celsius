@@ -4,5 +4,6 @@
   "Resistance": 15,
   "Type": "GAS",
   "MaxHp": 0,
-  "LightTransmission": 255
+  "LightTransmission": 100,
+  "LightDiffusion": 100
 }

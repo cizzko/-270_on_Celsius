@@ -112,7 +112,11 @@ public final class World {
         public /* unsigned */ short[] tiles;
         public /* unsigned */ byte[] hp;
         public Meta meta;
+        public short[] heights;
 
+        // Будущее к которому стремимся:
+        // public final byte[] temperature;
+        // public final byte[] light;
         @JsonDeserialize(using = DataDeserializer.class)
         public Int2ObjectOpenHashMap<TileData> data;
         @JsonDeserialize(using = EntityDeserializer.class)
@@ -158,6 +162,8 @@ public final class World {
                         ent.x(), ent.y(), ent, e);
             }
         });
+
+        ShadowMap.updateIfDirty();
     }
 
     public Meta meta() { return meta; }
@@ -223,15 +229,18 @@ public final class World {
 
     public @Nullable BlockEntity getEntity(int x, int y) {
         var block = getBlock(x, y);
-        if (block == null || !block.isEntity()) {
+        if (block == null) {
             return null;
+        }
+        if (!block.isMultiblock()) {
+            return entity.get(pos2index(x, y));
         }
         Point2i rootPos = tmp;
         if (getRootBlockPosTo(x, y, rootPos)) {
             return entity.get(pos2index(rootPos.x, rootPos.y));
-        } else {
-            return entity.get(pos2index(x, y));
         }
+        // не должно приходить
+        return null;
     }
 
     public boolean inBounds(int x, int y) {
@@ -269,35 +278,25 @@ public final class World {
 
     /// @return {@code -1} в случае выхода за границу. В остальных случаях здоровье в отрезке `[0, 255]`
     public int getHp(int x, int y) {
-        if (!inBounds(x, y)) {
-            if (Debug.hardBoundsCheck) {
-                Objects.checkIndex(x, world.sizeX);
-                Objects.checkIndex(y, world.sizeY);
-            } else {
-                return -1;
-            }
-        }
-        return Byte.toUnsignedInt(hp[pos2index(x, y)]);
+        // Global.app.ensureMainThread();
+        return inBounds(x, y) ? hp[pos2index(x, y)] : -1;
     }
 
     /// @param newHp новое значение здоровья блока. Должно быть в отрезке `[0, 255]`
     public void setHp(int x, int y, @MathUtil.UnsignedByte int newHp) {
+        // Global.app.ensureMainThread();
         // if (newHp < 0 || newHp >= (1 << 8))
         //     throw new IllegalArgumentException("HP out of range: [0, 255]");
 
         if (!inBounds(x, y)) {
-            if (Debug.hardBoundsCheck) {
-                Objects.checkIndex(x, world.sizeX);
-                Objects.checkIndex(y, world.sizeY);
-            }
             return;
         }
         if (getRootBlockPosTo(x, y, tmp)) {
             var rootBlock = getBlock(tmp);
 
-            for (int dy = 0; dy < rootBlock.tileCountY; dy++) {
-                for (int dx = 0; dx < rootBlock.tileCountX; dx++) {
-                    setHpImpl(x + dx, y + dy, newHp);
+            for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
+                for (int blockX = 0; blockX < rootBlock.tileCountX; blockX++) {
+                    setHpImpl(x + blockX, y + blockY, newHp);
                 }
             }
         } else {
@@ -313,6 +312,7 @@ public final class World {
 
     /// @return {@code -1} в случае выхода за границу. В остальных случаях неотрицательный blockId
     public int getBlockId(int x, int y) {
+        // Global.app.ensureMainThread();
         if (!inBounds(x, y)) {
             if (Debug.hardBoundsCheck) {
                 Objects.checkIndex(x, world.sizeX);
@@ -376,7 +376,7 @@ public final class World {
             hp[idx] = (byte) block.maxHp;
         }
 
-        ShadowMap.update();
+        ShadowMap.setDirty(x, y, block.tileCountX,  block.tileCountY);
     }
 
     private void destroyBlock(int x, int y) {
@@ -400,7 +400,7 @@ public final class World {
             data.remove(idx);
             tiles[idx] = 0;
             hp[idx] = 0;
-            ShadowMap.update();
+            ShadowMap.setDirty(x, y, 1, 1);
         }
     }
 
@@ -424,7 +424,7 @@ public final class World {
                 data.remove(idx);
             }
         }
-        ShadowMap.update();
+        ShadowMap.setDirty(x, y, rootBlock.tileCountX, rootBlock.tileCountY);
     }
 
     public boolean checkPlaceRules(int x, int y, Block block) {

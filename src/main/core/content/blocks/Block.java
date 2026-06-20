@@ -3,6 +3,7 @@ package core.content.blocks;
 import core.content.*;
 import core.content.entity.BlockEntity;
 import core.g2d.Atlas;
+import core.math.MathUtil;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,7 +25,7 @@ public class Block implements ContentType, Loadable {
 
     public short maxHp;
     public byte resistance;
-    public int lightTransmission; // unused
+    public byte lightTransmission, lightDiffusion, lightEmission;
     public Atlas.Region texture;
     public ItemStack[] requirements;
     public @Nullable Block createWith;
@@ -47,8 +48,10 @@ public class Block implements ContentType, Loadable {
         String createWithId = cnt.node().path("CreateWith").asText(null);
         this.createWith = (createWithId == null || createWithId.equals("player")) ? null : cnt.readBlockUnresolved("CreateWith");
 
-        this.resistance = toByteExact(cnt.node().path("Resistance").asInt(40));
-        this.lightTransmission = cnt.node().path("LightTransmission").asInt(100);
+        this.resistance        = toByteExact(cnt.node().path("Resistance").asInt(90));
+        this.lightTransmission = toByteExact(cnt.node().path("LightTransmission").asInt(100));
+        this.lightDiffusion    = toByteExact(cnt.node().path("LightDiffusion").asInt(10));
+        this.lightEmission     = toByteExact(cnt.node().path("LightEmission").asInt(0));
         this.type = Type.valueOf(cnt.node().path("Type").asText(Type.SOLID.name()).toUpperCase(Locale.ROOT));
     }
 
@@ -108,6 +111,7 @@ public class Block implements ContentType, Loadable {
 
     // Никогда не переставляйте порядок констант в этом перечислении
     // От этого зависит работа ContentManager
+    // TODO(Skat): есть идея прямо в классе тут хранить beginId,endId промежутки
     public enum Type {
         GAS,
         LIQUID,

@@ -4,5 +4,6 @@
   "Texture": "textures/blocks/herb",
   "Type": "WALKABLE",
   "MaxHp": 1,
-  "LightTransmission": 120
+  "Density": 1,
+  "LightTransmission": 100
 }

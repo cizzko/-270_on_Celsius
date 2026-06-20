@@ -79,11 +79,11 @@ public class WorldGeneratorTMP {
                             timedRun("generating: copy",
                             () -> copy()))
                     .thenRun(
-                            timedRun("regenerating shadow map",
-                            () -> ShadowMap.generate()))
-                    .thenRun(
                             timedRun("generating temperature map",
                             () -> TemperatureMap.generate()))
+                    .thenRun(
+                            timedRun("height map generation",
+                                    () -> genHeightMap()))
                     .thenRun(
                             timedRun("generating player",
                             () -> spawnPlayer()))
@@ -105,11 +105,11 @@ public class WorldGeneratorTMP {
                             timedRun("generating: copy",
                             () -> copy()))
                     .thenRun(
-                            timedRun("regenerating shadow map",
-                            () -> ShadowMap.generate()))
-                    .thenRun(
                             timedRun("generating temperature map",
                             () -> TemperatureMap.generate()))
+                    .thenRun(
+                            timedRun("height map generation",
+                                    () -> genHeightMap()))
                     .thenRun(
                             timedRun("generating player",
                             () -> spawnPlayer()))
@@ -124,6 +124,10 @@ public class WorldGeneratorTMP {
                         }
                     });
         }
+    }
+
+    private static void genHeightMap() {
+        ShadowMap.updateHeights();
     }
 
     private static void spawnPlayer() {

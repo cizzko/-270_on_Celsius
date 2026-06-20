@@ -63,7 +63,6 @@ public class Player {
         if (!placeRules || world.checkPlaceRules(blockX, blockY, placeable)) {
             player.takeItemFromHand(1);
             world.set(blockX, blockY, placeable, false);
-            ShadowMap.update();
         }
     }
 

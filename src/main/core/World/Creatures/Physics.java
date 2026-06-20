@@ -50,7 +50,6 @@ public final class Physics {
     public static final float SPEED_FACTOR = FDT;
     static final double INV_FDT = 1d / FDT;
 
-    static long[] resistanceSet; // TODO SparseFixedBitSet ?
     static final IntOpenHashSet completedCollisions = new IntOpenHashSet();
     static float pdt;
     /// Поскольку движок имеет фиксированный шаг, то очень мелкие изменения времени
@@ -193,13 +192,13 @@ public final class Physics {
             ent.mirrorX(-dx);
             if (player == ent) {
                 camera.position.x -= dx;
-                ShadowMap.update();
+                ShadowMap.updateByCameraMove();
             }
         } else if (ent.x() <= leftBorder) {
             ent.mirrorX(+dx);
             if (player == ent) {
                 camera.position.x += dx;
-                ShadowMap.update();
+                ShadowMap.updateByCameraMove();
             }
         }
 

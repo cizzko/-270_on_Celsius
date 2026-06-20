@@ -4,5 +4,5 @@
   "Texture": "textures/blocks/dirt",
   "Type": "SOLID",
   "MaxHp": 100,
-  "LightTransmission": 100
+  "LightTransmission": 0
 }

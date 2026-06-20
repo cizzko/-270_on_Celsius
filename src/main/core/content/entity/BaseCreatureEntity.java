@@ -3,6 +3,7 @@ package core.content.entity;
 import core.World.Creatures.Physics;
 import core.content.creatures.Creature;
 import core.g2d.StackfulRender;
+import core.graphic.ShadowMap;
 import core.math.*;
 import core.util.TypeUtil;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
@@ -145,9 +146,12 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
     public void draw(float dx) {
         double rx = Physics.applyAlpha(lastX, x) + dx;
         double ry = Physics.applyAlpha(lastY, y);
+
+        var shadow = ShadowMap.getEntityColorTo(rx, ry, width(), height(), TmpShapes.c1);
+
         var rel = camera.relativize(rx, ry);
         var tex = creature.texture;
-        StackfulRender.draw(tex, rel.x, rel.y, width(), height());
+        StackfulRender.draw(tex, shadow, rel.x, rel.y, width(), height());
     }
 
     public final boolean equals(Object o) {

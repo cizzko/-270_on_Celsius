@@ -3,6 +3,7 @@ package core.graphic;
 import core.Global;
 import core.Window;
 import core.World.TemperatureMap;
+import core.World.Weather.Sun;
 import core.content.blocks.Block;
 import core.content.blocks.data.TileData;
 import core.content.entity.LivingEntity;
@@ -64,8 +65,8 @@ public final class WorldDrawing {
 
     public static void drawBlocks() {
         var blockPos = input.mouseBlockPos();
-        chunk.draw();
         drawBuildGrid(blockPos.x, blockPos.y);
+        chunk.draw();
         WorldDrawing.drawPreviewBlocks();
     }
 
@@ -218,7 +219,7 @@ public final class WorldDrawing {
                     if (maxArea <= 1) {
                         continue;
                     }
-                    int shadow = colorFor(x, y).rgba8888();
+                    int shadow = ShadowMap.getColorTo(x, y, TmpShapes.c1).rgba8888();
                     var blocks = rects.computeIfAbsent(tileId, _ -> new ArrayList<>());
 
                     short w = (short)(maxX2 - x + 1);
@@ -274,7 +275,7 @@ public final class WorldDrawing {
         }
 
         private void drawBlock0(int x, int y, Block block, int hp) {
-            Color color = colorFor(x, y);
+            Color color = shadowColorTo(x, y);
 
             StackfulRender.draw(block.texture, color.rgba8888(), x, y, block.tileCountX, block.tileCountY);
             drawDamage(block, hp, x, y);
@@ -327,14 +328,32 @@ public final class WorldDrawing {
         public boolean isSameShadowAndTemp(int x, int y,
                                            int ox, int oy) {
 
-            int c1 = colorFor(x, y).rgba8888();
-            int c2 = colorFor(ox, oy).rgba8888();
+            int c1 = rawColorTo(x, y).rgba8888();
+            int c2 = rawColorTo(ox, oy).rgba8888();
             return c1 == c2;
         }
     }
 
-    private static Color colorFor(int x, int y) {
+    private static Color shadowColorTo(int x, int y) {
         Color color = ShadowMap.getColorTo(x, y, TmpShapes.c1);
+        final int upperLimit = 150;
+        final int lowestLimit = -20;
+        final int maxColor = 120;
+        float temp = TemperatureMap.getTempCell(x, y);
+
+        int a;
+        if (temp > upperLimit) {
+            a = (int) Math.min(maxColor, Math.abs((temp - upperLimit) / 3));
+            color.set(color.r(), color.g() - (a / 2), color.b() - a, color.a());
+        } else if (temp < lowestLimit) {
+            a = (int) Math.min(maxColor, Math.abs((temp + lowestLimit) / 3));
+            color.set(color.r() - a, color.g() - (a / 2), color.b(), color.a());
+        }
+        return color;
+    }
+
+    private static Color rawColorTo(int x, int y) {
+        Color color = ShadowMap.rawColorTo(x, y, TmpShapes.c1);
         final int upperLimit = 150;
         final int lowestLimit = -20;
         final int maxColor = 120;

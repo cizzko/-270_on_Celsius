@@ -4,5 +4,6 @@
   "Texture": "textures/blocks/grass",
   "Type": "SOLID",
   "MaxHp": 100,
-  "LightTransmission": 120
+  "Density": 1,
+  "LightTransmission": 0
 }

@@ -140,6 +140,8 @@ public final class Window extends Application {
             glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
             glfwInitHint(GLFW_WAYLAND_LIBDECOR, GLFW_WAYLAND_DISABLE_LIBDECOR);
         }
+        // glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+
         if (!glfwInit()) {
             throw new RuntimeException("Failed to initialize GLFW");
         }
@@ -271,6 +273,7 @@ public final class Window extends Application {
             @Override
             public void invoke(long window, boolean focused) {
                 windowFocused = focused;
+                input.onFocus(focused);
             }
         }));
         glfwSetWindowCloseCallback(glfwHandle, keep(new GLFWWindowCloseCallback() {

@@ -56,8 +56,8 @@ public final class ToggleButton extends Table {
         }), cell -> {
             cell.align(Align.LEFT);
             cell.expand();
-            cell.fixed(cell.widget.borderWidth*2 + image.prefWidth,
-                    cell.widget.borderWidth*2 + image.prefWidth);
+            cell.fixed(cell.widget.borderWidth*2 + image.prefWidth(),
+                    cell.widget.borderWidth*2 + image.prefWidth());
 
             cell.widget.setTouchable(false);
             cell.widget.cell(image);

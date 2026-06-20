@@ -69,6 +69,7 @@ public final class PlayGameScene extends GameScene {
 
         StackfulRender.z(LAYER_BACKGROUND);
         sun.draw();
+        Background.draw();
         StackfulRender.z(LAYER_BLOCKS);
         StackfulRender.camera(camera);
         WorldDrawing.drawBlocks();

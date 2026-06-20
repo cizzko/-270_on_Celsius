@@ -129,7 +129,7 @@ public class Debug {
             var mouseBlock = world.getBlock(mouseBlockPos);
             String blockId = mouseBlock != null ? mouseBlock.key + " (BID: " + mouseBlock.id + ")" : "<void>";
             return "Mouse: " + mouseBlockPos + " ID: " + blockId + " HP: " + world.getHp(mouseBlockPos) +
-                   " Shadow: " + ShadowMap.getColorTo(mouseBlockPos.x, mouseBlockPos.y, TmpShapes.c1);
+                   " Shadow: " + ShadowMap.rawColorTo(mouseBlockPos.x, mouseBlockPos.y, TmpShapes.c1);
         });
         setDebugValue(GameState.PLAYING, () -> {
             var gs = (PlayGameScene) gameScene;
@@ -167,6 +167,7 @@ public class Debug {
         player.addItem(itemStack(content.itemById("workbenchMedium"), n));
         player.addItem(itemStack(content.itemById("smallStone"), n));
         player.addItem(itemStack(content.itemById("stoneOven"), n));
+        player.addItem(itemStack(content.itemById("foliage"), n));
     }
 
     interface PixelOperator {

@@ -24,6 +24,7 @@
         </Root>
         <Logger name="core.UIScene" level="DEBUG"/>
         <Logger name="Console" level="INFO"/>
+        <Logger name="core.graphic.ShadowMap" level="INFO"/>
         <Logger name="core.g2d" level="ERROR"/>
         <Logger name="AutoLoader" level="ERROR"/>
         <Logger name="AssetsManager" level="ERROR"/>

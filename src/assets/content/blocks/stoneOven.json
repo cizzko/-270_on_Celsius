@@ -13,7 +13,7 @@
   "Fuel": {
     "stick": 2
   },
-  "ProductionSpeed": 800,
+  "ProductionSpeed": 300,
   "CreateWith": "workbenchSmall",
   "MaxStoredObjects": 10,
   "Output": {

@@ -1,6 +1,9 @@
 package core.content.creatures;
 
 import core.Constants;
+import core.graphic.ShadowMap;
+import core.math.MathUtil;
+import core.math.TmpShapes;
 import core.util.Config;
 import core.Global;
 import core.Time;
@@ -69,17 +72,23 @@ public class PlayerEntity
         resetDraggingItem();
         resetItemInHand();
 
+        lastX = x;
+        lastY = y;
+
         camera.position.set(x + Constants.Camera.OFFSET_X, y + Constants.Camera.OFFSET_Y);
         camera.update();
+
+        ShadowMap.updateByCameraMove();
     }
 
     public void draw(float dx) {
         var tex = creature.texture;
         double rx = Physics.applyAlpha(lastX, x) + dx;
         double ry = Physics.applyAlpha(lastY, y);
+        var shadow = ShadowMap.getEntityColorTo(rx, ry, width(), height(), TmpShapes.c1);
         var rel = camera.relativize(rx, ry);
-        StackfulRender.draw(tex, rel.x, rel.y, toWorld(tex.width()), toWorld(tex.height())
-                 * Math.min(1, (float)(1d/(accumulatedJump * 5))));
+        float zmishFactor = Math.min(1, (float) (1d / (accumulatedJump * 5)));
+        StackfulRender.draw(tex, shadow, rel.x, rel.y, width(), height() * zmishFactor);
     }
 
     protected void onDamage(float d) {
@@ -252,6 +261,10 @@ public class PlayerEntity
             return;
         }
 
+        // if (!isMoved()) {
+        //     return;
+        // }
+
         if (smoothedCamera) {
             float base = 0.08f * Math.max(1, velocity.len() / 4f);
             base = Math.min(1f, base);
@@ -261,6 +274,6 @@ public class PlayerEntity
             camera.position.set(x + Constants.Camera.OFFSET_X, y + Constants.Camera.OFFSET_Y);
         }
 
-        camera.update();
+        ShadowMap.updateByCameraMove();
     }
 }

@@ -36,7 +36,7 @@ public final class Color {
     }
 
     public static int rgba8888(int r, int g, int b, int a) {
-        return Math.clamp(r, 0, 255) << 24 | Math.clamp(g, 0, 255) << 16 | Math.clamp(b, 0, 255) << 8 | Math.clamp(a, 0, 255);
+        return clamp(r) << 24 | clamp(g) << 16 | clamp(b) << 8 | clamp(a);
     }
 
     public static int argbToRgba8888(int argb8888) {
@@ -56,6 +56,15 @@ public final class Color {
         return "0".repeat(zeros / 4) + Integer.toHexString(rgba8888);
     }
 
+    @SuppressWarnings("MathClampMigration")
+    public static int clamp(int val) {
+        return Math.min(255, Math.max(0, val));
+    }
+
+    public static float clamp(float val) {
+        return Math.clamp(val, 0, 255);
+    }
+
     public static int random() {
         return rgba8888(
                 ThreadLocalRandom.current().nextInt(0, 255),
@@ -64,10 +73,10 @@ public final class Color {
                 255);
     }
 
-    public static int withR(int rgba8888, int newR) { return (Math.clamp(newR, 0, 255) << 24) | (rgba8888 & 0x00FFFFFF); }
-    public static int withG(int rgba8888, int newG) { return (rgba8888 & 0xFF00FFFF) | (Math.clamp(newG, 0, 255) << 16); }
-    public static int withB(int rgba8888, int newB) { return (rgba8888 & 0xFFFF00FF) | (Math.clamp(newB, 0, 255) << 8); }
-    public static int withA(int rgba8888, int newA) { return (rgba8888 & 0xFFFFFF00) | Math.clamp(newA, 0, 255); }
+    public static int withR(int rgba8888, int newR) { return (clamp(newR) << 24) | (rgba8888 & 0x00FFFFFF); }
+    public static int withG(int rgba8888, int newG) { return (rgba8888 & 0xFF00FFFF) | (clamp(newG) << 16); }
+    public static int withB(int rgba8888, int newB) { return (rgba8888 & 0xFFFF00FF) | (clamp(newB) << 8); }
+    public static int withA(int rgba8888, int newA) { return (rgba8888 & 0xFFFFFF00) | clamp(newA); }
 
     public float toGLBits() { return toGLBits(rgba8888); }
     public int rgba8888() { return rgba8888; }
@@ -100,7 +109,8 @@ public final class Color {
     public void mul(Color color) { this.rgba8888 = rgba8888(r() * color.r(), g() * color.g(), b() * color.b(), a() * color.a()); }
     public void div(Color color) { this.rgba8888 = rgba8888(r() / color.r(), g() / color.g(), b() / color.b(), a() / color.a()); }
 
-    static int toInt(float c) { return (int) (clamp(c) * 255); }
+    public static int toInt(float c) { return (int) (clamp(c) * 255); }
+
     public void rf(float r) { this.rgba8888 = rgba8888(toInt(r), g(), b(), a()); }
     public void gf(float g) { this.rgba8888 = rgba8888(r(), toInt(g), b(), a()); }
     public void bf(float b) { this.rgba8888 = rgba8888(r(), g(), toInt(b), a()); }

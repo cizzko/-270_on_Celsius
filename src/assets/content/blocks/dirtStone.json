@@ -4,5 +4,5 @@
   "Texture": "textures/blocks/dirtStone",
   "Type": "SOLID",
   "MaxHp": 100,
-  "LightTransmission": 120
+  "LightTransmission": 0
 }

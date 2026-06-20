@@ -6,6 +6,7 @@ import core.content.ItemStackPredicate;
 import core.content.items.Item;
 import core.g2d.*;
 import core.math.Point2i;
+import core.math.TmpShapes;
 import core.ui.Styles;
 
 import static core.Global.*;
@@ -147,9 +148,18 @@ public class GuiDrawing {
 
         for (; minY <= maxY; minY++) {
             for (short x = minX; x <= maxX; x++) {
-                var entity = world.getEntity(x, minY);
-                if (entity != null) {
-                    entity.drawGui();
+                var block = world.getBlock(x, minY);
+                if (block == null) {
+                    continue;
+                }
+                if (block.isEntity()) {
+                    var pos = TmpShapes.p1;
+                    if (!world.getRootBlockPosTo(x, minY, pos)) {
+                        pos.set(x, minY);
+                    }
+                    var ent = world.getEntity(pos);
+                    // инвариант; не может быть null
+                    ent.drawGui();
                 }
             }
         }

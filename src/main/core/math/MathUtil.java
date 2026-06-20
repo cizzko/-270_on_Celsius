@@ -10,6 +10,8 @@ public final class MathUtil {
     private MathUtil() {
     }
 
+    public static final float SQRT2 = (float) Math.sqrt(2);
+
     public static final Point2i[] CROSS_OFFSETS = {
             new Point2i(0, -1),
             new Point2i(0, +1),
@@ -39,6 +41,7 @@ public final class MathUtil {
         return x * x + y * y;
     }
 
+    // a + (b - a)*t
     public static float lerp(float a, float b, float t) {
         return Math.fma(b - a, t, a);
     }

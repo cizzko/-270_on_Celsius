@@ -6,7 +6,6 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.content.entity.BlockDrawComponent;
 import core.graphic.GuiDrawing;
 import core.content.ItemGrid;
 import core.content.ItemStack;
@@ -19,10 +18,17 @@ import core.math.TmpShapes;
 import java.io.IOException;
 
 import static core.Global.*;
+import static core.WorldCoordinates.toBlock;
 import static core.WorldCoordinates.toWorld;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class ChestEntity extends BaseBlockEntity<Chest> {
+    public static final float MENU_X_OFFSET = toWorld(61);
+    public static final float MENU_Y_OFFSET = toWorld(56);
+
+    public static final int BORDER      = 10;
+    public static final float CELL_SIZE = 54;
+
     private ItemStack[][] storage;
     private boolean isClicked;
     private Point2i draggedCell;
@@ -51,14 +57,15 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
     @Override
     public void update() {
         if (isClicked) {
-            // var worldPos = input.mouseWorldPos();
+            var worldPos = input.mouseWorldPos();
 
-            // if (worldPos.xd() > x - 61 && worldPos.xd() < x + 109 && worldPos.yd() > y + 56 && worldPos.yd() < y + 218) {
-            //     Point2i underMouse = getItemUnderMouse();
-            //     if (inBounds(underMouse.x, underMouse.y) && getStorage()[underMouse.x][underMouse.y] != null) {
-            //         draggedCell = underMouse;
-            //     }
-            // }
+            if (worldPos.x > x - MENU_X_OFFSET && worldPos.x < x + toWorld(109) &&
+                         worldPos.x > y + MENU_Y_OFFSET && worldPos.y < y + toWorld(218)) {
+                Point2i underMouse = getItemUnderMouse();
+                if (inBounds(underMouse.x, underMouse.y) && getStorage()[underMouse.x][underMouse.y] != null) {
+                    draggedCell = underMouse;
+                }
+            }
 
             if (!player.within(x, y, 3)) {
                 isClicked = false;
@@ -93,7 +100,7 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
 
         StackfulRender.pushState(() -> {
             var worldPos = TmpShapes.v1d
-                    .set(x - toWorld(61), y + toWorld(56));
+                    .set(x - MENU_X_OFFSET, y + MENU_Y_OFFSET);
             var screenPos = TmpShapes.v1f;
             camera.projectTo(worldPos, screenPos);
             float sx = screenPos.x;
@@ -107,7 +114,7 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
                 for (int y = 0; y < line.length; y++) {
                     var itemStack = line[y];
                     if (itemStack != null) {
-                        GuiDrawing.drawItemStack(10 + sx + x * 54, 10 + sy + y * 54f, itemStack);
+                        GuiDrawing.drawItemStack(BORDER + sx + x * CELL_SIZE, BORDER + sy + y * CELL_SIZE, itemStack);
                     }
                 }
             }
@@ -150,7 +157,7 @@ public class ChestEntity extends BaseBlockEntity<Chest> {
     private Point2i getItemUnderMouse() {
         var worldPos = input.mouseWorldPos();
         return new Point2i(
-                (int) ((worldPos.y - (x - 61)) / 54),
-                (int) ((worldPos.y - (y + 56)) / 54));
+                toBlock((worldPos.y - (x - MENU_X_OFFSET)) / CELL_SIZE),
+                toBlock((worldPos.y - (y + MENU_Y_OFFSET)) / CELL_SIZE));
     }
 }

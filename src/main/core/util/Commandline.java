@@ -46,8 +46,8 @@ public class Commandline {
 
         @Override
         protected void onSizeComplete() {
-            x = parent.x;
-            y = parent.y + parent.height - actualHeight;
+            x = parent.x();
+            y = parent.y() + parent.height() - actualHeight;
         }
 
         void toggle() {

@@ -7,7 +7,10 @@ import core.g2d.Render;
 import core.g2d.StackfulRender;
 import core.g2d.Texture;
 import core.graphic.Color;
+import core.graphic.Colorf;
 import core.graphic.ShadowMap;
+import core.util.Debug;
+import org.lwjgl.glfw.GLFW;
 
 import static core.Global.*;
 import static core.World.WorldGenerator.WorldGeneratorConstants.COPY_SIZE;
@@ -32,10 +35,26 @@ public class Sun extends GameObject {
     protected Texture sunTex;
 
     public static double globalTime = 0f;
-    private static final float TIME_SPEED = 0.1f;
+    private static float TIME_SPEED = 0.1f;
+
+    private static final float TIME_DURATION = 1200;
+
+    public static float sunLightAt(int x) {
+        float time = getTimeAtWorldX(x);
+        return time / TIME_DURATION;
+    }
 
     public void update() {
         float effectiveWorldWidth = world.sizeX - COPY_SIZE;
+
+        if (Debug.debugLevel > 0) {
+            if (input.pressed(GLFW.GLFW_KEY_9))
+                TIME_SPEED += 0.25f;
+            if (input.pressed(GLFW.GLFW_KEY_0))
+                TIME_SPEED -= 0.25f;
+            if (input.justPressed(GLFW.GLFW_KEY_8))
+                TIME_SPEED = 0;
+        }
 
         globalTime += Time.delta * TIME_SPEED / BLOCK_SIZE;
         if (globalTime >= effectiveWorldWidth) {
@@ -45,15 +64,15 @@ public class Sun extends GameObject {
         }
 
         this.currentTime = getTimeAtWorldX(player.x());
-        float timeFactor = this.currentTime / 1200f;
+        float timeFactor = this.currentTime / TIME_DURATION;
 
         float nightY = -2000f;
         float peakY = 1300f;
-        this.y = nightY + (peakY - nightY) * timeFactor;
+        this.y = lerp(nightY, peakY, timeFactor);
 
         final int minGreen = 85;
         final int maxGreen = 255;
-        float ratio = (maxGreen - minGreen) / 1200f;
+        float ratio = (maxGreen - minGreen) / TIME_DURATION;
         int green = (int) (minGreen + (this.currentTime * ratio));
         green = Math.clamp(green, minGreen, maxGreen);
 
@@ -68,11 +87,16 @@ public class Sun extends GameObject {
         double deltaX = globalTime - worldX;
 
         double angle = (deltaX / effectiveWidth) * 2.0 * Math.PI;
-        // TODO избыточно
-        float cosFactor = (float) Math.cos(angle);
-        float angleFactor = (float) (Math.acos(cosFactor) / Math.PI);
 
-        return (1.0f - angleFactor) * 1200f;
+        // -1 на полночь, 1 на полдень
+        float cosFactor = (float) -Math.cos(angle);
+
+        float smoothFactor = (cosFactor + 1f) / 2f;
+
+        // smoothstep
+        smoothFactor = smoothFactor * smoothFactor * (3f - 2f * smoothFactor);
+
+        return smoothFactor * TIME_DURATION;
     }
 
     public static float getTimeAtWorldX(double worldX) {
@@ -101,15 +125,16 @@ public class Sun extends GameObject {
         float alpha = 1f - progress;
         alpha = Math.clamp(alpha, 0f, 1f);
 
-        int aGradient = (int) (255 * alpha);
+        int aGradient = Color.toInt(alpha);
         int deleteGradient = Math.clamp(aGradient, 0, 150);
-        int backGradient = Math.clamp(aGradient, 0, 255);
+        int backGradient = Color.clamp(aGradient);
 
         int color = Color.rgba8888(deleteGradient, deleteGradient, deleteGradient, 0);
-        ShadowMap.deleteAllColor(color);
-        ShadowMap.deleteAllColorDynamic(color);
+        // ShadowMap.setSunFade(color);
 
         skyColor.set(255, 255, 255, backGradient);
+
+        ShadowMap.setDirty(true);
     }
 
     @Override

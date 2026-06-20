@@ -1,6 +1,6 @@
 {
   "ClassType": "block",
-  "Resistance": 85,
+  "Resistance": 40,
   "Texture": "textures/blocks/simpleHeatInsulator",
   "Type": "SOLID",
   "MaxHp": 60,

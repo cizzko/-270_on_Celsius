@@ -4,5 +4,6 @@
   "Texture": "textures/blocks/foliage",
   "Type": "WALKABLE",
   "MaxHp": 100,
-  "LightTransmission": 100
+  "LightTransmission": 30,
+  "LightDispersion": 30
 }
