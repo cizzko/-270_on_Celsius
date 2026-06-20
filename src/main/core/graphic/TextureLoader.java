@@ -1,6 +1,6 @@
 package core.graphic;
 
-import org.lwjgl.opengl.GL12;
+import core.math.MathUtil;
 import org.lwjgl.system.MemoryUtil;
 
 import java.awt.image.BufferedImage;
@@ -9,6 +9,7 @@ import java.lang.foreign.ValueLayout;
 
 import static java.awt.image.BufferedImage.TYPE_4BYTE_ABGR;
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
+import static org.lwjgl.opengl.GL46C.*;
 
 public final class TextureLoader {
     private TextureLoader() {}
@@ -20,6 +21,10 @@ public final class TextureLoader {
 
         int width = image.getWidth();
         int height = image.getHeight();
+
+        short wU16 = MathUtil.toShortExact(width);
+        short wV16 = MathUtil.toShortExact(height);
+
         var pixels = new int[width * height];
         image.getRGB(0, 0, width, height, pixels, 0, width);
 
@@ -42,13 +47,13 @@ public final class TextureLoader {
         }
 
         if (imageType == BufferedImage.TYPE_INT_ARGB) {
-            glFormat = GL12.GL_RGBA;
-            glType = GL12.GL_UNSIGNED_INT_8_8_8_8_REV;
+            glFormat = GL_RGBA;
+            glType = GL_UNSIGNED_INT_8_8_8_8_REV;
         } else {
-            glFormat = GL12.GL_RGBA;
-            glType = GL12.GL_UNSIGNED_INT_8_8_8_8_REV;
+            glFormat = GL_RGBA;
+            glType = GL_UNSIGNED_INT_8_8_8_8_REV;
         }
 
-        return new BitMap(width, height, segment, glFormat, glType);
+        return new BitMap(wU16, wV16, segment, glFormat, glType);
     }
 }

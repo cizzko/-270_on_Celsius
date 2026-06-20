@@ -134,7 +134,7 @@ public abstract class GLSLPreprocessorTask extends DefaultTask {
                         .sorted(Map.Entry.comparingByValue())
                         .toList();
                 for (var entry : uniforms) {
-                    wr.write(String.format("\t\t\t\trelocationTable[Uniforms.%s.%s] = uniforms.get(%s).position();\n",
+                    wr.write(String.format("\t\t\t\trelocationTable[Uniforms.%s.%s] = uniforms.get(%s).location();\n",
                             computeClassName(shader.shaderName()),
                             entry.getKey(),
                             enquote(entry.getKey())));

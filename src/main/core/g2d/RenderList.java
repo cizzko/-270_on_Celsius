@@ -4,30 +4,71 @@ import core.pool.Poolable;
 import core.util.Disposable;
 import org.jetbrains.annotations.Nullable;
 
-import java.lang.foreign.Arena;
-import java.lang.foreign.MemorySegment;
-import java.lang.foreign.ValueLayout;
+import java.lang.foreign.*;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 
 import static core.g2d.Render.*;
+import static core.g2d.RenderItem.*;
 import static core.g2d.RenderQueue.*;
-import static core.g2d.StackfulRender.defaultShader;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 
-public final class RenderList implements Disposable, Poolable {
-    public static final int KIND_STATIC  = 1;
-    public static final int KIND_DYNAMIC = 2;
+public final class RenderList implements Poolable, Disposable {
+    public static final byte KIND_STATIC  = 1;
+    public static final byte KIND_DYNAMIC = 2;
 
     private static final ValueLayout.OfInt PRIMITIVE = ValueLayout.JAVA_INT;
 
-    final int id;
+    static final class Vertex {
+        static final StructLayout LAYOUT;
+        static final long BYTE_SIZE;
 
-    int kind;
+        static final VarHandle X;
+        static final VarHandle Y;
+        static final VarHandle UV;
+        static final VarHandle COLOR;
+
+        static {
+            var layout = MemoryLayout.structLayout(
+                    ValueLayout.JAVA_FLOAT.withName("x"),
+                    ValueLayout.JAVA_FLOAT.withName("y"),
+                    PRIMITIVE.withName("color"),
+                    PRIMITIVE.withName("uv")
+            ).withByteAlignment(4);
+
+            X = field(layout, "x");
+            Y = field(layout, "y");
+            UV = field(layout, "uv");
+            COLOR = field(layout, "color");
+
+            LAYOUT = layout;
+            BYTE_SIZE = layout.byteSize();
+        }
+
+        static VarHandle field(StructLayout layout, String name) {
+            var field = layout.arrayElementVarHandle(groupElement(name)).withInvokeExactBehavior();
+            return MethodHandles.insertCoordinates(field, 1, 0L).withInvokeExactBehavior();
+        }
+    }
+
+    final byte id;
+    byte kind;
+
     @Nullable RenderList next, prev;
 
-    final int vertexCapacity;
-    final RenderItem[] items;
+    final int itemCapacity, vertexCapacity;
+
+    // Количество монотонных кусков в массиве. Изначально считаем, что кусок один.
+    int runCount = 1;
+    // Направление текущего куска: 1 = растем, -1 = падаем, 0 = только начали
+    int currentDirection = 0;
+
     int itemCount, vertexCount;
+
+    final long[] sortKeys;
+    final MemorySegment items;
     final MemorySegment vertices;
     final Mesh mesh;
 
@@ -48,22 +89,19 @@ public final class RenderList implements Disposable, Poolable {
         return "RenderList[" + id + ";" + kindToString(kind) + "]{" +
                (next != null ? ("next=" + next) : "") +
                (prev != null ? (", prev=" + prev + ", ") : "") +
-               ", items=" + itemCount + "/" + items.length +
+               ", items=" + itemCount + "/" + itemCapacity +
                ", vertices=" + vertices +
                '}';
     }
 
-    RenderList(int id, Arena renderArena, int itemCapacity, int vertexCapacity) {
+    RenderList(byte id, Arena rarena, int itemCapacity, int vertexCapacity) {
         this.id = id;
         this.vertexCapacity = vertexCapacity;
-        this.items = new RenderItem[itemCapacity];
-        for (int i = 0; i < items.length; i++) {
-            items[i] = new RenderItem();
-        }
+        this.itemCapacity = itemCapacity;
+        this.sortKeys = new long[itemCapacity];
+        this.items = rarena.allocate(RenderItem.LAYOUT, itemCapacity);
 
-        // 6 на прямоугольник в случае без индексов, с ними 4
-        var vertexFormat = defaultShader.vertexFormat();
-        this.vertices = renderArena.allocate(PRIMITIVE, Math.multiplyExact(vertexCapacity, vertexFormat.vertexSizeIn(PRIMITIVE)));
+        this.vertices = rarena.allocate(Vertex.LAYOUT, vertexCapacity);
         this.mesh     = new Mesh();
 
         mesh.vboUpload(vertices);
@@ -72,10 +110,8 @@ public final class RenderList implements Disposable, Poolable {
     public int getItemIndex()   { return itemCount; }
     public int getVertexIndex() { return vertexCount; }
 
-    public RenderItem allocItem() { return items[itemCount]; }
-
     public boolean hasSpace(int itemDelta, int vertexDelta) {
-        return this.itemCount + itemDelta < items.length &&
+        return this.itemCount + itemDelta < itemCapacity &&
                this.vertexCount + vertexDelta < vertexCapacity;
     }
 
@@ -102,6 +138,8 @@ public final class RenderList implements Disposable, Poolable {
     public void clear() {
         itemCount = 0;
         vertexCount = 0;
+        runCount = 1;
+        currentDirection = 0;
     }
 
     public void addRectangle(int primitiveType, int rgba8888,
@@ -159,7 +197,7 @@ public final class RenderList implements Disposable, Poolable {
                              float u1, float v1,
                              float u2, float v2,
                              int c) {
-        int vc = vertexCount;
+        long vc = vertexCount;
         var va = vertices;
         if (!USE_INDEXES) {
             addVertex0(va, vc + 0, x1, y1, u1, v2, c); // v1
@@ -180,13 +218,13 @@ public final class RenderList implements Disposable, Poolable {
         }
     }
 
-    private void addVertex0(MemorySegment va, int vertexOffset,
+    private void addVertex0(MemorySegment va, long vertexOffset,
                             float x, float y, float u, float v, int color) {
-        long offset = vertexOffset * 4L;
-        va.setAtIndex(ValueLayout.JAVA_FLOAT, offset + 0, x);
-        va.setAtIndex(ValueLayout.JAVA_FLOAT, offset + 1, y);
-        va.setAtIndex(PRIMITIVE, offset + 2, Integer.reverseBytes(color));
-        va.setAtIndex(PRIMITIVE, offset + 3, BytePack.packB16toInt32((short) u, (short) v));
+
+        Vertex.X.set(va,     vertexOffset, x);
+        Vertex.Y.set(va,     vertexOffset, y);
+        Vertex.COLOR.set(va, vertexOffset, Integer.reverseBytes(color));
+        Vertex.UV.set(va,    vertexOffset, BytePack.packB16toInt32((short) u, (short) v));
     }
 
     public void addVertex(float x, float y, float u, float v, int color) {
@@ -194,25 +232,44 @@ public final class RenderList implements Disposable, Poolable {
         vertexCount++;
     }
 
-    public void advance() {
+    public void push(long sortKey,
+                     int vertexOffset, short vertexCount,
+                     int indexOffset,  short indexCount) {
+
+        int idx = itemCount;
+        sortKeys[idx] = sortKey;
+
+        if (idx > 0) {
+            long prevKey = sortKeys[idx - 1];
+            int cmp = Long.compareUnsigned(sortKey, prevKey);
+
+            assert cmp != 0; // Инвариант sortKey
+
+            int newDirection = cmp > 0 ? 1 : -1;
+            if (currentDirection == 0) {
+                currentDirection = newDirection;
+            } else if (newDirection != currentDirection) {
+                runCount++;
+                currentDirection = newDirection;
+            }
+        }
+
+        var items = this.items;
+        long offset = idx;
+        VERTEX_OFFSET.set(items, offset, vertexOffset);
+        INDEX_OFFSET.set(items,  offset, indexOffset);
+        VERTEX_COUNT.set(items,  offset, vertexCount);
+        INDEX_COUNT.set(items,   offset, indexCount);
+
         itemCount++;
     }
 
-    public void push(RenderItem item) {
-        items[itemCount++] = item;
-    }
-
-    @Override
-    public void close() {
-        // items это массив в куче, так что пусть сборщик сделает своё дело
-        // Arrays.fill(items, null);
-    }
-
-    void debug() {
+    public void debug() {
         if (log.isDebugEnabled()) {
-            log.debug("HasSpace : {}", hasSpace(1, 1));
-            log.debug("Items    : {}/{}", itemCount, items.length);
-            log.debug("Vertices : {}/{}", vertexCount, vertexCapacity);
+            log.debug("Items        : {}/{}", itemCount, itemCapacity);
+            log.debug("Vertices     : {}/{}", vertexCount, vertexCapacity);
+            log.debug("RunCount     : {}", runCount);
+            log.debug("RunDirection : {}", currentDirection);
         }
     }
 
@@ -222,5 +279,13 @@ public final class RenderList implements Disposable, Poolable {
         for (var it = next; it != null; it = it.next) {
             it.clear();
         }
+    }
+
+    @Override
+    public void close() {
+        mesh.close();
+        // RenderQueue отслеживает что насоздавала,
+        // так что сама отчистит связанный список
+        // Связи намерено не зануляю
     }
 }

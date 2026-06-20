@@ -59,12 +59,6 @@ public final class Texture implements Drawable, Disposable {
         return tex;
     }
 
-    public void setParameteri(int pname, int param) {
-        OpenGL.bindTexture(target, id);
-        OpenGL.textureParameteri(target, id, pname, param);
-        OpenGL.bindTexture(target, 0);
-    }
-
     public short id() { return id; }
 
     public int width() {

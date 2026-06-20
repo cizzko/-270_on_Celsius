@@ -13,12 +13,6 @@ public final class Render {
 
     private Render() {}
 
-    // Всего: 1 << 2
-    public static final byte PRIMITIVE_TYPE_TRIANGLES      = 0; // GL_TRIANGLES
-    public static final byte PRIMITIVE_TYPE_TRIANGLE_STRIP = 1; // GL_TRIANGLE_STRIP
-    public static final byte PRIMITIVE_TYPE_LINES          = 2; // GL_LINES
-    public static final byte PRIMITIVE_TYPE_LINE_STRIP     = 3; // GL_LINE_STRIP
-
     @Retention(RetentionPolicy.SOURCE)
     @MagicConstant(intValues = {PRIMITIVE_TYPE_TRIANGLES, PRIMITIVE_TYPE_TRIANGLE_STRIP, PRIMITIVE_TYPE_LINES, PRIMITIVE_TYPE_LINE_STRIP})
     public @interface PrimitiveType {}
@@ -31,39 +25,68 @@ public final class Render {
     @MagicConstant(intValues = {BLENDING_NORMAL, BLENDING_PREMUL, BLENDING_DISABLE})
     public @interface Blending {}
 
-    // Всего: 1 << 3
+    // region PrimitiveType
+    public static final byte PRIMITIVE_TYPE_TRIANGLES      = 0; // GL_TRIANGLES
+    public static final byte PRIMITIVE_TYPE_TRIANGLE_STRIP = 1; // GL_TRIANGLE_STRIP
+    public static final byte PRIMITIVE_TYPE_LINES          = 2; // GL_LINES
+    public static final byte PRIMITIVE_TYPE_LINE_STRIP     = 3; // GL_LINE_STRIP
+    // endregion
+
+    // region Layer
     public static final byte LAYER_BACKGROUND = 0;
     public static final byte LAYER_BLOCKS     = 1;
     public static final byte LAYER_ENTITIES   = 2;
     public static final byte LAYER_GUI        = 3;
     public static final byte LAYER_DEBUG      = 4;
+    // endregion
 
-    // Всего: 1 << 3
+    // region Blending
     public static final byte BLENDING_NORMAL  = 0;
     public static final byte BLENDING_PREMUL  = 1;
     public static final byte BLENDING_DISABLE = 2;
+    // endregion
+
+    // Технические ограничения рендера
+    // Значения здесь выбраны исходя из потребностей и реального использования
+    public static final int  MAX_PRIMITIVE_TYPE = 1 << 2;
+    public static final int  MAX_LAYER          = 1 << 3;
+    public static final int  MAX_BLEND          = 1 << 3;
+    public static final int  MAX_TEXTURE        = 1 << 16;
+    // На самом деле
+    public static final int  MAX_SHADER         = 1 << 8;
+    public static final int  MAX_UBLOCK         = 1 << 8;
+    public static final int  MAX_INDEX          = 1 << 16;
+
+    public static final char MAX_TEXTURE_ID     = MAX_TEXTURE - 1;
+    public static final byte MAX_SHADER_ID      = (byte)(MAX_SHADER - 1);
+    public static final byte MAX_UBLOCK_ID      = (byte)(MAX_UBLOCK - 1);
 
     // SortKey:
-    // [ 63..62 | 61..59  | 58..56  | 55..40    | 39..32   | 31..24 |  23..0   ]
-    //   ^ prim   ^ layer   ^ blend   ^ texture   ^ shader   ^ ublock  ^ index
-    //   (2 bit)  (3 bit)   (3 bit)   (16 bit)    (8 bit)    (8 bit)   (24 bit)
+    // [ 63 | 55..54  | 53..51  | 50..48  | 47..32    | 31..24   | 23..16   | 15..0   ]
+    //        ^ prim    ^ layer   ^ blend   ^ texture   ^ shader   ^ ublock   ^ index
+    //        (2 bit)   (3 bit)   (3 bit)   (16 bit)    (8 bit)    (8 bit)    (16 bit)
 
-    private static final byte PRIMITIVE_TYPE_SHIFT = 62;
-    private static final byte LAYER_SHIFT   = 59;
-    private static final byte BLEND_SHIFT   = 56;
-    private static final byte TEXTURE_SHIFT = 40;
-    private static final byte SHADER_SHIFT  = 32;
-    private static final byte UBLOCK_SHIFT  = 24;
+    // 63 бит зарезервирован для нужд Самарской Области
+    // А если по-простому: мегаоптимизированный Arrays.sort(long[]) который подходит для большинства случаев
+    // не хочет принимать кастомный компаратор, поэтому там обычное сравнение знаковых long,
+    // что феерически не будет работать с sortKey
 
-    static final byte  PRIMITIVE_TYPE_MASK = (byte) 0b11; // 2 бита
-    static final byte  LAYER_MASK = (byte) 0x7;           // 3 бита
-    static final byte  BLEND_MASK = (byte) 0x7;           // 3 бита
-    static final short TEXTURE_MASK = (short) 0xFFFF;     // 16 битов
-    static final byte  SHADER_MASK = (byte) 0xFF;         // 8 битов
-    static final int   UBLOCK_MASK = (byte) 0xFF;         // 8 битов
-    static final int   INDEX_MASK = 0xFFFFFF;             // 24 бита
+    private static final byte PRIMITIVE_TYPE_SHIFT = 54;
+    private static final byte LAYER_SHIFT          = 51;
+    private static final byte BLEND_SHIFT          = 48;
+    private static final byte TEXTURE_SHIFT        = 32;
+    private static final byte SHADER_SHIFT         = 24;
+    private static final byte UBLOCK_SHIFT         = 16;
 
-    static final long  EXCLUDE_INDEX_MASK = ~((long) INDEX_MASK);
+    static final long  PRIMITIVE_TYPE_MASK          = MAX_PRIMITIVE_TYPE - 1;
+    static final long  LAYER_MASK                   = MAX_LAYER - 1;
+    static final long  BLEND_MASK                   = MAX_BLEND - 1;
+    static final long  TEXTURE_MASK                 = MAX_TEXTURE - 1;
+    static final long  SHADER_MASK                  = MAX_SHADER - 1;
+    static final long  UBLOCK_MASK                  = MAX_UBLOCK - 1;
+    static final long  INDEX_MASK                   = MAX_INDEX - 1;
+
+    static final long EXCLUDE_INDEX_MASK            = ~((long) INDEX_MASK);
 
     public static int toGlType(@PrimitiveType int primitiveType) {
         return switch (primitiveType) {
@@ -110,6 +133,18 @@ public final class Render {
         return (int) (sortKey & INDEX_MASK);
     }
 
+    public static String sortKeyToString(long sortKey) {
+        return "SortKey[" +
+               "primitiveType=" + getPrimitiveType(sortKey) +
+               ", layer=" + getLayer(sortKey) +
+               ", blending=" + getBlending(sortKey) +
+               ", texture=" + getTextureId(sortKey) +
+               ", shader=" + getShaderId(sortKey) +
+               ", ublock=" + getUblock(sortKey) +
+               ", index=" + getIndex(sortKey) +
+               "]";
+    }
+
     public static long makeSortKey(
             @PrimitiveType byte primitiveType,
             @Layer byte layer,
@@ -119,19 +154,28 @@ public final class Render {
             int ublock,
             int index) {
 
-        return (long)(primitiveType & PRIMITIVE_TYPE_MASK) << PRIMITIVE_TYPE_SHIFT |
-               (long)(layer & LAYER_MASK)       << LAYER_SHIFT |
-               (long)(blending & BLEND_MASK)    << BLEND_SHIFT |
-               (long)(texture & TEXTURE_MASK)   << TEXTURE_SHIFT |
-               (long)(shader & SHADER_MASK)     << SHADER_SHIFT |
-               (long)(ublock & UBLOCK_MASK)     << UBLOCK_SHIFT |
+        return (primitiveType & PRIMITIVE_TYPE_MASK) << PRIMITIVE_TYPE_SHIFT |
+               (layer & LAYER_MASK) << LAYER_SHIFT |
+               (blending & BLEND_MASK) << BLEND_SHIFT |
+               (texture & TEXTURE_MASK) << TEXTURE_SHIFT |
+               (shader & SHADER_MASK) << SHADER_SHIFT |
+               (ublock & UBLOCK_MASK) << UBLOCK_SHIFT |
                (index & INDEX_MASK);
     }
+
+    public static final int VERTEX_PER_ITEM     = 4;
+    public static final int VERTEX_PER_TRIANGLE = 6;
+
+    public static final boolean USE_INDEXES = true;
 
     /// Максимальное количество вершин в [RenderList]
     static final int RENDER_MAX_VERTEX_COUNT  = 4 * 4 * 1024;
     /// Максимальное количество [RenderItem] в [RenderList]
     static final int RENDER_MAX_ITEMS_COUNT   = 4 * 1024;
+
+    /// До сколько забегов отрезков с нарушенным порядком в [RenderList]
+    /// будет использоваться JDK [java.util.Arrays#sort(long\[\], int, int)]
+    static final int JDK_SORT_MIN_RUNS = 9;
 
     public static final RenderQueue queue = new RenderQueue(
             RENDER_MAX_ITEMS_COUNT, RENDER_MAX_VERTEX_COUNT);

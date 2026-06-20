@@ -10,8 +10,7 @@ import java.nio.IntBuffer;
 import java.util.List;
 
 import static org.lwjgl.opengl.ARBBindlessTexture.*;
-import static org.lwjgl.opengl.GL15C.glBindBuffer;
-import static org.lwjgl.opengl.GL46.*;
+import static org.lwjgl.opengl.GL46C.*;
 
 final class OpenGL {
     private OpenGL() {}
@@ -49,7 +48,7 @@ final class OpenGL {
         long byteSize = segment.byteSize();
         long nativeAddress = segment.address();
         if (DSA) {
-            GL46.nglNamedBufferData(array, byteSize, nativeAddress, usage);
+            nglNamedBufferData(array, byteSize, nativeAddress, usage);
         } else {
             glBindBuffer(target, array);
             nglBufferData(target, byteSize, nativeAddress, usage);
@@ -59,7 +58,7 @@ final class OpenGL {
 
     public static void setBufferData(int array, int target, IntBuffer buffer, int usage) {
         if (DSA) {
-            GL46.glNamedBufferData(array, buffer, usage);
+            glNamedBufferData(array, buffer, usage);
         } else {
             glBindBuffer(target, array);
             glBufferData(target, buffer, usage);
@@ -68,7 +67,8 @@ final class OpenGL {
     }
 
     public static void bufferSubData(int vbo, int target, long byteOffset, long byteSize, MemorySegment segment) {
-        long nativeAddress = segment.address() + byteOffset;
+        MemorySegment slice = segment.asSlice(byteOffset, byteSize);
+        long nativeAddress = slice.address();
         if (DSA) {
             nglNamedBufferSubData(vbo, byteOffset, byteSize, nativeAddress);
         } else {
@@ -89,16 +89,16 @@ final class OpenGL {
 
     public static void textureParameteri(int target, int id, int pname, int param) {
         if (DSA)
-            GL46.glTextureParameteri(id, pname, param);
+            glTextureParameteri(id, pname, param);
         else
             glTexParameteri(target, pname, param);
     }
 
     public static void texStorage2D(int target, int id, int levels, int internalformat, int width, int height) {
         if (DSA) {
-            GL46.glTextureStorage2D(id, levels, internalformat, width, height);
+            glTextureStorage2D(id, levels, internalformat, width, height);
         } else {
-            GL42.glTexStorage2D(target, levels, internalformat, width, height);
+            glTexStorage2D(target, levels, internalformat, width, height);
         }
     }
 
@@ -106,9 +106,9 @@ final class OpenGL {
                                      int width, int height, int format, int type, MemorySegment pixels) {
         long nativeAddress = pixels.address();
         if (DSA) {
-            GL46.nglTextureSubImage2D(id, level, xoffset, yoffset, width, height, format, type, nativeAddress);
+            nglTextureSubImage2D(id, level, xoffset, yoffset, width, height, format, type, nativeAddress);
         } else {
-            GL46.nglTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, nativeAddress);
+            nglTexSubImage2D(target, level, xoffset, yoffset, width, height, format, type, nativeAddress);
         }
     }
 
@@ -119,7 +119,7 @@ final class OpenGL {
         glBindBuffer(target, id);
     }
 
-    public static void UniformMatrix3fv(short shaderId, short loc, boolean transpose, float[] res) {
+    public static void UniformMatrix3fv(int shaderId, int loc, boolean transpose, float[] res) {
         if (DSA) {
             glProgramUniformMatrix3fv(shaderId, loc, transpose, res);
         } else {
@@ -127,7 +127,7 @@ final class OpenGL {
         }
     }
 
-    public static void Uniform2f(short shaderId, short loc, float x, float y) {
+    public static void Uniform2f(int shaderId, int loc, float x, float y) {
         if (DSA) {
             glProgramUniform2f(shaderId, loc, x, y);
         } else {
@@ -135,7 +135,7 @@ final class OpenGL {
         }
     }
 
-    public static void Uniform1f(short shaderId, short loc, float v) {
+    public static void Uniform1f(int shaderId, int loc, float v) {
         if (DSA) {
             glProgramUniform1f(shaderId, loc, v);
         } else {
@@ -143,7 +143,7 @@ final class OpenGL {
         }
     }
 
-    public static void Uniform1i(short shaderId, short loc, int i) {
+    public static void Uniform1i(int shaderId, int loc, int i) {
         if (DSA) {
             glProgramUniform1i(shaderId, loc, i);
         } else {
@@ -198,7 +198,7 @@ final class OpenGL {
         Application.log.trace("[OpenGL] DSA: {}", DSA);
     }
 
-    public static void bindTexture(short shaderId, short loc, short texId, int unit) {
+    public static void bindTexture(int shaderId, int loc, short texId, int unit) {
         if (GL_ARB_bindless_texture) {
             if (DSA) glProgramUniformHandleui64ARB(shaderId, loc, BindlessBinding.handlesByTex[texId]);
             else     glUniformHandleui64ARB(loc, BindlessBinding.handlesByTex[texId]);

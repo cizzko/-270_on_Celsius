@@ -1,6 +1,6 @@
 package core.g2d;
 
-import org.lwjgl.opengl.GL46;
+import static org.lwjgl.opengl.GL46C.*;
 
 public final class VertexAttribute {
     public final int size;
@@ -49,54 +49,54 @@ public final class VertexAttribute {
 
     public void enable(int vao, int index, int vertexByteSize, int offset) {
 
-        GL46.glEnableVertexArrayAttrib(vao, index);
+        glEnableVertexArrayAttrib(vao, index);
 
         // 2. Настраиваем формат (вызов уходит в твой enum/класс format)
         format.enable(vao, index, size, type.glType, vertexByteSize, offset);
         // 3. Стягиваем атрибут и точку привязки буфера в один индекс (для простоты делаем их одинаковыми)
-        GL46.glVertexArrayAttribBinding(vao, index, 0);
+        glVertexArrayAttribBinding(vao, index, 0);
     }
 
     public void enable(int index, int vertexByteSize, int offset) {
-        GL46.glEnableVertexAttribArray(index);
+        glEnableVertexAttribArray(index);
         format.enable(index, size, type.glType, vertexByteSize, offset);
     }
 
     public void disable(int index) {
-        GL46.glDisableVertexAttribArray(index);
+        glDisableVertexAttribArray(index);
     }
     public enum Format {
         DIRECT_FLOAT {
             @Override
             void enable(int vao, int index, int size, int glType, int vertexByteSize, int offset) {
-                GL46.glVertexArrayAttribFormat(vao, index, size, glType, false, offset);
+                glVertexArrayAttribFormat(vao, index, size, glType, false, offset);
             }
 
             @Override
             void enable(int index, int size, int glType, int vertexByteSize, int offset) {
-                GL46.glVertexAttribPointer(index, size, glType, false, vertexByteSize, offset);
+                glVertexAttribPointer(index, size, glType, false, vertexByteSize, offset);
             }
         },
         INTEGRAL {
             @Override
             void enable(int vao, int index, int size, int glType, int vertexByteSize, int offset) {
-                GL46.glVertexArrayAttribIFormat(vao, index, size, glType, offset);
+                glVertexArrayAttribIFormat(vao, index, size, glType, offset);
             }
 
             @Override
             void enable(int index, int size, int glType, int vertexByteSize, int offset) {
-                GL46.glVertexAttribIPointer(index, size, glType, vertexByteSize, offset);
+                glVertexAttribIPointer(index, size, glType, vertexByteSize, offset);
             }
         },
         NORMALIZED {
             @Override
             void enable(int vao, int index, int size, int glType, int vertexByteSize, int offset) {
-                GL46.glVertexArrayAttribFormat(vao, index, size, glType, true, offset);
+                glVertexArrayAttribFormat(vao, index, size, glType, true, offset);
             }
 
             @Override
             void enable(int index, int size, int glType, int vertexByteSize, int offset) {
-                GL46.glVertexAttribPointer(index, size, glType, true, vertexByteSize, offset);
+                glVertexAttribPointer(index, size, glType, true, vertexByteSize, offset);
             }
         };
 
@@ -106,13 +106,13 @@ public final class VertexAttribute {
     }
 
     public enum Type {
-        FLOAT(Float.BYTES, GL46.GL_FLOAT),
-        UNSIGNED_BYTE(Byte.BYTES, GL46.GL_UNSIGNED_BYTE),
-        BYTE(Byte.BYTES, GL46.GL_BYTE),
-        UNSIGNED_SHORT(Short.BYTES, GL46.GL_UNSIGNED_SHORT),
-        SHORT(Short.BYTES, GL46.GL_SHORT),
-        UNSIGNED_INT(Integer.BYTES, GL46.GL_UNSIGNED_INT),
-        INT(Integer.BYTES, GL46.GL_INT);
+        FLOAT(Float.BYTES, GL_FLOAT),
+        UNSIGNED_BYTE(Byte.BYTES, GL_UNSIGNED_BYTE),
+        BYTE(Byte.BYTES, GL_BYTE),
+        UNSIGNED_SHORT(Short.BYTES, GL_UNSIGNED_SHORT),
+        SHORT(Short.BYTES, GL_SHORT),
+        UNSIGNED_INT(Integer.BYTES, GL_UNSIGNED_INT),
+        INT(Integer.BYTES, GL_INT);
 
         public final int byteSize;
         public final int glType;

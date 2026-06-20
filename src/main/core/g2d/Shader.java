@@ -20,6 +20,7 @@ public final class Shader implements Disposable {
 
     private static final Logger log = LogManager.getLogger("Shader");
 
+    final int glHandle;
     final byte id;
     final String shaderName;
 
@@ -28,22 +29,23 @@ public final class Shader implements Disposable {
     final int tapeSize;
     final short[] relocationTable;
 
-    Shader(byte id, String shaderName, VertexFormat vertexFormat, Map<String, Uniform> uniforms) {
+    Shader(int glHandle, byte id, String shaderName, VertexFormat vertexFormat, Map<String, Uniform> uniforms) {
+        this.glHandle = glHandle;
         this.id = id;
         this.shaderName = shaderName;
         this.vertexFormat = vertexFormat;
         this.uniforms = Map.copyOf(uniforms);
 
-        byte uniformCount = MathUtil.toByteExact(glGetProgrami(id, GL_ACTIVE_UNIFORMS));
+        int uniformCount = glGetProgrami(glHandle, GL_ACTIVE_UNIFORMS);
 
-        for (byte i = 0; i < uniformCount; i++) {
-            String name = glGetActiveUniformName(id, i);
+        for (int i = 0; i < uniformCount; i++) {
+            String name = glGetActiveUniformName(glHandle, i);
             var uni = uniforms.get(name);
             if (uni == null) {
                 throw new IllegalArgumentException("No uniform with name: '" + name + "' present in meta.json");
             }
-            int location = glGetUniformLocation(id, name);
-            uni.position = MathUtil.toShortExact(location);
+            int location = glGetUniformLocation(glHandle, name);
+            uni.location = MathUtil.toShortExact(location);
         }
 
         this.relocationTable = CAN_USE_EXPLICIT_UNIFORM_LOCATIONS
@@ -75,19 +77,11 @@ public final class Shader implements Disposable {
         return shaderName;
     }
 
-    private static byte genId() {
-        int id = glCreateProgram();
-        if (id >= MAX_ID) {
-            throw new IllegalStateException("Max shader id exceeded");
-        }
-        return (byte)id;
-    }
-
-    short relocate(short location) {
+    int relocate(int location) {
         if (CAN_USE_EXPLICIT_UNIFORM_LOCATIONS) {
             return location;
         }
-        return relocationTable[location];
+        return Short.toUnsignedInt(relocationTable[location]);
     }
 
     public static Shader load(String name,
@@ -103,7 +97,7 @@ public final class Shader implements Disposable {
         int vertexShader = compileShader(GL_VERTEX_SHADER, pipelineResult.modifiedVertexSource());
         int fragmentShader = compileShader(GL_FRAGMENT_SHADER, pipelineResult.modifiedFragmentSource());
 
-        byte program = genId();
+        int program = glCreateProgram();
         glAttachShader(program, vertexShader);
         glAttachShader(program, fragmentShader);
         glLinkProgram(program);
@@ -118,7 +112,7 @@ public final class Shader implements Disposable {
         glDeleteShader(fragmentShader);
 
         vertexFormat = Render.setupVAO(vertexFormat);
-        var shader = new Shader(program, name, vertexFormat, uniforms);
+        var shader = new Shader(program, (byte)program, name, vertexFormat, uniforms);
         ResourceCache.shadersById[program] = shader;
 
         return shader;
@@ -175,21 +169,21 @@ public final class Shader implements Disposable {
 
         private final Type type;
 
-        private short position;
+        private short location;
 
         public Uniform(Type type) {
             this.type = type;
         }
 
         public Type type()    { return type; }
-        public short position() { return position; }
+        public short location() { return location; }
 
         @Override
         public String toString() {
             return "Uniform{" +
-                    "type=" + type +
-                    ", position=" + position +
-                    '}';
+                   "type=" + type +
+                   ", location=" + location +
+                   '}';
         }
 
         public enum Type {

@@ -153,12 +153,10 @@ public final class UniformBuffer {
         byte id = UNITIALIZED;
         private long hash;
         private boolean hashComputed;
-        Shader shader;
         private int[] tape;
         private short ptr;
 
         public Block(Shader shader) {
-            this.shader = shader;
             tape = new int[shader.tapeSize];
         }
 
@@ -175,7 +173,6 @@ public final class UniformBuffer {
             id = UNITIALIZED;
             hash = 0;
             hashComputed = false;
-            shader = null;
             ptr = 0;
         }
 
@@ -184,7 +181,6 @@ public final class UniformBuffer {
             // assert id == UNITIALIZED;
             // assert hash == 0;
             // assert hashComputed == false;
-            this.shader = shader;
             int tapeSize = shader.tapeSize;
             if (tape.length < tapeSize) {
                 tape = new int[tapeSize];
@@ -193,8 +189,6 @@ public final class UniformBuffer {
 
         private long computeHash() {
             long h = 5381L;
-            h += (h << 5) + h + shader.id;
-
             int[] tape = this.tape;
             for (short i = 0, n = ptr; i < n; i++) {
                 h += (h << 5) + h + tape[i];
@@ -238,9 +232,7 @@ public final class UniformBuffer {
         }
 
         private void pushHeader(int idx, byte type, short loc) {
-            // или если там реально uint32 для локаций, то можно декодировать в use()
-            short realLoc = shader.relocate(loc);
-            tape[idx] = ((type & 0xFF) << 16) | (realLoc & 0xFFFF);
+            tape[idx] = (Byte.toUnsignedInt(type) << 16) | Short.toUnsignedInt(loc);
         }
 
         private void growIfNeeded(int delta) {
@@ -259,36 +251,37 @@ public final class UniformBuffer {
             // }
         }
 
-        public void use(byte shaderId) {
+        public void use(Shader shader) {
             int[] tape = this.tape;
             int lo = 0;
             int hi = this.ptr;
+            int glHandle = shader.glHandle;
             while (lo < hi) {
                 int header = tape[lo++];
                 byte type = (byte) (header >> 16);
-                short loc = (short) header;
+                int loc = shader.relocate((header & 0xFFFF));
 
                 switch (type) {
-                    case TYPE_INT -> OpenGL.Uniform1i(shaderId, loc, tape[lo++]);
-                    case TYPE_FLOAT -> OpenGL.Uniform1f(shaderId, loc, intBitsToFloat(tape[lo++]));
+                    case TYPE_INT -> OpenGL.Uniform1i(glHandle, loc, tape[lo++]);
+                    case TYPE_FLOAT -> OpenGL.Uniform1f(glHandle, loc, intBitsToFloat(tape[lo++]));
                     case TYPE_VEC2F -> {
                         float x = intBitsToFloat(tape[lo++]);
                         float y = intBitsToFloat(tape[lo++]);
-                        OpenGL.Uniform2f(shaderId, loc, x, y);
+                        OpenGL.Uniform2f(glHandle, loc, x, y);
                     }
                     case TYPE_MAT3 -> {
                         float[] res = tmpMat3;
                         for (int i = 0; i < res.length; i++) {
                             res[i] = Float.intBitsToFloat(tape[lo + i]);
                         }
-                        OpenGL.UniformMatrix3fv(shaderId, loc, false, res);
+                        OpenGL.UniformMatrix3fv(glHandle, loc, false, res);
                         lo += 9;
                     }
                     case TYPE_TEX2D -> {
                         int packed = tape[lo++];
-                        short texId = unpackLeft(packed);
+                        var texId = unpackLeft(packed);
                         short bindSlot = unpackRight(packed);
-                        OpenGL.bindTexture(shaderId, loc, texId, bindSlot);
+                        OpenGL.bindTexture(glHandle, loc, texId, bindSlot);
                     }
                 }
             }
@@ -296,8 +289,7 @@ public final class UniformBuffer {
 
         public boolean equals(Block block) {
             return this == block ||
-                   (shader == block.shader &&
-                    Arrays.equals(tape, 0, ptr, block.tape, 0, block.ptr));
+                    Arrays.equals(tape, 0, ptr, block.tape, 0, block.ptr);
         }
 
         @Override

@@ -1,11 +1,10 @@
 package core.g2d;
 
-import org.lwjgl.opengl.GL46;
-
 import java.lang.foreign.ValueLayout;
 import java.util.Arrays;
 
 import static core.g2d.OpenGL.DSA;
+import static org.lwjgl.opengl.GL46C.*;
 
 public final class VertexFormat {
     private final VertexAttribute[] attributes;
@@ -13,7 +12,7 @@ public final class VertexFormat {
     private final int byteSize;
 
     int vao;
-    int refCount;
+    int refCount = 1;
 
     public VertexFormat(VertexAttribute... attributes) {
         this.attributes = attributes;
@@ -26,10 +25,6 @@ public final class VertexFormat {
             vsize += attr.byteSize();
         }
         this.byteSize = vsize;
-    }
-
-    public static VertexFormat of(VertexAttribute... vertexAttributes) {
-        return new VertexFormat(vertexAttributes);
     }
 
     @Override
@@ -78,17 +73,17 @@ public final class VertexFormat {
         if (!DSA) {
             return;
         }
-        GL46.glVertexArrayVertexBuffer(vao, 0, vbo, 0, byteSize);
+        glVertexArrayVertexBuffer(vao, 0, vbo, 0, byteSize);
     }
 
     public void bindEBO(int ebo) {
         if (DSA) {
-            GL46.glVertexArrayElementBuffer(vao, ebo);
+            glVertexArrayElementBuffer(vao, ebo);
         } else {
-            GL46.glBindVertexArray(vao);
-            GL46.glBindBuffer(GL46.GL_ELEMENT_ARRAY_BUFFER, ebo);
+            glBindVertexArray(vao);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
 
-            GL46.glBindVertexArray(0); // происходит редко, но метко
+            glBindVertexArray(0); // происходит редко, но метко
         }
     }
 
