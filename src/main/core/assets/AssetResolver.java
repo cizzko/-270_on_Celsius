@@ -11,13 +11,13 @@ public sealed interface AssetResolver permits BaseAssetResolver {
     <T> Future<T> fork(Callable<T> action);
     Future<Void> fork(Runnable action);
 
-    default <T> Future<T> load(Class<T> type, String name) {
+    default <R> Future<R> load(Class<R> type, String name) {
         return load(type, name, loadType(), null);
     }
 
-    <T, P, S> Future<T> load(Class<? extends AssetHandler<T, P, S>> type, String name, Consumer<? super P> paramsModifier);
+    <R, P, S> Future<R> load(Class<? extends AssetHandler<R, P, S>> type, String name, Consumer<? super P> paramsModifier);
 
-    default <T> Future<T> load(Class<T> type, String name, AssetsManager.LoadType loadType) {
+    default <R> Future<R> load(Class<R> type, String name, AssetsManager.LoadType loadType) {
         return load(type, name, loadType, null);
     }
 

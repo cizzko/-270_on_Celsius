@@ -20,12 +20,17 @@ public final class StackfulRender {
     private StackfulRender() {}
 
     public static void pushRenderList() {
-        queue.push(stateFrame.rlist);
+        var frame = stateFrame;
+        if (frame.rlist == null) {
+            return;
+        }
+
+        frame.rlist = queue.buffer.produce(frame.rlist);
+        frame.rlist.clear();
+        frame.resetUniformBlock();
     }
 
-    public static void flush() {
-        queue.flush();
-    }
+    public static UniformBuffer uniformBuffer() { return stateFrame.rlist.uniformBuffer(); }
 
     public static void drawRepeated(Atlas.Region texture,
                                     float bx, float by,
@@ -41,7 +46,8 @@ public final class StackfulRender {
         float u2 = BytePack.fromB16toFloat32(texture.u2);
         float v2 = BytePack.fromB16toFloat32(texture.v2);
 
-        var ublockObj = queue.uniformBuffer().allocate(Shaders.repeat);
+        var uniformBuffer = uniformBuffer();
+        var ublockObj = uniformBuffer.allocate(Shaders.repeat);
         ublockObj.pushVec2f(Uniforms.RepeatShader.u_logical_ratio, Global.camera.projectionScale);
         // Здесь допустимо отсечение до float, поскольку рендерятся группы тайлов
         var camPos = Global.camera.position;
@@ -49,7 +55,7 @@ public final class StackfulRender {
         ublockObj.pushVec2f(Uniforms.RepeatShader.u_reg_uv, u1, v1);
         ublockObj.pushVec2f(Uniforms.RepeatShader.u_reg_size, u2 - u1, v2 - v1);
 
-        int ublock = queue.uniformBuffer().push(ublockObj);
+        int ublock = uniformBuffer.push(ublockObj);
 
         var frame = stateFrame;
         draw(
@@ -121,10 +127,11 @@ public final class StackfulRender {
 
         int ublock() {
             if (ublock == StateFrame.UBLOCK_UNSET) {
-                var block = queue.uniformBuffer().allocate(shader);
+                var uniformBuffer = uniformBuffer();
+                var block = uniformBuffer.allocate(shader);
                 block.pushVec2f(Uniforms.DefaultShader.u_logical_ratio, logicalRatio);
                 block.pushVec2f(Uniforms.DefaultShader.u_camera_pos, cameraPosition);
-                return queue.uniformBuffer().push(block);
+                return uniformBuffer.push(block);
             }
             return ublock;
         }
@@ -132,13 +139,18 @@ public final class StackfulRender {
         public void close() {
             popState0();
         }
+
+        public void resetUniformBlock() {
+            ublock = UBLOCK_UNSET;
+        }
     }
 
     private static final int MAX_NESTING = 10;
 
     private static final Pool<StateFrame> statePool = new Pool<>(StateFrame::new, MAX_NESTING);
     private static final ObjectArrayList<StateFrame> stack = new ObjectArrayList<>(MAX_NESTING);
-    private static StateFrame stateFrame;
+
+    static StateFrame stateFrame;
 
     public static Shader defaultShader;
 
@@ -372,12 +384,11 @@ public final class StackfulRender {
     }
 
     public static void resetUniformBlock() {
-        stateFrame.ublock = UniformBuffer.Block.UNITIALIZED;
+        stateFrame.resetUniformBlock();
     }
 
     public static void shader(Shader shader) {
         stateFrame.shader = shader;
-        resetUniformBlock(); // иначе упадём со странной ошибкой
     }
 
     public static void rlist(RenderList renderList) {

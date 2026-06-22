@@ -1,5 +1,6 @@
 package core.input;
 
+import core.Global;
 import core.Window;
 import core.math.MathUtil;
 import core.math.Point2i;
@@ -183,7 +184,7 @@ public final class InputHandler {
         if (framebufferMustBeResized) {
             framebufferMustBeResized = false;
 
-            glViewport(vx, vy, vw, vh);
+            renderThread.execute(() -> glViewport(vx, vy, vw, vh));
         }
     }
 
@@ -328,7 +329,7 @@ public final class InputHandler {
 
     public void setViewportSize(int w, int h) {
         updateViewport(w, h);
-        glViewport(vx, vy, vw, vh);
+        renderThread.execute(() -> glViewport(vx, vy, vw, vh));
         onViewport(vx, vy, vw, vh);
     }
 

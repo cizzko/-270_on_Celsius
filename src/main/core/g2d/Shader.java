@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Logger;
 import java.util.Map;
 
 import static core.g2d.OpenGL.CAN_USE_EXPLICIT_UNIFORM_LOCATIONS;
+import static org.lwjgl.opengl.GL11C.glFlush;
 import static org.lwjgl.opengl.GL46.*;
 
 public final class Shader implements Disposable {
@@ -111,10 +112,11 @@ public final class Shader implements Disposable {
         glDeleteShader(vertexShader);
         glDeleteShader(fragmentShader);
 
-        vertexFormat = Render.setupVAO(vertexFormat);
+        vertexFormat = ResourceCache.intern(vertexFormat);
         var shader = new Shader(program, (byte)program, name, vertexFormat, uniforms);
         ResourceCache.shadersById[program] = shader;
 
+        glFlush();
         return shader;
     }
 
@@ -161,7 +163,7 @@ public final class Shader implements Disposable {
     @Override
     public void close() {
         ResourceCache.shadersById[id] = null;
-        Render.dispose(vertexFormat);
+        ResourceCache.dispose(vertexFormat);
         glDeleteProgram(id);
     }
 

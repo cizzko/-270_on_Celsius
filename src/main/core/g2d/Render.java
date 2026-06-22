@@ -1,17 +1,22 @@
 package core.g2d;
 
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import core.Global;
 import org.intellij.lang.annotations.MagicConstant;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
+import java.util.Objects;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.opengl.GL30.glDeleteVertexArrays;
 
 public final class Render {
 
     private Render() {}
+
+    static {
+        if (!Global.renderThread.isRenderThread())
+            throw new ExceptionInInitializerError();
+    }
 
     @Retention(RetentionPolicy.SOURCE)
     @MagicConstant(intValues = {PRIMITIVE_TYPE_TRIANGLES, PRIMITIVE_TYPE_TRIANGLE_STRIP, PRIMITIVE_TYPE_LINES, PRIMITIVE_TYPE_LINE_STRIP})
@@ -181,40 +186,9 @@ public final class Render {
             RENDER_MAX_ITEMS_COUNT, RENDER_MAX_VERTEX_COUNT);
 
     public static void init() {
-        StackfulRender.state().rlist = queue.allocRList(RenderList.KIND_DYNAMIC);
-        StackfulRender.state().shader = StackfulRender.defaultShader;
-    }
-
-    private static final ObjectOpenHashSet<VertexFormat> cache = new ObjectOpenHashSet<>();
-
-    public static void dispose() {
-        for (var vertexFormat : cache) {
-            glDeleteVertexArrays(vertexFormat.vao);
-        }
-        cache.clear();
+        StackfulRender.stateFrame.rlist  = Objects.requireNonNull(queue.buffer.storage[0]);
+        StackfulRender.stateFrame.shader = StackfulRender.defaultShader;
     }
 
     public static RenderQueue queue() { return queue; }
-
-    public static void dispose(VertexFormat format) {
-        if (cache.remove(format)) {
-            if (--format.refCount == 0) {
-                glDeleteVertexArrays(format.vao);
-            }
-        }
-    }
-
-    public static VertexFormat setupVAO(VertexFormat vertexFormat) {
-        var ex = cache.addOrGet(vertexFormat);
-        if (ex != null && vertexFormat != ex) {
-            ex.refCount++;
-            return ex;
-        }
-        vertexFormat.vao = OpenGL.createVertexArrays();
-        vertexFormat.enableAttributes();
-        if (queue.ebo != null) {
-            vertexFormat.bindEBO(queue.ebo.id);
-        }
-        return vertexFormat;
-    }
 }

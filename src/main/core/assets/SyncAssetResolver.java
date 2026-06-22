@@ -49,26 +49,26 @@ final class SyncAssetResolver<T, P, S>
 
     @Override
     public <T2> Future<T2> fork(Callable<T2> action) {
-        var task = Global.scheduler.execute(action);
+        var task = Global.scheduler.submit(action);
         tasks.add(task);
         return task;
     }
 
     @Override
     public Future<Void> fork(Runnable action) {
-        var task = Global.scheduler.execute(action);
+        var task = Global.scheduler.submit(action);
         tasks.add(task);
         return task;
     }
 
     @Override
-    public <T2, P2, S2> Future<T2> load(Class<? extends AssetHandler<T2, P2, S2>> type, String name, Consumer<? super P2> paramsModifier) {
+    public <R, P2, S2> Future<R> load(Class<? extends AssetHandler<R, P2, S2>> type, String name, Consumer<? super P2> paramsModifier) {
         return Global.assets.loadInternalByHandler(this, type, name, loadType(), paramsModifier);
     }
 
     @Override
-    public <T2, P2> Future<T2> load(Class<T2> type, String name, AssetsManager.LoadType loadType,
-                                    Consumer<? super P2> paramsModifier) {
+    public <R, P2> Future<R> load(Class<R> type, String name, AssetsManager.LoadType loadType,
+                                  Consumer<? super P2> paramsModifier) {
         if (loadType != AssetsManager.LoadType.SYNC) {
             throw new IllegalArgumentException("Synchronous mode");
         }
@@ -77,7 +77,7 @@ final class SyncAssetResolver<T, P, S>
     }
 
     public CompletableFuture<T> load() {
-        return Global.scheduler.execute(() -> {
+        return Global.scheduler.submit(() -> {
             loader.loadAsync(this, name, params, state);
             checkIfFailed();
             desc.value = loader.loadSync(this, name, params, state);

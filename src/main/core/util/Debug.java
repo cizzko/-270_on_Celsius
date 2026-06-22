@@ -86,7 +86,8 @@ public class Debug {
         if (debugLevel < 1) {
             return;
         }
-        setDebugValue(() -> "RenderFPS: " + app.fps());
+        setDebugValue(() -> "UpdateFPS: " + app.fps());
+        setDebugValue(() -> "RenderFPS: " + renderThread.fps());
 
         if (debugLevel < 2) {
             return;

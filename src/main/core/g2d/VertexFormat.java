@@ -1,9 +1,12 @@
 package core.g2d;
 
+import core.Global;
+
 import java.lang.foreign.ValueLayout;
 import java.util.Arrays;
 
 import static core.g2d.OpenGL.DSA;
+import static org.lwjgl.opengl.GL15.GL_ARRAY_BUFFER;
 import static org.lwjgl.opengl.GL46C.*;
 
 public final class VertexFormat {
@@ -57,39 +60,54 @@ public final class VertexFormat {
     public int vertexByteSize() { return byteSize; }
     public int vertexSizeIn(ValueLayout unit) { return byteSize / (int)unit.byteSize(); }
 
-    public void enableAttributes() {
+    void enableAttributes() {
         if (DSA) {
             for (int i = 0; i < attributes.length; i++) {
                 attributes[i].enable(vao, i, byteSize, offsets[i]);
             }
-        } else {
+        } else { // требует заблаговременного бинда vao
             for (int i = 0; i < attributes.length; i++) {
                 attributes[i].enable(i, byteSize, offsets[i]);
             }
         }
     }
 
-    public void bindVBO(int vbo) {
-        if (!DSA) {
-            return;
+    void bindVBO(int vbo) {
+        if (DSA) {
+            glVertexArrayVertexBuffer(vao, 0, vbo, 0, byteSize);
+        } else { // требует заблаговременного бинда vao
+            glBindBuffer(GL_ARRAY_BUFFER, vbo);
         }
-        glVertexArrayVertexBuffer(vao, 0, vbo, 0, byteSize);
     }
 
-    public void bindEBO(int ebo) {
+    void bindEBO(int ebo) {
         if (DSA) {
             glVertexArrayElementBuffer(vao, ebo);
-        } else {
-            glBindVertexArray(vao);
+        } else { // требует заблаговременного бинда vao
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ebo);
-
-            glBindVertexArray(0); // происходит редко, но метко
         }
     }
 
-    public void disableAttributes() {
+    void disableAttributes() {
         for (int i = 0; i < attributes.length; i++) {
             attributes[i].disable(i);
         }
+    }
+
+    int getVAO() {
+        int vaoId = vao;
+        if (vaoId == 0) {
+            Global.renderThread.ensureThisThread();
+            vao = vaoId = OpenGL.createVertexArrays();
+
+            OpenGL.bindVertexArray(vaoId);
+            enableAttributes();
+            if (Render.queue.ebo != null) {
+                bindEBO(Render.queue.ebo.id);
+            }
+            // знаю свой код и поэтому не делаю это
+            // OpenGL.bindVertexArray(0);
+        }
+        return vaoId;
     }
 }

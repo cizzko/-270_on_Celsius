@@ -15,7 +15,8 @@ import core.util.Debug;
 
 import static core.Global.*;
 import static core.UIMenus.hudGroup;
-import static core.World.Creatures.Player.Player.*;
+import static core.World.Creatures.Player.Player.drawCurrentHP;
+import static core.World.Creatures.Player.Player.updateInventoryInteraction;
 import static core.g2d.Render.*;
 
 public final class PlayGameScene extends GameScene {
@@ -77,7 +78,7 @@ public final class PlayGameScene extends GameScene {
         try (var state = StackfulRender.pushState()) {
             var worldShader = Shaders.world;
             state.shader = worldShader;
-            var uniformBuffer = queue().uniformBuffer();
+            var uniformBuffer = StackfulRender.uniformBuffer();
             var ublock = uniformBuffer.allocate(worldShader);
             ublock.pushVec2f(Uniforms.WorldShader.u_logical_ratio, Global.camera.projectionScale);
             uniformBuffer.push(ublock);

@@ -8,6 +8,8 @@ import org.lwjgl.system.NativeResource;
 import org.lwjgl.system.Platform;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.locks.LockSupport;
@@ -20,6 +22,17 @@ public class Application {
     protected final ArrayList<NativeResource> natives = new ArrayList<>();
 
     private boolean running = true;
+
+    private static final VarHandle RUNNING;
+    static {
+        try {
+            RUNNING = MethodHandles.lookup()
+                    .findVarHandle(Application.class, "running", boolean.class)
+                    .withInvokeExactBehavior();
+        } catch (ReflectiveOperationException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
 
     public Application() {
         this.mainThread = Thread.currentThread();
@@ -40,7 +53,7 @@ public class Application {
             Thread.currentThread().setName("UpdateThread");
             init();
 
-            while (running) {
+            while (isRunning()) {
                 update();
             }
         } catch (Throwable t) {
@@ -49,6 +62,9 @@ public class Application {
             freeNatives();
             JavaInterpreter.close();
             Global.scheduler.shutdown();
+            try {
+                Global.renderThread.join();
+            } catch (InterruptedException e) {}
             cleanup();
         }
     }
@@ -73,10 +89,6 @@ public class Application {
 
     protected void init() throws Throwable {
 
-    }
-
-    public void quit() {
-        running = false;
     }
 
     public void setFramerate(int framerate) {
@@ -174,5 +186,14 @@ public class Application {
 
     private static void openUri(String cmd, String uri) {
         openUri(cmd, uri, "");
+    }
+
+    public final boolean isRunning() {
+        return (boolean) RUNNING.getAcquire(this);
+    }
+
+    public final void quit() {
+        ensureMainThread();
+        RUNNING.setRelease(this, false);
     }
 }

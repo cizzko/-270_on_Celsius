@@ -7,6 +7,7 @@ import core.g2d.AtlasHandler;
 import core.g2d.FontHandler;
 import core.g2d.ShaderHandler;
 import core.g2d.TextureHandler;
+import core.util.TypeUtil;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -222,7 +223,20 @@ public final class AssetsManager {
 
     public enum LoadType {
         ASYNC,
-        SYNC
+        SYNC,
+    }
+
+    public <T> T getLoaded(Class<T> type, String name) {
+        var loadedAssets = getAssets(type);
+        if (loadedAssets != null) {
+            var loadedInst = loadedAssets.get(name);
+            if (loadedInst != null) {
+                // incrementRefCount(parent, loadedInst);
+                // return CompletableFuture.completedFuture(loadedInst.value);
+                return loadedInst.value;
+            }
+        }
+        throw new IllegalStateException("No loaded asset found for name: '" + name + "' (" + TypeUtil.canonicalNameOrParent(type) + ")");
     }
 
     public <T> Future<T> load(Class<T> type, String name) {
@@ -317,9 +331,7 @@ public final class AssetsManager {
         }
 
         var state = loader.createState();
-        if (loadType == LoadType.SYNC && Global.app.isMainThread()) {
-            // Это гениально синхронно грузить ресурсы по просьбе из другого потока
-            // Хотя бы по той причине, что главный поток будет больше времени заниматься не своим делом
+        if (loadType == LoadType.SYNC) {
             return loadSync((SyncAssetResolver<?, ?, ?>) parent, name, loader, params, state);
         } else {
             return loadAsync((AsyncAssetResolver<?, ?, ?>) parent, type, name, loader, params, state, loadingMap);
@@ -327,8 +339,8 @@ public final class AssetsManager {
     }
 
     <T, P, S> Future<T> loadInternalByHandler(BaseAssetResolver parent,
-                                  Class<? extends AssetHandler<T, P, S>> handlerType, String name, LoadType loadType,
-                                  Consumer<? super P> paramsModifier) {
+                                              Class<? extends AssetHandler<T, P, S>> handlerType, String name, LoadType loadType,
+                                              Consumer<? super P> paramsModifier) {
 
         var loader = getHandlerByClass(handlerType);
 

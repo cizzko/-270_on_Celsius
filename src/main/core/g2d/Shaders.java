@@ -1,6 +1,7 @@
 package core.g2d;
 
 import core.assets.AssetsManager;
+import core.util.FutureUtil;
 
 import static core.Global.assets;
 
@@ -12,11 +13,11 @@ public final class Shaders {
     public static Shader world;
 
     public static void loadAll() {
-        repeat = assets.load(Shader.class, "repeat", AssetsManager.LoadType.SYNC).resultNow();
-        world  = assets.load(Shader.class, "world", AssetsManager.LoadType.SYNC,
-                (ShaderHandler.Params params) -> params.fragFile = "default").resultNow();
+        repeat = FutureUtil.join(assets.load(Shader.class, "repeat", AssetsManager.LoadType.SYNC));
+        world  = FutureUtil.join(assets.load(Shader.class, "world", AssetsManager.LoadType.SYNC,
+                (ShaderHandler.Params params) -> params.fragFile = "default"));
 
         StackfulRender.defaultShader = defaultShader =
-                assets.load(Shader.class, "default", AssetsManager.LoadType.SYNC).resultNow();
+                FutureUtil.join(assets.load(Shader.class, "default", AssetsManager.LoadType.SYNC));
     }
 }

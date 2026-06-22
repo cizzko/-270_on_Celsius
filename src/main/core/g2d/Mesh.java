@@ -6,7 +6,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.foreign.MemorySegment;
 
-import static org.lwjgl.opengl.GL15C.glBindBuffer;
 import static org.lwjgl.opengl.GL46.*;
 
 public final class Mesh implements Disposable {
@@ -34,12 +33,10 @@ public final class Mesh implements Disposable {
             vertexFormatChanged = false;
         }
 
-        glBindVertexArray(format.vao);
+        glBindVertexArray(format.getVAO());
 
-        if (OpenGL.DSA) {
-            format.bindVBO(vbo);
-        } else {
-            glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        format.bindVBO(vbo);
+        if (!OpenGL.DSA) {
             format.enableAttributes();
             // if (ebo != null) ebo.bind();
         }

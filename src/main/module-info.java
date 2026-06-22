@@ -12,6 +12,8 @@ open module core.main {
     requires transitive it.unimi.dsi.fastutil;
     requires transitive org.jetbrains.annotations;
 
+    requires transitive org.jctools.core;
+
     requires java.desktop;
     requires jdk.jshell;
     requires jdk.management;

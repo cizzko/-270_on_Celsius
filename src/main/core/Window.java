@@ -1,7 +1,10 @@
 package core;
 
 import com.sun.management.OperatingSystemMXBean;
-import core.g2d.*;
+import core.g2d.Atlas;
+import core.g2d.Font;
+import core.g2d.RenderThread;
+import core.g2d.StackfulRender;
 import core.input.InputHandler;
 import core.util.Debug;
 import core.util.JavaInterpreter;
@@ -10,8 +13,10 @@ import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.io.IoBuilder;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GLUtil;
-import org.lwjgl.system.*;
+import org.lwjgl.system.APIUtil;
+import org.lwjgl.system.Configuration;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.Platform;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -21,7 +26,9 @@ import java.nio.file.Files;
 import static core.Global.*;
 import static core.graphic.TextureLoader.decodeImage;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL46.*;
+import static org.lwjgl.opengl.GL46.GL_VERSION;
+import static org.lwjgl.opengl.GL46.glGetString;
+import static org.lwjgl.system.MemoryUtil.NULL;
 
 public final class Window extends Application {
     private static final Logger lwjglLogger = LogManager.getLogger("LWJGL");
@@ -37,7 +44,7 @@ public final class Window extends Application {
     }
 
     public static boolean windowFocused = true;
-    public static long glfwHandle;
+    public static long glfwHandle, sharedState;
     public static Font defaultFont;
 
     private static final boolean GLFW_PLATFORM_IS_WAYLAND = switch (System.getenv("XDG_SESSION_TYPE")) {
@@ -68,7 +75,7 @@ public final class Window extends Application {
             glfwSetWindowMonitor(glfwHandle, monitor, 0, 0, vidMode.width(), vidMode.height(), vidMode.refreshRate());
             isFullscreen = true;
         } else {
-            glfwSetWindowMonitor(glfwHandle, MemoryUtil.NULL, windowedX, windowedY, input.windowWidth(), input.windowHeight(), GLFW_DONT_CARE);
+            glfwSetWindowMonitor(glfwHandle, NULL, windowedX, windowedY, input.windowWidth(), input.windowHeight(), GLFW_DONT_CARE);
             setWindowLimits();
             try (var st = MemoryStack.stackPush()) {
                 var pX = st.mallocInt(1);
@@ -148,7 +155,6 @@ public final class Window extends Application {
         glfwDefaultWindowHints();
         if (Debug.debugLevel >= 5)
             glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
         if (defaultMode == Mode.BORDERLESS) {
             glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
@@ -176,7 +182,7 @@ public final class Window extends Application {
             case WINDOW -> {
                 windowWidth = targetWidth;
                 windowHeight = targetHeight;
-                monitorPtr = MemoryUtil.NULL;
+                monitorPtr = NULL;
 
                 glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
             }
@@ -192,16 +198,17 @@ public final class Window extends Application {
                     // TODO(Skat) у меня на wayland+kde нижняя панель не убирается
                     monitorPtr = primaryMonitorPtr;
                 } else {
-                    monitorPtr = MemoryUtil.NULL;
+                    monitorPtr = NULL;
                 }
             }
             default -> throw new IllegalStateException();
         }
 
-        glfwHandle = glfwCreateWindow(windowWidth, windowHeight, windowTitle, monitorPtr, MemoryUtil.NULL);
-        if (glfwHandle == MemoryUtil.NULL) {
-            throw new RuntimeException("Failed to create window");
-        }
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        glfwHandle = glfwCreateWindow(windowWidth, windowHeight, windowTitle, monitorPtr, NULL);
+        if (glfwHandle == NULL) throw new RuntimeException("Failed to create window");
+        glfwMakeContextCurrent(glfwHandle);
+        GL.createCapabilities();
 
         uiScene = new UIScene(targetWidth, targetHeight);
         input = new InputHandler(targetWidth, targetHeight);
@@ -223,8 +230,41 @@ public final class Window extends Application {
             }
         }
 
-        glfwMakeContextCurrent(glfwHandle);
-        GL.createCapabilities();
+        Global.renderThread = new RenderThread();
+        Global.renderThread.setDaemon(true);
+        {
+            glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+            sharedState = glfwCreateWindow(1, 1, "", NULL, glfwHandle);
+            if (sharedState == NULL) throw new RuntimeException("Failed to create window");
+
+            glfwMakeContextCurrent(sharedState);
+        }
+
+        renderThread.setVerticalSync(gameSettings.verticalSync);
+
+        if (gameSettings.verticalSync) {
+            log.info("Target Framerate: Vertical Sync");
+
+            GLFWVidMode vidMode = glfwGetVideoMode(primaryMonitorPtr);
+            if (vidMode != null) {
+                setFramerate(vidMode.refreshRate());
+            }
+
+        } else {
+
+            int targetFPS = gameSettings.targetFps;
+            if (targetFPS != -1) {
+                log.info("Target Framerate: {} FPS", targetFPS);
+                setFramerate(targetFPS);
+                Global.renderThread.setFramerate(targetFPS);
+            } else {
+                log.info("Target Framerate: Uncapped");
+            }
+        }
+
+        Global.renderThread.start();
+
+        printComputerInfo();
 
         try (var stack = MemoryStack.stackPush()) {
             var xptr = stack.mallocInt(1);
@@ -248,28 +288,6 @@ public final class Window extends Application {
             glfwSetCursor(glfwHandle, glfwCreateCursor(glfwImg, 0, 0));
         }
 
-        printComputerInfo();
-
-        if (gameSettings.verticalSync) {
-            log.info("Target Framerate: Vertical Sync");
-            glfwSwapInterval(1);
-        } else {
-            glfwSwapInterval(0);
-            int targetFPS = gameSettings.targetFps;
-            if (targetFPS != -1) {
-                log.info("Target Framerate: {} FPS", targetFPS);
-                setFramerate(targetFPS);
-            } else {
-                log.info("Target Framerate: Uncapped");
-            }
-        }
-
-         if (Debug.debugLevel >= 5) {
-             glEnable(GL_DEBUG_OUTPUT);
-             keep(GLUtil.setupDebugMessageCallback());
-             keep(() -> glDisable(GL_DEBUG_OUTPUT));
-         }
-
         glfwSetWindowFocusCallback(glfwHandle, keep(new GLFWWindowFocusCallback() {
             @Override
             public void invoke(long window, boolean focused) {
@@ -283,17 +301,12 @@ public final class Window extends Application {
             }
         }));
 
-        Shaders.loadAll();
-        Render.init();
-
-        glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
-
         lang.load();
 
         setGameScene(new MenuScene());
     }
 
-    private void printComputerInfo() {
+    public void printComputerInfo() {
         var mxbean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
 
         log.info("Game version: {}", Constants.version);
@@ -325,25 +338,14 @@ public final class Window extends Application {
         updateTime();
 
         input.update();
-        var rq = Render.queue();
-        rq.beginFrame();
         gameScene.loop();
         StackfulRender.pushRenderList();
-        rq.endFrame();
-        swapBuffers();
 
         nextFrame();
-    }
-
-    private void swapBuffers() {
-        glfwSwapBuffers(glfwHandle);
-        glClear(GL_COLOR_BUFFER_BIT);
     }
 
     @Override
     protected void cleanup() {
         glfwTerminate();
-        Render.queue.close();
-        assets.unloadAll();
     }
 }

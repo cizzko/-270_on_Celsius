@@ -65,6 +65,7 @@ public final class VertexAttribute {
     public void disable(int index) {
         glDisableVertexAttribArray(index);
     }
+
     public enum Format {
         DIRECT_FLOAT {
             @Override

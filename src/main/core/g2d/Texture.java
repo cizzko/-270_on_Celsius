@@ -55,7 +55,10 @@ public final class Texture implements Drawable, Disposable {
 
         var tex = new Texture(target, id, w, h);
         ResourceCache.texturesById.put(id, tex);
+
         OpenGL.saveHandle(id);
+        glFlush();
+
         return tex;
     }
 

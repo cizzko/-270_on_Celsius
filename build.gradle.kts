@@ -124,6 +124,7 @@ java {
 configurations["toolsImplementation"].extendsFrom(configurations["implementation"])
 
 dependencies {
+    implementation("org.jctools:jctools-core:4.0.6")
     implementation("it.unimi.dsi:fastutil:8.5.18")
     implementation("org.apache.logging.log4j:log4j-api:3.0.0-beta2")
     implementation("org.apache.logging.log4j:log4j-core:3.0.0-beta2")

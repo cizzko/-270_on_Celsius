@@ -72,6 +72,10 @@ public final class RenderList implements Poolable, Disposable {
     final MemorySegment vertices;
     final Mesh mesh;
 
+    final UniformBuffer uniforms = new UniformBuffer();
+
+    public UniformBuffer uniformBuffer() { return uniforms; }
+
     public void setDirty(boolean state) {
         mesh.setDirty(state);
     }
@@ -140,6 +144,8 @@ public final class RenderList implements Poolable, Disposable {
         vertexCount = 0;
         runCount = 1;
         currentDirection = 0;
+        uniforms.clear();
+        mesh.reset();
     }
 
     public void addRectangle(int primitiveType, int rgba8888,
@@ -266,6 +272,7 @@ public final class RenderList implements Poolable, Disposable {
 
     public void debug() {
         if (log.isDebugEnabled()) {
+            log.debug("RenderList[{}]", id);
             log.debug("Items        : {}/{}", itemCount, itemCapacity);
             log.debug("Vertices     : {}/{}", vertexCount, vertexCapacity);
             log.debug("RunCount     : {}", runCount);

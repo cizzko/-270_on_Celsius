@@ -1,5 +1,6 @@
 package core.g2d;
 
+import core.Global;
 import core.gen.Uniforms;
 import core.pool.Pool;
 import core.util.Disposable;
@@ -8,6 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryUtil;
 
 import java.lang.foreign.Arena;
@@ -34,9 +36,8 @@ public final class RenderQueue implements Disposable {
 
     private final ArrayDeque<RenderList> renderLists = new ArrayDeque<>();
     private final ObjectArrayList<RenderList> created = new ObjectArrayList<>();
-    private final UniformBuffer uniformBuffer = new UniformBuffer();
 
-    private final Arena renderArena = Arena.ofConfined();
+    private final Arena renderArena = Arena.ofShared();
 
     private final long[] tmp;
 
@@ -78,9 +79,13 @@ public final class RenderQueue implements Disposable {
             ebo = new ElementBufferObject(indices);
             ebo.upload(GL_STATIC_DRAW);
         }
-    }
 
-    public UniformBuffer uniformBuffer() { return uniformBuffer; }
+        var array = new RenderList[3] ;
+        for (int i = 0; i < array.length; i++) {
+            array[i] = allocRList(KIND_DYNAMIC);
+        }
+        buffer = new TripleBuffer(array);
+    }
 
     public short getVertexCountPerQuad(@PrimitiveType byte primitiveType) {
         return switch (primitiveType) {
@@ -94,26 +99,6 @@ public final class RenderQueue implements Disposable {
         // Здесь могла быть ваша статистика
     }
 
-    public void endFrame() {
-        if (renderLists.isEmpty()) {
-            return;
-        }
-
-        drainCommandQueue();
-        uniformBuffer.clear();
-    }
-
-    private void drainCommandQueue() {
-        RenderList it;
-        while ((it = renderLists.pollFirst()) != null) {
-            submitCommandList(it);
-        }
-    }
-
-    public void flush() {
-        drainCommandQueue();
-    }
-
     public RenderList allocRList(@MagicConstant(intValues = {KIND_STATIC, KIND_DYNAMIC}) byte kind) {
         var rlist = switch (kind) {
             case KIND_STATIC -> rlistAlloc.create();
@@ -124,17 +109,16 @@ public final class RenderQueue implements Disposable {
         return rlist;
     }
 
+    public final TripleBuffer buffer;
+
     public void push(RenderList renderList) {
         if (renderList.isEmpty()) {
             return;
         }
-        if (renderLists.contains(renderList)) {
-            throw new IllegalStateException(renderList.id + " already in queue");
-        }
         renderLists.addLast(renderList);
     }
 
-    private void submitCommandList(RenderList rlist) {
+    public void submitCommandList(RenderList rlist) {
         for (var it = rlist; it != null; it = it.next) {
             submitRenderList(it);
         }
@@ -172,11 +156,11 @@ public final class RenderQueue implements Disposable {
             t = System.nanoTime() - t;
         }
 
-        // if (Global.input.justPressed(GLFW.GLFW_KEY_F4)) {
-        //     rlist.debug();
-        //     log.debug("TimeNS: {}", t);
-        //     log.debug("Type: {}", c == 0 ? "JDK" : "Radix");
-        // }
+        if (Global.input.justPressed(GLFW.GLFW_KEY_F4)) {
+            rlist.debug();
+            log.debug("TimeNS: {}", t);
+            log.debug("Type: {}", c == 0 ? "JDK" : "Radix");
+        }
 
         var ebo = this.ebo;
 
@@ -241,7 +225,7 @@ public final class RenderQueue implements Disposable {
                 mesh.setVertexFormat(shader.vertexFormat);
 
                 if (currentUblock != ublock) {
-                    var block = uniformBuffer.id2blocks[ublock];
+                    var block = rlist.uniforms.id2blocks[ublock];
                     block.use(shader);
                 }
 
@@ -268,10 +252,6 @@ public final class RenderQueue implements Disposable {
         mesh.draw(currentPrimitiveType,
                 vertices, groupVertexOffset, groupVertexCount,
                 ebo, groupIndexOffset, groupIndexCount);
-
-        if (rlist.kind == KIND_DYNAMIC) {
-            rlistAlloc.freeAndReset(rlist);
-        }
     }
 
     private static void setBlending(byte blending) {

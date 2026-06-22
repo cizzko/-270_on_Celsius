@@ -24,9 +24,9 @@
         </Root>
         <Logger name="core.UIScene" level="DEBUG"/>
         <Logger name="Console" level="INFO"/>
-        <Logger name="core.g2d" level="ERROR"/>
-        <Logger name="Shader" level="TRACE"/>
-        <Logger name="AutoLoader" level="ERROR"/>
+        <Logger name="core.g2d" level="TRACE"/>
+        <Logger name="Shader" level="ERROR"/>
+        <Logger name="AutoLoader" level="TRACE"/>
         <Logger name="AssetsManager" level="ERROR"/>
     </Loggers>
 </Configuration>

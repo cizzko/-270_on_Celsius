@@ -15,20 +15,24 @@ import static org.lwjgl.opengl.GL46C.*;
 final class OpenGL {
     private OpenGL() {}
 
-    public static void saveHandle(short glHandle) {
+    public static void saveHandle(int glHandle) {
         if (GL_ARB_bindless_texture) {
-            long texHandle = glGetTextureHandleARB(glHandle);
-            BindlessBinding.handlesByTex[glHandle] = texHandle;
-            glMakeTextureHandleResidentARB(texHandle);
+            Global.renderThread.schedule(() -> {
+                long texHandle = glGetTextureHandleARB(glHandle);
+                BindlessBinding.handlesByTex[glHandle] = texHandle;
+                glMakeTextureHandleResidentARB(texHandle);
+            });
         }
     }
 
-    public static void deleteHandle(short glHandle) {
+    public static void deleteHandle(int glHandle) {
         if (GL_ARB_bindless_texture) {
             long texHandle = BindlessBinding.handlesByTex[glHandle];
-            if (glIsTextureHandleResidentARB(texHandle)) {
-                glMakeTextureHandleNonResidentARB(texHandle);
-            }
+            Global.renderThread.schedule(() -> {
+                if (glIsTextureHandleResidentARB(texHandle)) {
+                    glMakeTextureHandleNonResidentARB(texHandle);
+                }
+            });
         }
     }
 
@@ -149,6 +153,12 @@ final class OpenGL {
         } else {
             glUniform1i(loc, i);
         }
+    }
+
+    public static void bindVertexArray(int vao) {
+        if (DSA)
+            return;
+        glBindVertexArray(vao);
     }
 
     private static final class BindlessBinding {
