@@ -14,7 +14,7 @@ public final class MenuScene extends GameScene {
 
     @Load(value = "sprites", owned = false)
     private Atlas sprites;
-    @Load(value = "arial.ttf", owned = false, load = AssetsManager.LoadType.SYNC)
+    @Load(value = "arial.ttf", owned = false)
     private Font font;
     @Load(value = "World/Other/background.png", load = AssetsManager.LoadType.SYNC)
     private Texture backgroundTex;
@@ -30,6 +30,7 @@ public final class MenuScene extends GameScene {
         Window.defaultFont = font;
 
         Styles.loadAll();
+        Shaders.loadAll();
         content.loadAll();
 
         UIMenus.mainMenu().show();

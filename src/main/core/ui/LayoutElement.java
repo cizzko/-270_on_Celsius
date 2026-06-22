@@ -24,8 +24,9 @@ public abstract class LayoutElement<This extends LayoutElement<This>>
     protected static final int FLAG_FILL_PARENT      = 1 << 6;
     protected static final int FLAG_HORIZONTAL_CLIP  = 1 << 7;
     protected static final int FLAG_VERTICAL_CLIP    = 1 << 8;
+    protected static final int FLAG_LAYOUT_CHANGED   = 1 << 7;
 
-    protected static final int ELEMENT_LAST_FLAG = FLAG_VERTICAL_CLIP;
+    protected static final int ELEMENT_LAST_FLAG = FLAG_LAYOUT_CHANGED;
 
     // Допустимая погрешность в координатах интерфейса
     public static final float EPSILON = 1e-2f;
@@ -36,6 +37,9 @@ public abstract class LayoutElement<This extends LayoutElement<This>>
     public float minWidth, minHeight;
     public float prefWidth, prefHeight;
     public float maxWidth = Float.MAX_VALUE, maxHeight = Float.MAX_VALUE;
+
+    /// Коллбек который вызывается при настройке этому элементу новых координат и размеров
+    public void onLayoutComplete() { }
 
     public void set(float x, float y, float width, float height) {
         assert x >= 0;

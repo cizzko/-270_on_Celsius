@@ -78,7 +78,7 @@ public final class Shader implements Disposable {
         return shaderName;
     }
 
-    int relocate(int location) {
+    int relocate(/* unsigned short */ int location) {
         if (CAN_USE_EXPLICIT_UNIFORM_LOCATIONS) {
             return location;
         }

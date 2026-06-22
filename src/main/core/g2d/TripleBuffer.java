@@ -7,11 +7,9 @@ import java.util.Objects;
 public final class TripleBuffer {
     final RenderList[] storage;
 
-    private int write_idx = 0;
-    private int read_idx  = 1;
-
+    private int write_idx  = 0;
+    private int read_idx   = 1;
     private int shared_idx = 2;
-
     private boolean has_new_data = false;
 
     private static final VarHandle SHARED_IDX;
@@ -33,9 +31,7 @@ public final class TripleBuffer {
     }
 
     public TripleBuffer(RenderList[] storage) {
-        if (storage == null || storage.length < 3) {
-            throw new IllegalArgumentException("Требуется массив минимум из 3 элементов");
-        }
+        // assert storage.length == 3;
         this.storage = storage;
     }
 

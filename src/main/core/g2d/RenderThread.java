@@ -58,8 +58,6 @@ public final class RenderThread extends Thread implements EventLoopExecutor {
             queue.drain(Runnable::run);
     }
 
-    static volatile boolean isReady;
-
     private int framerate = -1;
     private long prevSwapTime;
     private long frameCounterTime;
@@ -131,7 +129,7 @@ public final class RenderThread extends Thread implements EventLoopExecutor {
     public void run() {
 
         glfwMakeContextCurrent(glfwHandle);
-        GL.createCapabilities();
+        GL.createCapabilities(true);
 
         try {
             MethodHandles.lookup().ensureInitialized(Render.class);
@@ -146,13 +144,11 @@ public final class RenderThread extends Thread implements EventLoopExecutor {
         //     Global.app.keep(() -> glDisable(GL_DEBUG_OUTPUT));
         // }
 
-        glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
-
-        Shaders.loadAll();
         Render.init();
 
+        glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
+
         executePendingTasks();
-        isReady = true;
 
         var queue = Render.queue();
         var buffer = queue.buffer;
@@ -172,10 +168,6 @@ public final class RenderThread extends Thread implements EventLoopExecutor {
 
             nextFrame();
         }
-    }
-
-    public boolean isReady() {
-        return isReady;
     }
 
     public void setFramerate(int framerate) {

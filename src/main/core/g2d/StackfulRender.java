@@ -21,8 +21,8 @@ public final class StackfulRender {
 
     public static void pushRenderList() {
         var frame = stateFrame;
-        if (frame.rlist == null) {
-            return;
+        if (frame.rlist == null) { // хех, гонка с рендером
+            throw new IllegalStateException();
         }
 
         frame.rlist = queue.buffer.produce(frame.rlist);
@@ -71,6 +71,11 @@ public final class StackfulRender {
                 x2, y2,
                 0, 0, bw, bh
         );
+    }
+
+    public static void init(Shader defaultShader) {
+        StackfulRender.defaultShader = defaultShader;
+        pushState0();
     }
 
     public static final class StateFrame implements Poolable, Disposable {
@@ -153,10 +158,6 @@ public final class StackfulRender {
     static StateFrame stateFrame;
 
     public static Shader defaultShader;
-
-    static {
-        pushState0();
-    }
 
     public static StateFrame state() {
         return stateFrame;

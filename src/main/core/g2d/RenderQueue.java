@@ -13,7 +13,7 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryUtil;
 
 import java.lang.foreign.Arena;
-import java.util.ArrayDeque;
+import java.lang.foreign.MemorySegment;
 import java.util.Arrays;
 
 import static core.g2d.Render.*;
@@ -31,15 +31,15 @@ public final class RenderQueue implements Disposable {
 
     final Pool<RenderList> rlistAlloc;
     final @Nullable ElementBufferObject ebo;
+    final TripleBuffer buffer;
 
     private byte rlistCount;
 
-    private final ArrayDeque<RenderList> renderLists = new ArrayDeque<>();
     private final ObjectArrayList<RenderList> created = new ObjectArrayList<>();
-
     private final Arena renderArena = Arena.ofShared();
 
     private final long[] tmp;
+    private final MemorySegment reordered;
 
     byte genId() {
         byte i = rlistCount;
@@ -80,6 +80,8 @@ public final class RenderQueue implements Disposable {
             ebo.upload(GL_STATIC_DRAW);
         }
 
+        reordered = renderArena.allocate(LAYOUT, itemCount);
+
         var array = new RenderList[3] ;
         for (int i = 0; i < array.length; i++) {
             array[i] = allocRList(KIND_DYNAMIC);
@@ -95,10 +97,6 @@ public final class RenderQueue implements Disposable {
         };
     }
 
-    public void beginFrame() {
-        // Здесь могла быть ваша статистика
-    }
-
     public RenderList allocRList(@MagicConstant(intValues = {KIND_STATIC, KIND_DYNAMIC}) byte kind) {
         var rlist = switch (kind) {
             case KIND_STATIC -> rlistAlloc.create();
@@ -109,35 +107,26 @@ public final class RenderQueue implements Disposable {
         return rlist;
     }
 
-    public final TripleBuffer buffer;
-
-    public void push(RenderList renderList) {
-        if (renderList.isEmpty()) {
-            return;
-        }
-        renderLists.addLast(renderList);
-    }
-
-    public void submitCommandList(RenderList rlist) {
+    void submitCommandList(RenderList rlist) {
         for (var it = rlist; it != null; it = it.next) {
-            submitRenderList(it);
+            processRenderList(it);
         }
     }
 
-    private void submitRenderList(RenderList rlist) {
+    private void processRenderList(RenderList rlist) {
         if (rlist.isEmpty()) {
             return;
         }
 
         var sortKeys = rlist.sortKeys;
-        var items = rlist.items;
+        var unorderedItems = rlist.items;
         var vertices = rlist.vertices;
         var mesh = rlist.mesh;
         int itemCount = rlist.itemCount;
 
         // Инварианты для компилятора
         if (itemCount >= sortKeys.length) return;
-        if (itemCount * RenderItem.BYTE_SIZE >= items.byteSize()) return;
+        if (itemCount * RenderItem.BYTE_SIZE >= unorderedItems.byteSize()) return;
 
         int runCount = rlist.runCount;
         int c;
@@ -155,6 +144,13 @@ public final class RenderQueue implements Disposable {
             RadixSort.sort(sortKeys, tmp, itemCount);
             t = System.nanoTime() - t;
         }
+
+        var items = reordered;
+        for (int i = 0; i < itemCount; i++) {
+            long idx = sortKeys[i] & INDEX_MASK;
+            MemorySegment.copy(unorderedItems, idx * BYTE_SIZE, items, i * BYTE_SIZE, BYTE_SIZE);
+        }
+        // var items = unorderedItems;
 
         if (Global.input.justPressed(GLFW.GLFW_KEY_F4)) {
             rlist.debug();
@@ -178,14 +174,13 @@ public final class RenderQueue implements Disposable {
         int groupIndexCount   = 0;
         int groupVertexCount  = 0;
 
-
         mesh.setVertexFormat(defaultShader.vertexFormat());
 
-        //noinspection ForLoopReplaceableByForEach
         for (int ai = 0; ai < itemCount; ++ai) {
             long sortKey = sortKeys[ai];
 
-            long offset = getIndex(sortKey);
+            // long offset = getIndex(sortKey);
+            long offset = ai;
 
             int vertexOffset  = (int)VERTEX_OFFSET.get(items,  offset);
             int indexOffset   = (int)INDEX_OFFSET.get(items,   offset);

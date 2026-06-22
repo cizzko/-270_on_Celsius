@@ -5,6 +5,7 @@ import core.g2d.Atlas;
 import core.g2d.Font;
 import core.g2d.RenderThread;
 import core.g2d.StackfulRender;
+import core.g2d.*;
 import core.input.InputHandler;
 import core.util.Debug;
 import core.util.JavaInterpreter;
@@ -208,7 +209,7 @@ public final class Window extends Application {
         glfwHandle = glfwCreateWindow(windowWidth, windowHeight, windowTitle, monitorPtr, NULL);
         if (glfwHandle == NULL) throw new RuntimeException("Failed to create window");
         glfwMakeContextCurrent(glfwHandle);
-        GL.createCapabilities();
+        GL.createCapabilities(true);
 
         uiScene = new UIScene(targetWidth, targetHeight);
         input = new InputHandler(targetWidth, targetHeight);
@@ -230,8 +231,8 @@ public final class Window extends Application {
             }
         }
 
-        Global.renderThread = new RenderThread();
-        Global.renderThread.setDaemon(true);
+        renderThread = new RenderThread();
+        renderThread.setDaemon(true);
         {
             glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
             sharedState = glfwCreateWindow(1, 1, "", NULL, glfwHandle);
@@ -256,13 +257,14 @@ public final class Window extends Application {
             if (targetFPS != -1) {
                 log.info("Target Framerate: {} FPS", targetFPS);
                 setFramerate(targetFPS);
-                Global.renderThread.setFramerate(targetFPS);
+                renderThread.setFramerate(targetFPS);
             } else {
                 log.info("Target Framerate: Uncapped");
             }
         }
 
-        Global.renderThread.start();
+        Shaders.init(); // нам реально нужны базовые шейдеры здесь и сейчас
+        renderThread.start();
 
         printComputerInfo();
 
@@ -292,6 +294,7 @@ public final class Window extends Application {
             @Override
             public void invoke(long window, boolean focused) {
                 windowFocused = focused;
+                input.onFocus(focused);
             }
         }));
         glfwSetWindowCloseCallback(glfwHandle, keep(new GLFWWindowCloseCallback() {

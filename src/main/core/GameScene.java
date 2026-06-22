@@ -64,8 +64,7 @@ public abstract class GameScene implements AssetLifecycle {
                     scheduler.executeAll();
                     uiScene.update(Time.delta);
 
-                    if (Global.renderThread.isReady())
-                        drawLoading();
+                    drawLoading();
                 }
             }
             case LOADED -> readyLoop();

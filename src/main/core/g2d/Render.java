@@ -187,7 +187,6 @@ public final class Render {
 
     public static void init() {
         StackfulRender.stateFrame.rlist  = Objects.requireNonNull(queue.buffer.storage[0]);
-        StackfulRender.stateFrame.shader = StackfulRender.defaultShader;
     }
 
     public static RenderQueue queue() { return queue; }
