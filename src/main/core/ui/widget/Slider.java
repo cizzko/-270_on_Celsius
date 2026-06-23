@@ -63,6 +63,7 @@ public class Slider extends LayoutElement<Slider> {
 
     public Slider bounds(int min, int max) {
         // assert min <= max;
+        this.sliderValue = min;
         this.min = min;
         this.max = max;
         return this;
@@ -70,6 +71,10 @@ public class Slider extends LayoutElement<Slider> {
 
     @Override
     public void onLayoutComplete() {
+        if (min == max) {
+            return;
+        }
+
         float norm = (float)(sliderValue - min) / (max - min);
         norm = Math.clamp(norm, 0, 1);
         sliderPos = x + (norm * width);

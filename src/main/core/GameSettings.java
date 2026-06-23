@@ -16,7 +16,7 @@ public final class GameSettings {
     public static final String DEFAULT_LANGUAGE       = "en";
 
     public boolean verticalSync;
-    public int targetFps, renderFps; // -1 - uncapped
+    public int targetFps; // -1 - uncapped
     public Render render;
     public String language;
 

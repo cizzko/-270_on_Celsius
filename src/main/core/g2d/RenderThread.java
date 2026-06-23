@@ -175,11 +175,13 @@ public final class RenderThread extends Thread implements EventLoopExecutor {
     }
 
     public void setVerticalSync(boolean state) {
-        if (state) {
-            glfwSwapInterval(1);
-        } else {
-            glfwSwapInterval(0);
-        }
+        submit(() -> {
+            if (state) {
+                glfwSwapInterval(1);
+            } else {
+                glfwSwapInterval(0);
+            }
+        });
     }
 
     @Override
