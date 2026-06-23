@@ -3,6 +3,7 @@ package core.util;
 import core.GameState;
 import core.PlayGameScene;
 import core.Time;
+import core.UIScene;
 import core.World.TemperatureMap;
 import core.World.Weather.Sun;
 import core.content.blocks.Block;
@@ -52,6 +53,7 @@ public class Debug {
 
     // Включается по нажатию F3+M английской
     public static boolean debugMesh = false;
+    public static boolean frameHistogram = false;
 
     public static final boolean hardBoundsCheck = false;
 
@@ -279,15 +281,23 @@ public class Debug {
 
     static void debugUIHotkeys() {
         if (input.justPressed(GLFW_KEY_F9)) {
-            uiScene.toggleDebug();
+            UIScene.toggleDebug();
         }
         if (input.justPressed(GLFW_KEY_F10)) {
             uiScene.debug();
         }
-        // TODO нужны комбинации клавиш на уровне InputHandler
-        if (input.justPressed(GLFW_KEY_F3) && input.justPressed(GLFW_KEY_M)) {
+        if (hotkeyPressed(GLFW_KEY_F3, GLFW_KEY_M)) {
             debugMesh = !debugMesh;
         }
+        if (hotkeyPressed(GLFW_KEY_F3, GLFW_KEY_F)) {
+            frameHistogram = !frameHistogram;
+        }
+    }
+
+    // TODO нужны комбинации клавиш на уровне InputHandler
+    static boolean hotkeyPressed(int first, int second) {
+        return input.pressed(first) && input.justPressed(second) ||
+               input.justPressed(first) && input.pressed(second);
     }
 
     public static void drawPlayerBorders() {
@@ -338,7 +348,7 @@ public class Debug {
             }
         }
 
-        { // Корень красный, дочерние синие
+        { // Мультиблоки: Корень красный, дочерние синие
             var hitbox = TmpShapes.aabb1;
             camera.boundsTo(hitbox);
             hitbox.clampToWorld();
@@ -420,9 +430,12 @@ public class Debug {
             drawTextUncached(font, bx, by, value, color);
             by -= font.lineHeight();
         }
-        // float width = 200;
-        // float height = 100;
-        // renderFrameTimeGraph(input.width() - width, input.height() - height, width, height);
+
+        if (debugLevel > 2 && frameHistogram) {
+            float width = 200;
+            float height = 100;
+            renderFrameTimeGraph(input.viewportWidth() - width, input.viewportHeight() - height, width, height);
+        }
         StackfulRender.blending(Render.BLENDING_NORMAL);
     }
 
@@ -435,40 +448,41 @@ public class Debug {
         return w;
     }
 
-    /*
     static final int background2 = Color.rgba8888(0, 0, 0, 255 / 3);
 
     public static void renderFrameTimeGraph(float x, float y, float width, float height) {
+        final float barPadding = 0.5f;
+
         Fill.rect(x, y, width, height, background2);
-        Fill.lineWidth(1);
 
         var profiler = app.profiler;
         int samples = profiler.maxSamples();
-        float xStep = width / (samples - 1);
 
+        float barWidth = width / samples;
+        float visualBarWidth = Math.max(0.5f, barWidth - barPadding);
+
+        // Не хочу сейчас разбираться, пусть vsync=60 fps
         int targetFrametime = app.framerate() > 0 ? app.framerate() : 60;
         float targetMs = 1000f / targetFrametime;
         float maxVisibleMs = targetMs * 2f;
 
-        float targetY = y + targetMs / maxVisibleMs * height;
-        Fill.line(x, targetY, x + width, targetY, green);
-        Fill.lineWidth(1.85f);
-
-        for (int i = 0; i < samples - 1; i++) {
+        for (int i = 0; i < samples; i++) {
+            // Инвертируем индекс:
+            // - i = 0:           нарисует самый старый кадр
+            // - i = samples - 1: нарисует самый последний добавленный кадр (head - 1)
             float currentMs = profiler.getSample(i);
-            float nextMs = profiler.getSample(i + 1);
 
-            float x1 = x + i * xStep;
-            float x2 = x + (i + 1) * xStep;
-
-            float y1 = y + Math.min(currentMs / maxVisibleMs, 1f) * height;
-            float y2 = y + Math.min(nextMs / maxVisibleMs, 1f) * height;
-
+            float barX = x + i * barWidth;
+            float barHeight = Math.min(currentMs / maxVisibleMs, 1f) * height;
             int color = currentMs > targetMs + 1.0f ? red : white;
 
-            Fill.line(x1, y1, x2, y2, color);
+            Fill.rect(barX, y, visualBarWidth, barHeight, color);
         }
 
+        // Зеленая линия обозначает целевой фреймрейт
+        Fill.lineWidth(1f);
+        float targetY = y + (targetMs / maxVisibleMs) * height;
+        Fill.line(x, targetY, x + width, targetY, green);
         Fill.resetLineWidth();
-    }*/
+    }
 }

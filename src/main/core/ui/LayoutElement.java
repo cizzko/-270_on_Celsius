@@ -10,10 +10,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
-
-// |         toppad       toppad            |
-// | leftpad [Child1] gap [Child2] rightpad |
-// |         bottompad    bottompad         |
 public abstract class LayoutElement<This extends LayoutElement<This>>
         implements Element, AlphaAction.Colored {
 
@@ -237,23 +233,23 @@ public abstract class LayoutElement<This extends LayoutElement<This>>
     }
 
     @Override
-    public void onKeyUp(int key, int scancode) {
-        inputListeners.forEach(listener -> listener.onKeyUp(key, scancode));
+    public void onKeyUp(int key, int scancode, int mods) {
+        inputListeners.forEach(listener -> listener.onKeyUp(key, scancode, mods));
     }
 
     @Override
-    public void onKeyDown(int key, int scancode) {
-        inputListeners.forEach(listener -> listener.onKeyDown(key, scancode));
+    public void onKeyDown(int key, int scancode, int mods) {
+        inputListeners.forEach(listener -> listener.onKeyDown(key, scancode, mods));
     }
 
     @Override
-    public void onKeyRepeat(int key, int scancode) {
-        inputListeners.forEach(listener -> listener.onKeyRepeat(key, scancode));
+    public void onKeyRepeat(int key, int scancode, int mods) {
+        inputListeners.forEach(listener -> listener.onKeyRepeat(key, scancode, mods));
     }
 
     @Override
-    public void onCodepoint(int codepoint) {
-        inputListeners.forEach(listener -> listener.onCodepoint(codepoint));
+    public void onCodepoint(int codepoint, int mods) {
+        inputListeners.forEach(listener -> listener.onCodepoint(codepoint, mods));
     }
 
     @Override

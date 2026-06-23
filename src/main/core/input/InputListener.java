@@ -13,13 +13,13 @@ public interface InputListener {
 
     default void onMouseDragged(float x, float y) {}
 
-    default void onKeyUp(int key, int scancode) {}
+    default void onKeyUp(int key, int scancode, int mods) {}
 
-    default void onKeyDown(int key, int scancode) {}
+    default void onKeyDown(int key, int scancode, int mods) {}
 
-    default void onKeyRepeat(int key, int scancode) {}
+    default void onKeyRepeat(int key, int scancode, int mods) {}
 
-    default void onCodepoint(int codepoint) {}
+    default void onCodepoint(int codepoint, int mods) {}
 
     default void onMouseEnter(float x, float y) {}
 

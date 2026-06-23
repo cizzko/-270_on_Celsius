@@ -12,7 +12,7 @@ public class KeyboardListener implements InputListener {
     }
 
     @Override
-    public void onKeyDown(int k, int scancode) {
+    public void onKeyDown(int k, int scancode, int mods) {
         if (key == k) {
             action.run();
         }

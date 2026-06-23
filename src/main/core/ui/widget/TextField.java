@@ -348,7 +348,7 @@ public final class TextField extends LayoutElement<TextField> {
         }
 
         @Override
-        public void onKeyDown(int key, int scancode) {
+        public void onKeyDown(int key, int scancode, int mods) {
             switch (key) {
                 case GLFW_KEY_HOME -> {
                     if (length == 0) {
@@ -390,7 +390,7 @@ public final class TextField extends LayoutElement<TextField> {
                     }
                 }
                 default -> {
-                    onRepeatableKey(key);
+                    onRepeatableKey(key, mods);
                 }
             }
         }
@@ -441,11 +441,11 @@ public final class TextField extends LayoutElement<TextField> {
         }
 
         @Override
-        public void onKeyRepeat(int key, int scancode) {
-            onRepeatableKey(key);
+        public void onKeyRepeat(int key, int scancode, int mods) {
+            onRepeatableKey(key, mods);
         }
 
-        private void onRepeatableKey(int key) {
+        private void onRepeatableKey(int key, int mods) {
             switch (key) {
                 case GLFW_KEY_BACKSPACE -> delete(-1);
                 case GLFW_KEY_DELETE -> delete(1);
@@ -456,7 +456,7 @@ public final class TextField extends LayoutElement<TextField> {
                         setSelection(0, length);
                         delete(1);
                     } else {
-                        onCodepoint('\n');
+                        onCodepoint('\n', mods);
                     }
                 }
                 case GLFW_KEY_RIGHT -> {
@@ -626,7 +626,7 @@ public final class TextField extends LayoutElement<TextField> {
         }
 
         @Override
-        public void onCodepoint(int codepoint) {
+        public void onCodepoint(int codepoint, int mods) {
             if (hasSelection()) {
                 deleteSelection();
                 resetSelection();

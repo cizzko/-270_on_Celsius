@@ -2,7 +2,7 @@ package core.g2d;
 
 import core.Global;
 import core.g2d.UniformBuffer.Uniform;
-import core.graphic.Camera2;
+import core.graphic.Camera;
 import core.math.Vector2f;
 import core.pool.Pool;
 import core.pool.Poolable;
@@ -355,7 +355,7 @@ public final class StackfulRender {
     public static void color(int rgba8888) { stateFrame.colorRgba8888 = rgba8888; }
     public static void resetColor() { stateFrame.colorRgba8888 = Color.white; }
 
-    public static void camera(Camera2 camera) {
+    public static void camera(Camera camera) {
         stateFrame.logicalRatio.set(camera.projectionScale);
         var camPos = camera.position;
         stateFrame.cameraPosition.set(camPos.xf(), camPos.yf());

@@ -2,10 +2,10 @@ package core;
 
 import core.util.Config;
 import core.ui.menu.Pause;
+import core.util.Debug;
 import org.lwjgl.glfw.GLFW;
 
-import static core.Global.input;
-import static core.Global.uiScene;
+import static core.Global.*;
 import static core.Window.windowFocused;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
@@ -13,6 +13,13 @@ public final class Hotkeys {
     public static void inputUpdate() {
         if (Global.input.justPressed(GLFW.GLFW_KEY_F12)) {
             Window.toggleFullscreen();
+        }
+        if (Debug.debugLevel > 0) {
+            if (input.scrollDelta() > 0) {
+                camera.setZoom(camera.zoom() * 1.1f);
+            } else if (input.scrollDelta() < 0) {
+                camera.setZoom(camera.zoom() / 1.1f);
+            }
         }
     }
 

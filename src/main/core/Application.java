@@ -1,5 +1,6 @@
 package core;
 
+import core.util.FrameTimeProfiler;
 import core.util.JavaInterpreter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -9,6 +10,7 @@ import org.lwjgl.system.Platform;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Objects;
+import java.util.concurrent.locks.LockSupport;
 
 public class Application {
     public static final Logger log = LogManager.getLogger("Game");
@@ -101,7 +103,7 @@ public class Application {
         prevFrameTime = prevSwapTime = frameCounterTime = System.nanoTime();
     }
 
-    // public final FrameTimeProfiler profiler = new FrameTimeProfiler(100);
+    public final FrameTimeProfiler profiler = new FrameTimeProfiler(50);
 
     protected void updateTime() {
         long now = System.nanoTime();
@@ -109,7 +111,7 @@ public class Application {
         float deltaTime = (now - prevFrameTime) * 1e-9f;
         prevFrameTime = now;
 
-        // profiler.addFrameTime(deltaTime);
+        profiler.addFrameTime(deltaTime);
         Time.delta = Math.clamp(deltaTime * Time.ONE_SECOND, 0.0001f, Time.ONE_SECOND / 10f);
 
         if (now - frameCounterTime >= 1e9f) {
@@ -132,25 +134,15 @@ public class Application {
                 long toWait = (long) (frameTime - elapsedTime);
                 long targetTime = System.nanoTime() + toWait;
 
-                while (toWait > 1_500_000L) {
-                    long sleepMs = (toWait / 1_000_000L) - 1;
-                    if (sleepMs <= 0) break;
-
-                    try {
-                        Thread.sleep(sleepMs);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                        return;
-                    }
-
+                while (toWait > 100_000L) {
+                    LockSupport.parkNanos(toWait - 50_000L); // закладываем время под spurious wakeup
                     toWait = targetTime - System.nanoTime();
                 }
-
                 while (System.nanoTime() < targetTime)
                     Thread.onSpinWait();
             }
+            prevSwapTime = System.nanoTime();
         }
-        prevSwapTime = System.nanoTime();
     }
 
     public final int fps() {

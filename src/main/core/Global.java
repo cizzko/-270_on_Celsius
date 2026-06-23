@@ -6,7 +6,7 @@ import core.content.ContentManager;
 import core.content.EntityPool;
 import core.content.creatures.PlayerEntity;
 import core.g2d.Atlas;
-import core.graphic.Camera2;
+import core.graphic.Camera;
 import core.input.InputHandler;
 import core.lang.LangTranslation;
 
@@ -22,7 +22,7 @@ public final class Global {
     public static final LangTranslation lang = new LangTranslation();
     public static final EntityPool entityPool = new EntityPool(Constants.Entity.MAX_COUNT);
     public static PlayerEntity player;
-    public static final Camera2 camera = new Camera2(WorldCoordinates.BLOCK_SIZE);
+    public static final Camera camera = new Camera(WorldCoordinates.BLOCK_SIZE);
     public static GameSettings gameSettings;
 
     public static World world;

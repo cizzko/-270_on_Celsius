@@ -3,7 +3,7 @@ package core;
 import core.ui.Element;
 import core.g2d.Render;
 import core.g2d.StackfulRender;
-import core.graphic.Camera2;
+import core.graphic.Camera;
 import core.input.InputListener;
 import core.ui.LayoutElement;
 import core.ui.LayoutGroup;
@@ -16,7 +16,7 @@ import static core.Global.input;
 public final class UIScene implements InputListener {
     public static final Logger log = LogManager.getLogger();
 
-    private final Camera2 view = new Camera2(1);
+    private final Camera view = new Camera(1);
 
     private LayoutElement<?> mouseOverElement, keyboardFocus, scrollFocus, touchFocus;
 
@@ -57,7 +57,7 @@ public final class UIScene implements InputListener {
         rootElement.prefSize(width, height);
     }
 
-    public Camera2 view() {
+    public Camera view() {
         return view;
     }
 
@@ -219,38 +219,38 @@ public final class UIScene implements InputListener {
     }
 
     @Override
-    public void onKeyUp(int key, int scancode) {
+    public void onKeyUp(int key, int scancode, int mods) {
         var focus = keyboardFocus;
         if (focus != null) {
             log.trace("onKeyUp({})", focus);
-            focus.onKeyUp(key, scancode);
+            focus.onKeyUp(key, scancode, mods);
         }
     }
 
     @Override
-    public void onKeyDown(int key, int scancode) {
+    public void onKeyDown(int key, int scancode, int mods) {
         var focus = keyboardFocus;
         if (focus != null) {
             log.trace("onKeyDown({})", focus);
-            focus.onKeyDown(key, scancode);
+            focus.onKeyDown(key, scancode, mods);
         }
     }
 
     @Override
-    public void onKeyRepeat(int key, int scancode) {
+    public void onKeyRepeat(int key, int scancode, int mods) {
         var focus = keyboardFocus;
         if (focus != null) {
             log.trace("onKeyRepeat({})", focus);
-            focus.onKeyRepeat(key, scancode);
+            focus.onKeyRepeat(key, scancode, mods);
         }
     }
 
     @Override
-    public void onCodepoint(int codepoint) {
+    public void onCodepoint(int codepoint, int mods) {
         var focus = keyboardFocus;
         if (focus != null) {
             log.trace("onCodepoint({})", focus);
-            focus.onCodepoint(codepoint);
+            focus.onCodepoint(codepoint, mods);
         }
     }
 // endregion
