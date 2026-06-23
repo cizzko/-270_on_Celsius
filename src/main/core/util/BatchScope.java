@@ -78,7 +78,7 @@ public final class BatchScope implements Disposable, Executor {
                 }
             }
             if (e != null)
-                FutureUtil.sneakyThrow(e);
+                FutureUtil.uncheckedThrow(e);
         } catch (Throwable t) {
             for (var e : tasks)
                 e.cancel(true);

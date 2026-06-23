@@ -3,9 +3,6 @@ package core.g2d;
 import core.graphic.BitMap;
 import core.util.Disposable;
 
-import java.awt.image.BufferedImage;
-
-import static core.graphic.TextureLoader.decodeImage;
 import static org.lwjgl.opengl.GL46.*;
 
 public final class Texture implements Drawable, Disposable {
@@ -14,24 +11,11 @@ public final class Texture implements Drawable, Disposable {
     final short glHandle;
 
     private final int width, height;
-    private final short u, v, u2, v2;
 
-    Texture(short glHandle, int width, int height, short u, short v, short u2, short v2) {
+    private Texture(short glHandle, int width, int height) {
         this.glHandle = glHandle;
         this.width = width;
         this.height = height;
-        this.u = BytePack.toB16(u);
-        this.v = BytePack.toB16(v);
-        this.u2 = BytePack.toB16(u2);
-        this.v2 = BytePack.toB16(v2);
-    }
-
-    static Texture load(BufferedImage bufferedImage,
-                        int glTarget,
-                        int glClamp,
-                        short u, short v, short u2, short v2) {
-        var image = decodeImage(bufferedImage);
-        return load(image, glTarget, glClamp, u, v, u2, v2);
     }
 
     static short genId() {
@@ -42,24 +26,24 @@ public final class Texture implements Drawable, Disposable {
         return (short)i;
     }
 
-    static Texture load(BitMap img,
-                        int glTarget, int glClamp,
-                        short u, short v, short u2, short v2) {
+    static Texture load(BitMap img, int target,
+                        int minFilter, int magFilter,
+                        int wrapS, int wrapT) {
         short glHandle = genId();
 
-        glBindTexture(glTarget, glHandle);
-        glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(glTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, glClamp);
-        glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, glClamp);
+        glBindTexture(target, glHandle);
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, minFilter);
+        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magFilter);
+        glTexParameteri(target, GL_TEXTURE_WRAP_S, wrapS);
+        glTexParameteri(target, GL_TEXTURE_WRAP_T, wrapT);
 
         int w = img.width();
         int h = img.height();
         try (img) {
-            glTexImage2D(glTarget, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data());
+            glTexImage2D(target, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data());
         }
-        glBindTexture(glTarget, 0);
-        var tex = new Texture(glHandle, w, h, u, v, u2, v2);
+        glBindTexture(target, 0);
+        var tex = new Texture(glHandle, w, h);
         ResourceCache.texturesById.put(glHandle, tex);
         return tex;
     }
@@ -77,25 +61,11 @@ public final class Texture implements Drawable, Disposable {
         return height;
     }
 
-    @Override
-    public float u() {
-        return u;
-    }
 
-    @Override
-    public float v() {
-        return v;
-    }
-
-    @Override
-    public float u2() {
-        return u2;
-    }
-
-    @Override
-    public float v2() {
-        return v2;
-    }
+    public float u()  { return BytePack.toB16(0f); }
+    public float v()  { return BytePack.toB16(0f); }
+    public float u2() { return BytePack.toB16(1); }
+    public float v2() { return BytePack.toB16(1); }
 
     @Override
     public String toString() {

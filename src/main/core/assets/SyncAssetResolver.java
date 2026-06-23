@@ -1,7 +1,7 @@
 package core.assets;
 
 import core.Global;
-import core.util.FutureScope;
+import core.util.FutureUtil;
 
 import java.util.ArrayList;
 import java.util.concurrent.Callable;
@@ -19,7 +19,7 @@ final class SyncAssetResolver<T, P, S>
 
     final AssetsManager.Asset<T> desc;
     final ArrayList<AssetsManager.Asset<?>> depends = new ArrayList<>();
-    final FutureScope executionScope = new FutureScope();
+    final ArrayList<Future<?>> tasks = new ArrayList<>();
 
     SyncAssetResolver(AssetHandler<T, P, S> loader, String name, P params, S state) {
         this.desc = new AssetsManager.Asset<>(loader.type(), name);
@@ -29,23 +29,36 @@ final class SyncAssetResolver<T, P, S>
         this.state = state;
     }
 
-    public void checkIfFailed() {
-        executionScope.checkIfFailed();
+    private void checkIfFailed() {
+        Throwable exceptionKolbasa = null;
+        for (var fut : tasks) {
+            if (fut.state() == Future.State.FAILED) {
+                var cause = fut.exceptionNow();
+                if (exceptionKolbasa == null) {
+                    exceptionKolbasa = cause;
+                } else {
+                    exceptionKolbasa.addSuppressed(cause);
+                }
+            }
+        }
+        if (exceptionKolbasa != null) {
+            tasks.clear();
+            FutureUtil.uncheckedThrow(exceptionKolbasa);
+        }
     }
 
     @Override
-    public <T2> T2 join(Future<? extends T2> future) {
-        return executionScope.join(future);
+    public <T2> Future<T2> fork(Callable<T2> action) {
+        var task = Global.scheduler.execute(action);
+        tasks.add(task);
+        return task;
     }
 
     @Override
-    public <T2> Future<T2> fork(Callable<T2> callable) {
-        return Global.scheduler.execute(callable);
-    }
-
-    @Override
-    public Future<Void> fork(Runnable runnable) {
-        return Global.scheduler.execute(runnable);
+    public Future<Void> fork(Runnable action) {
+        var task = Global.scheduler.execute(action);
+        tasks.add(task);
+        return task;
     }
 
     @Override
@@ -66,9 +79,8 @@ final class SyncAssetResolver<T, P, S>
     public CompletableFuture<T> load() {
         return Global.scheduler.execute(() -> {
             loader.loadAsync(this, name, params, state);
+            checkIfFailed();
             desc.value = loader.loadSync(this, name, params, state);
-
-            executionScope.checkIfFailed();
 
             desc.dependencies = depends.isEmpty() ? null : depends.toArray(new AssetsManager.Asset[0]);
             Global.assets.setLoaded(loader.type(), name, desc);

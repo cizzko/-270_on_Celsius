@@ -1,12 +1,11 @@
 package core.g2d;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import core.util.Config;
 import core.assets.AssetHandler;
 import core.assets.AssetReleaser;
 import core.assets.AssetResolver;
+import core.util.Config;
 
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,8 +25,8 @@ public final class ShaderHandler extends AssetHandler<Shader, ShaderHandler.Para
 
     @Override
     public void loadAsync(AssetResolver res, String name, Params params, State state) {
-        state.vertSource = res.fork(() -> Files.readString(dir.resolve(params.vertFile(name)), StandardCharsets.UTF_8));
-        state.fragSource = res.fork(() -> Files.readString(dir.resolve(params.fragFile(name)), StandardCharsets.UTF_8));
+        state.vertSource = res.fork(() -> Files.readString(dir.resolve(params.vertFile(name))));
+        state.fragSource = res.fork(() -> Files.readString(dir.resolve(params.fragFile(name))));
         state.attributesSource = res.fork(() -> {
             ObjectNode node;
             try (var is = Files.newInputStream(dir.resolve(params.metaFile(name)))) {
@@ -36,7 +35,7 @@ public final class ShaderHandler extends AssetHandler<Shader, ShaderHandler.Para
             var attributes = node.path("attributes");
 
             var attributesList = new ArrayList<VertexAttribute>(attributes.size());
-            attributes.forEachEntry((key, value) -> {
+            attributes.forEachEntry((_, value) -> {
                 int size = value.required("size").asInt();
                 var type = VertexAttribute.Type.valueOf(
                         value.required("type").asText().toUpperCase(Locale.ROOT));
@@ -69,10 +68,9 @@ public final class ShaderHandler extends AssetHandler<Shader, ShaderHandler.Para
 
     @Override
     public Shader loadSync(AssetResolver res, String name, Params params, State state) throws Exception {
-        String vertSource = res.join(state.vertSource);
-        String fragSource = res.join(state.fragSource);
-        var attributes = res.join(state.attributesSource);
-        res.checkIfFailed();
+        var vertSource = state.vertSource.resultNow();
+        var fragSource = state.fragSource.resultNow();
+        var attributes = state.attributesSource.resultNow();
         return Shader.load(name, vertSource, fragSource, attributes.vertexFormat, attributes.uniforms);
     }
 

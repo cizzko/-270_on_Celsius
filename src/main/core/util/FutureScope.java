@@ -24,7 +24,7 @@ public class FutureScope implements AutoCloseable {
             case 1 ->  {
                 var t = excs.getFirst();
                 excs.clear();
-                FutureUtil.sneakyThrow(t);
+                FutureUtil.uncheckedThrow(t);
             }
             default -> {
                 var t = excs.getFirst();
@@ -33,7 +33,7 @@ public class FutureScope implements AutoCloseable {
                 }
 
                 excs.clear();
-                FutureUtil.sneakyThrow(t);
+                FutureUtil.uncheckedThrow(t);
             }
         }
     }

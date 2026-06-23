@@ -60,9 +60,8 @@ public final class AtlasHandler extends AssetHandler<Atlas, Void, AtlasHandler.S
 
     @Override
     public Atlas loadSync(AssetResolver res, String name, Void params, State state) {
-        var atlas = res.join(state.meta);
-        atlas.texture = res.join(state.texture);
-        res.checkIfFailed();
+        var atlas = state.meta.resultNow();
+        atlas.texture = state.texture.resultNow();
         return atlas;
     }
 

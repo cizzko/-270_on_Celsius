@@ -3,7 +3,9 @@ package core.g2d;
 import core.assets.AssetHandler;
 import core.assets.AssetReleaser;
 import core.assets.AssetResolver;
+import core.graphic.BitMap;
 import core.graphic.RectanglePacker;
+import core.graphic.TextureLoader;
 import core.math.MathUtil;
 import it.unimi.dsi.fastutil.chars.Char2ObjectOpenHashMap;
 
@@ -17,6 +19,7 @@ import static core.g2d.Font.PIXEL_GAP;
 import static core.g2d.Font.fontSize;
 import static core.math.MathUtil.toByteExact;
 import static org.lwjgl.opengl.GL11.GL_TEXTURE_2D;
+import static org.lwjgl.opengl.GL11C.GL_NEAREST;
 import static org.lwjgl.opengl.GL12.GL_CLAMP_TO_EDGE;
 
 public final class FontHandler extends AssetHandler<Font, FontHandler.Params, FontHandler.State> {
@@ -105,14 +108,20 @@ public final class FontHandler extends AssetHandler<Font, FontHandler.Params, Fo
                 packed.y = MathUtil.toShortExact(pos.y);
             }
 
-            BufferedImage atlasImage = new BufferedImage(packer.w, packer.h, BufferedImage.TYPE_INT_ARGB);
-            Graphics2D gr = atlasImage.createGraphics();
-            for (var p : glyphs) {
-                gr.drawImage(p.image, p.x, p.y, null);
-            }
-            gr.dispose();
+            BitMap bitMap;
+            {
+                var atlasImage = new BufferedImage(packer.w, packer.h, BufferedImage.TYPE_INT_ARGB);
+                var gr = atlasImage.createGraphics();
+                for (var p : glyphs) {
+                    gr.drawImage(p.image, p.x, p.y, null);
+                    p.image = null;
+                }
+                gr.dispose();
 
-            return new FontData(atlasImage, glyphs,
+                bitMap = TextureLoader.decodeImage(atlasImage);
+            }
+
+            return new FontData(bitMap, glyphs,
                     ascent, descent, leading,
                     params.size);
         });
@@ -134,10 +143,12 @@ public final class FontHandler extends AssetHandler<Font, FontHandler.Params, Fo
 
     @Override
     public Font loadSync(AssetResolver res, String name, Params params, State state) {
-        var glyphData = res.join(state.texture);
-        res.checkIfFailed();
+        var glyphData = state.texture.resultNow();
 
-        var texture = Texture.load(glyphData.atlas, GL_TEXTURE_2D, GL_CLAMP_TO_EDGE, (short) 0, (short) 0, (short) 1, (short) 1);
+        var texture = Texture.load(
+                glyphData.img, GL_TEXTURE_2D,
+                GL_NEAREST, GL_NEAREST,
+                GL_CLAMP_TO_EDGE, GL_CLAMP_TO_EDGE);
 
         var glyphs = glyphData.glyphs;
         var glyphTable = new Char2ObjectOpenHashMap<Font.Glyph>(glyphs.size());
@@ -170,7 +181,7 @@ public final class FontHandler extends AssetHandler<Font, FontHandler.Params, Fo
         private Future<FontData> texture;
     }
 
-    public record FontData(BufferedImage atlas, ArrayList<GlyphPacked> glyphs,
+    public record FontData(BitMap img, ArrayList<GlyphPacked> glyphs,
                            float ascent, float descent, float leading,
                            float size) {
 

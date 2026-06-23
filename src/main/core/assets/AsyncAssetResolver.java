@@ -1,7 +1,6 @@
 package core.assets;
 
 import core.Global;
-import core.util.FutureScope;
 import org.lwjgl.system.NativeResource;
 
 import java.util.ArrayList;
@@ -22,7 +21,6 @@ final class AsyncAssetResolver<T, P, S>
     final AssetsManager.Asset<T> desc;
     final ArrayList<AssetsManager.Asset<?>> depends = new ArrayList<>();
     final ArrayList<ForkJoinTask<?>> tasks = new ArrayList<>();
-    final FutureScope executionScope = new FutureScope();
 
     public AsyncAssetResolver(AsyncAssetResolver<?, ?, ?> parent,
                               AssetHandler<T, P, S> loader, String name, P params, S state) {
@@ -45,16 +43,16 @@ final class AsyncAssetResolver<T, P, S>
     }
 
     @Override
-    public <A> Future<A> fork(Callable<A> callable) {
-        var task = new DependencyTask<>(this, callable);
+    public <A> Future<A> fork(Callable<A> action) {
+        var task = new DependencyTask<>(this, action);
         tasks.add(task);
         return task;
     }
 
     @Override
-    public Future<Void> fork(Runnable runnable) {
+    public Future<Void> fork(Runnable action) {
         return fork(() -> {
-            runnable.run(); // лень делать отдельный тип
+            action.run(); // лень делать отдельный тип
             return null;
         });
     }
@@ -71,18 +69,8 @@ final class AsyncAssetResolver<T, P, S>
     }
 
     @Override
-    public void checkIfFailed() {
-        executionScope.checkIfFailed();
-    }
-
-    @Override
-    public <R> R join(Future<? extends R> future) {
-        return executionScope.join(future);
-    }
-
-    @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        if (super.cancel(mayInterruptIfRunning) && params != null) {
+        if (super.cancel(mayInterruptIfRunning) && parent != null && params != null) {
             parent.cancel(false); // AsyncAssetResolver не должен прерываться
             return true;
         }
@@ -106,7 +94,7 @@ final class AsyncAssetResolver<T, P, S>
         int last = tasks.size() - 1;
         Throwable anyExc = null;
         for (int i = last; i >= 0; --i) {
-            ForkJoinTask<?> t = tasks.get(i);
+            var t = tasks.get(i);
             if (isCancelled()) { // нас мог оповестить дочерний таск
                 break;
             }
@@ -124,7 +112,7 @@ final class AsyncAssetResolver<T, P, S>
         }
 
         for (int i = 1; i <= last; ++i) {
-            ForkJoinTask<?> t = tasks.get(i);
+            var t = tasks.get(i);
             if (anyExc != null || isCancelled()) {
                 // первый таск в очереди упал с исключением, отменяем все остальные
                 t.cancel(true);
@@ -132,11 +120,13 @@ final class AsyncAssetResolver<T, P, S>
                 t.quietlyJoin();
             }
             var exc = t.getException();
-            // либо пользовательские исключения либо CancellationException
-            if (anyExc == null) {
-                anyExc = exc;
-            } else {
-                anyExc.addSuppressed(exc);
+            if (exc != null) {
+                // либо пользовательские исключения либо CancellationException
+                if (anyExc == null) {
+                    anyExc = exc;
+                } else {
+                    anyExc.addSuppressed(exc);
+                }
             }
         }
 
@@ -154,7 +144,6 @@ final class AsyncAssetResolver<T, P, S>
         var syncAction = Global.scheduler.post(() -> {
             T assetInst = loader.loadSync(this, name, params, state);
 
-            executionScope.checkIfFailed();
             if (assetInst == null) {
                 throw new IllegalStateException(
                         loader + " returned null for asset '" +

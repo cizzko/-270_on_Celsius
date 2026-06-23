@@ -12,7 +12,7 @@ public class FutureUtil {
                 } catch (InterruptedException e) {
                     interrupted = true;
                 } catch (ExecutionException | CancellationException e) {
-                    sneakyThrow(e.getCause());
+                    uncheckedThrow(e.getCause());
                 }
             }
         } finally {
@@ -22,7 +22,7 @@ public class FutureUtil {
         }
     }
 
-    public static <E extends Throwable> void sneakyThrow(Throwable e) throws E {
+    public static <E extends Throwable> void uncheckedThrow(Throwable e) throws E {
         throw (E) e;
     }
 }

@@ -66,36 +66,6 @@ public final class StackfulRender {
         );
     }
 
-    public static void drawPostEffect(Drawable screenTexture) {
-        var rlist = stateFrame.rlist;
-
-        short vertexCountPerQuad = queue.getVertexCountPerQuad(stateFrame.primitiveType);
-        rlist.checkSpace(1, vertexCountPerQuad);
-
-        var item = rlist.allocItem();
-        item.vertexOffset = rlist.getVertexIndex();
-        item.vertexCount = vertexCountPerQuad;
-
-        // rlist.addRectangle(state.primitiveType, state.colorRgba8888,
-        //         -1, 1,   // x1, y1 (левый верхний)
-        //         -1, -1,    // x2, y2 (левый нижний)
-        //         1, -1,     // x3, y3 (правый нижний)
-        //         1, 1,      // x4, y4 (правый верхний)
-        //         0, 0,       // u,  v  (левая нижняя точка текстуры)
-        //         1, 1);
-
-        short INDICES_PER_QUAD = 6;
-        short VERTICES_PER_QUAD = 4;
-        int quadIndex = item.vertexOffset / VERTICES_PER_QUAD;
-
-        item.indexOffset = quadIndex * INDICES_PER_QUAD;
-        item.indexCount = INDICES_PER_QUAD;
-        item.sortKey = makeSortKey(stateFrame.primitiveType, stateFrame.layer, stateFrame.blending, screenTexture.id(), stateFrame.shader.id(), stateFrame.ublock, rlist.getItemIndex());
-
-        item.validate();
-        rlist.push(item);
-    }
-
     public static final class StateFrame implements Poolable, Disposable {
         public static final int UBLOCK_UNSET = -1;
 

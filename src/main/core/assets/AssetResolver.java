@@ -4,12 +4,12 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
 
-public interface AssetResolver {
+public sealed interface AssetResolver permits BaseAssetResolver {
 
     AssetsManager.LoadType loadType();
 
-    <T> Future<T> fork(Callable<T> callable);
-    Future<Void> fork(Runnable runnable);
+    <T> Future<T> fork(Callable<T> action);
+    Future<Void> fork(Runnable action);
 
     default <T> Future<T> load(Class<T> type, String name) {
         return load(type, name, loadType(), null);
@@ -22,9 +22,4 @@ public interface AssetResolver {
     }
 
     <T, P> Future<T> load(Class<T> type, String name, AssetsManager.LoadType loadType, Consumer<? super P> paramsModifier);
-
-    void checkIfFailed();
-
-    // Возвращает null в случае ошибки. Ошибка проверяется через checkIfFailed()
-    <T> T join(Future<? extends T> future);
 }

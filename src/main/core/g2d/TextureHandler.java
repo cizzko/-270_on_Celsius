@@ -35,28 +35,8 @@ public final class TextureHandler extends AssetHandler<Texture, TextureHandler.P
 
     @Override
     public Texture loadSync(AssetResolver res, String name, Params params, State state) {
-        final int glTarget = GL_TEXTURE_2D;
-        short glHandle = Texture.genId();
-
-        glBindTexture(glTarget, glHandle);
-        glTexParameteri(glTarget, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(glTarget, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexParameteri(glTarget, GL_TEXTURE_WRAP_S, params.glClamp);
-        glTexParameteri(glTarget, GL_TEXTURE_WRAP_T, params.glClamp);
-
-        int w, h;
-        try (var img = res.join(state.imageData)) {
-            res.checkIfFailed();
-
-            w = img.width();
-            h = img.height();
-            glTexImage2D(glTarget, 0, GL_RGBA, w, h, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data());
-        }
-
-        glBindTexture(glTarget, 0);
-        Texture texture = new Texture(glHandle, w, h, (short) 0, (short) 0, (short) 1, (short) 1);
-        ResourceCache.texturesById.put(glHandle, texture);
-        return texture;
+        var pixels = state.imageData.resultNow();
+        return Texture.load(pixels, params.target, params.minFilter, params.magFilter, params.wrapS, params.wrapT);
     }
 
     @Override
@@ -71,7 +51,11 @@ public final class TextureHandler extends AssetHandler<Texture, TextureHandler.P
 
 
     public static final class Params {
-        public int glClamp = GL_CLAMP_TO_EDGE;
+        public int target = GL_TEXTURE_2D;
+        public int minFilter = GL_NEAREST;
+        public int magFilter = GL_NEAREST;
+        public int wrapS = GL_CLAMP_TO_EDGE;
+        public int wrapT = GL_CLAMP_TO_EDGE;
     }
 
     public static final class State {

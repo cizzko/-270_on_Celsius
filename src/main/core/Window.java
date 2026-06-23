@@ -1,10 +1,9 @@
 package core;
 
 import com.sun.management.OperatingSystemMXBean;
-import core.util.Config;
-import core.assets.AssetsManager;
 import core.g2d.*;
 import core.input.InputHandler;
+import core.util.Config;
 import core.util.Debug;
 import core.util.JavaInterpreter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -102,8 +101,10 @@ public final class Window extends Application {
 
     @Override
     protected void init() throws Throwable {
-        // Хмм, надо бы где-то тут создавать сцену
+        JavaInterpreter.init();
+
         assets.load(Font.class, "arial.ttf");
+        assets.load(Atlas.class, "sprites");
 
         if (Debug.debugLevel >= 4) {
             Configuration.DEBUG.set(true);
@@ -279,19 +280,12 @@ public final class Window extends Application {
             }
         }));
 
-        assets.load(Atlas.class, "sprites", AssetsManager.LoadType.SYNC);
         Shaders.loadAll();
         Render.init();
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
 
-        glfwShowWindow(glfwHandle);
-
         lang.load();
-
-        if (Debug.debugLevel >= 3) {
-            JavaInterpreter.init();
-        }
 
         setGameScene(new MenuScene());
     }

@@ -2,6 +2,9 @@ package core.assets;
 
 import java.util.List;
 
-interface BaseAssetResolver extends AssetResolver {
+sealed interface BaseAssetResolver
+        extends AssetResolver
+        permits AsyncAssetResolver, SyncAssetResolver {
+
     List<AssetsManager.Asset<?>> depends();
 }

@@ -15,14 +15,33 @@ import java.lang.management.ManagementFactory;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.concurrent.ThreadFactory;
 import java.util.function.Consumer;
 
 public class JavaInterpreter {
     private static final Logger log = LogManager.getLogger("Console");
 
+    private static ThreadFactory JSHELL_THREAD_FACTORY;
+
     public static JShell jshell;
 
     public static void init() {
+        if (Debug.debugLevel < 3) {
+            return;
+        }
+        JSHELL_THREAD_FACTORY = Thread.ofVirtual()
+                .name("JShellThread", 0)
+                .factory();
+
+        execute(JavaInterpreter::init0);
+    }
+
+    private static void execute(Runnable action) {
+        var vthread = JSHELL_THREAD_FACTORY.newThread(action);
+        vthread.start();
+    }
+
+    private static void init0() {
         var runtimeMxBean = ManagementFactory.getRuntimeMXBean();
 
         var jvmArgs = runtimeMxBean.getInputArguments();
@@ -47,12 +66,14 @@ public class JavaInterpreter {
                 .executionEngine(new LocalExecutionControlProvider(), Map.of());
         builder.compilerOptions(opts.toArray(new String[0]));
 
-        jshell = builder.build();
+        var comp = builder.build();
 
         if (!Global.assets.isExploded()) {
             // Этот магический ключик указывает на modules у jlink образа
-            jshell.addToClasspath(System.getProperty("sun.boot.library.path"));
+            comp.addToClasspath(System.getProperty("sun.boot.library.path"));
         }
+
+        jshell = comp;
 
         Consumer<String> out = (_) -> {};
 
@@ -96,7 +117,12 @@ public class JavaInterpreter {
     }
 
     public static void execute(String snippet, Console console) {
-        Thread.ofVirtual().name("JShellThread", 0).start(() -> {
+
+        if (jshell == null) {
+            return; // TODO не критично?
+        }
+
+        execute(() -> {
             var outLines = new ObjectArrayList<String>();
             executeSync(snippet, outLines::add);
             Global.scheduler.post(() -> {
