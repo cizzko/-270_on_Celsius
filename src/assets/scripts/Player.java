@@ -50,7 +50,7 @@ void give(String itemId, int amount) {
         log.error("Unknown item with id: '{}'", itemId);
         return;
     }
-    Inventory.addItemStack(new ItemStack(item, amount));
+    player.addItem(new ItemStack(item, amount));
 }
 
 void tpBlock(float x, float y) {

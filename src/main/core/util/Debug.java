@@ -9,10 +9,13 @@ import core.content.blocks.Block;
 import core.content.blocks.data.TileData;
 import core.content.entity.LivingEntity;
 import core.content.items.Item;
-import core.g2d.*;
+import core.g2d.Fill;
+import core.g2d.Font;
+import core.g2d.Render;
+import core.g2d.StackfulRender;
 import core.graphic.Color;
-import core.graphic.GuiDrawing;
 import core.graphic.ShadowMap;
+import core.graphic.WorldDrawing;
 import core.math.TmpShapes;
 import core.math.Vector2d;
 import core.ui.Styles;
@@ -50,14 +53,16 @@ public class Debug {
     // Включается по нажатию F3+M английской
     public static boolean debugMesh = false;
 
+    public static final boolean hardBoundsCheck = false;
+
     @SuppressWarnings("unchecked")
     public static <T extends Throwable> void rethrow(Throwable t) throws T {
         throw (T) t;
     }
 
-    // region .MENU
+    // region GameState.MENU
     public static void initMenu() {
-        if (debugLevel < 2 || once2) {
+        if (once2) {
             return;
         }
         once2 = true;
@@ -140,9 +145,10 @@ public class Debug {
         StackfulRender.z(Render.LAYER_DEBUG);
 
         entityPool.forEachType(LivingEntity.class, ent -> {
-            var pos = camera.projectTo(ent.posTo(TmpShapes.v1d), TmpShapes.v1f);
-            Fill.rectangleBorder(pos.x, pos.y, toPixels(ent.width()), toPixels(ent.height()), white);
-            GuiDrawing.drawText(pos.x, pos.y, "HasFloor: " + ent.hasFloor(), black);
+            var pos = ent.posTo(TmpShapes.v1d);
+            var rel = camera.relativize(pos);
+            Fill.rectangleBorder(rel.x, rel.y, ent.width(), ent.height(), INV_BLOCK_SIZE, white);
+            WorldDrawing.drawGameText(rel.x, rel.y, "HasFloor: " + ent.hasFloor(), black);
         });
     }
 

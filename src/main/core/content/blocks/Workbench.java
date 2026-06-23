@@ -19,6 +19,11 @@ public class Workbench extends Block {
     }
 
     @Override
+    public final boolean isEntity() {
+        return true;
+    }
+
+    @Override
     protected WorkbenchEntity constructEntity() {
         return new WorkbenchEntity(this);
     }

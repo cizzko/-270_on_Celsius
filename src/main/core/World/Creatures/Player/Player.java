@@ -93,11 +93,12 @@ public class Player {
         }
     }
 
-    private static void updateBlockByTool(int blockX, int blockY, Block object, ItemTool tool, ItemData.Tool data) {
+    private static void updateBlockByTool(int blockX, int blockY, Block block, ItemTool tool, ItemData.Tool data) {
         int blockId = world.getBlockId(blockX, blockY);
         int hp = world.getHp(blockX, blockY);
 
-        if ((getDistanceToMouse() <= tool.maxInteractionRange && ShadowMap.getDegree(blockX, blockY) == 0) || !breakRules) {
+        // TODO тут нужен честный raycast
+        if (!breakRules || (getDistanceToMouse() <= tool.maxInteractionRange)) {
             WorldDrawing.addBlockPreview(blockX, blockY, (short) blockId, (byte) hp, true);
 
             long nowTime = System.currentTimeMillis();
@@ -105,13 +106,15 @@ public class Player {
                 data.lastHitTime = nowTime;
 
                 if (world.damage(blockX, blockY, tool.damage)) {
-                    WorldUtils.dropItem(new ItemStack(content.itemById(object)), blockX, blockY);
+                    WorldUtils.dropItem(new ItemStack(content.itemById(block)), blockX, blockY);
 
                     // трава, камешки
                     // Триггерит физ взаимодействие
-                    var block = world.getBlock(blockX, blockY + 1);
-                    if (block != null && block != Block.AIR && block.maxHp <= 1 && world.damage(blockX, blockY + 1, 1)) {
-                        WorldUtils.dropItem(new ItemStack(content.itemById(block)), blockX, blockY + 1);
+                    var upperBlock = world.getBlock(blockX, blockY + 1);
+                    if (upperBlock != null &&
+                                upperBlock != Block.AIR && upperBlock.maxHp <= 1 &&
+                                world.damage(blockX, blockY + 1, 1)) {
+                        WorldUtils.dropItem(new ItemStack(content.itemById(upperBlock)), blockX, blockY + 1);
                     }
                 }
             }

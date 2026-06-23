@@ -1,10 +1,9 @@
 {
   "ClassType": "block",
-  "Resistance": 95,
+  "Resistance": 40,
   "Texture": "textures/blocks/electricPole",
   "Type": "WALKABLE",
   "MaxHp": 30,
-  "Density": 1,
   "LightTransmission": 100,
   "Requirements": {
     "trunk": 2,

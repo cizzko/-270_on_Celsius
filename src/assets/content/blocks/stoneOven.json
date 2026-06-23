@@ -1,6 +1,7 @@
 {
   "ClassType": "factory",
   "Type": "WALKABLE",
+  "Resistance": 40,
   "Texture": "textures/blocks/stoneOven",
   "Input": {
     "#stone": 1

@@ -1,9 +1,8 @@
 {
   "ClassType": "block",
   "Texture": "textures/blocks/air",
-  "Resistance": 90,
+  "Resistance": 15,
   "Type": "GAS",
   "MaxHp": 0,
-  "Density": 0,
   "LightTransmission": 255
 }

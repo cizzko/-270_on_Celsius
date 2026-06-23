@@ -21,11 +21,15 @@ import core.content.entity.BlockEntity;
 import core.graphic.ShadowMap;
 import core.math.MathUtil;
 import core.math.Point2i;
+import core.util.Debug;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.Objects;
 import java.util.concurrent.ForkJoinPool;
 
 import static core.Constants.availableProcessors;
@@ -42,6 +46,8 @@ import static core.World.WorldGenerator.WorldGeneratorConstants.COPY_SIZE;
 /// ```
 @JsonSerialize(using = World.WorldSerializer.class)
 public final class World {
+    private static final Logger log = LogManager.getLogger(World.class);
+
     static short lastId = -1;
     static Block lastBlock = null;
     static final Point2i tmp = new Point2i();
@@ -107,9 +113,6 @@ public final class World {
         public /* unsigned */ byte[] hp;
         public Meta meta;
 
-        // Будущее к которому стремимся:
-        // public final byte[] temperature;
-        // public final byte[] light;
         @JsonDeserialize(using = DataDeserializer.class)
         public Int2ObjectOpenHashMap<TileData> data;
         @JsonDeserialize(using = EntityDeserializer.class)
@@ -147,14 +150,14 @@ public final class World {
     }
 
     public void update() {
-        for (BlockEntity entity : entity.values()) {
+        entity.values().forEach(ent -> {
             try {
-                entity.update();
+                ent.update();
             } catch (Exception e) {
-                Application.log.error("Failed to update block entity {} at ({}. {})",
-                        entity, entity.x(), entity.y(), e);
+                log.error("({}, {}) Failed to update block entity {}",
+                        ent.x(), ent.y(), ent, e);
             }
-        }
+        });
     }
 
     public Meta meta() { return meta; }
@@ -220,18 +223,15 @@ public final class World {
 
     public @Nullable BlockEntity getEntity(int x, int y) {
         var block = getBlock(x, y);
-        if (block == null) {
+        if (block == null || !block.isEntity()) {
             return null;
-        }
-        if (!block.isMultiblock()) {
-            return entity.get(pos2index(x, y));
         }
         Point2i rootPos = tmp;
         if (getRootBlockPosTo(x, y, rootPos)) {
             return entity.get(pos2index(rootPos.x, rootPos.y));
+        } else {
+            return entity.get(pos2index(x, y));
         }
-        // не должно приходить
-        return null;
     }
 
     public boolean inBounds(int x, int y) {
@@ -269,25 +269,35 @@ public final class World {
 
     /// @return {@code -1} в случае выхода за границу. В остальных случаях здоровье в отрезке `[0, 255]`
     public int getHp(int x, int y) {
-        // Global.app.ensureMainThread();
-        return inBounds(x, y) ? hp[pos2index(x, y)] : -1;
+        if (!inBounds(x, y)) {
+            if (Debug.hardBoundsCheck) {
+                Objects.checkIndex(x, world.sizeX);
+                Objects.checkIndex(y, world.sizeY);
+            } else {
+                return -1;
+            }
+        }
+        return Byte.toUnsignedInt(hp[pos2index(x, y)]);
     }
 
     /// @param newHp новое значение здоровья блока. Должно быть в отрезке `[0, 255]`
     public void setHp(int x, int y, @MathUtil.UnsignedByte int newHp) {
-        // Global.app.ensureMainThread();
         // if (newHp < 0 || newHp >= (1 << 8))
         //     throw new IllegalArgumentException("HP out of range: [0, 255]");
 
         if (!inBounds(x, y)) {
+            if (Debug.hardBoundsCheck) {
+                Objects.checkIndex(x, world.sizeX);
+                Objects.checkIndex(y, world.sizeY);
+            }
             return;
         }
         if (getRootBlockPosTo(x, y, tmp)) {
             var rootBlock = getBlock(tmp);
 
-            for (int blockY = 0; blockY < rootBlock.tileCountY; blockY++) {
-                for (int blockX = 0; blockX < rootBlock.tileCountX; blockX++) {
-                    setHpImpl(x + blockX, y + blockY, newHp);
+            for (int dy = 0; dy < rootBlock.tileCountY; dy++) {
+                for (int dx = 0; dx < rootBlock.tileCountX; dx++) {
+                    setHpImpl(x + dx, y + dy, newHp);
                 }
             }
         } else {
@@ -303,8 +313,15 @@ public final class World {
 
     /// @return {@code -1} в случае выхода за границу. В остальных случаях неотрицательный blockId
     public int getBlockId(int x, int y) {
-        // Global.app.ensureMainThread();
-        return inBounds(x, y) ? Short.toUnsignedInt(tiles[pos2index(x, y)]) : -1;
+        if (!inBounds(x, y)) {
+            if (Debug.hardBoundsCheck) {
+                Objects.checkIndex(x, world.sizeX);
+                Objects.checkIndex(y, world.sizeY);
+            } else {
+                return -1;
+            }
+        }
+        return Short.toUnsignedInt(tiles[pos2index(x, y)]);
     }
 
     public Block.Type getBlockType(Point2i pos)  { return getBlockType(pos.x, pos.y); }
@@ -322,36 +339,44 @@ public final class World {
     public int index2x(int index)      { return index % sizeX; }
     public int index2y(int index)      { return index / sizeX; }
 
-    private void setImpls(int x, int y, Block object, boolean followingRules) {
-        destroyBlock(x, y);
-        if (object == Block.AIR) {
+    private void setImpls(int x, int y, Block block, boolean followingRules) {
+        if (block == Block.AIR) {
+            destroyBlock(x, y);
             return;
         }
 
-        var newEntity = object.createEntity(x, y);
-        if (newEntity != null) {
-            entity.put(pos2index(x, y), newEntity);
+        if (followingRules && !checkPlaceRules(x, y, block)) {
+            return;
+        }
+        destroyBlock(x, y); // TODO избыточно
+
+        if (block.isEntity()) {
+            var ent = block.createEntity(x, y);
+            Objects.requireNonNull(ent); // инвариант
+            entity.put(pos2index(x, y), ent);
         }
 
-        setHp(x, y, object.maxHp);
-
-        if (object.isMultiblock()) {
+        if (block.isMultiblock()) {
             // TODO тут должна быть проверка для мультиблока на followingRules, чтобы в цикле этим не заниматься
-            for (int currentY = 0; currentY < object.tileCountY; currentY++) {
-                for (int currentX = 0; currentX < object.tileCountX; currentX++) {
+            for (int currentY = 0; currentY < block.tileCountY; currentY++) {
+                for (int currentX = 0; currentX < block.tileCountX; currentX++) {
                     int partX = x + currentX, partY = y + currentY;
+                    int idx = pos2index(partX, partY);
 
-                    setImpl(partX, partY, object, followingRules);
-
+                    tiles[idx] = block.id;
+                    hp[idx] = (byte) block.maxHp;
                     if (partX != x || partY != y) {
-                        setHp(partX, partY, object.maxHp);
                         setData(partX, partY, new TileData.MultiblockPart((partX - x), (partY - y)));
                     }
                 }
             }
         } else {
-            setImpl(x, y, object, followingRules);
+            int idx = pos2index(x, y);
+            tiles[idx] = block.id;
+            hp[idx] = (byte) block.maxHp;
         }
+
+        ShadowMap.update();
     }
 
     private void destroyBlock(int x, int y) {
@@ -379,12 +404,6 @@ public final class World {
         }
     }
 
-    private void setImpl(int x, int y, Block block, boolean followingRules) {
-        if (!followingRules || checkPlaceRules(x, y, block)) {
-            tiles[pos2index(x, y)] = block.id;
-        }
-    }
-
     private void deleteEntity(int x, int y) {
         var rootEntity = entity.remove(pos2index(x, y));
         if (rootEntity != null) {
@@ -408,15 +427,15 @@ public final class World {
         ShadowMap.update();
     }
 
-    public boolean checkPlaceRules(int x, int y, Block root) {
+    public boolean checkPlaceRules(int x, int y, Block block) {
         var currentBlock = getBlock(x, y);
         if (currentBlock != Block.AIR) {
             return false;
         }
 
-        if (root.isMultiblock()) {
+        if (block.isMultiblock()) {
             // под этим y есть твёрдые блоки
-            for (int xBlock = 0; xBlock < root.tileCountX; xBlock++) {
+            for (int xBlock = 0; xBlock < block.tileCountX; xBlock++) {
                 var underBlock = getBlock(x + xBlock, y - 1);
 
                 if (underBlock == null || underBlock.type != Block.Type.SOLID) {
@@ -424,32 +443,29 @@ public final class World {
                 }
             }
 
-            for (int yBlock = 0; yBlock < root.tileCountY; yBlock++) {
-                for (int xBlock = 0; xBlock < root.tileCountX; xBlock++) {
-                    var block = getBlockId(x + xBlock, y + yBlock);
-
-                    if (block != 0) {
+            for (int yBlock = 0; yBlock < block.tileCountY; yBlock++) {
+                for (int xBlock = 0; xBlock < block.tileCountX; xBlock++) {
+                    int tile = getBlockId(x + xBlock, y + yBlock);
+                    if (tile != 0) {
                         return false;
                     }
                 }
             }
 
-            if (root.type == Block.Type.SOLID) {
-                boolean anyCollision = entityPool.index().any(x, y, root.tileCountX, root.tileCountY);
-                return !anyCollision;
+            if (block.type == Block.Type.SOLID) {
+                return !entityPool.index().any(x, y, block.tileCountX, block.tileCountY);
             }
         } else {
-            if (root.type == Block.Type.SOLID) {
-                boolean anyCollision = entityPool.index().any(x, y, root.tileCountX, root.tileCountY);
-                if (anyCollision) {
+            if (block.type == Block.Type.SOLID) {
+                if (entityPool.index().any(x, y, block.tileCountX, block.tileCountY)) {
                     return false;
                 }
             }
 
             // рядышком есть твёрдый блок
             for (Point2i d : MathUtil.CROSS_OFFSETS) {
-                var block = getBlock(x + d.x, y + d.y);
-                if (block == null || block.type == Block.Type.SOLID) {
+                var neighbor = getBlock(x + d.x, y + d.y);
+                if (neighbor == null || neighbor.type == Block.Type.SOLID) {
                     return true;
                 }
             }

@@ -48,6 +48,11 @@ public class Factory extends Block {
     }
 
     @Override
+    public final boolean isEntity() {
+        return true;
+    }
+
+    @Override
     protected FactoryEntity constructEntity() { return new FactoryEntity(this); }
 
     public enum Malfunction {

@@ -1,9 +1,8 @@
 {
   "ClassType": "block",
-  "Resistance": 95,
+  "Resistance": 40,
   "Texture": "textures/blocks/dirtStone",
   "Type": "SOLID",
   "MaxHp": 100,
-  "Density": 1,
   "LightTransmission": 120
 }

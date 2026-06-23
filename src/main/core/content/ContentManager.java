@@ -190,7 +190,7 @@ public final class ContentManager {
         for (var block : content(contentMap, Block.class).values()) {
             var itemBlock = new ItemBlock(block.key);
             itemBlock.block = block;
-            itemBlock.weight = 50;
+            itemBlock.mass = 50;
             itemBlock.texture = block.texture;
             itemBlock.requirements = block.requirements;
             itemBlock.createWith = block.createWith;

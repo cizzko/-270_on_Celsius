@@ -1,12 +1,10 @@
 package core.content.items;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.databind.util.ClassUtil;
 import core.Global;
 import core.content.*;
 import core.content.blocks.Block;
 import core.g2d.Atlas;
-import org.apache.logging.log4j.core.util.TypeUtil;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
 
@@ -27,7 +25,7 @@ public sealed class Item implements ContentType, Loadable
     public short maxStackSize = DEFAULT_MAX_STACK_SIZE;
     public short createCount;
 
-    public float weight;
+    public float mass;
     public Atlas.Region texture;
     public ItemStack[] requirements;
     public @Nullable Block createWith; // null если доступно из кармана игрока
@@ -54,7 +52,7 @@ public sealed class Item implements ContentType, Loadable
         this.texture = cnt.readTexture("Texture");
         this.requirements = cnt.readItemStacksUnresolved(cnt.node().path("Requirements"));
         // TODO: не должно быть дефолтного значения
-        this.weight = (float) cnt.node().path("Weight").asDouble(50);
+        this.mass = (float) cnt.node().path("Mass").asDouble(50);
         this.maxStackSize = toShortExact(cnt.node().path("MaxStackSize").asInt(DEFAULT_MAX_STACK_SIZE));
         this.createCount = toShortExact(cnt.node().path("CreateCount").asInt(1));
 

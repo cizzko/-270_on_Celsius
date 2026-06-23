@@ -85,10 +85,10 @@ public final class PlayGameScene extends GameScene {
 
             state.uniformBlock(ublock);
             WorldDrawing.drawEntities();
+            Debug.drawDebugBorders();
         }
 
         GuiDrawing.drawBlocksGui();
-        Debug.drawDebugBorders();
 
         uiScene.draw();
         WorkbenchLogic.draw();

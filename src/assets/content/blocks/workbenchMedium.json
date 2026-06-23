@@ -1,6 +1,6 @@
 {
   "ClassType": "workbench",
-  "Resistance": 95,
+  "Resistance": 40,
   "Texture": "textures/blocks/workbenchMedium",
   "Type": "WALKABLE",
   "MaxHp": 100,
@@ -12,7 +12,6 @@
     "glassLens": 4,
     "aluminumPipe": 2
   },
-  "Density": 1,
   "CreateWith": "workbenchSmall",
   "LightTransmission": 100
 }

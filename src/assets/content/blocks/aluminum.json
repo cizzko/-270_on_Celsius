@@ -1,9 +1,8 @@
 {
   "ClassType": "block",
-  "Resistance": 100,
+  "Resistance": 40,
   "Texture": "textures/blocks/aluminum",
   "Type": "SOLID",
   "MaxHp": 100,
-  "Density": 1,
   "LightTransmission": 80
 }

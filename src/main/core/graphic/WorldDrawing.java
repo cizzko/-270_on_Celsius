@@ -64,8 +64,8 @@ public final class WorldDrawing {
 
     public static void drawBlocks() {
         var blockPos = input.mouseBlockPos();
-        drawBuildGrid(blockPos.x, blockPos.y);
         chunk.draw();
+        drawBuildGrid(blockPos.x, blockPos.y);
         WorldDrawing.drawPreviewBlocks();
     }
 
@@ -213,18 +213,18 @@ public final class WorldDrawing {
                 for (short x = minX; x <= maxX; x++) {
                     if (isProcessed(x, y)) continue;
 
-                    short value = (short) world.getBlockId(x, y);
+                    short tileId = (short) world.getBlockId(x, y);
                     findMaxRectangleFrom(x, y);
                     if (maxArea <= 1) {
                         continue;
                     }
                     int shadow = colorFor(x, y).rgba8888();
-                    var blocks = rects.computeIfAbsent(value, k -> new ArrayList<>());
+                    var blocks = rects.computeIfAbsent(tileId, _ -> new ArrayList<>());
 
                     short w = (short)(maxX2 - x + 1);
                     short h = (short)(maxY2 - y + 1);
 
-                    blocks.add(new Chunk.MergedTile(value, shadow, x, y, w, h));
+                    blocks.add(new Chunk.MergedTile(tileId, shadow, x, y, w, h));
 
                     for (short i = y; i <= maxY2; i++) {
                         int start = pos2index(x, i);
@@ -255,32 +255,33 @@ public final class WorldDrawing {
             for (short y = minY; y <= maxY; y++) {
                 for (short x = minX; x <= maxX; x++) {
                     if (!isSet(merged, pos2index(x, y)) && world.getBlockId(x, y) > 0) {
-                        var obj = world.getBlock(x, y);
+                        var block = world.getBlock(x, y);
                         int hp = world.getHp(x, y);
-                        drawBlock(x, y, obj, hp);
+                        drawBlock(x, y, block, hp);
                     }
                 }
             }
 
         }
 
-        private void drawBlock(int x, int y, Block obj, int hp) {
-            if (world.getData(x, y) instanceof TileData.MultiblockPart part) {
-                drawDamage(obj, hp, x, y);
+        private void drawBlock(int x, int y, Block block, int hp) {
+            if (block.isMultiblock() && world.getData(x, y) instanceof TileData.MultiblockPart) {
+                drawDamage(block, hp, x, y);
                 // TODO drawPart ?
             } else {
-                drawBlock0(x, y, obj, hp);
+                drawBlock0(x, y, block, hp);
             }
         }
 
-        private void drawBlock0(int x, int y, Block obj, int hp) {
+        private void drawBlock0(int x, int y, Block block, int hp) {
             Color color = colorFor(x, y);
 
-            StackfulRender.draw(obj.texture, color.rgba8888(), x, y, obj.tileCountX, obj.tileCountY);
-            drawDamage(obj, hp, x, y);
+            StackfulRender.draw(block.texture, color.rgba8888(), x, y, block.tileCountX, block.tileCountY);
+            drawDamage(block, hp, x, y);
 
-            var blockEntity = world.getEntity(x, y);
-            if (blockEntity != null) {
+            if (block.isEntity()) {
+                var blockEntity = world.getEntity(x, y);
+                // Гарантировано не null
                 blockEntity.draw();
             }
         }

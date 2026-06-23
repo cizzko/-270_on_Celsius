@@ -1,7 +1,6 @@
 package core.content.entity;
 
 import core.World.Creatures.Physics;
-import core.content.blocks.Block;
 import core.content.creatures.Creature;
 import core.g2d.StackfulRender;
 import core.math.*;
@@ -9,7 +8,6 @@ import core.util.TypeUtil;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
 import static core.Global.camera;
-import static core.Global.world;
 import static core.WorldCoordinates.*;
 
 public abstract class BaseCreatureEntity<C extends Creature> implements CreatureEntity {
@@ -68,7 +66,7 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
     }
 
     public final float mass() {
-        return creature.weight;
+        return creature.mass;
     }
 
     public void hitboxTo(AABB out) {

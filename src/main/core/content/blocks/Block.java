@@ -3,7 +3,6 @@ package core.content.blocks;
 import core.content.*;
 import core.content.entity.BlockEntity;
 import core.g2d.Atlas;
-import core.math.MathUtil;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 import org.jetbrains.annotations.Nullable;
 
@@ -24,8 +23,7 @@ public class Block implements ContentType, Loadable {
     public byte tileCountX, tileCountY;
 
     public short maxHp;
-    public float density; // unused
-    public float resistance;
+    public byte resistance;
     public int lightTransmission; // unused
     public Atlas.Region texture;
     public ItemStack[] requirements;
@@ -49,8 +47,7 @@ public class Block implements ContentType, Loadable {
         String createWithId = cnt.node().path("CreateWith").asText(null);
         this.createWith = (createWithId == null || createWithId.equals("player")) ? null : cnt.readBlockUnresolved("CreateWith");
 
-        this.density = (float) cnt.node().path("Density").asDouble(1);
-        this.resistance = (float) cnt.node().path("Resistance").asDouble(90);
+        this.resistance = toByteExact(cnt.node().path("Resistance").asInt(40));
         this.lightTransmission = cnt.node().path("LightTransmission").asInt(100);
         this.type = Type.valueOf(cnt.node().path("Type").asText(Type.SOLID.name()).toUpperCase(Locale.ROOT));
     }
@@ -72,6 +69,10 @@ public class Block implements ContentType, Loadable {
     public final void setId(short id) { this.id = id; }
 
     public boolean isMultiblock() { return tileCountX > 1 || tileCountY > 1; }
+
+    public boolean isEntity() {
+        return false;
+    }
 
     public @Nullable BlockEntity createEntity(int x, int y) {
         var ent = constructEntity();

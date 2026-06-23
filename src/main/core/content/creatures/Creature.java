@@ -13,7 +13,7 @@ public abstract class Creature implements ContentType, Loadable {
     public final String key;
     public short id;
 
-    public float weight;
+    public float mass;
     public int maxHp;
     public Atlas.Region texture;
     public boolean hasGravity;
@@ -31,7 +31,7 @@ public abstract class Creature implements ContentType, Loadable {
 
     @Override
     public void load(ContentLoader cnt) {
-        this.weight = cnt.node().path("Weight").floatValue();
+        this.mass = cnt.node().path("Mass").floatValue();
         this.maxHp = cnt.node().path("MaxHp").intValue();
         this.texture = cnt.readTexture("Texture");
         this.hasGravity = cnt.node().path("HasGravity").asBoolean(true);

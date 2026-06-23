@@ -5,20 +5,17 @@ import core.PlayGameScene;
 import core.Time;
 import core.content.blocks.Block;
 import core.content.entity.Entity;
-import core.graphic.ShadowMap;
-import core.content.entity.comp.HealthComponent;
 import core.content.entity.LivingEntity;
+import core.content.entity.comp.HealthComponent;
+import core.graphic.ShadowMap;
 import core.math.AABB;
 import core.math.MathUtil;
 import core.math.Vector2f;
-import core.util.FixedBitset;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-
-import java.util.Arrays;
 
 import static core.Global.*;
 import static core.World.Creatures.Player.Player.noClip;
-import static core.content.entity.comp.DrawComponent.GAP;
+import static core.WorldCoordinates.toBlock;
 import static java.lang.Math.*;
 
 public final class Physics {
@@ -26,9 +23,10 @@ public final class Physics {
     public static final float WEIGHT_FACTOR   = 1f / 80;
     // 44 блока / секунда²
     public static final float GRAVITY         = 2f * 2f / (float)pow(18, 2);
-    public static final float FRICTION_FACTOR = 0.250f;
+    public static final float FRICTION_FACTOR = 0.850f;
     // Ле, куда летишь?
     public static final float MAX_SPEED = 10000f;
+    public static final float EPS = 1e-10f;
     // Минимальное смещение, при котором происходит движение. Не вижу смысла сжигать процессор ради меньших значений
     private static final float MOVE_THRESHOLD = 0;// 1e-6f;
 
@@ -107,21 +105,17 @@ public final class Physics {
         ent.hitboxTo(entityHitbox);
         entityHitbox.move(dx, dy);
 
-        short minX = entityHitbox.blockMinX();
-        short minY = entityHitbox.blockMinY();
-        short maxX = entityHitbox.blockMaxX();
-        short maxY = entityHitbox.blockMaxY();
-
-        entityHitbox.minX += GAP;
-        entityHitbox.maxX -= GAP;
-        entityHitbox.minY += GAP;
-        entityHitbox.maxY -= GAP;
+        final float SCAN_EPS = 0.01f;
+        short minX = toBlock(entityHitbox.minX + SCAN_EPS);
+        short minY = toBlock(entityHitbox.minY + SCAN_EPS);
+        short maxX = toBlock(entityHitbox.maxX - SCAN_EPS);
+        short maxY = toBlock(entityHitbox.maxY - SCAN_EPS);
 
         boolean collided = false;
 
-        for (; minY <= maxY; minY++) {
+        for (short y = minY; y <= maxY; y++) {
             for (short x = minX; x <= maxX; x++) {
-                int blockId = world.getBlockId(x, minY);
+                int blockId = world.getBlockId(x, y);
                 if (blockId <= 0) {
                     continue;
                 }
@@ -129,10 +123,9 @@ public final class Physics {
                 if (block.type != Block.Type.SOLID) {
                     continue;
                 }
-                blockHitbox.setRectangle(x, minY, block.tileCountX, block.tileCountY);
+                blockHitbox.setRectangle(x, y, block.tileCountX, block.tileCountY);
 
                 if (entityHitbox.intersects(blockHitbox)) {
-                    // TODO при горизонтальных столкновениях сбрасывать скорость / начислять урон
                     var offsetVec = entityHitbox.overlapTo(blockHitbox, tmp1);
 
                     entityHitbox.move(offsetVec);
@@ -141,21 +134,15 @@ public final class Physics {
             }
         }
 
-        boolean hasFloor = false;
         if (collided) {
             var vel = ent.velocity();
             if (abs(dx) > 0) vel.x = 0;
             if (abs(dy) > 0) {
                 entityFall(ent);
                 vel.y = 0;
-                hasFloor = true;
             }
         }
-        ent.setPosition(entityHitbox.minX - GAP,entityHitbox.minY - GAP);
-        if (hasFloor) {
-            // 251.9791666623462 + 0.1 = 252.07916666234618; floor(252.07916666234618) = 252.0
-            ent.setY((int)Math.floor(ent.y() + 0.1));
-        }
+        ent.setPosition(entityHitbox.minX, entityHitbox.minY);
     }
 
     private static void updateMovement() {
@@ -230,10 +217,17 @@ public final class Physics {
 
         if (hasFloor) {
             float k = calculateFriction(ent);
-            float frictionCoefficient = k * ent.mass() * WEIGHT_FACTOR * FRICTION_FACTOR;
-            vel.x *= (float) exp(-frictionCoefficient * dt);
+            if (k >= 1.0f) {
+                vel.x = 0f;
+                vel.y = 0f;
+            } else {
+                float frictionCoefficient = k * ent.mass() * WEIGHT_FACTOR * FRICTION_FACTOR;
+                float fd = (float) exp(-frictionCoefficient * dt);
+                vel.x *= fd;
+            }
         } else {
             // TODO по сути это сопротивление в газах (воздух в т.ч.)
+            //      Учитывать случаи когда падаешь сквозь walkable (листву например)
             float k = 1f/8;
             float drag = k * abs(vel.x) * dt;
             if (drag > 1) {
@@ -285,29 +279,16 @@ public final class Physics {
         entityHitbox.clampToWorld();
 
         short minX = entityHitbox.blockMinX();
-        short minY = entityHitbox.blockMinY();
+        short minY = (short) (entityHitbox.blockMinY() - 1);
         short maxX = entityHitbox.blockMaxX();
         short maxY = entityHitbox.blockMaxY();
 
-        float resistance = 100;
-        if (resistanceSet == null) {
-             resistanceSet = FixedBitset.createBitSet(content.blocksRegistry.count());
-        } else {
-            Arrays.fill(resistanceSet, 0);
-        }
-
+        float resistance = 0;
         for (; minY <= maxY; minY++) {
             for (short x = minX; x <= maxX; x++) {
                 var block = world.getBlock(x, minY);
-                if (block != null && block.resistance > 0) {
-                    blockHitbox.setRectangle(x, minY, block.tileCountX, block.tileCountY);
-
-                    var blockId = world.getBlockId(x, minY);
-                    if (!FixedBitset.isSet(resistanceSet, blockId) && blockHitbox.overlaps(entityHitbox)) {
-                        FixedBitset.setBit(resistanceSet, blockId);
-
-                        resistance = max(resistance, block.resistance);
-                    }
+                if (block != null) {
+                    resistance = max(resistance, block.resistance);
                 }
             }
         }
@@ -315,7 +296,6 @@ public final class Physics {
         if (friction > 1) {
             friction = 1;
         }
-
         return friction;
     }
 

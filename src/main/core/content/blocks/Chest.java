@@ -27,6 +27,11 @@ public class Chest extends Block {
     }
 
     @Override
+    public final boolean isEntity() {
+        return true;
+    }
+
+    @Override
     protected BlockEntity constructEntity() {
         return new ChestEntity(this);
     }

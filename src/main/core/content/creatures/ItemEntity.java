@@ -4,7 +4,6 @@ import core.Time;
 import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.content.ItemStack;
-import core.content.blocks.Block;
 import core.content.entity.comp.PhysicalBody;
 import core.content.entity.LivingEntity;
 import core.g2d.Fill;
@@ -233,7 +232,7 @@ public final class ItemEntity implements LivingEntity {
     }
 
     public float mass() {
-        return itemStack.item().weight;
+        return itemStack.item().mass;
     }
 
     public void remove() {

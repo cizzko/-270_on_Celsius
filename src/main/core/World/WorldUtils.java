@@ -39,7 +39,7 @@ public class WorldUtils {
     /// @return абсолютное значение в блоках от игрока до мыши
     public static int getDistanceToMouse() {
         Point2i blockPos = input.mouseBlockPos();
-        return Math.abs(player.blockX() - blockPos.x + player.blockY() - blockPos.y);
+        return Math.abs(player.blockX() - blockPos.x) + Math.abs(player.blockY() - blockPos.y);
     }
 
     public static int getDistanceBetweenBlocks(Point2i mainPoint, Point2i secondPoint) {

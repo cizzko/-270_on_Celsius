@@ -1,6 +1,6 @@
 {
   "ClassType": "workbench",
-  "Resistance": 95,
+  "Resistance": 40,
   "Texture": "textures/blocks/workbenchSmall",
   "Type": "WALKABLE",
   "MaxHp": 100,
@@ -10,7 +10,6 @@
     "stick": 2,
     "stickRope": 2
   },
-  "Density": 1,
   "CreateWith": "player",
   "LightTransmission": 100
 }

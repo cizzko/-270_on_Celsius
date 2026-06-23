@@ -1,10 +1,9 @@
 {
   "ClassType": "block",
-  "Resistance": 95,
+  "Resistance": 40,
   "Texture": "textures/blocks/ladder",
   "Type": "WALKABLE",
   "MaxHp": 50,
-  "Density": 1,
   "LightTransmission": 100,
   "Requirements": {
     "stick": 3
