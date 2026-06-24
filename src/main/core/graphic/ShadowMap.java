@@ -24,7 +24,6 @@ public class ShadowMap {
     private static final Color deletedColorDynamic = Color.CLEAR.copy();
     private static final Color addedColorDynamic = Color.CLEAR.copy();
 
-
     // todo переписать генерацию и обновление теней
 
     public static void init() {

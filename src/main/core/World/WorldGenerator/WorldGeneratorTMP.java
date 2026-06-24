@@ -460,7 +460,7 @@ public class WorldGeneratorTMP {
         int upper = 0;
         int upperX = CAVES_INITIAL_X;
         int downedX = CAVES_INITIAL_X;
-        int caves = (int) (world.sizeX / ((RNG.nextFloat() * CAVES_COUNT_RAND_MULT) + CAVES_COUNT_BASE));
+        int caves = Math.max(3, (int) (world.sizeX / ((RNG.nextFloat() * CAVES_COUNT_RAND_MULT) + CAVES_COUNT_BASE)));
 
         for (int b = 0; b < caves; b++) {
             int minRadius = CAVES_MIN_RADIUS;

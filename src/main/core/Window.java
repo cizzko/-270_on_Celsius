@@ -29,7 +29,7 @@ public final class Window extends Application {
 
     public static int targetWidth = 1920, targetHeight = 1080;
     public static float targetAspect = (float)targetWidth / targetHeight;
-    public static Mode defaultMode = Mode.WINDOW;
+    public static Mode defaultMode = Mode.FULLSCREEN;
 
     public enum Mode {
         WINDOW,
