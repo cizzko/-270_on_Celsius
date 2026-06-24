@@ -10,7 +10,7 @@ import java.lang.invoke.VarHandle;
 
 import static core.g2d.Render.*;
 import static core.g2d.RenderItem.*;
-import static core.g2d.RenderQueue.*;
+import static core.g2d.RenderQueue.log;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
@@ -18,8 +18,6 @@ import static java.lang.foreign.MemoryLayout.PathElement.groupElement;
 public final class RenderList implements Poolable, Disposable {
     public static final byte KIND_STATIC  = 1;
     public static final byte KIND_DYNAMIC = 2;
-
-    private static final ValueLayout.OfInt PRIMITIVE = ValueLayout.JAVA_INT;
 
     static final class Vertex {
         static final StructLayout LAYOUT;
@@ -31,11 +29,13 @@ public final class RenderList implements Poolable, Disposable {
         static final VarHandle COLOR;
 
         static {
+            // По какой-то неведомой причине JAVA_FLOAT внутри всегда использует невыровненные доступы
+            // Хотя казалось бы, можно руками взять биты и записать
             var layout = MemoryLayout.structLayout(
-                    ValueLayout.JAVA_FLOAT.withName("x"),
-                    ValueLayout.JAVA_FLOAT.withName("y"),
-                    PRIMITIVE.withName("color"),
-                    PRIMITIVE.withName("uv")
+                    ValueLayout.JAVA_INT.withName("x"), // JAVA_FLOAT
+                    ValueLayout.JAVA_INT.withName("y"), // JAVA_FLOAT
+                    ValueLayout.JAVA_INT.withName("color"),
+                    ValueLayout.JAVA_INT.withName("uv")
             ).withByteAlignment(4);
 
             X = field(layout, "x");
@@ -227,8 +227,8 @@ public final class RenderList implements Poolable, Disposable {
     private void addVertex0(MemorySegment va, long vertexOffset,
                             float x, float y, float u, float v, int color) {
 
-        Vertex.X.set(va,     vertexOffset, x);
-        Vertex.Y.set(va,     vertexOffset, y);
+        Vertex.X.set(va,     vertexOffset, Float.floatToRawIntBits(x));
+        Vertex.Y.set(va,     vertexOffset, Float.floatToRawIntBits(y));
         Vertex.COLOR.set(va, vertexOffset, Integer.reverseBytes(color));
         Vertex.UV.set(va,    vertexOffset, BytePack.packB16toInt32((short) u, (short) v));
     }
@@ -247,7 +247,7 @@ public final class RenderList implements Poolable, Disposable {
 
         if (idx > 0) {
             long prevKey = sortKeys[idx - 1];
-            int cmp = Long.compareUnsigned(sortKey, prevKey);
+            int cmp = Long.compare(sortKey, prevKey);
 
             assert cmp != 0; // Инвариант sortKey
 

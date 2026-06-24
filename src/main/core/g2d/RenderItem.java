@@ -22,7 +22,7 @@ public final class RenderItem {
 
     static {
         /*
-        unsigned long sortKey   <-- Записан в параллельном массиве, с.м. комментарии в RenderList
+        long sortKey   <-- Записан в параллельном массиве, с.м. комментарии в RenderList
         int vertexOffset
         short vertexCount
         int indexOffset
