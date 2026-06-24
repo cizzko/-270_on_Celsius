@@ -1,8 +1,8 @@
 package core.ui.widget;
 
-import core.ui.animation.Action;
 import core.ui.LayoutElement;
 import core.ui.Table;
+import core.ui.animation.Action;
 import core.util.SnapshotArrayList;
 import org.jetbrains.annotations.Nullable;
 

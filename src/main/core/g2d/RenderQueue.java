@@ -82,7 +82,7 @@ public final class RenderQueue implements Disposable {
 
         reordered = renderArena.allocate(LAYOUT, itemCount);
 
-        var array = new RenderList[3] ;
+        var array = new RenderList[3];
         for (int i = 0; i < array.length; i++) {
             array[i] = allocRList(KIND_DYNAMIC);
         }

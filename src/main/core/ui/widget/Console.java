@@ -1,14 +1,14 @@
 package core.ui.widget;
 
-import core.ui.ClickListener;
-import core.ui.ClickType;
-import core.ui.Style;
-import core.ui.Styles;
 import core.g2d.Fill;
 import core.graphic.GuiDrawing;
 import core.input.InputListener;
 import core.math.MathUtil;
 import core.math.Rectangle;
+import core.ui.ClickListener;
+import core.ui.ClickType;
+import core.ui.Style;
+import core.ui.Styles;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 

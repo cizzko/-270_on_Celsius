@@ -12,7 +12,8 @@ import java.util.Arrays;
 import static core.g2d.BytePack.*;
 import static it.unimi.dsi.fastutil.HashCommon.arraySize;
 import static it.unimi.dsi.fastutil.HashCommon.maxFill;
-import static java.lang.Float.*;
+import static java.lang.Float.floatToRawIntBits;
+import static java.lang.Float.intBitsToFloat;
 
 public final class UniformBuffer {
     public static final Logger log = LogManager.getLogger("UniformBuffer");

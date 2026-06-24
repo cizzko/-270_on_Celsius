@@ -1,7 +1,7 @@
 package core.ui.widget;
 
-import core.ui.Style;
 import core.g2d.Fill;
+import core.ui.Style;
 import core.ui.Table;
 import org.jetbrains.annotations.Nullable;
 

@@ -1,12 +1,12 @@
 package core.assets;
 
-import core.util.Config;
 import core.GameSettings;
 import core.Global;
 import core.g2d.AtlasHandler;
 import core.g2d.FontHandler;
 import core.g2d.ShaderHandler;
 import core.g2d.TextureHandler;
+import core.util.Config;
 import core.util.TypeUtil;
 import it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet;
 import org.apache.logging.log4j.LogManager;

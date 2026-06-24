@@ -4,12 +4,15 @@ import core.Window;
 import core.content.ItemStack;
 import core.content.ItemStackPredicate;
 import core.content.items.Item;
-import core.g2d.*;
+import core.g2d.Atlas;
+import core.g2d.Font;
+import core.g2d.Render;
+import core.g2d.StackfulRender;
 import core.math.Point2i;
 import core.ui.Styles;
 
 import static core.Global.*;
-import static core.g2d.StackfulRender.*;
+import static core.g2d.StackfulRender.draw;
 import static core.graphic.WorldDrawing.viewport;
 
 /// Примитивы рендера в интерфейсе игры

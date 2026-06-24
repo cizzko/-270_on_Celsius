@@ -9,7 +9,10 @@ import core.graphic.TextureLoader;
 import core.math.MathUtil;
 import it.unimi.dsi.fastutil.chars.Char2ObjectOpenHashMap;
 
-import java.awt.*;
+import java.awt.Color;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
 import java.util.ArrayList;

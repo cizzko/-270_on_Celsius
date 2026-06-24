@@ -1,7 +1,12 @@
 package core.ui.menu;
 
-import core.*;
-import core.ui.*;
+import core.GameSettings;
+import core.GameState;
+import core.Global;
+import core.UIMenus;
+import core.ui.Align;
+import core.ui.Cell;
+import core.ui.Styles;
 import core.ui.widget.Button;
 import core.ui.widget.Dialog;
 import core.ui.widget.DropDownMenu;
@@ -9,7 +14,8 @@ import core.ui.widget.DropDownMenu;
 import java.util.Locale;
 import java.util.function.Consumer;
 
-import static core.Global.*;
+import static core.Global.gameSettings;
+import static core.Global.uiScene;
 import static core.ui.widget.Widgets.*;
 
 public class Settings extends Dialog {

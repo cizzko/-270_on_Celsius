@@ -5,7 +5,8 @@ import org.lwjgl.system.MemoryUtil;
 
 import java.nio.IntBuffer;
 
-import static org.lwjgl.opengl.GL15C.*;
+import static org.lwjgl.opengl.GL15C.GL_ELEMENT_ARRAY_BUFFER;
+import static org.lwjgl.opengl.GL15C.glDeleteBuffers;
 
 public final class ElementBufferObject implements Disposable {
     final int id;

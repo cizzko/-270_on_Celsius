@@ -4,8 +4,8 @@ import core.Time;
 import core.World.Creatures.Physics;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.content.ItemStack;
-import core.content.entity.comp.PhysicalBody;
 import core.content.entity.LivingEntity;
+import core.content.entity.comp.PhysicalBody;
 import core.g2d.Fill;
 import core.g2d.StackfulRender;
 import core.graphic.Color;
@@ -15,7 +15,8 @@ import core.math.TmpShapes;
 import core.math.Vector2f;
 
 import static core.Global.*;
-import static core.WorldCoordinates.*;
+import static core.WorldCoordinates.INV_BLOCK_SIZE;
+import static core.WorldCoordinates.toWorld;
 
 public final class ItemEntity implements LivingEntity {
     public static final int ITEM_DROPPED_SIZE   = 32; // пиксели

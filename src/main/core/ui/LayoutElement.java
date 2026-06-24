@@ -1,10 +1,10 @@
 package core.ui;
 
-import core.ui.animation.AlphaAction;
 import core.graphic.Color;
 import core.input.InputListener;
 import core.math.MathUtil;
 import core.math.Rectangle;
+import core.ui.animation.AlphaAction;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;
 

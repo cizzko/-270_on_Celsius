@@ -1,17 +1,18 @@
 package core.g2d;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import core.util.Config;
 import core.assets.AssetHandler;
 import core.assets.AssetReleaser;
 import core.assets.AssetResolver;
+import core.util.Config;
 
 import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
 
-import static core.g2d.Atlas.*;
+import static core.g2d.Atlas.ATLAS_EXT;
+import static core.g2d.Atlas.META_EXT;
 import static core.math.MathUtil.toShortExact;
 
 public final class AtlasHandler extends AssetHandler<Atlas, Void, AtlasHandler.State> {

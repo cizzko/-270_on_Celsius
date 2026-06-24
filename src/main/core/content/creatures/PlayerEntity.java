@@ -1,7 +1,6 @@
 package core.content.creatures;
 
 import core.Constants;
-import core.util.Config;
 import core.Global;
 import core.Time;
 import core.World.Creatures.Physics;
@@ -10,11 +9,12 @@ import core.World.WorldUtils;
 import core.content.ItemGrid;
 import core.content.ItemStack;
 import core.content.entity.BaseCreatureEntity;
-import core.content.entity.comp.PhysicalBody;
 import core.content.entity.comp.InventoryComponent;
+import core.content.entity.comp.PhysicalBody;
 import core.g2d.StackfulRender;
 import core.math.Point2i;
 import core.math.Vector2f;
+import core.util.Config;
 import core.util.Debug;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.Nullable;

@@ -7,8 +7,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-import static core.Application.*;
-import static core.Global.*;
+import static core.Application.log;
+import static core.Global.assets;
 
 public final class GameSettings {
     public static final boolean DEFAULT_VERTICAL_SYNC = true;

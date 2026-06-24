@@ -1,14 +1,16 @@
 package core.ui.menu;
 
 import core.GameState;
-import core.ui.Styles;
-import core.ui.widget.Dialog;
 import core.UIMenus;
 import core.ui.Align;
+import core.ui.Styles;
+import core.ui.widget.Dialog;
 
-import static core.Global.*;
+import static core.Global.app;
+import static core.Global.gameState;
 import static core.ui.Styles.DIRTY_WHITE;
-import static core.ui.widget.Widgets.*;
+import static core.ui.widget.Widgets.buttonLocalized;
+import static core.ui.widget.Widgets.panel;
 
 public class MainMenu extends Dialog {
 

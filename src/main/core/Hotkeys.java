@@ -1,7 +1,7 @@
 package core;
 
-import core.util.Config;
 import core.ui.menu.Pause;
+import core.util.Config;
 import core.util.Debug;
 import org.lwjgl.glfw.GLFW;
 

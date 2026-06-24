@@ -1,7 +1,6 @@
 package core.World;
 
 import core.Application;
-import core.util.Config;
 import core.Global;
 import core.World.Creatures.Physics;
 import core.WorldCoordinates;
@@ -11,6 +10,7 @@ import core.content.creatures.ItemEntity;
 import core.content.entity.CreatureEntity;
 import core.content.strctures.Structure;
 import core.math.Point2i;
+import core.util.Config;
 
 import java.io.IOException;
 import java.nio.file.Path;

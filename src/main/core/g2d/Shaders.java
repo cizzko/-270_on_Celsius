@@ -1,7 +1,7 @@
 package core.g2d;
 
 import static core.Global.assets;
-import static core.assets.AssetsManager.*;
+import static core.assets.AssetsManager.LoadType;
 
 public final class Shaders {
     private Shaders() {}

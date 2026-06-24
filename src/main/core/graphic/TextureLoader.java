@@ -9,7 +9,8 @@ import java.lang.foreign.ValueLayout;
 
 import static java.awt.image.BufferedImage.TYPE_4BYTE_ABGR;
 import static java.awt.image.BufferedImage.TYPE_INT_ARGB;
-import static org.lwjgl.opengl.GL46C.*;
+import static org.lwjgl.opengl.GL46C.GL_RGBA;
+import static org.lwjgl.opengl.GL46C.GL_UNSIGNED_INT_8_8_8_8_REV;
 
 public final class TextureLoader {
     private TextureLoader() {}

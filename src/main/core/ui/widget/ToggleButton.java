@@ -1,16 +1,17 @@
 package core.ui.widget;
 
+import core.g2d.Drawable;
 import core.lang.LangTranslation;
+import core.ui.Align;
 import core.ui.ClickType;
 import core.ui.Style;
-import core.g2d.Drawable;
-import core.ui.Align;
 import core.ui.Table;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Consumer;
 
-import static core.ui.widget.Widgets.*;
+import static core.ui.widget.Widgets.image;
+import static core.ui.widget.Widgets.panel;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_1;
 
 public final class ToggleButton extends Table {

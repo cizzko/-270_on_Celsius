@@ -1,10 +1,10 @@
 package core.ui.widget;
 
 import core.Global;
+import core.g2d.Drawable;
 import core.lang.LangTranslation.Translation;
 import core.ui.Style;
 import core.ui.Styles;
-import core.g2d.Drawable;
 import core.ui.Table;
 import org.jetbrains.annotations.Nullable;
 

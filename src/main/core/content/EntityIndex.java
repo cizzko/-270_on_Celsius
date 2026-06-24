@@ -7,7 +7,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import java.util.Comparator;
 import java.util.function.Consumer;
 
-import static core.WorldCoordinates.*;
+import static core.WorldCoordinates.toBlock;
 import static core.content.entity.comp.DrawComponent.GAP;
 
 /// Линейное Квадродерево на основе кодов Мортона

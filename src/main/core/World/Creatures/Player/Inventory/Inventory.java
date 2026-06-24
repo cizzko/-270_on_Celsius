@@ -1,26 +1,26 @@
 package core.World.Creatures.Player.Inventory;
 
 import core.Hotkeys;
-import core.util.Config;
+import core.World.WorldUtils;
 import core.content.ItemStack;
+import core.content.entity.comp.InventoryComponent;
 import core.content.items.Item;
 import core.content.items.ItemBlock;
-import core.World.WorldUtils;
-import core.content.entity.comp.InventoryComponent;
 import core.g2d.Atlas;
 import core.g2d.StackfulRender;
 import core.graphic.WorldDrawing;
 import core.math.Point2i;
 import core.math.Rectangle;
+import core.util.Config;
 import org.jetbrains.annotations.Nullable;
 
 import static core.Global.*;
-import static core.graphic.GuiDrawing.*;
 import static core.World.WorldUtils.getDistanceToMouse;
 import static core.WorldCoordinates.toBlock;
 import static core.WorldCoordinates.toWorld;
 import static core.content.creatures.ItemEntity.ITEM_DROPPED_SIZE;
-import static core.graphic.Color.*;
+import static core.graphic.Color.rgba8888;
+import static core.graphic.GuiDrawing.drawItemStack;
 import static org.lwjgl.glfw.GLFW.GLFW_MOUSE_BUTTON_LEFT;
 
 public class Inventory {

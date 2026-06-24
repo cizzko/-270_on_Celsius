@@ -1,8 +1,8 @@
 package core.content.items;
 
-import core.content.blocks.Block;
 import core.content.ContentLoader;
 import core.content.ContentResolver;
+import core.content.blocks.Block;
 
 public non-sealed class ItemBlock extends Item {
     // То, что можно поставить

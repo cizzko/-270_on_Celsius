@@ -1,6 +1,5 @@
 package core.World.Creatures.Player;
 
-import core.util.Config;
 import core.World.Creatures.Player.Inventory.Inventory;
 import core.World.WorldUtils;
 import core.content.ItemStack;
@@ -14,6 +13,7 @@ import core.graphic.ShadowMap;
 import core.graphic.WorldDrawing;
 import core.math.Point2i;
 import core.math.TmpShapes;
+import core.util.Config;
 
 import static core.Global.*;
 import static core.World.WorldUtils.getDistanceToMouse;

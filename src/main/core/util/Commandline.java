@@ -2,12 +2,13 @@ package core.util;
 
 import core.g2d.Fill;
 import core.ui.Styles;
+import core.ui.Table;
+import core.ui.widget.Console;
 import core.ui.widget.TextField;
 import core.ui.widget.Widgets;
-import core.ui.widget.Console;
-import core.ui.Table;
 
-import static core.Global.*;
+import static core.Global.input;
+import static core.Global.uiScene;
 import static org.lwjgl.glfw.GLFW.GLFW_KEY_F5;
 
 public class Commandline {

@@ -1,7 +1,7 @@
 package core.g2d;
 
-import core.math.MathUtil;
 import core.graphic.Color;
+import core.math.MathUtil;
 
 import static core.Global.atlas;
 

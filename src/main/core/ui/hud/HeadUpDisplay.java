@@ -1,12 +1,12 @@
 package core.ui.hud;
 
-import core.ui.ClickType;
 import core.World.Creatures.Player.WorkbenchMenu.WorkbenchLogic;
 import core.ui.Align;
+import core.ui.ClickType;
 import core.ui.Table;
 import org.lwjgl.glfw.GLFW;
 
-import static core.ui.widget.Widgets.*;
+import static core.ui.widget.Widgets.atlasImage;
 
 public final class HeadUpDisplay extends Table {
     public HeadUpDisplay() {

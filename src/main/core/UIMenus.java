@@ -1,8 +1,8 @@
 package core;
 
+import core.ui.LayoutGroup;
 import core.ui.hud.HeadUpDisplay;
 import core.ui.menu.*;
-import core.ui.LayoutGroup;
 import org.jetbrains.annotations.Nullable;
 
 public final class UIMenus {

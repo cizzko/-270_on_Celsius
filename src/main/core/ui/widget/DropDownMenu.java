@@ -1,8 +1,8 @@
 package core.ui.widget;
 
 import core.Global;
-import core.ui.Style;
 import core.ui.Element;
+import core.ui.Style;
 import org.jetbrains.annotations.Nullable;
 
 public final class DropDownMenu extends Panel {

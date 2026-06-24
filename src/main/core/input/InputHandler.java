@@ -1,6 +1,5 @@
 package core.input;
 
-import core.Global;
 import core.Window;
 import core.math.MathUtil;
 import core.math.Point2i;
@@ -21,7 +20,7 @@ import static core.WorldCoordinates.toBlock;
 import static core.input.InputEvent.*;
 import static core.util.FixedBitset.createBitSet;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL46.*;
+import static org.lwjgl.opengl.GL46.glViewport;
 
 public final class InputHandler {
     private static final Logger log = LogManager.getLogger();

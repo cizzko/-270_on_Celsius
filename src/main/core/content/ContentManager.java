@@ -4,13 +4,13 @@ import com.fasterxml.jackson.databind.EnumNamingStrategies;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
 import com.fasterxml.jackson.databind.annotation.EnumNaming;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;
-import core.util.Config;
 import core.Global;
 import core.content.blocks.Block;
 import core.content.creatures.Creature;
 import core.content.items.Item;
 import core.content.items.ItemBlock;
 import core.content.strctures.Structure;
+import core.util.Config;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
 import org.apache.logging.log4j.LogManager;
@@ -23,7 +23,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static java.util.Comparator.*;
+import static java.util.Comparator.comparing;
 
 public final class ContentManager {
     private static final Logger log = LogManager.getLogger();

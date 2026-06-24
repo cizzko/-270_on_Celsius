@@ -2,18 +2,14 @@ package core.content;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import core.util.Config;
 import core.Global;
 import core.content.ContentManager.Type;
-import core.content.blocks.BlockUnresolved;
-import core.content.blocks.Block;
-import core.content.blocks.Factory;
+import core.content.blocks.*;
 import core.content.creatures.PlayerType;
-import core.content.blocks.Chest;
-import core.content.blocks.Workbench;
 import core.content.items.*;
 import core.content.strctures.Structure;
 import core.g2d.Atlas;
+import core.util.Config;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -23,7 +19,7 @@ import java.util.HashMap;
 import java.util.function.Function;
 
 import static core.Global.assets;
-import static core.math.MathUtil.*;
+import static core.math.MathUtil.toShortExact;
 
 public final class ContentLoader {
     private static final EnumMap<Type, HashMap<String, Function<String, ContentType>>> constructors = new EnumMap<>(Type.class);

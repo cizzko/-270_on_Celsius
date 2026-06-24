@@ -7,20 +7,21 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import core.Time;
 import core.World.Creatures.Player.Inventory.Inventory;
-import core.g2d.Atlas;
-import core.graphic.GuiDrawing;
 import core.content.ItemGrid;
 import core.content.ItemStack;
 import core.content.entity.BaseBlockEntity;
 import core.content.entity.BlockItemStorage;
+import core.g2d.Atlas;
 import core.g2d.Fill;
+import core.graphic.Color;
+import core.graphic.GuiDrawing;
 import core.math.TmpShapes;
 import core.util.ArrayUtils;
-import core.graphic.Color;
 
 import java.io.IOException;
 
-import static core.Global.*;
+import static core.Global.atlas;
+import static core.Global.camera;
 import static core.WorldCoordinates.toWorld;
 
 public class FactoryEntity extends BaseBlockEntity<Factory> {

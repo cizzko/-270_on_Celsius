@@ -1,7 +1,7 @@
 package core;
 
-import core.util.Config;
 import core.World.WorldUtils;
+import core.util.Config;
 
 import java.nio.file.Path;
 import java.time.LocalDateTime;
@@ -9,7 +9,8 @@ import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.Locale;
 
-import static core.Global.*;
+import static core.Global.assets;
+import static core.Global.world;
 
 public class AutoSaveController {
     private static long lastSaveTimestamp = System.currentTimeMillis();

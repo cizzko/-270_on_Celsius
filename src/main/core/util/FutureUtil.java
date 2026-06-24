@@ -1,6 +1,8 @@
 package core.util;
 
-import java.util.concurrent.*;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 public class FutureUtil {
     public static <T> T join(Future<? extends T> future) {

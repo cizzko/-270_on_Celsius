@@ -1,7 +1,6 @@
 package core.World.WorldGenerator;
 
 import core.*;
-import core.util.Config;
 import core.World.PerlinNoiseGenerator;
 import core.World.TemperatureMap;
 import core.World.World;
@@ -12,6 +11,7 @@ import core.graphic.ShadowMap;
 import core.math.MathUtil;
 import core.math.Point2i;
 import core.ui.menu.CreatePlanet;
+import core.util.Config;
 import core.util.Debug;
 import core.util.FixedBitset;
 import org.apache.logging.log4j.LogManager;

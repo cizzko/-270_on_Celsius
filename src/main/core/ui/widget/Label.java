@@ -1,16 +1,16 @@
 package core.ui.widget;
 
-import core.lang.LangTranslation;
-import core.ui.Style;
 import core.g2d.Font;
 import core.g2d.StackfulRender;
+import core.lang.LangTranslation;
 import core.ui.GlyphCache;
 import core.ui.LayoutElement;
+import core.ui.Style;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
 
-import static core.Global.*;
+import static core.Global.lang;
 
 public class Label extends LayoutElement<Label> {
     protected static final int FLAG_TRANSLATION = ELEMENT_LAST_FLAG << 1;

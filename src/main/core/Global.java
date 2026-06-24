@@ -6,8 +6,8 @@ import core.content.ContentManager;
 import core.content.EntityPool;
 import core.content.creatures.PlayerEntity;
 import core.g2d.Atlas;
-import core.graphic.Camera;
 import core.g2d.RenderThread;
+import core.graphic.Camera;
 import core.input.InputHandler;
 import core.lang.LangTranslation;
 

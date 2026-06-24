@@ -3,7 +3,8 @@ package core.g2d;
 import core.Application;
 import core.Global;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import org.lwjgl.opengl.*;
+import org.lwjgl.opengl.GL;
+import org.lwjgl.opengl.GL11;
 
 import java.lang.foreign.MemorySegment;
 import java.nio.IntBuffer;

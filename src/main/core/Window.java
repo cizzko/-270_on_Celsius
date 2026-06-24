@@ -1,10 +1,6 @@
 package core;
 
 import com.sun.management.OperatingSystemMXBean;
-import core.g2d.Atlas;
-import core.g2d.Font;
-import core.g2d.RenderThread;
-import core.g2d.StackfulRender;
 import core.g2d.*;
 import core.input.InputHandler;
 import core.util.Debug;

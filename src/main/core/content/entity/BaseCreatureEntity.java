@@ -3,12 +3,13 @@ package core.content.entity;
 import core.World.Creatures.Physics;
 import core.content.creatures.Creature;
 import core.g2d.StackfulRender;
-import core.math.*;
+import core.math.AABB;
+import core.math.Vector2f;
 import core.util.TypeUtil;
 import org.jetbrains.annotations.MustBeInvokedByOverriders;
 
 import static core.Global.camera;
-import static core.WorldCoordinates.*;
+import static core.WorldCoordinates.toWorld;
 
 public abstract class BaseCreatureEntity<C extends Creature> implements CreatureEntity {
     protected static final byte FLAG_DEAD           = 1 << 0;

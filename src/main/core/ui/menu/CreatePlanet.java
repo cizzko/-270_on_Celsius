@@ -1,21 +1,21 @@
 package core.ui.menu;
 
 import core.Constants;
-import core.ui.Styles;
-import core.ui.widget.Button;
-import core.ui.widget.Image;
-import core.ui.widget.Panel;
 import core.UIMenus;
 import core.World.WorldGenerator.WorldGenerator;
-import core.ui.LayoutGroup;
 import core.ui.Align;
-import core.ui.widget.Console;
+import core.ui.LayoutGroup;
+import core.ui.Styles;
 import core.ui.Table;
+import core.ui.widget.Button;
+import core.ui.widget.Console;
+import core.ui.widget.Image;
+import core.ui.widget.Panel;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.ThreadLocalRandom;
 
-import static core.Global.*;
+import static core.Global.atlas;
 import static core.ui.widget.Widgets.*;
 
 public class CreatePlanet extends core.ui.widget.Dialog {

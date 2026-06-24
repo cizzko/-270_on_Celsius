@@ -1,11 +1,11 @@
 package core.content.strctures;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import core.content.blocks.Block;
 import core.content.ContentLoader;
 import core.content.ContentResolver;
 import core.content.ContentType;
 import core.content.Loadable;
+import core.content.blocks.Block;
 import core.content.blocks.BlockUnresolved;
 
 import java.util.ArrayList;

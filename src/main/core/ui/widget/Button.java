@@ -1,11 +1,11 @@
 package core.ui.widget;
 
-import core.lang.LangTranslation;
-import core.ui.ClickListener;
-import core.ui.Style;
 import core.g2d.Fill;
 import core.graphic.Color;
+import core.lang.LangTranslation;
 import core.ui.Align;
+import core.ui.ClickListener;
+import core.ui.Style;
 import core.ui.Table;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;

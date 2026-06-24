@@ -1,7 +1,7 @@
 package core.math;
 
 import static core.Global.world;
-import static core.WorldCoordinates.*;
+import static core.WorldCoordinates.toBlock;
 import static java.lang.Math.abs;
 import static java.lang.Math.fma;
 

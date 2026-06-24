@@ -1,12 +1,13 @@
 package core.ui.menu;
 
 import core.*;
+import core.ui.Align;
 import core.ui.Styles;
 import core.ui.widget.Dialog;
-import core.ui.Align;
 
 import static core.Global.*;
-import static core.ui.widget.Widgets.*;
+import static core.ui.widget.Widgets.buttonLocalized;
+import static core.ui.widget.Widgets.panel;
 
 public class Pause extends Dialog {
 

@@ -1,7 +1,7 @@
 package core.ui.animation;
 
-import core.ui.Element;
 import core.math.Interpolation;
+import core.ui.Element;
 
 public final class Actions {
     private Actions() {}

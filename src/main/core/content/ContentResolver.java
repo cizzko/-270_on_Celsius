@@ -1,7 +1,7 @@
 package core.content;
 
-import core.content.blocks.BlockUnresolved;
 import core.content.blocks.Block;
+import core.content.blocks.BlockUnresolved;
 import core.content.items.Item;
 import core.content.items.ItemUnresolved;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;

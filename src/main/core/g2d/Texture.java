@@ -7,7 +7,9 @@ import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MAG_FILTER;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_MIN_FILTER;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_S;
 import static org.lwjgl.opengl.GL11C.GL_TEXTURE_WRAP_T;
-import static org.lwjgl.opengl.GL46.*;
+import static org.lwjgl.opengl.GL46.GL_RGBA8;
+import static org.lwjgl.opengl.GL46.glDeleteTextures;
+import static org.lwjgl.opengl.GL46.glFlush;
 
 public final class Texture implements Drawable, Disposable {
     public static final int MAX_ID = 1 << 16; // TODO сделать безнаковым
