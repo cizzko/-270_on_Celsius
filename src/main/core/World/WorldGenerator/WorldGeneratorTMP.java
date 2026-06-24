@@ -82,9 +82,6 @@ public class WorldGeneratorTMP {
                             timedRun("generating temperature map",
                             () -> TemperatureMap.generate()))
                     .thenRun(
-                            timedRun("height map generation",
-                                    () -> genHeightMap()))
-                    .thenRun(
                             timedRun("generating player",
                             () -> spawnPlayer()))
                     .thenRun(() -> {
@@ -92,7 +89,7 @@ public class WorldGeneratorTMP {
                         Debug.saveWorldImage();
                         scheduler.post(() -> startGame(playGameScene));
                     })
-                    .whenComplete((__, e) -> {
+                    .whenComplete((_, e) -> {
                         if (e != null) {
                             log.error("Failed to generate world", e);
                         }
@@ -108,9 +105,6 @@ public class WorldGeneratorTMP {
                             timedRun("generating temperature map",
                             () -> TemperatureMap.generate()))
                     .thenRun(
-                            timedRun("height map generation",
-                                    () -> genHeightMap()))
-                    .thenRun(
                             timedRun("generating player",
                             () -> spawnPlayer()))
                     .thenRun(() -> {
@@ -124,10 +118,6 @@ public class WorldGeneratorTMP {
                         }
                     });
         }
-    }
-
-    private static void genHeightMap() {
-        ShadowMap.updateHeights();
     }
 
     private static void spawnPlayer() {
@@ -159,7 +149,7 @@ public class WorldGeneratorTMP {
      * @return фьючр для цепочки
      */
     private static <T> Function<T, CompletableFuture<Void>> timedCompose(String stepName, Supplier<CompletableFuture<Void>> taskSupplier) {
-        return __ -> {
+        return _ -> {
             long stepStart = System.currentTimeMillis();
             return taskSupplier.get().thenRun(() -> {
                 log(stepName + " took: " + (System.currentTimeMillis() - stepStart) + "ms");
@@ -748,7 +738,7 @@ public class WorldGeneratorTMP {
         generateHerb();
     }
 
-    private static void generateTrees(World world) {
+    private static void generateTrees(World ignoredWorld) {
         //todo проверить
         //generateForest(80, 2, 20, 4, 8, "tree0", "tree1");
     }

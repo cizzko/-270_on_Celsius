@@ -92,11 +92,11 @@ public final class ShadowMap {
         short t = Global.world.tiles[Global.world.pos2index(x, y)];
         if (tileTrans[t] < 100)
             return false;
-        return y >= lightHeightMap[x];
+        return y >= lightHeightMap[x - minX];
     }
 
     private static boolean seesSky(int x, int y) {
-        return y >= lightHeightMap[x];
+        return y >= lightHeightMap[x - minX];
     }
 
     public static void updateByCameraMove() {
@@ -133,28 +133,22 @@ public final class ShadowMap {
         if (newRows * newCols != rows * cols) {
             rows = newRows;
             cols = newCols;
-            light = new byte[rows * cols];
-            tmp   = new byte[rows * cols];
+            int newSize = newRows * newCols;
+            light = new byte[newSize];
+            tmp   = new byte[newSize];
+            lightHeightMap = new short[newCols];
         }
+        updateHeightsFromRange(minX, maxX, minY, maxY);
     }
 
     public static void setDirty(int x, int y, int tileCountX, int tileCountY) {
         if (gameState != GameState.PLAYING)
             return;
 
-        int blockX1 = x + tileCountX - 1;
-        int blockY1 = y + tileCountY - 1;
+        int maxBlockX = x + tileCountX - 1;
+        int maxBlockY = y + tileCountY - 1;
 
-        {
-            int x0 = max(0, x);
-            int y0 = max(0, y);
-            int x1 = min(world.sizeX - 1, blockX1);
-            int y1 = min(world.sizeY - 1, blockY1);
-
-            updateHeightsFromRange(x0, x1, y0, y1);
-        }
-
-        if (blockX1 < minX || x > maxX || blockY1 < minY || y > maxY) {
+        if (maxBlockX < minX || x > maxX || maxBlockY < minY || y > maxY) {
             return;
         }
 
@@ -163,20 +157,31 @@ public final class ShadowMap {
         int y0 = minY;
         int x1 = maxX;
         int y1 = maxY;
+
+        {
+            int rx0 = max(minX, x);
+            int ry0 = max(minY, y);
+            int rx1 = min(maxX, maxBlockX);
+            int ry1 = min(maxY, maxBlockY);
+
+            updateHeightsFromRange(rx0, rx1, ry0, ry1);
+        }
+
         recalcRegion(x0, y0, x1, y1);
     }
 
     private static void updateHeightsFromRange(int x0, int x1, int y0, int y1) {
         // TODO необязательно все полоски проверять. Если y0 < старая высота, то можно пропустить
         // для корректности, всё равно это почти бесплатно
-        Arrays.fill(lightHeightMap, x0, x1 + 1, (short)0);
+
+        Arrays.fill(lightHeightMap, x0 - minX, (x1 + 1) - minX, (short)0);
 
         var worl = world;
         for (int x = x0; x <= x1; x++) {
             for (int y = worl.sizeY - 1; y >= 0; y--) {
                 int idx = worl.pos2index(x, y);
                 if (tileTrans[worl.tiles[idx]] < 100) {
-                    lightHeightMap[x] = (short) y;
+                    lightHeightMap[x - minX] = (short) y;
                     break; // следующий x
                 }
             }
@@ -387,8 +392,6 @@ public final class ShadowMap {
 
 
     public static void init() {
-        lightHeightMap = new short[world.sizeX];
-
         var blkRegistry = Global.content.blocksRegistry;
         var blocks = blkRegistry.values();
         tileTrans     = new byte[blocks.length];
@@ -459,21 +462,6 @@ public final class ShadowMap {
         int maxLight = Byte.toUnsignedInt(light[pos2index(x, y)]);
         out.set(maxLight, maxLight, maxLight, 255);
         return out;
-    }
-
-    public static void updateHeights() {
-        Arrays.fill(lightHeightMap, (short)0); // для корректности, всё равно это почти бесплатно
-
-        var worl = world;
-        for (int x = 0; x < worl.sizeX; x++) {
-            for (int y = worl.sizeY - 1; y >= 0; y--) {
-                int idx = worl.pos2index(x, y);
-                if (tileTrans[worl.tiles[idx]] < 100) {
-                    lightHeightMap[x] = (short) y;
-                    break; // следующий x
-                }
-            }
-        }
     }
 
     public static void updateIfDirty() {
