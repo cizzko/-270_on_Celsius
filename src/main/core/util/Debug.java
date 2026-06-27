@@ -243,18 +243,13 @@ public class Debug {
     public static void saveTemp(String name, BatchScope scope) {
         saveTempData(name, scope, (x, y) -> {
             float t = TemperatureMap.getTempCell(x, y);
-            return (255 << 24) | (t >= 20f ? ((int)Math.min(255f, Math.max(0f, (t - 20f) * 0.26020408f)) << 16) : (int)Math.min(255f, Math.max(0f, (20f - t) * 0.86396746f))); });
+            //return (255 << 24) | (t >= 20f ? ((int)Math.min(255f, Math.max(0f, (t - 20f) * 0.26020408f)) << 16) : (int)Math.min(255f, Math.max(0f, (20f - t) * 0.86396746f))); });
+            return (255 << 24) | (t >= 20f ? ((int)Math.min(255f, Math.max(0f, (t - 20f) * 0.86020408f)) << 16) : (int)Math.min(255f, Math.max(0f, (20f - t) * 0.86396746f))); });
     }
 
     public static void savePressures(String name, BatchScope scope) {
         saveTempData(name, scope, (x, y) -> {
             return (255 << 24) | ((int)Math.clamp((TemperatureMap.getPressure(x, y)) / 200f * 255f, 0, 255) << 16);
-        });
-    }
-
-    public static void saveDens(String name, BatchScope scope) {
-        saveTempData(name, scope, (x, y) -> {
-            return (255 << 24) | ((int)Math.clamp((TemperatureMap.getDensity(x, y) * 300 - 20f) / 980f * 255f, 0, 255) << 16);
         });
     }
 
