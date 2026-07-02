@@ -263,4 +263,15 @@ public class PlayerEntity
 
         camera.update();
     }
+
+    @Override
+    public int heatRadius() {
+        return 2;
+    }
+
+    //todo хз поиграться надо
+    @Override
+    public float heatPower() {
+        return 0.01f;
+    }
 }

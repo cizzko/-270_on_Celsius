@@ -253,6 +253,39 @@ public class Debug {
         });
     }
 
+    public static void saveWindForce(String name, BatchScope scope) {
+        saveTempData(name, scope, (x, y) -> {
+            TemperatureMap.Wind w = TemperatureMap.getWind(x, y);
+            float force = w.force();
+
+            if (w == TemperatureMap.Wind.CALM || force < 0.001f) {
+                return (255 << 24);
+            }
+            return (255 << 24) | ((int) Math.clamp((force / 5.0f) * 255f, 0, 255) << 8);
+        });
+    }
+
+    public static void saveWindDirection(String name, BatchScope scope) {
+        saveTempData(name, scope, (x, y) -> {
+            TemperatureMap.Wind w = TemperatureMap.getWind(x, y);
+
+            if (w == TemperatureMap.Wind.CALM || w.force() < 0.001f) {
+                return (255 << 24);
+            }
+
+            float degrees = w.angle();
+            if (degrees > 180.0f) {
+                degrees -= 180.0f;
+            }
+
+            float factor = degrees / 180.0f;
+            int r = (int) (factor * 255f);
+            int b = (int) ((1f - factor) * 255f);
+
+            return (255 << 24) | (r << 16) | b;
+        });
+    }
+
     public static void debugHotKeys() {
         if (debugLevel < 2) {
             return;
