@@ -18,7 +18,7 @@ public final class MathUtil {
     private static boolean fmaTest() {
         try {
             double localSink = 0;
-            final int iterations = 30_000;
+            int iterations = 30_000;
             int fmaWinCount = 0;
 
             for (int round = 0; round < 5; round++) {

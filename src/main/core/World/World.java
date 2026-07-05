@@ -612,7 +612,7 @@ public final class World {
     /**
      * Ищет {@code y} первого свободного блока (воздуха) в конкретном {@code x}
      * <p>
-     * Проверяет {@code x} с шагом {@code period}, при нахождении твердого блока
+     * Проверяет {@code y} с шагом {@code period}, при нахождении твердого блока
      * запускает точечную проверку для поиска точной позиции. Скорость работы увеличивается в {@code period} раз,
      * во столько же снижается точность нахождения одиночных блоков. При {@code period} = 1 поиск становится последовательным
      * </p>
@@ -622,10 +622,10 @@ public final class World {
      */
 
     //впр можно хранить карту высот, но поиск нужен не так часто, чтоб это дало желаемый профит
-    //todo @test возможно, последовательный обход будет быстрее работать в силу отсутствия кешмиссов
     public static int findSurfaceY(int cellX, int period) {
-        if (!(cellX >= 0 && cellX < world.sizeX)) // TODO generateCaves
+        if (!world.inBounds(cellX, 0)) {
             return -1;
+        }
         for (int y = world.sizeY - 1; y > 0; y -= period) {
             if (world.isBlockType(cellX, y, Block.Type.SOLID)) {
                 for (int i = y + period; i > y - 1; i--) {

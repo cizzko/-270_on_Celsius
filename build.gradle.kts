@@ -230,12 +230,12 @@ tasks.run {
         }
     }
 
-    //для профайлинга
+//    для профайлинга
 //    jvmArguments.add("-XX:+UnlockDiagnosticVMOptions");
 //    jvmArguments.add("-XX:+DebugNonSafepoints")
 //    jvmArguments.add("-XX:+PreserveFramePointer")
 //    jvmArguments.add("-XX:+ShowHiddenFrames")
-//        jvmArguments.add("-XX:TieredStopAtLevel=4")
+//    jvmArguments.add("-XX:TieredStopAtLevel=4")
 //    jvmArguments.add("-Xcomp")
 
     jvmArguments.add("-ea:core.main")
