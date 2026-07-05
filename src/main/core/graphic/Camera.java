@@ -1,9 +1,6 @@
 package core.graphic;
 
-import core.math.AABB;
-import core.math.Rectangle;
-import core.math.Vector2d;
-import core.math.Vector2f;
+import core.math.*;
 
 public final class Camera {
     public final Vector2d position = new Vector2d();
@@ -73,21 +70,21 @@ public final class Camera {
 
         float hw = width * 0.5f;
         float hh = height * 0.5f;
-        screenCoordinates.x = (float)Math.fma(ndcX, hw, hw);
-        screenCoordinates.y = (float)Math.fma(ndcY, hh, hh);
+        screenCoordinates.x = (float)MathUtil.fma(ndcX, hw, hw);
+        screenCoordinates.y = (float)MathUtil.fma(ndcY, hh, hh);
         return screenCoordinates;
     }
 
     // Перевод координат экрана в координаты мира
     public void unprojectTo(Vector2f screenCoordinates, Vector2d worldCoordinates) {
-        double ndcX = Math.fma(screenCoordinates.x, 2. / width, -1.);
-        double ndcY = Math.fma(screenCoordinates.y, 2. / height, -1.);
+        double ndcX = MathUtil.fma(screenCoordinates.x, 2. / width, -1.);
+        double ndcY = MathUtil.fma(screenCoordinates.y, 2. / height, -1.);
 
         // NDC * (1/scale) + position
         var lss = logicalScreenSize;
         var pos = position;
-        worldCoordinates.x = Math.fma(ndcX, lss.x * 0.5, pos.x);
-        worldCoordinates.y = Math.fma(ndcY, lss.y * 0.5, pos.y);
+        worldCoordinates.x = MathUtil.fma(ndcX, lss.x * 0.5, pos.x);
+        worldCoordinates.y = MathUtil.fma(ndcY, lss.y * 0.5, pos.y);
     }
 
     public void boundsTo(AABB aabb) {

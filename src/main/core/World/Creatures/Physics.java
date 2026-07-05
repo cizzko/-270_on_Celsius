@@ -171,8 +171,8 @@ public final class Physics {
         }
 
         // Однажды узнав уже не можешь остановиться
-        vel.x = fma(acc.x, FDT, vel.x);
-        vel.y = fma(acc.y, FDT, vel.y);
+        vel.x = MathUtil.fma(acc.x, FDT, vel.x);
+        vel.y = MathUtil.fma(acc.y, FDT, vel.y);
 
         acc.set(0, 0);
     }

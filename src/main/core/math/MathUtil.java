@@ -1,13 +1,77 @@
 package core.math;
 
+import core.util.Config;
 import org.jetbrains.annotations.Range;
-
 import java.lang.annotation.*;
-
 import static java.lang.Byte.toUnsignedInt;
 
 public final class MathUtil {
-    private MathUtil() {
+    private static final String fma = Config.getString("FMAEnabled", "false");
+    public static final boolean fmaEnabled = fma.equals("auto") ? fmaTest() : Boolean.parseBoolean(fma);
+    //от жита
+    private static volatile double garbageSink;
+
+    private MathUtil() {}
+
+    //смешная штука которая буквально в лоб сравнивает фма и обычную математику
+    //может давать ложные показания, но в среднем вроде всегда правильно работает
+    private static boolean fmaTest() {
+        try {
+            double localSink = 0;
+            final int iterations = 30_000;
+            int fmaWinCount = 0;
+
+            for (int round = 0; round < 5; round++) {
+                for (int i = 0; i < iterations; i++) {
+                    localSink += Math.fma(1.001 + (i & 7), 2.002, 3.003);
+                }
+                garbageSink = localSink;
+
+                for (int i = 0; i < iterations; i++) {
+                    localSink += (1.001 + (i & 7)) * 2.002 + 3.003;
+                }
+                garbageSink = localSink;
+
+                long startFma = System.nanoTime();
+                for (int i = 0; i < iterations; i++) {
+                    localSink += Math.fma(1.001 + (i & 7), 2.002, 3.003);
+                }
+                garbageSink = localSink;
+                long durationFma = System.nanoTime() - startFma;
+                long startSimple = System.nanoTime();
+
+                for (int i = 0; i < iterations; i++) {
+                    localSink += (1.001 + (i & 7)) * 2.002 + 3.003;
+                }
+                garbageSink = localSink;
+                long durationSimple = System.nanoTime() - startSimple;
+
+                if ((double) durationFma / durationSimple < 1.5) {
+                    fmaWinCount++;
+                }
+            }
+            return fmaWinCount >= 3;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    //проблема Math.fma() в том, что если процессор железно не поддерживает фма
+    //то мач тащит новый BigDecimal на каждый вызов фма для контракта совместимости
+    //старые железки и так задыхаются, а тут им еще десималы крутить
+    public static double fma(double a, double b, double c) {
+        if (fmaEnabled) {
+            return Math.fma(a, b, c);
+        }
+        return a * b + c;
+    }
+
+    //для наших целей погрешность на один бит где то в конце - мелочь
+    public static float fma(float a, float b, float c) {
+        if (fmaEnabled) {
+            return Math.fma(a, b, c);
+        }
+        return (float) ((double) a * b + c);
     }
 
     public static final Point2i[] CROSS_OFFSETS = {

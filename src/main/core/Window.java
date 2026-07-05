@@ -21,6 +21,7 @@ import java.nio.file.Files;
 
 import static core.Global.*;
 import static core.graphic.TextureLoader.decodeImage;
+import static core.math.MathUtil.fmaEnabled;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;
 
@@ -311,6 +312,8 @@ public final class Window extends Application {
         if (Platform.get() == Platform.WINDOWS) {
             log.info("CPU: {}", System.getenv("PROCESSOR_IDENTIFIER"));
         }
+        log.info("FMA enabled: {}", fmaEnabled);
+
         var memMxbean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
         double gib = 1024d * 1024d * 1024d;
 

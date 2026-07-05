@@ -36,8 +36,8 @@ public final class AABB {
         float dx = (float) (centerX() - b.centerX());
         float dy = (float) (centerY() - b.centerY());
 
-        float xOverlap = fma(width() + b.width(), .5f, -abs(dx));
-        float yOverlap = fma(height() + b.height(), .5f, -abs(dy));
+        float xOverlap = MathUtil.fma(width() + b.width(), .5f, -abs(dx));
+        float yOverlap = MathUtil.fma(height() + b.height(), .5f, -abs(dy));
 
         if (xOverlap > 0 && yOverlap > 0) {
             if (xOverlap < yOverlap) {
