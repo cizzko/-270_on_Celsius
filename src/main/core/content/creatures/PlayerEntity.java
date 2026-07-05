@@ -271,7 +271,7 @@ public class PlayerEntity
 
     //todo хз поиграться надо
     @Override
-    public float heatPower() {
-        return 0.01f;
+    public float heatEmitting() {
+        return creature().heatEmitting;
     }
 }

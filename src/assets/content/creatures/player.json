@@ -2,6 +2,10 @@
   "ClassType": "player",
   "Texture": "textures/creatures/playerLeft/player0",
   "Mass": 80,
+  "MaxTemp": 42,
+  "MinTemp": 25,
+  "HeatEmitting": 0.01,
+  "HeatTransfer": 0.02,
   "MaxHp": 100,
   "InventorySize": {
     "Width": 8,

@@ -22,10 +22,18 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
     protected double x, y;
     protected double lastX, lastY;
 
-    protected float hp;
+    protected float hp, currentTemp;
 
     protected final Vector2f velocity = new Vector2f();
     protected final Vector2f acceleration = new Vector2f();
+
+    public final void addHeat(float heat) {
+        currentTemp += heat;
+    }
+
+    public final float getHeat() {
+        return currentTemp;
+    }
 
     protected BaseCreatureEntity(C creature) {
         this.creature = creature;

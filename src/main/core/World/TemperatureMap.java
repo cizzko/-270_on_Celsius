@@ -5,7 +5,6 @@ import core.content.entity.LivingEntity;
 import core.util.BatchScope;
 import core.util.Debug;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import static core.Global.entityPool;
@@ -93,7 +92,10 @@ public final class TemperatureMap {
         Debug.saveWindForce("Power1", scope);
         Debug.saveWindDirection("Dir1", scope);
     }
-    
+
+    //казалось бы кандидат для класса физики
+    //но добавление и работа с температурой могут сломаться
+    //если будут разные фпс работы потоков
     private static void updateLivingEntity() {
         entityPool.forEachType(LivingEntity.class, emitter -> {
             if (!emitter.isEmitting()) {
@@ -102,18 +104,23 @@ public final class TemperatureMap {
 
             int x = emitter.blockX();
             int y = emitter.blockY();
-            int radius =  emitter.heatRadius();
-            float power = emitter.heatPower();
+            int radius = emitter.heatRadius();
+            float power = emitter.heatEmitting();
+            float heatTransfer = emitter.heatTransfer();
 
-            //todo радиус квадратно-симметричный, хотелось бы более гибко
+            //тепло внутри ентити (нагрев от метаболизма и зависимость от среды)
+            emitter.addHeat(power);
+            emitter.addHeat((getTempCell(x, y, radius) - emitter.getHeat()) * heatTransfer);
+
+            //todo радиус квадратно-симметричный, хотелось бы более гибко но пока излишне
             for (int i = 0; i < radius; i++) {
                 for (int j = 0; j < radius; j++) {
-                    addTemp(x + i, y + j, power);
+                    //нагрев окружающей среды сущностью
+                    addTemp(x + i, y + j, emitter.getHeat() * heatTransfer);
                 }
             }
         });
     }
-
 
     //todo было бы неплохо иметь итератор по миру, принимающий в параметр какие блоки выплевывать
     // один раз прошел -> закешировал нужные,
@@ -302,6 +309,20 @@ public final class TemperatureMap {
 
     public static float getTempCell(int x, int y) {
         return temps[pos2index(x, y)];
+    }
+
+    /// @return средняя по радиусу
+    public static float getTempCell(int x, int y, int radius) {
+        float total = 0;
+        for (int i = 0; i < radius; i++) {
+            for (int j = 0; j < radius; j++) {
+                //todo место для вашего бесшовного мира
+                if (world.inBounds(x, y)) {
+                    total += getTempCell(x, y);
+                }
+            }
+        }
+        return total / radius;
     }
 
     public static void addTemp(int x, int y, float temp) {
