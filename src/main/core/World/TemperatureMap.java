@@ -1,5 +1,6 @@
 package core.World;
 
+import core.Application;
 import core.content.blocks.Block;
 import core.content.entity.LivingEntity;
 import core.util.BatchScope;
@@ -7,8 +8,7 @@ import core.util.Debug;
 
 import java.util.Arrays;
 
-import static core.Global.entityPool;
-import static core.Global.world;
+import static core.Global.*;
 import static core.World.WorldGenerator.WorldGeneratorConstants.COPY_SIZE;
 import static java.lang.Math.clamp;
 
@@ -75,18 +75,20 @@ public final class TemperatureMap {
         }
 
         var scope = new BatchScope(world.genPool);
-        for (int i = 0; i < 2000; i++) {
+        for (int i = 0; i < 5000; i++) {
             update(scope);
         }
+        Application.log.info(player.getHeat());
         try (scope) {
             Debug.saveTemp("Temp", scope);
             Debug.savePressures("Pressure", scope);
             Debug.saveWindForce("Power", scope);
             Debug.saveWindDirection("Dir", scope);
         }
-        for (int i = 0; i < 10000; i++) {
+        for (int i = 0; i < 5000; i++) {
             update(scope);
         }
+        Application.log.info(player.getHeat());
         Debug.saveTemp("Temp1", null);
         Debug.savePressures("Pressure1", null);
         Debug.saveWindForce("Power1", scope);
@@ -105,18 +107,66 @@ public final class TemperatureMap {
             int x = emitter.blockX();
             int y = emitter.blockY();
             int radius = emitter.heatRadius();
-            float power = emitter.heatEmitting();
-            float heatTransfer = emitter.heatTransfer();
+
+            //мне лень выносить в финал поля
+            //загадочное п
+            float P = 1.0f;
+            //теплообмен
+            float k = emitter.heatTransfer();
+            //температура отказа грелки (метаболизма)
+            float L = 29.0f;
+            //бонус грелки
+            float S_teep = 1.2f;
+            //крутизна при отказе грелки
+            float F_steep = 4.0f;
+            //таргет
+            float T_target = 36.6f;
+
+            float currentHeat = emitter.getHeat();
+            float overHeatFactor = 1.0f - (currentHeat - 33.0f) / 9.0f;
+            //от неловкого нуля
+            float P_dyn = Math.max(0.02f, P * overHeatFactor);
+            //0.05 это метаболизм вообще всегда
+            float baseMetabolism = 0.05f * P_dyn;
+            //0.95 это бонусный метаболизм только когда холодно
+            float maxBonusPower = 0.95f * P_dyn;
+            float delta = T_target - currentHeat;
+            //можно лениво поджать хвосты и не использовать ехп, но без тестов не поймешь)
+            float curveFactor = (float) (1.0 / (1.0 + Math.exp(-S_teep * delta)));
+            float metabolism = baseMetabolism + (maxBonusPower * curveFactor);
+            float exhaustionFactor = (float) (1.0 / (1.0 + Math.exp(-(currentHeat - L) * F_steep)));
+
+            metabolism *= exhaustionFactor;
+
+            float environmentTemp = getTempCell(x, y, radius);
+            float exchange = (environmentTemp - currentHeat) * k;
+            float totalTemperatureDelta = metabolism + exchange;
 
             //тепло внутри ентити (нагрев от метаболизма и зависимость от среды)
-            emitter.addHeat(power);
-            emitter.addHeat((getTempCell(x, y, radius) - emitter.getHeat()) * heatTransfer);
-
-            //todo радиус квадратно-симметричный, хотелось бы более гибко но пока излишне
+            emitter.addHeat(totalTemperatureDelta);
+            int countedCells = 0;
             for (int i = 0; i < radius; i++) {
                 for (int j = 0; j < radius; j++) {
-                    //нагрев окружающей среды сущностью
-                    addTemp(x + i, y + j, emitter.getHeat() * heatTransfer);
+                    if (world.inBounds(x + i, y + j)) {
+                        countedCells++;
+                    }
+                }
+            }
+
+            if (countedCells > 0) {
+                float energyPerCell = -exchange / countedCells;
+                for (int i = 0; i < radius; i++) {
+                    for (int j = 0; j < radius; j++) {
+                        int targetX = x + i;
+                        int targetY = y + j;
+                        if (world.inBounds(targetX, targetY)) {
+                            float capacity = getHeatCapacity(targetX, targetY);
+                            float deltaTemp = energyPerCell / capacity;
+
+                            //нагрев окружающей среды сущностью
+                            addTemp(targetX, targetY, deltaTemp);
+                        }
+                    }
                 }
             }
         });
@@ -314,15 +364,17 @@ public final class TemperatureMap {
     /// @return средняя по радиусу
     public static float getTempCell(int x, int y, int radius) {
         float total = 0;
+
         for (int i = 0; i < radius; i++) {
             for (int j = 0; j < radius; j++) {
-                //todo место для вашего бесшовного мира
-                if (world.inBounds(x, y)) {
-                    total += getTempCell(x, y);
+                int targetX = x + i;
+                int targetY = y + j;
+                if (world.inBounds(targetX, targetY)) {
+                    total += temps[pos2index(targetX, targetY)];
                 }
             }
         }
-        return total / radius;
+        return total / (radius * radius);
     }
 
     public static void addTemp(int x, int y, float temp) {

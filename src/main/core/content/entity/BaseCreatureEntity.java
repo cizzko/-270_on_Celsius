@@ -67,6 +67,7 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
     @MustBeInvokedByOverriders
     public void init() {
         this.hp = maxHp();
+        this.currentTemp = 37;
     }
 
     public final C creature() {

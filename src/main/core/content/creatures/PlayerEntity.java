@@ -274,4 +274,9 @@ public class PlayerEntity
     public float heatEmitting() {
         return creature().heatEmitting;
     }
+
+    @Override
+    public float heatTransfer() {
+        return creature().heatTransfer;
+    }
 }

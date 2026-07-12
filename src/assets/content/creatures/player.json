@@ -4,8 +4,8 @@
   "Mass": 80,
   "MaxTemp": 42,
   "MinTemp": 25,
-  "HeatEmitting": 0.01,
-  "HeatTransfer": 0.02,
+  "HeatEmitting": 1.0,
+  "HeatTransfer": 0.05,
   "MaxHp": 100,
   "InventorySize": {
     "Width": 8,

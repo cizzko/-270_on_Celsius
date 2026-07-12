@@ -643,8 +643,9 @@ public class WorldGeneratorTMP {
             int[] islandBuffer = new int[minSize];
 
             for (int y = 0; y < sizeY; y++) {
+                int rowOffset = y * sizeX;
                 for (int x = startChunkX; x < endChunkX; x++) {
-                    int globalIndex = x + sizeX * y;
+                    int globalIndex = rowOffset + x;
 
                     short tile = tiles[globalIndex];
                     if (tile != 0 && (tile & 0x8000) == 0) {
@@ -670,19 +671,19 @@ public class WorldGeneratorTMP {
 
                         int islandSize = 0;
                         localStack.clear();
-                        localStack.add(globalIndex);
+                        localStack.add((y << 16) | x);
                         boolean touchesBorder = false;
 
                         while (!localStack.isEmpty()) {
-                            int currentIdx = localStack.popInt();
+                            int packed = localStack.popInt();
+                            int cx = packed & 0xFFFF;
+                            int cy = packed >> 16;
+                            int currentIdx = cy * sizeX + cx;
 
                             if (islandSize < minSize) {
                                 islandBuffer[islandSize] = currentIdx;
                             }
                             islandSize++;
-
-                            int cx = currentIdx % sizeX;
-                            int cy = currentIdx / sizeX;
 
                             if (cx == startChunkX || cx == endChunkX - 1) {
                                 touchesBorder = true;
@@ -693,12 +694,12 @@ public class WorldGeneratorTMP {
                                 int ny = cy + dir[1];
 
                                 if (nx >= startChunkX && nx < endChunkX && ny >= 0 && ny < sizeY) {
-                                    int nextIdx = nx + sizeX * ny;
+                                    int nextIdx = ny * sizeX + nx;
                                     short nextTile = tiles[nextIdx];
 
                                     if (nextTile != 0 && (nextTile & 0x8000) == 0) {
                                         tiles[nextIdx] |= 0x8000;
-                                        localStack.add(nextIdx);
+                                        localStack.add((ny << 16) | nx);
                                     }
                                 }
                             }
@@ -707,9 +708,9 @@ public class WorldGeneratorTMP {
                         if (islandSize < minSize && !touchesBorder) {
                             for (int i = 0; i < islandSize; i++) {
                                 int idx = islandBuffer[i];
+                                tiles[idx] = 0;
                                 int px = idx % sizeX;
                                 int py = idx / sizeX;
-                                tiles[idx] = 0;
                                 world.destroy(px, py);
                             }
                         }
@@ -720,15 +721,15 @@ public class WorldGeneratorTMP {
 
         scope.submit(0, sizeY, (loY, hiY) -> {
             for (int y = loY; y < hiY; y++) {
+                int rowOffset = y * sizeX;
                 for (int x = 0; x < sizeX; x++) {
-                    int globalIndex = x + sizeX * y;
+                    int globalIndex = rowOffset + x;
                     if (tiles[globalIndex] != 0) {
                         tiles[globalIndex] &= 0x7FFF;
                     }
                 }
             }
         }).awaitAll();
-
     }
 
     /**
