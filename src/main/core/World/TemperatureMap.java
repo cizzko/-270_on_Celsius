@@ -68,7 +68,7 @@ public final class TemperatureMap {
         int spawnX = sizeX / 2 - 100;
         int spawnY = sizeY / 2 + sizeY / 8;
 
-        boolean truе = false;
+        boolean truе = true;
         if (truе) {
             return;
         }

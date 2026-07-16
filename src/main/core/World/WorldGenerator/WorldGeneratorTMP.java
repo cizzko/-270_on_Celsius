@@ -515,7 +515,7 @@ public class WorldGeneratorTMP {
      * тем меньше итоговый шанс, каждый новый отросток текущей пещеры
      * уменьшает итоговый шанс
      */
-    private static void generateCave(int bx, int by, float radius, int minRadius, int maxRadius,
+    public static void generateCave(int bx, int by, float radius, int minRadius, int maxRadius,
                                     int minAngle, int maxAngle, int startAngle, float shotChance) {
 
         if (minRadius < 1 || minRadius == maxRadius) {
