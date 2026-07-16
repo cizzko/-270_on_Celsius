@@ -27,11 +27,11 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
     protected final Vector2f velocity = new Vector2f();
     protected final Vector2f acceleration = new Vector2f();
 
-    public final void addHeat(float heat) {
+    public final void addTemp(float heat) {
         currentTemp += heat;
     }
 
-    public final float getHeat() {
+    public final float getCurrentTemp() {
         return currentTemp;
     }
 

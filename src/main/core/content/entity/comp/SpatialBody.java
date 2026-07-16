@@ -20,8 +20,8 @@ public interface SpatialBody {
         return out.set(x(), y());
     }
 
-    default short blockX() { return toBlock(x()); }
-    default short blockY() { return toBlock(y()); }
+    default short blockX() { return toBlock(x() + GAP); }
+    default short blockY() { return toBlock(y() + GAP); }
 
     default double centerX() { return x() + width()/2d; }
     default double centerY() { return y() + height()/2d; }

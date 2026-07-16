@@ -5,11 +5,13 @@ import core.content.blocks.Block;
 import core.content.entity.LivingEntity;
 import core.util.BatchScope;
 import core.util.Debug;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
 
 import java.util.Arrays;
 
 import static core.Global.*;
-import static core.World.WorldGenerator.WorldGeneratorConstants.COPY_SIZE;
+import static core.World.WorldGenerator.WorldGeneratorConstants.*;
+import static core.World.WorldGenerator.WorldGeneratorTMP.generateCave;
 import static java.lang.Math.clamp;
 
 //это намеренно искаженная физика,
@@ -20,14 +22,19 @@ import static java.lang.Math.clamp;
 public final class TemperatureMap {
     // Column-major массив температур
     private static float[] temps;
+    //private static final VarHandle TS_ARRAY = MethodHandles.arrayElementVarHandle(float[].class);
+
+    private static IntArrayList activeChunks = new IntArrayList();
+    private static int[] chunkActiveOnFrame;
+    private static int currentFrame = 0;
 
     //todo
     private static final float BASE_DENSITY = 1.2f;
     //чем выше, тем 'взрывоопаснее' газы (температура больше влияет на расширение)
-    private static final float R = 250.05f;
+    private static final float R = 350.05f;
     //тепло сосед-сосед
     //тестовое значение
-    private static final float HEAT_DIFFUSION_K = 0.01f;
+    private static final float HEAT_DIFFUSION_K = 0.006f;
     private static final float SOLID_BASE_PRESSURE = 10000.0f;
     //Множитель теплоемкости блоков
     private static final float SOLID_HEAT_CAPACITY_MULT = 3f;
@@ -35,60 +42,66 @@ public final class TemperatureMap {
     //тестовое значение
     private static final float SOLID_CONDUCTIVITY_MULT = 0.01f;
     //верт тяга
-    private static final float cs = 14f;
-    private static final float gs = 14f;
-    //как быстро газ разлетается вбок
-    private static final float hb = 2.3f;
+    //вообще это были разные значения, но вышло что cs+gs
+    private static final float cs = 20f;
+    private static final float gs = 20f;
+    //как быстро газ разлетается вбок всегда
+    //todo @test подобрать
+    private static final float hb = 2.4f;
     //бустер скорости разлета вбок у пола/потолка (растекание)
-    private static final float hs = 4f;
+    //todo @test подобрать
+    private static final float hs = 15f;
 
     public static int pos2index(int x, int y) { return x * world.sizeY + y; }
 
     public static void init() {
         temps = new float[world.sizeX * world.sizeY];
         Arrays.fill(temps, 20f);
+
+        chunkActiveOnFrame = new int[((world.sizeX + 15) >> 4) * ((world.sizeY + 15) >> 4)];
+        Arrays.fill(chunkActiveOnFrame, -1);
     }
 
     public static void generate() {
         int sizeX = world.sizeX;
         int sizeY = world.sizeY;
         int spawnX = sizeX / 2 - 100;
-        int spawnY = sizeY / 2 - sizeY / 8;
+        int spawnY = sizeY / 2 + sizeY / 8;
 
-        boolean truе = true;
+        boolean truе = false;
         if (truе) {
             return;
         }
 
-        int halfSize = 40;
-        int startX = clamp(spawnX - halfSize, 0, sizeY - 1);
-        int endX = clamp(spawnX + halfSize, 0, sizeX - 1);
+        int halfSize = 20;
+        int startX = clamp(spawnX - halfSize * 3, 0, sizeY - 1);
+        int endX = clamp(spawnX + halfSize * 3, 0, sizeX - 1);
         int startY = clamp(spawnY - halfSize, 0, sizeY - 1);
         int endY = clamp(spawnY + halfSize, 0, sizeX - 1);
 
+        generateCave(startX + halfSize/2, startY + halfSize/2,
+                3, 2, 5,
+                CAVE_UPPER_MIN_ANGLE, CAVE_UPPER_MAX_ANGLE, 120, 200);
+
         for (int x = startX; x < endX; x++) {
-            int baseIdx = x * sizeY + startY;
             for (int y = startY; y < endY; y++) {
-                temps[baseIdx] = 350f;
-                baseIdx++;
+                setTemp(x, y, -250);
             }
         }
 
         var scope = new BatchScope(world.genPool);
-        for (int i = 0; i < 5000; i++) {
+        for (int i = 0; i < 1000; i++) {
             update(scope);
         }
-        Application.log.info(player.getHeat());
         try (scope) {
             Debug.saveTemp("Temp", scope);
             Debug.savePressures("Pressure", scope);
             Debug.saveWindForce("Power", scope);
             Debug.saveWindDirection("Dir", scope);
         }
-        for (int i = 0; i < 5000; i++) {
+        for (int i = 0; i < 4000; i++) {
             update(scope);
         }
-        Application.log.info(player.getHeat());
         Debug.saveTemp("Temp1", null);
         Debug.savePressures("Pressure1", null);
         Debug.saveWindForce("Power1", scope);
@@ -122,7 +135,7 @@ public final class TemperatureMap {
             //таргет
             float T_target = 36.6f;
 
-            float currentHeat = emitter.getHeat();
+            float currentHeat = emitter.getCurrentTemp();
             float overHeatFactor = 1.0f - (currentHeat - 33.0f) / 9.0f;
             //от неловкого нуля
             float P_dyn = Math.max(0.02f, P * overHeatFactor);
@@ -143,7 +156,7 @@ public final class TemperatureMap {
             float totalTemperatureDelta = metabolism + exchange;
 
             //тепло внутри ентити (нагрев от метаболизма и зависимость от среды)
-            emitter.addHeat(totalTemperatureDelta);
+            emitter.addTemp(totalTemperatureDelta);
             int countedCells = 0;
             for (int i = 0; i < radius; i++) {
                 for (int j = 0; j < radius; j++) {
@@ -200,48 +213,190 @@ public final class TemperatureMap {
             System.arraycopy(temps, srcOffset, temps, targetOffsetRight, sizeY);
         }
 
-        for (int x = world.sizeX - COPY_SIZE + 1; x < world.sizeX; x++) {
-            int srcOffset = x * sizeY;
-            int targetOffsetLeftBound = (x - (world.sizeX - COPY_SIZE)) * sizeY;
-            System.arraycopy(temps, srcOffset, temps, targetOffsetLeftBound, sizeY);
+        flip = !flip;
+        currentFrame++;
+
+        //честно я хз как оно работает, по идее не должно было
+        //todo чуть сломан спавн ветра, на температуру не влияет
+        for (int c = 0; c < activeChunks.size(); c++) {
+            int packedChunk = activeChunks.getInt(c);
+            int x = packedChunk >> 16;
+            int y = packedChunk & 0xFFFF;
+
+            int startI = x << 4;
+            int startJ = y << 4;
+
+            int endI = Math.min(startI + 16, world.sizeX);
+            int endJ = Math.min(startJ + 16, world.sizeY);
+
+            if (endI < world.sizeX) {
+                for (int j = startJ; j < endJ; j++) {
+                    float current = temps[pos2index(endI - 1, j)];
+                    float neighbor = temps[pos2index(endI, j)];
+
+                    if (Math.abs(current - neighbor) > 0.01f) {
+                        activateCell(endI, j);
+                        break;
+                    }
+                }
+            }
+
+            if (startI > 0) {
+                for (int j = startJ; j < endJ; j++) {
+                    float current = temps[pos2index(startI, j)];
+                    float neighbor = temps[pos2index(startI - 1, j)];
+
+                    if (Math.abs(current - neighbor) > 0.01f) {
+                        activateCell(startI - 1, j);
+                        break;
+                    }
+                }
+            }
+
+            if (endJ < world.sizeY) {
+                for (int i = startI; i < endI; i++) {
+                    float current = temps[pos2index(i, endJ - 1)];
+                    float neighbor = temps[pos2index(i, endJ)];
+
+                    if (Math.abs(current - neighbor) > 0.01f) {
+                        activateCell(i, endJ);
+                        break;
+                    }
+                }
+            }
+
+            if (startJ > 0) {
+                for (int i = startI; i < endI; i++) {
+                    float current = temps[pos2index(i, startJ)];
+                    float neighbor = temps[pos2index(i, startJ - 1)];
+
+                    if (Math.abs(current - neighbor) > 0.01f) {
+                        activateCell(i, startJ - 1);
+                        break;
+                    }
+                }
+            }
         }
 
-        flip = !flip;
+        int numActive = activeChunks.size();
+        int activeWidth = world.sizeX - COPY_SIZE;
 
-        int leftBorder = 0;
-        int rightBorder = world.sizeX - COPY_SIZE;
-        int activeWidth = rightBorder - leftBorder;
-
-        //оно должно ломаться, ведь итерации созависимы, но охренеть не ломается
         try (scope) {
-            if (flip) {
-                scope.submit(leftBorder, rightBorder, (startX, endX) -> {
-                    for (int i = startX; i < endX; i++) {
-                        int end = world.sizeY - 1;
-                        for (int j = 0; j < end; j++) {
-                            processHorizontalFlow(i, j, leftBorder, activeWidth);
-                            processVerticalFlow(i, j);
-                        }
-                        processHorizontalFlow(i, end, leftBorder, activeWidth);
+            scope.submit(0, numActive, (startChunkIdx, endChunkIdx) -> {
+                if (flip) {
+                    for (int c = startChunkIdx; c < endChunkIdx; c++) {
+//                        int ah = c + 4;
+//                        if (ah < endChunkIdx) {
+//                            int futurePacked = activeChunks.getInt(ah);
+//                            int fX = futurePacked >> 16;
+//                            int fY = futurePacked & 0xFFFF;
+//                            int futureIdx = pos2index(fX << 4, fY << 4);
+//
+//                            if (futureIdx < temps.length) {
+//                                //TS_ARRAY.getOpaque(temps, futureIdx);
+//                            }
+//                        }
+                        processSingleChunk(c, activeWidth);
                     }
-                });
-            } else {
-                scope.submit(leftBorder, rightBorder, (startX, endX) -> {
-                    for (int i = endX - 1; i >= startX; i--) {
-                        int start = world.sizeY - 1;
-                        processHorizontalFlow(i, start, leftBorder, activeWidth);
-                        for (int j = start - 1; j >= 0; j--) {
-                            processHorizontalFlow(i, j, leftBorder, activeWidth);
-                            processVerticalFlow(i, j);
-                        }
+                } else {
+                    for (int c = endChunkIdx - 1; c >= startChunkIdx; c--) {
+                        processSingleChunk(c, activeWidth);
                     }
-                });
+                }
+            });
+        }
+        cleanupSleepingChunks();
+    }
+
+    public static void activateCell(int x, int y) {
+        if (x < 0 || y < 0 || x >= world.sizeX || y >= world.sizeY) return;
+
+        int chunkX = x >> 4;
+        int chunkY = y >> 4;
+        int idx = chunkY * ((world.sizeX + 15) >> 4) + chunkX;
+
+        if (chunkActiveOnFrame[idx] != currentFrame) {
+            chunkActiveOnFrame[idx] = currentFrame;
+
+            int packedChunk = (chunkX << 16) | (chunkY & 0xFFFF);
+            activeChunks.add(packedChunk);
+        }
+    }
+
+    private static void cleanupSleepingChunks() {
+        for (int c = 0; c < activeChunks.size(); c++) {
+            int packedChunk = activeChunks.getInt(c);
+            int x = packedChunk >> 16;
+            int y = packedChunk & 0xFFFF;
+
+            if (chunkActiveOnFrame[y * ((world.sizeX + 15) >> 4) + x] == -1) {
+                int lastChunk = activeChunks.removeInt(activeChunks.size() - 1);
+                if (c < activeChunks.size()) {
+                    activeChunks.set(c, lastChunk);
+                    c--;
+                }
             }
         }
     }
 
-    private static void processHorizontalFlow(int i, int j, int leftBorder, int activeWidth) {
-        int nextI = leftBorder + ((i - leftBorder + 1) % activeWidth);
+    private static void processSingleChunk(int c, int activeWidth) {
+        int packedChunk = activeChunks.getInt(c);
+        int x = packedChunk >> 16;
+        int y = packedChunk & 0xFFFF;
+
+        int fromX = x << 4;
+        int toX = Math.min(fromX + 16, world.sizeX);
+        int fromY = y << 4;
+        int toY = Math.min(fromY + 16, world.sizeY);
+        boolean hasActivity = false;
+
+        if (flip) {
+            for (int i = fromX; i < toX; i++) {
+                for (int j = fromY; j < toY; j++) {
+                    if (deltaSmall(i, j)) {
+                        continue;
+                    }
+
+                    hasActivity |= processHorizontalFlow(i, j, activeWidth) | processVerticalFlow(i, j);
+                }
+            }
+        } else {
+            for (int i = toX - 1; i >= fromX; i--) {
+                for (int j = toY - 1; j >= fromY; j--) {
+                    if (deltaSmall(i, j)) {
+                        continue;
+                    }
+
+                    //'|=' заменяет if (!hasActivity && ..) {.. hasActivity = true; }
+                    hasActivity |= processHorizontalFlow(i, j, activeWidth) | processVerticalFlow(i, j);
+                }
+            }
+        }
+
+        int idx = y * ((world.sizeX + 15) >> 4) + x;
+        if (hasActivity) {
+            chunkActiveOnFrame[idx] = currentFrame + 1;
+        } else {
+            chunkActiveOnFrame[idx] = -1;
+        }
+    }
+
+    private static boolean deltaSmall(int i, int j) {
+        int idx = pos2index(i, j);
+        float tIdx = temps[idx];
+        int nextI = i + 1;
+        int next = j + 1;
+
+        return (Math.abs(tIdx - temps[nextI * world.sizeY + j]) <= 0.01f) & ((next >= world.sizeY) | (Math.abs(tIdx - temps[(next < world.sizeY) ? (idx + 1) : idx]) <= 0.01f));
+    }
+
+    private static boolean processHorizontalFlow(int i, int j, int activeWidth) {
+        if (activeWidth <= 0) {
+            return false;
+        }
+
+        //todo метод возвращающий сразу трушные координаты
+        int nextI = ((i + 1) % activeWidth);
         int idx = pos2index(i, j);
         int nextIdx = nextI * world.sizeY + j;
 
@@ -249,10 +404,6 @@ public final class TemperatureMap {
         float tNextIdx = temps[nextIdx];
         float deltaT = tIdx - tNextIdx;
         float absDeltaT = Math.abs(deltaT);
-
-        if (absDeltaT <= 0.01f) {
-            return;
-        }
 
         boolean isSolidCurrent = world.isBlockType(i, j, Block.Type.SOLID);
         boolean isSolidNext = world.isBlockType(nextI, j, Block.Type.SOLID);
@@ -264,19 +415,19 @@ public final class TemperatureMap {
         float factor = HEAT_DIFFUSION_K;
         boolean solidBelowCurrent = (j > 0) && world.isBlockType(i, j - 1, Block.Type.SOLID);
         boolean solidBelowNext = (j > 0) && world.isBlockType(nextI, j - 1, Block.Type.SOLID);
+        boolean hasFloor = solidBelowCurrent || solidBelowNext;
 
         if (!isSolidCurrent && !isSolidNext) {
             if (absDeltaT > 0.5f) {
-                if (deltaT < 0) {
-                    factor = (solidBelowCurrent || solidBelowNext) ? (hb * 4.5f) : (hb * 0.4f);
-                } else {
-                    factor = hb * hs;
-                }
+                //что то около 500 градусов разницы
+                float saturation = Math.min(1f, absDeltaT * 0.002f);
+                float dynamicHs = 1f + (hs - 1f) * saturation;
+                factor = hasFloor ? (hb * dynamicHs * HEAT_DIFFUSION_K) : (hb * HEAT_DIFFUSION_K);
             }
         }
 
         float ht = deltaT * factor * conduct;
-        if (solidBelowCurrent && deltaT > 0) {
+        if (hasFloor && !isSolidCurrent && !isSolidNext) {
             ht *= 0.1f;
         }
 
@@ -289,10 +440,16 @@ public final class TemperatureMap {
         float cap = ht / sumCap;
         temps[idx] = tIdx - (cap * capNextIdx);
         temps[nextIdx] = tNextIdx + (cap * capIdx);
+
+        return true;
     }
 
     private static final float VERT = (gs + cs) * 0.5f;
-    private static void processVerticalFlow(int i, int j) {
+    private static boolean processVerticalFlow(int i, int j) {
+        if (j >= world.sizeY - 1) {
+            return false;
+        }
+
         int idx = pos2index(i, j);
         int nextIdx = idx + 1;
 
@@ -300,10 +457,6 @@ public final class TemperatureMap {
         float tNextIdx = temps[nextIdx];
         float deltaT = tIdx - tNextIdx;
         float absDeltaT = Math.abs(deltaT);
-
-        if (absDeltaT <= 0.01f) {
-            return;
-        }
 
         boolean isSolidCurrent = world.isBlockType(i, j, Block.Type.SOLID);
         boolean isSolidNext = world.isBlockType(i, j + 1, Block.Type.SOLID);
@@ -322,13 +475,17 @@ public final class TemperatureMap {
         }
 
         float ht = deltaT * factor * conduct;
-        float trns = (absDeltaT * 0.45f) * (capIdx * capNextIdx * 1.0f / (capIdx + capNextIdx));
+        float sum = capIdx + capNextIdx;
+        float trns = (absDeltaT * 0.45f) * (capIdx * capNextIdx * 1.0f / sum);
         if (Math.abs(ht) > trns) {
             ht = (ht > 0) ? trns : -trns;
         }
 
-        temps[idx] = tIdx - (ht * (1.0f / capIdx));
-        temps[nextIdx] = tNextIdx + (ht * (1.0f / capNextIdx));
+        float cap = ht / sum;
+        temps[idx] = tIdx - (cap * capNextIdx);
+        temps[nextIdx] = tNextIdx + (cap * capIdx);
+
+        return true;
     }
 
     private static float getHeatCapacity(int x, int y) {
@@ -338,6 +495,7 @@ public final class TemperatureMap {
         return BASE_DENSITY;
     }
 
+    //todo очень много вызовов isBlockType() в коде
     private static float getConductivity(int x1, int y1, int x2, int y2) {
         float c1 = world.isBlockType(x1, y1, Block.Type.SOLID) ? SOLID_CONDUCTIVITY_MULT : 1f;
         float c2 = world.isBlockType(x2, y2, Block.Type.SOLID) ? SOLID_CONDUCTIVITY_MULT : 1f;
@@ -379,10 +537,12 @@ public final class TemperatureMap {
 
     public static void addTemp(int x, int y, float temp) {
         temps[pos2index(x, y)] += temp;
+        activateCell(x, y);
     }
 
     public static void setTemp(int x, int y, float temp) {
         temps[pos2index(x, y)] = temp;
+        activateCell(x, y);
     }
 
     //ничего лучше не было придумано, потому что обычно используется в паре
@@ -433,20 +593,18 @@ public final class TemperatureMap {
             return 0f;
         }
 
+        boolean hasFloor = j > 0 && (world.isBlockType(i, j - 1, Block.Type.SOLID) || world.isBlockType(nextI, j - 1, Block.Type.SOLID));
+
         float factor = HEAT_DIFFUSION_K;
-        if (Math.abs(deltaT) > 0.5f) {
-            if (deltaT < 0) {
-                boolean sc = (j > 0) && world.isBlockType(i, j - 1, Block.Type.SOLID);
-                boolean sn = (j > 0) && world.isBlockType(nextI, j - 1, Block.Type.SOLID);
-                factor = (sc || sn) ? (hb * 4.5f) : (hb * 0.4f);
-            } else {
-                factor = hb * hs;
-            }
+        float absDeltaT = Math.abs(deltaT);
+        if (absDeltaT > 0.5f) {
+            float dynamicHs = 1f + (hs - 1f) * (absDeltaT / (5f + absDeltaT));
+            factor = hasFloor ? (hb * dynamicHs * HEAT_DIFFUSION_K) : (hb * HEAT_DIFFUSION_K);
         }
 
         float ht = deltaT * factor * getConductivity(i, j, nextI, j);
 
-        if (j > 0 && world.isBlockType(i, j - 1, Block.Type.SOLID) && deltaT > 0) {
+        if (hasFloor) {
             ht *= 0.1f;
         }
 

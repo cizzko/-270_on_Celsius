@@ -119,6 +119,7 @@ public class Debug {
             var worldPos = player.posTo(TmpShapes.v1d);
             return "XY: " + formatWorldPos(worldPos);
         });
+        setDebugValue(GameState.PLAYING, () -> "XY to blocks: " + player.blockX() + ", " + player.blockY());
         setDebugValue(GameState.PLAYING, () -> "Camera: " + formatWorldPos(camera.position));
         setDebugValue(GameState.PLAYING, () -> "Velocity: " + player.velocity());
         setDebugValue(GameState.PLAYING, () ->
@@ -131,6 +132,9 @@ public class Debug {
             return "Mouse: " + mouseBlockPos + " ID: " + blockId + " HP: " + world.getHp(mouseBlockPos) +
                    " Shadow: " + ShadowMap.getColorTo(mouseBlockPos.x, mouseBlockPos.y, TmpShapes.c1);
         });
+        setDebugValue(GameState.PLAYING, () -> "PlayerTemp: " + player.getCurrentTemp() +
+                ", around: " + TemperatureMap.getTempCell(player.blockX(), player.blockY(), player.heatRadius()));
+
         setDebugValue(GameState.PLAYING, () -> {
             var gs = (PlayGameScene) gameScene;
             Sun sun = gs.sun;
