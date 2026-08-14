@@ -5,7 +5,7 @@
   "MaxTemp": 42,
   "MinTemp": 25,
   "HeatEmitting": 10.0,
-  "HeatTransfer": 0.10,
+  "HeatTransfer": 0.1,
   "MaxHp": 100,
   "InventorySize": {
     "Width": 8,

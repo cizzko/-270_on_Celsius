@@ -21,6 +21,7 @@ import static java.lang.Math.clamp;
 //todo есть куда стремиться
 //а еще есть быстрая гпу версия, но она фризит рендер
 //тут надо что то/кто то умное
+//todo формула хеттрансфера для сущностей уехала кудат
 public final class TemperatureMap {
     private static float avgFrameTimeNs = 0f;
     private static int consecutiveGoodFrames = 0;
@@ -56,8 +57,8 @@ public final class TemperatureMap {
     public static boolean USE_SIMPLE_VELOCITY_ADVECTION = false;
     public static boolean DISABLE_VELOCITY_DIFFUSION = false;
 
-    public static float RADIATIVE_COOLING_RATE = 0.1f;
-    public static float ATMOSPHERIC_COOLING_RATE = 0.001f;
+    public static float RADIATIVE_COOLING_RATE = 0.0001f;
+    public static float ATMOSPHERIC_COOLING_RATE = 0.000001f;
     public static float SOLAR_FLUX = 13000f;
 
     public static final float SPACE_TEMP = -270.0f;
@@ -78,6 +79,7 @@ public final class TemperatureMap {
     private static final float PREDICT_VELOCITY_MULT = 3.0f;
     private static final float CHUNK_SPREAD_TEMP_THRESHOLD = SLEEP_TEMP_THRESHOLD * 1.5f;
 
+    //todo нормальная теплопередача
     private static final float CAP_AIR = 1.0f;
     private static final float CAP_SOLID = 0.8f;
     private static final float COND_AIR = 0.4f;
@@ -156,15 +158,19 @@ public final class TemperatureMap {
     }
 
     public static void generate() {
-        if (WORLD_WIDTH == 0) init();
+        if (WORLD_WIDTH == 0) {
+            init();
+        }
 
         int maxSurfaceY = 0;
         for (int x = 0; x < WORLD_WIDTH; x++) {
             int sY = world.surfaces[x];
-            if (sY > maxSurfaceY) maxSurfaceY = sY;
+            if (sY > maxSurfaceY) {
+                maxSurfaceY = sY;
+            }
         }
 
-        final int yLowerBound = (int)(world.sizeY / 2);
+        final int yLowerBound = (int) (world.sizeY / 2);
         final double c = 5.0 / yLowerBound;
 
         for (int x = 0; x < WORLD_WIDTH; x++) {
@@ -174,35 +180,28 @@ public final class TemperatureMap {
                 biome = Biomes.getDefault();
             }
             int biomeTemp = biome.getTemp();
-
             int biomeBottom = Math.max(0, surfaceY - 5);
             int biomeTop = Math.min(WORLD_HEIGHT - 1, surfaceY + 10);
 
             for (int y = 0; y < WORLD_HEIGHT; y++) {
                 boolean solid = world.isBlockType(x, y, Block.Type.SOLID);
+                float temp = 20.0f;
 
                 if (y >= biomeBottom && y <= biomeTop) {
-                    setTemp(x, y, (float) biomeTemp);
-                } else {
-                    if (solid) {
-                        if (y <= yLowerBound) {
-                            double temp = 1000 * Math.exp(-c * y) + 12.0;
-                            setTemp(x, y, (float) temp);
-                        } else {
-                            setTemp(x, y, 0.0f);
-                        }
+                    temp = (float) biomeTemp;
+                }
+                else if (solid) {
+                    if (y <= yLowerBound) {
+                        temp = (float) (1000 * Math.exp(-c * y) + 12.0);
                     } else {
-                        if (y < maxSurfaceY) {
-                            setTemp(x, y, 5.0f);
-                        } else {
-                            setTemp(x, y, 0.0f);
-                        }
+                        temp = 0.0f;
                     }
                 }
+                setTemp(x, y, temp);
                 density[pos2index(x, y)] = 1.0f;
             }
         }
-//
+
 //        int total = 550;
 //        long delta = 0;
 //        int w = 0;
