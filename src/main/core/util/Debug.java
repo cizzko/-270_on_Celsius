@@ -130,15 +130,16 @@ public class Debug {
             var mouseBlock = world.getBlock(mouseBlockPos);
             String blockId = mouseBlock != null ? mouseBlock.key + " (BID: " + mouseBlock.id + ")" : "<void>";
             return "Mouse: " + mouseBlockPos + " ID: " + blockId + " HP: " + world.getHp(mouseBlockPos) +
-                   " Shadow: " + ShadowMap.getColorTo(mouseBlockPos.x, mouseBlockPos.y, TmpShapes.c1);
+                   " Shadow: " + ShadowMap.getColorTo(mouseBlockPos.x, mouseBlockPos.y, TmpShapes.c1) +
+                    " Temp: " + TemperatureMap.getTempCell(mouseBlockPos.x, mouseBlockPos.y);
         });
+        setDebugValue(GameState.PLAYING, () -> "TempMap FPS: " + TemperatureMap.fps);
+
         setDebugValue(GameState.PLAYING, () -> "PlayerTemp: " + player.getCurrentTemp() +
                 ", around: " + TemperatureMap.getTempCell(player.blockX(), player.blockY(), player.heatRadius()));
 
         setDebugValue(GameState.PLAYING, () -> {
-            var gs = (PlayGameScene) gameScene;
-            Sun sun = gs.sun;
-            return "Sun y: " + FLOATS.format((int)(sun.y * 100f) / 100f);
+            return "sun time: " + Sun.getTimeAtWorldX(player.x());
         });
     }
 
@@ -159,7 +160,7 @@ public class Debug {
     }
 
     public static void giveItems() {
-        final int n = 10;
+        final int n = 900;
 
         player.addItem(itemStack(content.itemById("blockDeleter"), Item.DEFAULT_MAX_STACK_SIZE));
         player.addItem(itemStack(content.itemById("aluminum"), n));
@@ -171,6 +172,7 @@ public class Debug {
         player.addItem(itemStack(content.itemById("workbenchMedium"), n));
         player.addItem(itemStack(content.itemById("smallStone"), n));
         player.addItem(itemStack(content.itemById("stoneOven"), n));
+        player.addItem(itemStack(content.itemById("simpleHeatInsulator"), n));
     }
 
     interface PixelOperator {
@@ -245,39 +247,85 @@ public class Debug {
     }
 
     public static void saveTemp(String name, BatchScope scope) {
-        saveTempData(name, scope, (x, y) -> {
-            float t = TemperatureMap.getTempCell(x, y);
-            //return (255 << 24) | (t >= 20f ? ((int)Math.min(255f, Math.max(0f, (t - 20f) * 0.26020408f)) << 16) : (int)Math.min(255f, Math.max(0f, (20f - t) * 0.86396746f))); });
-            return (255 << 24) | (t >= 20f ? ((int)Math.min(255f, Math.max(0f, (t - 20f) * 0.86020408f)) << 16) : (int)Math.min(255f, Math.max(0f, (20f - t) * 0.86396746f))); });
-    }
+        float[] localTemps = TemperatureMap.getTemps().clone();
+        //final int shift = TemperatureMap.chunkShift;
+        int shift = 1;
+        final int mask = (1 << shift) - 1;
 
-    public static void savePressures(String name, BatchScope scope) {
         saveTempData(name, scope, (x, y) -> {
-            return (255 << 24) | ((int)Math.clamp((TemperatureMap.getPressure(x, y)) / 200f * 255f, 0, 255) << 16);
+            int cx = x >> shift;
+            int cy = y >> shift;
+            float t = localTemps[TemperatureMap.pos2index(x, y)];
+            int r = t >= 0f ? (int) Math.min(255f, Math.max(0f, t * 2.96020408f)) : 0;
+            int b = t < 0f ? (int) Math.min(255f, Math.max(0f, -t * 2.96396746f)) : 0;
+            int g = 0;
+
+            int block = world.getBlockId(x, y);
+            if (block != 0) {
+                int blockBrightness = 25;
+                r = Math.min(255, r + blockBrightness);
+                g = Math.min(255, g + blockBrightness);
+                b = Math.min(255, b + blockBrightness);
+            }
+
+            int localX = x & mask;
+            int localY = y & mask;
+
+
+            return (255 << 24) | (r << 16) | (g << 8) | b;
         });
     }
 
-    public static void saveWindForce(String name, BatchScope scope) {
-        saveTempData(name, scope, (x, y) -> {
-            TemperatureMap.Wind w = TemperatureMap.getWind(x, y);
-            float force = w.force();
+//    public static void savePressures(String name, BatchScope scope) {
+//        float[] localDensity = TemperatureMap.getDensity().clone();
+//
+//        saveTempData(name, scope, (x, y) -> {
+//            float p = localDensity[TemperatureMap.pos2index(x, y)];
+//            float norm = p / 2.0f;
+//
+//            int r = (int) Math.clamp(norm * 255f, 0, 255);
+//            int b = (int) Math.clamp(-norm * 255f, 0, 255);
+//
+//            return (255 << 24) | (r << 16) | b;
+//        });
+//    }
 
-            if (w == TemperatureMap.Wind.CALM || force < 0.001f) {
+    public static void saveWindForce(String name, BatchScope scope) {
+        float[] localVx = TemperatureMap.getVx().clone();
+        float[] localVy = TemperatureMap.getVy().clone();
+
+        saveTempData(name, scope, (x, y) -> {
+            if (TemperatureMap.isFluidBoundary(x, y)) {
                 return (255 << 24);
             }
-            return (255 << 24) | ((int) Math.clamp((force / 5.0f) * 255f, 0, 255) << 8);
+
+            int idx = TemperatureMap.pos2index(x, y);
+            float cvx = localVx[idx];
+            float cvy = localVy[idx];
+            float forceSq = cvx * cvx + cvy * cvy;
+
+            float force = (float) Math.cbrt(Math.sqrt(forceSq)) * 0.1f;
+            return (255 << 24) | ((int) Math.clamp((force) * 255f, 0, 255) << 8);
         });
     }
 
     public static void saveWindDirection(String name, BatchScope scope) {
-        saveTempData(name, scope, (x, y) -> {
-            TemperatureMap.Wind w = TemperatureMap.getWind(x, y);
+        float[] localVx = TemperatureMap.getVx().clone();
+        float[] localVy = TemperatureMap.getVy().clone();
 
-            if (w == TemperatureMap.Wind.CALM || w.force() < 0.001f) {
+        saveTempData(name, scope, (x, y) -> {
+            if (TemperatureMap.isFluidBoundary(x, y)) {
                 return (255 << 24);
             }
 
-            float degrees = w.angle();
+            int idx = TemperatureMap.pos2index(x, y);
+            float cvx = localVx[idx];
+            float cvy = localVy[idx];
+
+            float degrees = (float) Math.toDegrees(Math.atan2(cvy, cvx));
+            if (degrees < 0.0f) {
+                degrees += 360.0f;
+            }
             if (degrees > 180.0f) {
                 degrees -= 180.0f;
             }
@@ -344,7 +392,8 @@ public class Debug {
             var hitbox = TmpShapes.aabb1;
             player.hitboxTo(hitbox);
 
-            if (false) { // Блоки интегрированной модели
+            //todo
+            if (true) { // Блоки интегрированной модели
                 short minX = hitbox.blockMinX();
                 short minY = hitbox.blockMinY();
                 short maxX = hitbox.blockMaxX();

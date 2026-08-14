@@ -14,27 +14,28 @@ import java.util.random.RandomGenerator;
 
 public enum Biomes implements SerializableContent {
     //чем ближе к 90 тем меньше максимальный угол наклона линии генерации
-    mountains(60, 20, 160, 1, getMountains(), "World/Backdrops/backMountains.png"),
-    plain(30, 40, 140, 1, getPlain(), "World/Backdrops/backPlain.png"),
-    forest(40, 40, 140, 1, getForest(), "World/Backdrops/backForest.png"),
-    desert(30, 60, 120, 1, getDesert(), "World/Backdrops/backDesert.png"),
-    snowed(30, 60, 120, 1, getSnowed(), "World/Backdrops/backSnowed.png");
+    mountains(60, 20, 160, 1, 15, getMountains(), "World/Backdrops/backMountains.png"),
+    plain(30, 40, 140, 1, 25, getPlain(), "World/Backdrops/backPlain.png"),
+    forest(40, 40, 140, 1, 20, getForest(), "World/Backdrops/backForest.png"),
+    desert(30, 60, 120, 1, 45, getDesert(), "World/Backdrops/backDesert.png"),
+    snowed(30, 60, 120, 1, -15, getSnowed(), "World/Backdrops/backSnowed.png");
 
     private static final Biomes defaultBiome = forest;
 
     private final Texture backdropTex;
-    private final int blockGradientChance, upperBorder, bottomBorder, chanceDecrease;
+    private final int blockGradientChance, upperBorder, bottomBorder, chanceDecrease, temp;
     private final short[] blocks;
 
     //int blockGradientChance - насколько острым могут быть углы,
     //int upperBorder - максимальный угол, int bottomBorder - максимальный угол,
     //int chanceDecrease - шанс удаления одного или нескольких верхних блоков 0-100
-    Biomes(int blockGradientChance, int upperBorder, int bottomBorder, int chanceDecrease, short[] blocks, String backdrop) {
+    Biomes(int blockGradientChance, int upperBorder, int bottomBorder, int chanceDecrease, int temp, short[] blocks, String backdrop) {
         this.blockGradientChance = blockGradientChance;
         this.upperBorder = upperBorder;
         this.bottomBorder = bottomBorder;
         this.blocks = blocks;
         this.chanceDecrease = chanceDecrease;
+        this.temp = temp;
 
         if (backdrop != null) {
             this.backdropTex = FutureUtil.join(Global.assets.load(Texture.class, backdrop, AssetsManager.LoadType.SYNC));
@@ -57,6 +58,10 @@ public enum Biomes implements SerializableContent {
 
     public int getChanceDecrease() {
         return chanceDecrease;
+    }
+
+    public int getTemp() {
+        return temp;
     }
 
     public short[] getBlocks() {

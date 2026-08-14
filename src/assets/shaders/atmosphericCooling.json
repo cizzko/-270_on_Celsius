@@ -1,0 +1,9 @@
+{
+  "uniforms": {
+    "u_coolingRate": { "type": "FLOAT" },
+    "u_dt": { "type": "FLOAT" },
+    "u_spaceTemp": { "type": "FLOAT" },
+    "u_worldWidth": { "type": "INT" },
+    "u_worldHeight": { "type": "INT" }
+  }
+}

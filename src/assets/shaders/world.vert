@@ -1,4 +1,4 @@
-#version 330 core
+﻿#version 330 core
 
 uniform vec2 u_logical_ratio;
 

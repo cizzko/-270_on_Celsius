@@ -57,6 +57,10 @@ public final class World {
     public final int sizeX, sizeY;
     public final /* unsigned */ short[] tiles;
     public final /* unsigned */ byte[] hp;
+    //самая высокая поверхность в каждой точке
+    //поверхность!! не блок!!
+    //поверхность это ячейка над блоком
+    public final int[] surfaces;
 
     @JsonDeserialize(using = DataDeserializer.class)
     public final Int2ObjectOpenHashMap<TileData> data;
@@ -111,6 +115,7 @@ public final class World {
         public int sizeX, sizeY;
         public /* unsigned */ short[] tiles;
         public /* unsigned */ byte[] hp;
+        public int[] surfaces;
         public Meta meta;
 
         @JsonDeserialize(using = DataDeserializer.class)
@@ -132,6 +137,7 @@ public final class World {
         this.sizeY = tmp.sizeY;
         this.tiles = tmp.tiles;
         this.hp = tmp.hp;
+        this.surfaces = tmp.surfaces;
         this.data = tmp.data;
         this.entity = tmp.entity;
         this.biomes = new Biomes[sizeX];
@@ -143,6 +149,7 @@ public final class World {
         this.sizeY = meta.sizeY;
         this.tiles = new short[sizeX * sizeY];
         this.hp = new byte[sizeX * sizeY];
+        this.surfaces = new int[sizeX];
         this.biomes = new Biomes[sizeX];
         this.data = new Int2ObjectOpenHashMap<>();
         this.entity = new Int2ObjectOpenHashMap<>();
@@ -183,6 +190,7 @@ public final class World {
         set(x, y, null, false);
     }
 
+    //обертка
     public void set(int x, int y, @Nullable Block object, boolean followingRules) {
         if (object == null)
             object = Block.AIR;
@@ -342,6 +350,10 @@ public final class World {
     private void setImpls(int x, int y, Block block, boolean followingRules) {
         if (block == Block.AIR) {
             destroyBlock(x, y);
+
+            if (gameState == GameState.PLAYING) {
+                TemperatureMap.updateBlock(x, y, block);
+            }
             return;
         }
 
@@ -374,6 +386,10 @@ public final class World {
             int idx = pos2index(x, y);
             tiles[idx] = block.id;
             hp[idx] = (byte) block.maxHp;
+        }
+        if (gameState == GameState.PLAYING) {
+            world.surfaces[x] = (short) findSurfaceY(x, 1);
+            TemperatureMap.updateBlock(x, y, block);
         }
 
         ShadowMap.update();
@@ -614,14 +630,14 @@ public final class World {
      * <p>
      * Проверяет {@code y} с шагом {@code period}, при нахождении твердого блока
      * запускает точечную проверку для поиска точной позиции. Скорость работы увеличивается в {@code period} раз,
-     * во столько же снижается точность нахождения одиночных блоков. При {@code period} = 1 поиск становится последовательным
+     * во столько же снижается точность нахождения одиночных блоков. При {@code period} = 1 поиск становится последовательным,
+     * только твердые блоки с сопротивлением 100
      * </p>
      * @param cellX координата {@code x}
      * @param period шаг поиска
      * @return {@code y} координата воздуха над самым верхним твердым блоком, либо {@code -1}, если земля не найдена
      */
 
-    //впр можно хранить карту высот, но поиск нужен не так часто, чтоб это дало желаемый профит
     public static int findSurfaceY(int cellX, int period) {
         if (!world.inBounds(cellX, 0)) {
             return -1;
@@ -637,5 +653,13 @@ public final class World {
             }
         }
         return -1;
+    }
+
+    public static int getSurfaceY(int cellX) {
+        if (!world.inBounds(cellX, 0)) {
+            return -1;
+        }
+
+        return world.surfaces[cellX];
     }
 }

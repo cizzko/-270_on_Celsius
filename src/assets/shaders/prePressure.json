@@ -1,0 +1,11 @@
+{
+  "uniforms": {
+    "u_pressureDecay": { "type": "FLOAT" },
+    "u_pressureK": { "type": "FLOAT" },
+    "u_dt": { "type": "FLOAT" },
+    "u_thermalExpansion": { "type": "FLOAT" },
+    "u_refTemp": { "type": "FLOAT" },
+    "u_worldWidth": { "type": "INT" },
+    "u_worldHeight": { "type": "INT" }
+  }
+}

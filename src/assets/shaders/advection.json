@@ -1,0 +1,7 @@
+{
+  "uniforms": {
+    "u_dt": { "type": "FLOAT" },
+    "u_worldWidth": { "type": "INT" },
+    "u_worldHeight": { "type": "INT" }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "uniforms": {
+    "u_worldWidth": { "type": "INT" },
+    "u_worldHeight": { "type": "INT" },
+    "u_entityCount": { "type": "INT" },
+    "u_P": { "type": "FLOAT" },
+    "u_L": { "type": "FLOAT" },
+    "u_S_steep": { "type": "FLOAT" },
+    "u_F_steep": { "type": "FLOAT" },
+    "u_T_target": { "type": "FLOAT" },
+    "u_baseFrac": { "type": "FLOAT" },
+    "u_bonusFrac": { "type": "FLOAT" },
+    "u_overheatRef": { "type": "FLOAT" },
+    "u_overheatRange": { "type": "FLOAT" }
+  }
+}

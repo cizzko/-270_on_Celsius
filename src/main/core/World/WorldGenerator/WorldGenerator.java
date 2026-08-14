@@ -171,6 +171,7 @@ public class WorldGenerator {
     private static void generateRelief(World world) {
         int worldWidth = world.sizeX;
         //карта высот
+        //todo
         float[] worldHeights = new float[world.sizeX];
         //карта биомов
         Biomes[] worldXBiomes = new Biomes[world.sizeX];

@@ -1,0 +1,10 @@
+{
+  "uniforms": {
+    "u_solarFlux": { "type": "FLOAT" },
+    "u_globalTime": { "type": "FLOAT" },
+    "u_effectiveWidth": { "type": "FLOAT" },
+    "u_dt": { "type": "FLOAT" },
+    "u_worldWidth": { "type": "INT" },
+    "u_worldHeight": { "type": "INT" }
+  }
+}

@@ -1,5 +1,6 @@
 package core.math;
 
+import core.Application;
 import core.util.Config;
 import org.jetbrains.annotations.Range;
 import java.lang.annotation.*;
@@ -50,6 +51,8 @@ public final class MathUtil {
                     fmaWinCount++;
                 }
             }
+            Application.log.info("FMA test passed: " + (fmaWinCount >= 3));
+
             return fmaWinCount >= 3;
         } catch (Throwable t) {
             return false;

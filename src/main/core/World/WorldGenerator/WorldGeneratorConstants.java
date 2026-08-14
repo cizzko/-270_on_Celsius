@@ -35,9 +35,9 @@ public class WorldGeneratorConstants {
     /** Минимальное расстояние между пещерами */
     public static final float CAVES_COUNT_BASE = 50f;
     /** Минимальный радиус генерируемой пещеры */
-    public static final int CAVES_MIN_RADIUS = 2;
+    public static final int CAVES_MIN_RADIUS = 4;
     /** Максимальный радиус генерируемой пещеры */
-    public static final int CAVES_MAX_RADIUS = 8;
+    public static final int CAVES_MAX_RADIUS = 14;
     /** Шанс генерации пещеры сверху (после минимального количества) */
     public static final float CAVES_UPPER_CHANCE = 1.1f;
     /** Шанс генерации пещеры идущей влево или вправо */

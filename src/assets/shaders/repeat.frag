@@ -1,4 +1,4 @@
-#version 330 core
+﻿#version 330 core
 
 uniform sampler2D u_texture;
 uniform vec2 u_reg_uv;

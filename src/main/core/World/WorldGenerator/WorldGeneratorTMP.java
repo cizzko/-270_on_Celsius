@@ -82,11 +82,17 @@ public class WorldGeneratorTMP {
                             timedRun("regenerating shadow map",
                             () -> ShadowMap.generate()))
                     .thenRun(
-                            timedRun("generating temperature map",
-                            () -> TemperatureMap.generate()))
+                            timedRun("filling surfaces",
+                            () -> fillSurfaces()))
                     .thenRun(
                             timedRun("generating player",
                             () -> spawnPlayer()))
+                    .thenRun(
+                            timedRun("generating temperature map",
+                            () -> TemperatureMap.generate()))
+                    .thenRun(
+                            timedRun("starting temperature map",
+                            () -> TemperatureMap.start()))
                     .thenRun(() -> {
                         log("generating done! Total time: " + (System.currentTimeMillis() - totalStartTime) + "ms");
                         Debug.saveWorldImage();
@@ -108,8 +114,8 @@ public class WorldGeneratorTMP {
                             timedRun("regenerating shadow map",
                             () -> ShadowMap.generate()))
                     .thenRun(
-                            timedRun("generating temperature map",
-                            () -> TemperatureMap.generate()))
+                            timedRun("filling surfaces",
+                            () -> fillSurfaces()))
                     .thenRun(
                             timedRun("generating player",
                             () -> spawnPlayer()))
@@ -123,6 +129,12 @@ public class WorldGeneratorTMP {
                             log.error("Failed to generate world", e);
                         }
                     });
+        }
+    }
+
+    private static void fillSurfaces() {
+        for (int i = 0; i < world.sizeX; i++) {
+            world.surfaces[i] = (short) findSurfaceY(i, 1);
         }
     }
 

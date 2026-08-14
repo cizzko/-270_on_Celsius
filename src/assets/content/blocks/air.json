@@ -4,5 +4,10 @@
   "Resistance": 15,
   "Type": "GAS",
   "MaxHp": 0,
-  "LightTransmission": 255
+  "LightTransmission": 255,
+
+  "ThermalCapacity": 200,
+  "ThermalConductivity": 20,
+  "Emissivity": 0,
+  "Albedo": 0
 }

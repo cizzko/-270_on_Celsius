@@ -1,0 +1,14 @@
+{
+  "uniforms": {
+    "u_dt": { "type": "FLOAT" },
+    "u_buoyancyK": { "type": "FLOAT" },
+    "u_gravityStrength": { "type": "FLOAT" },
+    "u_damping": { "type": "FLOAT" },
+    "u_velocityDiffusion": { "type": "FLOAT" },
+    "u_velocityCutoff": { "type": "FLOAT" },
+    "u_condSky": { "type": "FLOAT" },
+    "u_condGround": { "type": "FLOAT" },
+    "u_worldWidth": { "type": "INT" },
+    "u_worldHeight": { "type": "INT" }
+  }
+}

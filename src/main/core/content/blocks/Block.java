@@ -24,7 +24,8 @@ public class Block implements ContentType, Loadable {
 
     public short maxHp;
     public byte resistance;
-    public int lightTransmission; // unused
+    public float thermalCapacity, thermalConductivity, emissivity, albedo;
+    public int lightTransmission;
     public Atlas.Region texture;
     public ItemStack[] requirements;
     public @Nullable Block createWith;
@@ -38,6 +39,16 @@ public class Block implements ContentType, Loadable {
     @MustBeInvokedByOverriders
     public void load(ContentLoader cnt) {
         this.maxHp = toShortExact(cnt.node().path("MaxHp").asInt(100));
+        //теплопередача
+        //не может быть больше половину сапасити
+        this.thermalConductivity = toShortExact(cnt.node().path("ThermalConductivity").asInt(170));
+        //теплоемкость
+        this.thermalCapacity = toShortExact(cnt.node().path("ThermalCapacity").asInt(600));
+        //радиационное излучение
+        this.emissivity = toShortExact(cnt.node().path("Emissivity").asInt(100));
+        //отражение лучей
+        this.albedo = toShortExact(cnt.node().path("Albedo").asInt(15));
+
         this.texture = cnt.readTexture("Texture");
         this.requirements = cnt.readItemStacksUnresolved(cnt.node().path("Requirements"));
 
@@ -101,6 +112,7 @@ public class Block implements ContentType, Loadable {
         return key.hashCode();
     }
 
+    //todo
     @Override
     public final String toString() {
         return canonicalNameOrParent(getClass()) + "['" + key + "']";

@@ -15,11 +15,9 @@ import java.util.concurrent.locks.LockSupport;
 public class Application {
     public static final Logger log = LogManager.getLogger("Game");
 
-    private final Thread mainThread;
-
     protected final ArrayList<NativeResource> natives = new ArrayList<>();
-
     private boolean running = true;
+    private final Thread mainThread;
 
     public Application() {
         this.mainThread = Thread.currentThread();
@@ -63,17 +61,11 @@ public class Application {
         }
     }
 
-    protected void update() {
+    protected void update() {}
 
-    }
+    protected void cleanup() {}
 
-    protected void cleanup() {
-
-    }
-
-    protected void init() throws Throwable {
-
-    }
+    protected void init() throws Throwable {}
 
     public void quit() {
         running = false;
@@ -116,7 +108,6 @@ public class Application {
 
         if (now - frameCounterTime >= 1e9f) {
             frameCounterTime = now;
-
             fps = fpsMeasurement;
             fpsMeasurement = 0;
         }
@@ -135,7 +126,7 @@ public class Application {
                 long targetTime = System.nanoTime() + toWait;
 
                 while (toWait > 100_000L) {
-                    LockSupport.parkNanos(toWait - 50_000L); // закладываем время под spurious wakeup
+                    LockSupport.parkNanos(toWait - 50_000L);
                     toWait = targetTime - System.nanoTime();
                 }
                 while (System.nanoTime() < targetTime)

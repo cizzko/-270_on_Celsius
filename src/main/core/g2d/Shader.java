@@ -3,7 +3,7 @@ package core.g2d;
 import core.math.Mat3;
 import core.util.Disposable;
 
-import java.util.Map;
+import java.util.*;
 
 import static core.math.Mat3.*;
 import static org.lwjgl.opengl.GL46.*;
@@ -72,15 +72,39 @@ public final class Shader implements Disposable {
 
         var shader = new Shader(program, name, vertexFormat, uniforms);
         ResourceCache.shadersById[program] = shader;
+        return shader;
+    }
 
+    public static Shader loadCompute(String name, String computeSource) {
+        byte program = genId();
+        int computeShader = compileShader(GL_COMPUTE_SHADER, computeSource);
+        glAttachShader(program, computeShader);
+        glLinkProgram(program);
+
+        int status = glGetProgrami(program, GL_LINK_STATUS);
+        if (status != GL_TRUE) {
+            String log = glGetProgramInfoLog(program);
+            throw new IllegalArgumentException("Failed to link compute shader:\n" + log);
+        }
+        glDeleteShader(computeShader);
+
+        Map<String, Uniform> uniformMap = new HashMap<>();
+        int uniformCount = glGetProgrami(program, GL_ACTIVE_UNIFORMS);
+        for (int i = 0; i < uniformCount; i++) {
+            String uname = glGetActiveUniformName(program, i);
+            Uniform u = new Uniform(Uniform.Type.FLOAT);
+            u.position = i;
+            uniformMap.put(uname, u);
+        }
+
+        Shader shader = new Shader(program, name, null, uniformMap);
+        ResourceCache.shadersById[program] = shader;
         return shader;
     }
 
     private static int compileShader(int type, String source) {
         int glHandle = glCreateShader(type);
-        if (glHandle == 0) {
-            return 0; // error
-        }
+        if (glHandle == 0) return 0;
         glShaderSource(glHandle, source);
         glCompileShader(glHandle);
         int status = glGetShaderi(glHandle, GL_COMPILE_STATUS);
@@ -91,6 +115,7 @@ public final class Shader implements Disposable {
             String typeStr = switch (type) {
                 case GL_VERTEX_SHADER -> "vertex";
                 case GL_FRAGMENT_SHADER -> "fragment";
+                case GL_COMPUTE_SHADER -> "compute";
                 default -> "unnamed(0x" + Integer.toHexString(type) + ")";
             };
             throw new IllegalArgumentException("Failed to compile " + typeStr + " shader:\n" + log);
@@ -98,65 +123,37 @@ public final class Shader implements Disposable {
         return glHandle;
     }
 
-    public void use() {
-        glUseProgram(id);
-    }
+    public void use() { glUseProgram(id); }
 
-    public void setUniformTexture2d(String name, Drawable tex) {
-        setUniformTexture2d(name, tex, 0);
-    }
-
-    public void setUniformTexture2d(String name, Drawable tex, int unit) {
-        setUniformTexture2d(name, tex.id(), unit);
-    }
-
+    public void setUniformTexture2d(String name, Drawable tex) { setUniformTexture2d(name, tex, 0); }
+    public void setUniformTexture2d(String name, Drawable tex, int unit) { setUniformTexture2d(name, tex.id(), unit); }
     public void setUniformTexture2d(String name, short texId, int unit) {
         glActiveTexture(GL_TEXTURE0 + unit);
         glBindTexture(GL_TEXTURE_2D, texId);
-
         setUniformInt(name, unit);
     }
 
-    public void setUniformFloat(String name, float val) {
-        glUniform1f(uniformLocation(name), val);
-    }
-
-    public void setUniformInt(String name, int val) {
-        glUniform1i(uniformLocation(name), val);
-    }
-
-    public void setUniformVec2f(String name, float x, float y) {
-        glUniform2f(uniformLocation(name), x, y);
-    }
+    public void setUniformFloat(String name, float val) { glUniform1f(uniformLocation(name), val); }
+    public void setUniformInt(String name, int val) { glUniform1i(uniformLocation(name), val); }
+    public void setUniformVec2f(String name, float x, float y) { glUniform2f(uniformLocation(name), x, y); }
 
     private static final float[] tmpMat3 = new float[9];
-
-    public void setUniformMat3(String name, float[] val) {
-        glUniformMatrix3fv(uniformLocation(name), false, val);
-    }
-
-    public void setUniformMat3(String name, Mat3 val) {
-        setUniformMat3(name, val.val);
-    }
-
+    public void setUniformMat3(String name, float[] val) { glUniformMatrix3fv(uniformLocation(name), false, val); }
+    public void setUniformMat3(String name, Mat3 val) { setUniformMat3(name, val.val); }
     public void setUniformMat3(String name,
                                float m00, float m01, float m02,
                                float m10, float m11, float m12,
                                float m20, float m21, float m22) {
         float[] res = tmpMat3;
-
-        res[M00] = m00; res[M01] = m01; res[M02] = m02;
-        res[M10] = m10; res[M11] = m11; res[M12] = m12;
-        res[M20] = m20; res[M21] = m21; res[M22] = m22;
-
+        res[M00]=m00; res[M01]=m01; res[M02]=m02;
+        res[M10]=m10; res[M11]=m11; res[M12]=m12;
+        res[M20]=m20; res[M21]=m21; res[M22]=m22;
         glUniformMatrix3fv(uniformLocation(name), false, res);
     }
 
     public int uniformLocation(String name) {
         Uniform uniform = uniforms.get(name);
-        if (uniform != null) {
-            return uniform.position;
-        }
+        if (uniform != null) return uniform.position;
         throw new IllegalStateException("Invalid uniform name: '" + name + "' in " + this);
     }
 
@@ -177,15 +174,10 @@ public final class Shader implements Disposable {
     }
 
     public static final class Uniform {
-
         private final Type type;
-
         private int position;
 
-        public Uniform(Type type) {
-            this.type = type;
-        }
-
+        public Uniform(Type type) { this.type = type; }
         public Type type()    { return type; }
         public int position() { return position; }
 

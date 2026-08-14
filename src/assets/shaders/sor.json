@@ -1,0 +1,8 @@
+{
+  "uniforms": {
+    "u_omega": { "type": "FLOAT" },
+    "u_offset": { "type": "INT" },
+    "u_worldWidth": { "type": "INT" },
+    "u_worldHeight": { "type": "INT" }
+  }
+}

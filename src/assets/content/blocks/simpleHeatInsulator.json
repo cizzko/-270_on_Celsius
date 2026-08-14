@@ -4,5 +4,10 @@
   "Texture": "textures/blocks/simpleHeatInsulator",
   "Type": "SOLID",
   "MaxHp": 60,
-  "LightTransmission": 100
+  "LightTransmission": 100,
+
+  "ThermalCapacity": 600,
+  "ThermalConductivity": 0,
+  "Emissivity": 0,
+  "Albedo": 0
 }
