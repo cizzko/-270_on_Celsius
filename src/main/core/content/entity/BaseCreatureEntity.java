@@ -103,7 +103,7 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
             return;
         }
 
-        onDamage(d);
+        onDamage(d, source);
 
         this.hp -= d;
         if (hp <= 0) {
@@ -178,7 +178,7 @@ public abstract class BaseCreatureEntity<C extends Creature> implements Creature
     }
 
     // region to override
-    protected void onDamage(float d) {
+    protected void onDamage(float d, DamageSource source) {
     }
 
     protected void onDead() {

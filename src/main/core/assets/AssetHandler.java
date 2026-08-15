@@ -30,6 +30,10 @@ public abstract class AssetHandler<T, P, S> {
         this.dir = dir;
     }
 
+    public Path getDir() {
+        return dir;
+    }
+
     public Class<T> type() {
         return type;
     }

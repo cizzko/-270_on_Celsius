@@ -3,6 +3,7 @@ open module core.main {
     requires transitive org.lwjgl.glfw;
     requires transitive org.lwjgl.opengl;
     requires transitive org.lwjgl.jemalloc;
+    requires transitive org.lwjgl.openal;
 
     requires transitive org.apache.logging.log4j;
     requires transitive org.apache.logging.log4j.iostreams;
@@ -15,11 +16,6 @@ open module core.main {
     requires java.desktop;
     requires jdk.jshell;
     requires jdk.management;
-
-    requires org.lwjgl.natives;
-    requires org.lwjgl.glfw.natives;
-    requires org.lwjgl.opengl.natives;
-    requires org.lwjgl.jemalloc.natives;
 
     exports core.World.Creatures.Player;
     exports core.World.Creatures;

@@ -1,6 +1,7 @@
 package core;
 
 import com.sun.management.OperatingSystemMXBean;
+import core.audio.AudioManager;
 import core.g2d.*;
 import core.input.InputHandler;
 import core.util.Config;
@@ -40,7 +41,7 @@ public final class Window extends Application {
 
     public static boolean windowFocused = true;
     public static long glfwHandle;
-    public static long computeWindow;
+    //public static long computeWindow;
     public static Font defaultFont;
 
     private static final boolean GLFW_PLATFORM_IS_WAYLAND = switch (System.getenv("XDG_SESSION_TYPE")) {
@@ -227,12 +228,12 @@ public final class Window extends Application {
         glfwMakeContextCurrent(glfwHandle);
         GL.createCapabilities();
 
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-        glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
-        computeWindow = glfwCreateWindow(1, 1, "compute", MemoryUtil.NULL, glfwHandle);
-        if (computeWindow == MemoryUtil.NULL) {
-            throw new RuntimeException("Failed to create compute context");
-        }
+//        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+//        glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+//        computeWindow = glfwCreateWindow(1, 1, "compute", MemoryUtil.NULL, glfwHandle);
+//        if (computeWindow == MemoryUtil.NULL) {
+//            throw new RuntimeException("Failed to create compute context");
+//        }
 
         try (var stack = MemoryStack.stackPush()) {
             var xptr = stack.mallocInt(1);
@@ -293,9 +294,9 @@ public final class Window extends Application {
         Render.init();
 
         glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
-
         lang.load();
 
+        AudioManager.init();
         setGameScene(new MenuScene());
     }
 
@@ -360,10 +361,6 @@ public final class Window extends Application {
 
     @Override
     protected void cleanup() {
-        //TemperatureMap.dispose();
-        if (computeWindow != MemoryUtil.NULL) {
-            glfwDestroyWindow(computeWindow);
-        }
         glfwTerminate();
         Render.queue.close();
         assets.unloadAll();

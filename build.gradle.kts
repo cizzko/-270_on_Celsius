@@ -134,14 +134,22 @@ dependencies {
     implementation("org.lwjgl", "lwjgl-glfw")
     implementation("org.lwjgl", "lwjgl-opengl")
     implementation("org.lwjgl", "lwjgl-jemalloc")
+    implementation("org.lwjgl", "lwjgl-openal")
 
-    implementation("org.lwjgl", "lwjgl", classifier = lwjglNatives)
-    implementation("org.lwjgl", "lwjgl-glfw", classifier = lwjglNatives)
-    implementation("org.lwjgl", "lwjgl-opengl", classifier = lwjglNatives)
-    implementation("org.lwjgl", "lwjgl-jemalloc", classifier = lwjglNatives)
+    runtimeOnly("org.lwjgl", "lwjgl", classifier = lwjglNatives)
+    runtimeOnly("org.lwjgl", "lwjgl-glfw", classifier = lwjglNatives)
+    runtimeOnly("org.lwjgl", "lwjgl-opengl", classifier = lwjglNatives)
+    runtimeOnly("org.lwjgl", "lwjgl-jemalloc", classifier = lwjglNatives)
+    runtimeOnly("org.lwjgl", "lwjgl-openal", classifier = lwjglNatives)
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+}
+
+val extractNatives = tasks.register<Copy>("extractNatives") {
+    from(configurations.runtimeClasspath.get().filter { it.name.contains("natives") }.map { zipTree(it) })
+    into(layout.buildDirectory.dir("natives"))
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 application {
@@ -217,7 +225,9 @@ tasks.jar {
 }
 
 tasks.run {
+    dependsOn(extractNatives)
     jvmArguments.addAll(applyJvmArgs(false))
+    systemProperty("org.lwjgl.librarypath", layout.buildDirectory.dir("natives").get().asFile.absolutePath)
 
     if (System.getProperty("os.name")?.contains("Linux") == true && System.getenv("XDG_SESSION_TYPE") == "wayland") {
         val isBadDriver = providers
@@ -242,14 +252,19 @@ tasks.run {
     jvmArguments.add("-XX:+UseZGC") // экспериментируем как бы
 
     val mainSourceSet = project.sourceSets["main"]
+    val runtimeFiles = configurations.runtimeClasspath.get().files
+    val nativeJars = runtimeFiles.filter { it.name.contains("natives") }
+    val moduleJars = runtimeFiles.filter { !it.name.contains("natives") }
+
+    classpath = files(nativeJars)
+
     jvmArgumentProviders.add {
+        val modulePath = moduleJars.joinToString(File.pathSeparator) { it.absolutePath }
         listOf(
-            "--module-path", classpath.asPath,
+            "--module-path", modulePath,
             "--patch-module", "${mainModule.get()}=${mainSourceSet.output.resourcesDir}"
         )
     }
-
-    classpath = mainSourceSet.runtimeClasspath
 }
 
 tasks.jpackageImage {

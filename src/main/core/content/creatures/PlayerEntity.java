@@ -82,9 +82,13 @@ public class PlayerEntity
                  * Math.min(1, (float)(1d/(accumulatedJump * 5))));
     }
 
-    protected void onDamage(float d) {
+    protected void onDamage(float d, DamageSource source) {
+        //я вообще если чесн не очень хочу тут видеть детали для гуи
+        //можно что нибудь придумать..
         lastDamage += d;
         lastDamageTime = System.currentTimeMillis();
+
+        //AudioManager.play("упал2", AudioType.ENVIRONMENT, AudioManager.PlayType.ONCE, 10);
     }
 
     protected void onDead() {

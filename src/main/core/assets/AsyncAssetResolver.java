@@ -3,10 +3,14 @@ package core.assets;
 import core.Global;
 import org.lwjgl.system.NativeResource;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 final class AsyncAssetResolver<T, P, S>
         extends RecursiveTask<T>
@@ -69,9 +73,48 @@ final class AsyncAssetResolver<T, P, S>
     }
 
     @Override
+    public <T2> Future<T2> load(Class<T2> type, String name) {
+        return load(type, name, AssetsManager.LoadType.ASYNC, null);
+    }
+
+    @Override
+    public InputStream openStream(String name) throws IOException {
+        return Global.assets.resourceStream(name);
+    }
+
+    @Override
+    public InputStream openStreamInDir(String name, String... extensions) throws IOException {
+        Path baseDir = loader.getDir();
+        if (baseDir == null || !Files.exists(baseDir)) {
+            throw new IOException("Asset directory not found: " + baseDir);
+        }
+
+        List<String> candidates = new ArrayList<>();
+        if (extensions.length == 0) {
+            candidates.add(name);
+        } else {
+            for (String ext : extensions) {
+                candidates.add(name + ext);
+            }
+        }
+
+        try (Stream<Path> walk = Files.walk(baseDir)) {
+            Optional<Path> found = walk
+                    .filter(Files::isRegularFile)
+                    .filter(p -> candidates.stream().anyMatch(cand -> p.getFileName().toString().equals(cand)))
+                    .findFirst();
+            if (found.isPresent()) {
+                return Files.newInputStream(found.get());
+            }
+        }
+
+        throw new IOException("File not found in " + baseDir + " for name '" + name + "' with extensions " + Arrays.toString(extensions));
+    }
+
+    @Override
     public boolean cancel(boolean mayInterruptIfRunning) {
-        if (super.cancel(mayInterruptIfRunning) && parent != null && params != null) {
-            parent.cancel(false); // AsyncAssetResolver не должен прерываться
+        if (super.cancel(mayInterruptIfRunning) && parent != null) {
+            parent.cancel(false);
             return true;
         }
         return false;
@@ -135,7 +178,6 @@ final class AsyncAssetResolver<T, P, S>
             rethrow(anyExc);
             return null;
         }
-
         if (isCancelled()) {
             cleanupTasks();
             return null;
@@ -152,9 +194,7 @@ final class AsyncAssetResolver<T, P, S>
 
             desc.value = assetInst;
             desc.dependencies = depends.isEmpty() ? null : depends.toArray(new AssetsManager.Asset[0]);
-
-            Global.assets.setAsyncLoaded(loader.type(), name, desc);
-
+            Global.assets.setAsyncLoaded(loader.type(), name, desc, this);
             return assetInst;
         });
 

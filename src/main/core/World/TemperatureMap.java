@@ -7,6 +7,7 @@ import core.content.entity.LivingEntity;
 import core.math.MathUtil;
 import core.util.BatchScope;
 import core.util.Debug;
+import core.util.Disposable;
 
 import java.util.Arrays;
 import java.util.concurrent.Executors;
@@ -22,7 +23,7 @@ import static java.lang.Math.clamp;
 //а еще есть быстрая гпу версия, но она фризит рендер
 //тут надо что то/кто то умное
 //todo формула хеттрансфера для сущностей уехала кудат
-public final class TemperatureMap {
+public final class TemperatureMap implements Disposable {
     private static float avgFrameTimeNs = 0f;
     private static int consecutiveGoodFrames = 0;
     private static boolean simplifyNextFrame = false;
@@ -120,6 +121,8 @@ public final class TemperatureMap {
 
     public static int fps = 0, targetFPS = 10, accumFPS = 0;
     private static long lastSwapFPS = System.currentTimeMillis();
+
+    private static ScheduledExecutorService scheduler;
 
     private static int wrapX(int x) {
         int w = WORLD_WIDTH;
@@ -258,8 +261,13 @@ public final class TemperatureMap {
     }
 
     public static void start() {
+        if (scheduler != null) {
+            scheduler.shutdown();
+        }
+
         var scope = new BatchScope(world.genPool);
-        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+        scheduler = Executors.newSingleThreadScheduledExecutor(_ -> new Thread());
+
         scheduler.scheduleAtFixedRate(() -> {
             update(scope);
             accumFPS++;
@@ -384,7 +392,7 @@ public final class TemperatureMap {
         float v10 = (useSolidFallback && blockSolid[i10] == 1) ? fallback : field[i10];
         float v11 = (useSolidFallback && blockSolid[i11] == 1) ? fallback : field[i11];
 
-        // Use FMA for bilinear interpolation
+        //теоретически фма помогает..
         float inner0 = MathUtil.fma(t0, v00, t1 * v01);
         float inner1 = MathUtil.fma(t0, v10, t1 * v11);
         return MathUtil.fma(s0, inner0, s1 * inner1);
@@ -1109,6 +1117,20 @@ public final class TemperatureMap {
         }
         temps[pos2index(x, y)] = temp;
         markAreaActive(x, y, 1);
+    }
+
+    @Override
+    public void close() {
+        if (scheduler != null) {
+            scheduler.shutdown();
+            try {
+                scheduler.awaitTermination(2, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } finally {
+                scheduler = null;
+            }
+        }
     }
 
     public record Wind(float force, float angle) {

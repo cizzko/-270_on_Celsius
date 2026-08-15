@@ -1,5 +1,6 @@
 package core.assets;
 
+import core.audio.AudioHandler;
 import core.util.Config;
 import core.GameSettings;
 import core.Global;
@@ -32,6 +33,8 @@ public final class AssetsManager {
 
     // TODO а точно нужна карта? Может хочется сделать полиморфные загрузчики
     //  Вообще, тут возможно состояние гонки, т.к. к этим объектам идёт доступ из других потоков в load()
+
+    //todo гонка и возникает, к слову
     final Map<Class<?>, AssetHandler<?, ?, ?>> handlersByType = new IdentityHashMap<>();
     final Map<Class<?>, AssetHandler<?, ?, ?>> handlersByClass = new IdentityHashMap<>();
     final Map<Object, Asset<?>> refsByAssets = new HashMap<>();
@@ -69,10 +72,12 @@ public final class AssetsManager {
             this.assetsDir = Path.of(URI.create("jrt:/" + module.getName()));
         }
 
+        //todo тут можно сделать автоматический регистр
         register(new ShaderHandler());
         register(new FontHandler());
         register(new TextureHandler());
         register(new AtlasHandler());
+        register(new AudioHandler());
 
         copyFromResource(config, "configDefault.properties", "config.properties");
 
@@ -245,15 +250,16 @@ public final class AssetsManager {
         var visited = new ReferenceOpenHashSet<Asset<?>>();
         var queue = new ArrayDeque<Asset<?>>();
         queue.add(assetRef);
-        Asset<?> dep;
+
         while (!queue.isEmpty()) {
-            dep = queue.removeFirst();
+            Asset<?> dep = queue.removeFirst();
+            if (!visited.add(dep)) continue;
+
             if (dep.refCount.decrementAndGet() == 0) {
                 refsByAssets.remove(dep.value);
                 assets.get(dep.type).remove(dep.name);
                 releaseInternal(dep.value);
-            }
-            if (visited.add(dep)) {
+
                 if (dep.dependencies != null) {
                     queue.addAll(Arrays.asList(dep.dependencies));
                 }
@@ -458,12 +464,12 @@ public final class AssetsManager {
         return loader;
     }
 
-    <T> void setAsyncLoaded(Class<T> type, String name, Asset<T> asset) {
+    <T> void setAsyncLoaded(Class<T> type, String name, Asset<T> asset, AsyncAssetResolver<?, ?, ?> resolver) {
         setLoaded(type, name, asset);
 
         var loadingMap = getLoadingAssets(type);
         if (loadingMap != null) {
-            loadingMap.remove(name);
+            loadingMap.remove(name, resolver);
         }
     }
 
