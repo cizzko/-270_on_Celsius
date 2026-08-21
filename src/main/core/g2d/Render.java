@@ -129,6 +129,7 @@ public final class Render {
     /// Максимальное количество вершин в [RenderList]
     static final int RENDER_MAX_VERTEX_COUNT  = 4 * 4 * 1024;
     /// Максимальное количество [RenderItem] в [RenderList]
+    //todo маловато будет
     static final int RENDER_MAX_ITEMS_COUNT   = 4 * 1024;
 
     public static final RenderQueue queue = new RenderQueue(

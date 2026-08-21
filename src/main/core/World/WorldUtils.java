@@ -9,7 +9,7 @@ import core.content.ItemStack;
 import core.content.creatures.Creature;
 import core.content.creatures.ItemEntity;
 import core.content.entity.CreatureEntity;
-import core.content.strctures.Structure;
+import core.content.structures.Structure;
 import core.math.Point2i;
 
 import java.io.IOException;

@@ -10,7 +10,7 @@ import core.content.blocks.Block;
 import core.content.creatures.Creature;
 import core.content.items.Item;
 import core.content.items.ItemBlock;
-import core.content.strctures.Structure;
+import core.content.structures.Structure;
 import it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.shorts.Short2ObjectOpenHashMap;
 import org.apache.logging.log4j.LogManager;

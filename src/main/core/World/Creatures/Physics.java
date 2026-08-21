@@ -4,6 +4,7 @@ import core.Constants;
 import core.PlayGameScene;
 import core.Time;
 import core.content.blocks.Block;
+import core.content.creatures.ItemEntity;
 import core.content.entity.Entity;
 import core.content.entity.LivingEntity;
 import core.content.entity.comp.HealthComponent;
@@ -182,6 +183,11 @@ public final class Physics {
     }
 
     private static void simulateEntity(LivingEntity ent) {
+        //todo я уверен это можно оформить красивее
+        if (ent instanceof ItemEntity itemEntity && itemEntity.preview) {
+            return;
+        }
+
         final float dt = FDT;
         final int leftBorder = Constants.World.SWAP_AREA;
 

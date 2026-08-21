@@ -12,7 +12,7 @@ import core.content.creatures.PlayerType;
 import core.content.blocks.Chest;
 import core.content.blocks.Workbench;
 import core.content.items.*;
-import core.content.strctures.Structure;
+import core.content.structures.Structure;
 import core.g2d.Atlas;
 
 import java.io.IOException;

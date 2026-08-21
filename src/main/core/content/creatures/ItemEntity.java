@@ -13,6 +13,7 @@ import core.graphic.WorldDrawing;
 import core.math.AABB;
 import core.math.TmpShapes;
 import core.math.Vector2f;
+import core.util.Debug;
 
 import static core.Global.*;
 import static core.WorldCoordinates.*;
@@ -29,10 +30,18 @@ public final class ItemEntity implements LivingEntity {
     private double x, y;
     private double lastX, lastY;
 
-    private final ItemStack itemStack;
-    private float hp, phase;
+    public final ItemStack itemStack;
+    public boolean preview;
+    public boolean selected;
+    public boolean pinned;
+
+    public float hp, phase;
     private final Vector2f velocity = new Vector2f();
     private final Vector2f acceleration = new Vector2f();
+
+    public void setPhase(float phase) {
+        this.phase = phase;
+    }
 
     public ItemEntity(ItemStack itemStack) {
         this.itemStack = itemStack;
@@ -65,6 +74,9 @@ public final class ItemEntity implements LivingEntity {
     }
 
     public CollisionResult onCollide(PhysicalBody them) {
+        if (preview) {
+            return CollisionResult.WALKTHROUGH;
+        }
         if (them instanceof PlayerEntity) {
             Inventory.addItemStack(itemStack);
             remove();
@@ -93,6 +105,10 @@ public final class ItemEntity implements LivingEntity {
     public float height() { return toWorld(ITEM_DROPPED_SIZE); }
 
     public void update() {
+        if (preview) {
+            return;
+        }
+
         var hitbox = TmpShapes.aabb1;
         player.hitboxTo(hitbox);
         double pcx = hitbox.centerX();
@@ -111,17 +127,15 @@ public final class ItemEntity implements LivingEntity {
         }
     }
 
-    interface RaycastChecker {
+    public interface RaycastChecker {
         boolean check(int x, int y);
     }
 
-    private boolean raycastTo(int x, int y, RaycastChecker checker) {
-        int x1 = blockX();
-        int y1 = blockY();
+    public boolean raycastTo(int x, int y, RaycastChecker checker) {
+        return raycastTo(blockX(), blockY(), x, y, checker);
+    }
 
-        int x2 = x;
-        int y2 = y;
-
+    public static boolean raycastTo(int x1, int y1, int x2, int y2, RaycastChecker checker) {
         int dx = Math.abs(x2 - x1);
         int dy = Math.abs(y2 - y1);
 
@@ -154,21 +168,26 @@ public final class ItemEntity implements LivingEntity {
 
     @Override
     public boolean isVisible(AABB viewport) {
-        return viewport.overlaps(x, y, x+width(), y+height());
+        return viewport.overlaps(x, y, x + width(), y + height());
+    }
+
+    public float bobOffset() {
+        float amplitude = 1 / 4f;
+        float frequency = 0.45f;
+        float tSeconds = phase / Time.ONE_SECOND;
+
+        return amplitude * 0.5f * (1f - (float) Math.cos(2f * Math.PI * frequency * tSeconds));
     }
 
     public void draw(float dx) {
-        final float amplitude = 1 / 4f;
         final float frequency = 0.45f;
         final float periodTicks = Time.ONE_SECOND / frequency;
 
         phase = (phase + Time.delta) % periodTicks;
-
         if (phase < 0f) {
             phase += periodTicks;
         }
-        float tSeconds = phase / Time.ONE_SECOND;
-        float yOffset = amplitude * 0.5f * (1f - (float)Math.cos(2f * Math.PI * frequency * tSeconds));
+        float yOffset = bobOffset();
         var tex = itemStack.item().texture;
         double rx = Physics.applyAlpha(lastX, x) + dx;
         double ry = Physics.applyAlpha(lastY, y) + yOffset;
@@ -176,7 +195,14 @@ public final class ItemEntity implements LivingEntity {
 
         float w = width();
         StackfulRender.draw(tex, pos.x, pos.y, w, w);
-        Fill.rectangleBorder(pos.x, pos.y, w, w, toWorld(1), Color.white);
+        if (pinned && preview) {
+            Fill.rectangleBorder(pos.x, pos.y, w, w, toWorld(2), Color.rgba8888(255, 255, 0, 255));
+        }
+        if (selected && preview) {
+            Fill.rectangleBorder(pos.x, pos.y, w, w, toWorld(1), Color.white);
+        } else if (Debug.debugLevel > 2) {
+            Fill.rectangleBorder(pos.x, pos.y, w, w, toWorld(1), Color.white);
+        }
         if (itemStack.count() > 1) {
             WorldDrawing.drawGameText(pos.x, pos.y, String.valueOf(itemStack.count()), Color.white);
         }

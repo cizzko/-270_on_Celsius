@@ -20,7 +20,7 @@ import java.util.Arrays;
 import static core.Constants.World.SWAP_AREA;
 import static core.Global.*;
 import static core.Global.camera;
-import static core.World.Creatures.Player.Inventory.Inventory.drawBuildGrid;
+import static core.World.Creatures.Player.Inventory.Inventory.drawGrid;
 import static core.WorldCoordinates.toWorld;
 import static core.g2d.StackfulRender.*;
 import static core.util.FixedBitset.*;
@@ -65,7 +65,7 @@ public final class WorldDrawing {
     public static void drawBlocks() {
         var blockPos = input.mouseBlockPos();
         chunk.draw();
-        drawBuildGrid(blockPos.x, blockPos.y);
+        drawGrid(blockPos.x, blockPos.y);
         WorldDrawing.drawPreviewBlocks();
     }
 

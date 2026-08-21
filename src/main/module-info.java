@@ -31,7 +31,7 @@ open module core.main {
     exports core.content.items.data;
     exports core.content.items;
     exports core.content.serialize;
-    exports core.content.strctures;
+    exports core.content.structures;
     exports core.content;
     exports core.g2d;
     exports core.graphic;

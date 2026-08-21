@@ -1,4 +1,4 @@
-package core.content.strctures;
+package core.content.structures;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import core.content.blocks.Block;
@@ -16,9 +16,7 @@ import static core.util.TypeUtil.canonicalNameOrParent;
 public class Structure implements ContentType, Loadable {
 
     public final String key;
-
     public short id;
-
     public final ArrayList<Part> blocks = new ArrayList<>();
 
     public Structure(String key) {

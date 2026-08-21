@@ -49,7 +49,7 @@ public final class PlayGameScene extends GameScene {
         WorkbenchLogic.updateInput();
         Commandline.inputUpdate();
         updateToolInteraction();
-        Inventory.inputUpdate();
+        Inventory.update();
     }
 
     @Override
@@ -61,7 +61,7 @@ public final class PlayGameScene extends GameScene {
         Background.update();
         updateInventoryInteraction();
         world.update();
-        Inventory.updateStaticBlocksPreview();
+        Inventory.updateBlocksPreview();
     }
 
     @Override
