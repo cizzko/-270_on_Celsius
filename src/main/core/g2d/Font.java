@@ -48,7 +48,7 @@ public final class Font {
         private final short u, v, u2, v2;
 
         public Glyph(Texture fontTex, byte width, byte height, short x, short y) {
-            this.fontTexId = fontTex.glHandle;
+            this.fontTexId = fontTex.id;
             this.width = width;
             this.height = height;
 

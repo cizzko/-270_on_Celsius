@@ -1,5 +1,6 @@
 package core.input;
 
+import core.Global;
 import core.Window;
 import core.math.MathUtil;
 import core.math.Point2i;
@@ -18,7 +19,6 @@ import static core.Global.*;
 import static core.Window.glfwHandle;
 import static core.WorldCoordinates.toBlock;
 import static core.input.InputEvent.*;
-import static core.input.InputEvent.TYPE_MOUSE_DRAG;
 import static core.util.FixedBitset.createBitSet;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL46.*;
@@ -184,7 +184,7 @@ public final class InputHandler {
         if (framebufferMustBeResized) {
             framebufferMustBeResized = false;
 
-            glViewport(vx, vy, vw, vh);
+            renderThread.execute(() -> glViewport(vx, vy, vw, vh));
         }
     }
 
@@ -329,7 +329,7 @@ public final class InputHandler {
 
     public void setViewportSize(int w, int h) {
         updateViewport(w, h);
-        glViewport(vx, vy, vw, vh);
+        renderThread.execute(() -> glViewport(vx, vy, vw, vh));
         onViewport(vx, vy, vw, vh);
     }
 

@@ -1,10 +1,12 @@
 package core;
 
 import com.sun.management.OperatingSystemMXBean;
-import core.audio.AudioManager;
+import core.g2d.Atlas;
+import core.g2d.Font;
+import core.g2d.RenderThread;
+import core.g2d.StackfulRender;
 import core.g2d.*;
 import core.input.InputHandler;
-import core.util.Config;
 import core.util.Debug;
 import core.util.JavaInterpreter;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -12,8 +14,10 @@ import org.apache.logging.log4j.*;
 import org.apache.logging.log4j.io.IoBuilder;
 import org.lwjgl.glfw.*;
 import org.lwjgl.opengl.GL;
-import org.lwjgl.opengl.GLUtil;
-import org.lwjgl.system.*;
+import org.lwjgl.system.APIUtil;
+import org.lwjgl.system.Configuration;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.system.Platform;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -22,9 +26,10 @@ import java.nio.file.Files;
 
 import static core.Global.*;
 import static core.graphic.TextureLoader.decodeImage;
-import static core.math.MathUtil.fmaEnabled;
 import static org.lwjgl.glfw.GLFW.*;
-import static org.lwjgl.opengl.GL46.*;
+import static org.lwjgl.opengl.GL46.GL_VERSION;
+import static org.lwjgl.opengl.GL46.glGetString;
+import static org.lwjgl.system.MemoryUtil.NULL;
 
 public final class Window extends Application {
     private static final Logger lwjglLogger = LogManager.getLogger("LWJGL");
@@ -40,8 +45,7 @@ public final class Window extends Application {
     }
 
     public static boolean windowFocused = true;
-    public static long glfwHandle;
-    //public static long computeWindow;
+    public static long glfwHandle, sharedState;
     public static Font defaultFont;
 
     private static final boolean GLFW_PLATFORM_IS_WAYLAND = switch (System.getenv("XDG_SESSION_TYPE")) {
@@ -72,7 +76,7 @@ public final class Window extends Application {
             glfwSetWindowMonitor(glfwHandle, monitor, 0, 0, vidMode.width(), vidMode.height(), vidMode.refreshRate());
             isFullscreen = true;
         } else {
-            glfwSetWindowMonitor(glfwHandle, MemoryUtil.NULL, windowedX, windowedY, input.windowWidth(), input.windowHeight(), GLFW_DONT_CARE);
+            glfwSetWindowMonitor(glfwHandle, NULL, windowedX, windowedY, input.windowWidth(), input.windowHeight(), GLFW_DONT_CARE);
             setWindowLimits();
             try (var st = MemoryStack.stackPush()) {
                 var pX = st.mallocInt(1);
@@ -143,24 +147,25 @@ public final class Window extends Application {
             glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_WAYLAND);
             glfwInitHint(GLFW_WAYLAND_LIBDECOR, GLFW_WAYLAND_DISABLE_LIBDECOR);
         }
+        // glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+
         if (!glfwInit()) {
             throw new RuntimeException("Failed to initialize GLFW");
         }
 
         glfwDefaultWindowHints();
-        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        if (Debug.debugLevel >= 5)
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 
         if (defaultMode == Mode.BORDERLESS) {
             glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
             glfwWindowHint(GLFW_AUTO_ICONIFY, GLFW_FALSE);
         }
 
-        if (Config.getBoolean("DebugMACOSX") || Platform.get() == Platform.MACOSX) {
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-        }
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 
         long primaryMonitorPtr = glfwGetPrimaryMonitor();
         var mode = glfwGetVideoMode(primaryMonitorPtr);
@@ -178,7 +183,7 @@ public final class Window extends Application {
             case WINDOW -> {
                 windowWidth = targetWidth;
                 windowHeight = targetHeight;
-                monitorPtr = MemoryUtil.NULL;
+                monitorPtr = NULL;
 
                 glfwWindowHint(GLFW_MAXIMIZED, GLFW_TRUE);
             }
@@ -194,16 +199,17 @@ public final class Window extends Application {
                     // TODO(Skat) у меня на wayland+kde нижняя панель не убирается
                     monitorPtr = primaryMonitorPtr;
                 } else {
-                    monitorPtr = MemoryUtil.NULL;
+                    monitorPtr = NULL;
                 }
             }
             default -> throw new IllegalStateException();
         }
 
-        glfwHandle = glfwCreateWindow(windowWidth, windowHeight, windowTitle, monitorPtr, MemoryUtil.NULL);
-        if (glfwHandle == MemoryUtil.NULL) {
-            throw new RuntimeException("Failed to create window");
-        }
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        glfwHandle = glfwCreateWindow(windowWidth, windowHeight, windowTitle, monitorPtr, NULL);
+        if (glfwHandle == NULL) throw new RuntimeException("Failed to create window");
+        glfwMakeContextCurrent(glfwHandle);
+        GL.createCapabilities(true);
 
         uiScene = new UIScene(targetWidth, targetHeight);
         input = new InputHandler(targetWidth, targetHeight);
@@ -225,15 +231,42 @@ public final class Window extends Application {
             }
         }
 
-        glfwMakeContextCurrent(glfwHandle);
-        GL.createCapabilities();
+        renderThread = new RenderThread();
+        renderThread.setDaemon(true);
+        {
+            glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+            sharedState = glfwCreateWindow(1, 1, "", NULL, glfwHandle);
+            if (sharedState == NULL) throw new RuntimeException("Failed to create window");
 
-//        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-//        glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
-//        computeWindow = glfwCreateWindow(1, 1, "compute", MemoryUtil.NULL, glfwHandle);
-//        if (computeWindow == MemoryUtil.NULL) {
-//            throw new RuntimeException("Failed to create compute context");
-//        }
+            glfwMakeContextCurrent(sharedState);
+        }
+
+        renderThread.setVerticalSync(gameSettings.verticalSync);
+
+        if (gameSettings.verticalSync) {
+            log.info("Target Framerate: Vertical Sync");
+
+            GLFWVidMode vidMode = glfwGetVideoMode(primaryMonitorPtr);
+            if (vidMode != null) {
+                setFramerate(vidMode.refreshRate());
+            }
+
+        } else {
+
+            int targetFPS = gameSettings.targetFps;
+            if (targetFPS != -1) {
+                log.info("Target Framerate: {} FPS", targetFPS);
+                setFramerate(targetFPS);
+                renderThread.setFramerate(targetFPS);
+            } else {
+                log.info("Target Framerate: Uncapped");
+            }
+        }
+
+        Shaders.init(); // нам реально нужны базовые шейдеры здесь и сейчас
+        renderThread.start();
+
+        printComputerInfo();
 
         try (var stack = MemoryStack.stackPush()) {
             var xptr = stack.mallocInt(1);
@@ -250,37 +283,18 @@ public final class Window extends Application {
         try (var cursorImage = decodeImage(result);
              var stack = MemoryStack.stackPush()) {
 
-            GLFWImage glfwImg = GLFWImage.malloc(stack);
-            glfwImg.set(cursorImage.width(), cursorImage.height(), cursorImage.data());
+            var glfwImg = GLFWImage.malloc(stack);
+            glfwImg.width(cursorImage.width());
+            glfwImg.height(cursorImage.height());
+            glfwImg.pixels(cursorImage.data().asByteBuffer());
             glfwSetCursor(glfwHandle, glfwCreateCursor(glfwImg, 0, 0));
         }
-
-        printComputerInfo();
-
-        if (gameSettings.verticalSync) {
-            log.info("Target Framerate: Vertical Sync");
-            glfwSwapInterval(1);
-        } else {
-            glfwSwapInterval(0);
-            int targetFPS = gameSettings.targetFps;
-            if (targetFPS != -1) {
-                log.info("Target Framerate: {} FPS", targetFPS);
-                setFramerate(targetFPS);
-            } else {
-                log.info("Target Framerate: Uncapped");
-            }
-        }
-
-         if (Debug.debugLevel >= 5) {
-             glEnable(GL_DEBUG_OUTPUT);
-             keep(GLUtil.setupDebugMessageCallback());
-             keep(() -> glDisable(GL_DEBUG_OUTPUT));
-         }
 
         glfwSetWindowFocusCallback(glfwHandle, keep(new GLFWWindowFocusCallback() {
             @Override
             public void invoke(long window, boolean focused) {
                 windowFocused = focused;
+                input.onFocus(focused);
             }
         }));
         glfwSetWindowCloseCallback(glfwHandle, keep(new GLFWWindowCloseCallback() {
@@ -290,44 +304,27 @@ public final class Window extends Application {
             }
         }));
 
-        Shaders.loadAll();
-        Render.init();
-
-        glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
         lang.load();
 
-        AudioManager.init();
         setGameScene(new MenuScene());
     }
 
-    private void printComputerInfo() {
+    public void printComputerInfo() {
+        var mxbean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
+
         log.info("Game version: {}", Constants.version);
+        log.info("OS: {} {} {}", mxbean.getName(), mxbean.getVersion(), mxbean.getArch());
         log.info("GLFW version: {}", glfwGetVersionString());
+        log.info("OpenGL version: {}", glGetString(GL_VERSION));
 
-        // TODO упадёт когда доделаю оконный режим
-        long monPtr = glfwGetPrimaryMonitor();
-        if (monPtr != MemoryUtil.NULL) {
-            GLFWVidMode vidmode = glfwGetVideoMode(monPtr);
-
-            if (vidmode != null) {
-                int w = vidmode.width();
-                int h = vidmode.height();
-
-                log.info("Screen resolution: {}x{}", w, h);
-            }
-        }
-
-        // Это интел-специфичная штука
+        // Это интел-специфичная штука на винде, но Ociz так хочет
         if (Platform.get() == Platform.WINDOWS) {
             log.info("CPU: {}", System.getenv("PROCESSOR_IDENTIFIER"));
         }
-        log.info("FMA enabled: {}", fmaEnabled);
-
-        var memMxbean = ManagementFactory.getPlatformMXBean(OperatingSystemMXBean.class);
-        double gib = 1024d * 1024d * 1024d;
+        final double gib = 1024d * 1024d * 1024d;
 
         log.info("Heap max capacity: {} GiB", Debug.FLOATS.format(Runtime.getRuntime().maxMemory() / gib));
-        log.info("Total memory size: {} GiB", Debug.FLOATS.format(memMxbean.getTotalMemorySize() / gib));
+        log.info("Total memory size: {} GiB", Debug.FLOATS.format(mxbean.getTotalMemorySize() / gib));
     }
 
     @Override
@@ -344,25 +341,14 @@ public final class Window extends Application {
         updateTime();
 
         input.update();
-        var rq = Render.queue();
-        rq.beginFrame();
         gameScene.loop();
         StackfulRender.pushRenderList();
-        rq.endFrame();
-        swapBuffers();
 
         nextFrame();
-    }
-
-    private void swapBuffers() {
-        glfwSwapBuffers(glfwHandle);
-        glClear(GL_COLOR_BUFFER_BIT);
     }
 
     @Override
     protected void cleanup() {
         glfwTerminate();
-        Render.queue.close();
-        assets.unloadAll();
     }
 }

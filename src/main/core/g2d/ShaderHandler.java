@@ -13,6 +13,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.Future;
 
+import static core.g2d.OpenGL.*;
+
 public final class ShaderHandler extends AssetHandler<Shader, ShaderHandler.Params, ShaderHandler.State> {
     public ShaderHandler() {
         super(Shader.class, "shaders");
@@ -71,7 +73,12 @@ public final class ShaderHandler extends AssetHandler<Shader, ShaderHandler.Para
         var vertSource = state.vertSource.resultNow();
         var fragSource = state.fragSource.resultNow();
         var attributes = state.attributesSource.resultNow();
-        return Shader.load(name, vertSource, fragSource, attributes.vertexFormat, attributes.uniforms);
+        var preproc = GLSLPreprocessor.processPipeline(
+                name, vertSource, fragSource, OpenGL.computeInjectedText(),
+                CAN_USE_EXPLICIT_UNIFORM_LOCATIONS,
+                CAN_USE_EXPLICIT_OUT_LOCATIONS,
+                GL_ARB_bindless_texture);
+        return Shader.load(name, preproc, attributes.vertexFormat, attributes.uniforms);
     }
 
     @Override

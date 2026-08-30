@@ -388,6 +388,7 @@ public class Table extends LayoutGroup<Table> {
             };
 
             c.widget.set(widgetX, widgetY, widgetWidth, widgetHeight);
+            c.widget.onLayoutComplete();
         }
     }
 

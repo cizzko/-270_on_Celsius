@@ -1,54 +1,63 @@
 package core.g2d;
 
+import core.Global;
+import core.gen.Uniforms;
 import core.pool.Pool;
 import core.util.Disposable;
-import core.util.TimSort;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectArrays;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Nullable;
+import org.lwjgl.glfw.GLFW;
 import org.lwjgl.system.MemoryUtil;
 
-import java.util.ArrayDeque;
+import java.lang.foreign.Arena;
+import java.lang.foreign.MemorySegment;
 import java.util.Arrays;
-import java.util.IntSummaryStatistics;
 
 import static core.g2d.Render.*;
+import static core.g2d.RenderItem.*;
 import static core.g2d.RenderList.KIND_DYNAMIC;
 import static core.g2d.RenderList.KIND_STATIC;
 import static core.g2d.StackfulRender.defaultShader;
 import static java.lang.Math.max;
-import static org.lwjgl.opengl.GL46.*;
+import static org.lwjgl.opengl.GL46C.*;
 
 public final class RenderQueue implements Disposable {
     static final Logger log = LogManager.getLogger();
 
-    public static final int VERTEX_PER_ITEM     = 4;
-    public static final int VERTEX_PER_TRIANGLE = 6;
-
-    public static final boolean USE_INDEXES = true;
+    static final byte MAX_ID = Byte.MAX_VALUE;
 
     final Pool<RenderList> rlistAlloc;
     final @Nullable ElementBufferObject ebo;
+    final TripleBuffer buffer;
 
-    private int rlistCount;
+    private byte rlistCount;
 
-    private final ArrayDeque<RenderList> renderLists = new ArrayDeque<>();
     private final ObjectArrayList<RenderList> created = new ObjectArrayList<>();
-    private final UniformBuffer uniformBuffer = new UniformBuffer();
+    private final Arena renderArena = Arena.ofShared();
 
-    private final RenderItem[] tmp;
-    private final TimSort<RenderItem> sorter = new TimSort<>();
+    private final long[] tmp;
+    private final MemorySegment reordered;
+
+    byte genId() {
+        byte i = rlistCount;
+        if (i == MAX_ID) {
+            throw new IllegalStateException("Limit of render lists exceeded");
+        }
+        rlistCount++;
+        return i;
+    }
 
     public RenderQueue(int itemCount, int vertexCount) {
-        this.tmp = new RenderItem[itemCount];
         this.rlistAlloc = new Pool<>(() -> {
-            var list = new RenderList(rlistCount++, itemCount, vertexCount);
+            var list = new RenderList(genId(), renderArena, itemCount, vertexCount);
             created.add(list);
             return list;
         }, 10);
+
+        tmp = new long[itemCount];
 
         if (!USE_INDEXES) {
             ebo = null;
@@ -67,13 +76,18 @@ public final class RenderQueue implements Disposable {
             }
 
             indices.flip();
-            ebo = new  ElementBufferObject(indices);
-            ebo.bind();
+            ebo = new ElementBufferObject(indices);
             ebo.upload(GL_STATIC_DRAW);
         }
-    }
 
-    public UniformBuffer uniformBuffer() { return uniformBuffer; }
+        reordered = renderArena.allocate(LAYOUT, itemCount);
+
+        var array = new RenderList[3] ;
+        for (int i = 0; i < array.length; i++) {
+            array[i] = allocRList(KIND_DYNAMIC);
+        }
+        buffer = new TripleBuffer(array);
+    }
 
     public short getVertexCountPerQuad(@PrimitiveType byte primitiveType) {
         return switch (primitiveType) {
@@ -83,31 +97,7 @@ public final class RenderQueue implements Disposable {
         };
     }
 
-    public void beginFrame() {
-        // Здесь могла быть ваша статистика
-    }
-
-    public void endFrame() {
-        if (renderLists.isEmpty()) {
-            return;
-        }
-
-        drainCommandQueue();
-        uniformBuffer.clear();
-    }
-
-    private void drainCommandQueue() {
-        RenderList it;
-        while ((it = renderLists.pollFirst()) != null) {
-            submitCommandList(it);
-        }
-    }
-
-    public void flush() {
-        drainCommandQueue();
-    }
-
-    public RenderList allocRList(@MagicConstant(intValues = {KIND_STATIC, KIND_DYNAMIC}) int kind) {
+    public RenderList allocRList(@MagicConstant(intValues = {KIND_STATIC, KIND_DYNAMIC}) byte kind) {
         var rlist = switch (kind) {
             case KIND_STATIC -> rlistAlloc.create();
             case KIND_DYNAMIC -> rlistAlloc.obtain();
@@ -117,74 +107,105 @@ public final class RenderQueue implements Disposable {
         return rlist;
     }
 
-    public void push(RenderList renderList) {
-        if (renderList.isEmpty()) {
-            return;
-        }
-        if (renderLists.contains(renderList)) {
-            throw new IllegalStateException(renderList.id + " already in queue");
-        }
-        renderLists.addLast(renderList);
-    }
-
-    private void submitCommandList(RenderList rlist) {
+    void submitCommandList(RenderList rlist) {
         for (var it = rlist; it != null; it = it.next) {
-            submitRenderList(it);
+            processRenderList(it);
         }
     }
 
-    private void submitRenderList(RenderList rlist) {
+    private void processRenderList(RenderList rlist) {
         if (rlist.isEmpty()) {
             return;
         }
 
-        var items = rlist.items;
-        sorter.sort(items, tmp, RenderItem.Comparator.INSTANCE, 0, rlist.itemCount);
-
+        var sortKeys = rlist.sortKeys;
+        var unorderedItems = rlist.items;
         var vertices = rlist.vertices;
         var mesh = rlist.mesh;
+        int itemCount = rlist.itemCount;
 
-        int vapos = vertices.position(), vacount = vertices.limit();
-        vertices.flip();
+        // Инварианты для компилятора
+        if (itemCount >= sortKeys.length) return;
+        if (itemCount * RenderItem.BYTE_SIZE >= unorderedItems.byteSize()) return;
 
-        int currentPrimitiveType = -1;
-        int currentBlending = -1;
-        int currentTextureId = -1;
-        int currentShaderId = -1;
-        int currentUblock = -1;
+        int runCount = rlist.runCount;
+        int c;
+        long t;
+        // Предполагает что количество нарушений порядка меньше чем itemCount/16
+        // поскольку реализация векторизованная на адекватных машинах
+        if (runCount < JDK_SORT_MIN_RUNS || runCount < (itemCount >>> 4)) {
+            c = 0;
+            t = System.nanoTime();
+            Arrays.sort(sortKeys, 0, itemCount);
+            t = System.nanoTime() - t;
+        } else {
+            c = 1;
+            t = System.nanoTime();
+            RadixSort.sort(sortKeys, tmp, itemCount);
+            t = System.nanoTime() - t;
+        }
 
-        int groupIndexOffset = 0;
-        int groupVertexOffset = 0;
+        var items = reordered;
+        for (int i = 0; i < itemCount; i++) {
+            long idx = sortKeys[i] & INDEX_MASK;
+            MemorySegment.copy(unorderedItems, idx * BYTE_SIZE, items, i * BYTE_SIZE, BYTE_SIZE);
+        }
+        // var items = unorderedItems;
 
-        int groupIndexCount = 0;
-        int groupVertexCount = 0;
+        if (Global.input.justPressed(GLFW.GLFW_KEY_F4)) {
+            rlist.debug();
+            log.debug("TimeNS: {}", t);
+            log.debug("Type: {}", c == 0 ? "JDK" : "Radix");
+        }
 
-        var currentVertexFormat = defaultShader.vertexFormat();
+        var ebo = this.ebo;
+
         long prevSortKey = 0;
 
-        //noinspection ForLoopReplaceableByForEach
-        for (int i = 0, n = rlist.itemCount; i < n; ++i) {
-            var item = items[i];
+        int currentPrimitiveType = -1; // тип в GL
+        int currentBlending     = -1;
+        int currentTextureId   = -1;
+        int currentShaderId     = -1;
+        int currentUblock       = -1;
+
+        int groupIndexOffset  = 0;
+        int groupVertexOffset = 0;
+
+        int groupIndexCount   = 0;
+        int groupVertexCount  = 0;
+
+        mesh.setVertexFormat(defaultShader.vertexFormat());
+
+        for (int ai = 0; ai < itemCount; ++ai) {
+            long sortKey = sortKeys[ai];
+
+            // long offset = getIndex(sortKey);
+            long offset = ai;
+
+            int vertexOffset  = (int)VERTEX_OFFSET.get(items,  offset);
+            int indexOffset   = (int)INDEX_OFFSET.get(items,   offset);
+            short vertexCount = (short)VERTEX_COUNT.get(items, offset);
+            short indexCount  = (short)INDEX_COUNT.get(items,  offset);
 
             boolean sameGroup =
-                    (prevSortKey & EXCLUDE_INDEX_MASK) == (item.sortKey & EXCLUDE_INDEX_MASK) &&
+                    (prevSortKey & EXCLUDE_INDEX_MASK) == (sortKey & EXCLUDE_INDEX_MASK) &&
                     // разрыв, придётся отдельным вызовом сделать
-                    (groupVertexOffset + groupVertexCount == item.vertexOffset);
+                    (groupVertexOffset + groupVertexCount == vertexOffset);
+                    // TODO сверять и для индексов, но сейчас не критично
 
             if (sameGroup) {
-                groupIndexCount  += item.indexCount;
-                groupVertexCount += item.vertexCount;
+                groupIndexCount  += indexCount;
+                groupVertexCount += vertexCount;
             } else {
-                byte primitiveType = getPrimitiveType(item.sortKey);
-                byte blending = getBlending(item.sortKey);
-                short textureId = getTextureId(item.sortKey);
-                byte shaderId = getShaderId(item.sortKey);
-                byte ublock = getUblock(item.sortKey);
+                byte  primitiveType = getPrimitiveType(sortKey);
+                byte  blending = getBlending(sortKey);
+                short textureId = getTextureId(sortKey);
+                byte  shaderId = getShaderId(sortKey);
+                byte  ublock = getUblock(sortKey);
 
-                mesh.draw(toGlType(currentPrimitiveType),
+                mesh.draw(currentPrimitiveType,
                         vertices, groupVertexOffset, groupVertexCount,
-                        ebo, groupIndexOffset, groupIndexCount,
-                        currentVertexFormat);
+                        ebo, groupIndexOffset, groupIndexCount);
 
                 if (currentBlending != blending) {
                     setBlending(blending);
@@ -194,50 +215,38 @@ public final class RenderQueue implements Disposable {
 
                 if (currentShaderId != shaderId) {
                     shader.use();
-                    mesh.bindVao();
-                    shader.vertexFormat().enableAttributes();
                 }
+
+                mesh.setVertexFormat(shader.vertexFormat);
 
                 if (currentUblock != ublock) {
-                    var block = uniformBuffer.blockSet.id2blocks[ublock];
-                    block.setTo(shader);
+                    var block = rlist.uniforms.id2blocks[ublock];
+                    block.use(shader);
                 }
 
-                if (currentTextureId != textureId) {
-                    shader.setUniformTexture2d("u_texture", textureId, 0);
+                if (OpenGL.GL_ARB_bindless_texture || currentTextureId != textureId) {
+                    OpenGL.bindTexture(shaderId, Uniforms.DefaultShader.u_texture, textureId, 0);
                 }
 
-                currentPrimitiveType = primitiveType;
+                currentPrimitiveType = toGlType(primitiveType);
                 currentBlending = blending;
                 currentTextureId = textureId;
                 currentShaderId = shaderId;
                 currentUblock = ublock;
 
-                currentVertexFormat = shader.vertexFormat();
+                prevSortKey = sortKey;
 
-                prevSortKey = item.sortKey;
+                groupVertexOffset = vertexOffset;
+                groupIndexOffset = indexOffset;
 
-                groupVertexOffset = item.vertexOffset;
-                groupIndexOffset = item.indexOffset;
-
-                groupIndexCount = item.indexCount;
-                groupVertexCount = item.vertexCount;
+                groupIndexCount = indexCount;
+                groupVertexCount = vertexCount;
             }
         }
 
-        mesh.draw(toGlType(currentPrimitiveType),
+        mesh.draw(currentPrimitiveType,
                 vertices, groupVertexOffset, groupVertexCount,
-                ebo, groupIndexOffset, groupIndexCount,
-                currentVertexFormat);
-
-        switch (rlist.kind) {
-            // восстанавливаем write-mode
-            case RenderList.KIND_STATIC -> {
-                vertices.position(vapos);
-                vertices.limit(vacount);
-            }
-            case RenderList.KIND_DYNAMIC -> rlistAlloc.freeAndReset(rlist);
-        }
+                ebo, groupIndexOffset, groupIndexCount);
     }
 
     private static void setBlending(byte blending) {
@@ -263,8 +272,9 @@ public final class RenderQueue implements Disposable {
         if (ebo != null) {
             ebo.close();
         }
-        for (RenderList renderList : created) {
-            renderList.close();
+        for (var rlist : created) {
+            rlist.close();
         }
+        renderArena.close();
     }
 }

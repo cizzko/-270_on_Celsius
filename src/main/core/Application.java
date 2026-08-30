@@ -8,6 +8,8 @@ import org.lwjgl.system.NativeResource;
 import org.lwjgl.system.Platform;
 
 import java.io.IOException;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.util.ArrayList;
 import java.util.Objects;
 import java.util.concurrent.locks.LockSupport;
@@ -15,9 +17,22 @@ import java.util.concurrent.locks.LockSupport;
 public class Application {
     public static final Logger log = LogManager.getLogger("Game");
 
-    protected final ArrayList<NativeResource> natives = new ArrayList<>();
-    private boolean running = true;
     private final Thread mainThread;
+
+    protected final ArrayList<NativeResource> natives = new ArrayList<>();
+
+    private boolean running = true;
+
+    private static final VarHandle RUNNING;
+    static {
+        try {
+            RUNNING = MethodHandles.lookup()
+                    .findVarHandle(Application.class, "running", boolean.class)
+                    .withInvokeExactBehavior();
+        } catch (ReflectiveOperationException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
 
     public Application() {
         this.mainThread = Thread.currentThread();
@@ -38,7 +53,7 @@ public class Application {
             Thread.currentThread().setName("UpdateThread");
             init();
 
-            while (running) {
+            while (isRunning()) {
                 update();
             }
         } catch (Throwable t) {
@@ -47,6 +62,9 @@ public class Application {
             freeNatives();
             JavaInterpreter.close();
             Global.scheduler.shutdown();
+            try {
+                Global.renderThread.join();
+            } catch (InterruptedException e) {}
             cleanup();
         }
     }
@@ -61,14 +79,16 @@ public class Application {
         }
     }
 
-    protected void update() {}
+    protected void update() {
 
-    protected void cleanup() {}
+    }
 
-    protected void init() throws Throwable {}
+    protected void cleanup() {
 
-    public void quit() {
-        running = false;
+    }
+
+    protected void init() throws Throwable {
+
     }
 
     public void setFramerate(int framerate) {
@@ -108,6 +128,7 @@ public class Application {
 
         if (now - frameCounterTime >= 1e9f) {
             frameCounterTime = now;
+
             fps = fpsMeasurement;
             fpsMeasurement = 0;
         }
@@ -126,7 +147,7 @@ public class Application {
                 long targetTime = System.nanoTime() + toWait;
 
                 while (toWait > 100_000L) {
-                    LockSupport.parkNanos(toWait - 50_000L);
+                    LockSupport.parkNanos(toWait - 50_000L); // закладываем время под spurious wakeup
                     toWait = targetTime - System.nanoTime();
                 }
                 while (System.nanoTime() < targetTime)
@@ -165,5 +186,14 @@ public class Application {
 
     private static void openUri(String cmd, String uri) {
         openUri(cmd, uri, "");
+    }
+
+    public final boolean isRunning() {
+        return (boolean) RUNNING.getAcquire(this);
+    }
+
+    public final void quit() {
+        ensureMainThread();
+        RUNNING.setRelease(this, false);
     }
 }

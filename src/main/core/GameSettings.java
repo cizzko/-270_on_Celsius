@@ -17,16 +17,37 @@ public final class GameSettings {
 
     public boolean verticalSync;
     public int targetFps; // -1 - uncapped
-
+    public Render render;
     public String language;
 
-    public GameSettings() {
-        this(DEFAULT_VERTICAL_SYNC, DEFAULT_TARGET_FPS, DEFAULT_LANGUAGE);
+    public static final class Render {
+        public static final boolean DEFAULT_DSA               = true;
+        public static final boolean DEFAULT_BINDLESS_TEXTURES = true;
+        public static final boolean DEFAULT_BATCH_TILE_RENDER = false;
+
+        public boolean dsa;
+        public boolean bindlessTextures;
+        public boolean batchTileRender;
+
+        public Render() {
+            this(DEFAULT_DSA, DEFAULT_BINDLESS_TEXTURES, DEFAULT_BATCH_TILE_RENDER);
+        }
+
+        public Render(boolean dsa, boolean bindlessTextures, boolean batchTileRender) {
+            this.dsa = dsa;
+            this.bindlessTextures = bindlessTextures;
+            this.batchTileRender = batchTileRender;
+        }
     }
 
-    public GameSettings(boolean verticalSync, int targetFps, String language) {
+    public GameSettings() {
+        this(DEFAULT_VERTICAL_SYNC, DEFAULT_TARGET_FPS, new Render(), DEFAULT_LANGUAGE);
+    }
+
+    public GameSettings(boolean verticalSync, int targetFps, Render render, String language) {
         this.verticalSync = verticalSync;
         this.targetFps = targetFps;
+        this.render = render;
         this.language = language;
     }
 

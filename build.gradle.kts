@@ -1,4 +1,5 @@
 import groovy.json.JsonSlurper
+import core.gen.glsl.GLSLPreprocessorTask;
 
 plugins {
     java
@@ -9,10 +10,16 @@ plugins {
 val MAIN_CLASS  = "core.Main"
 val MAIN_MODULE = "core.main"
 
+val generateUniforms = tasks.register<GLSLPreprocessorTask>("generateUniforms") {
+    shadersDir.set(layout.projectDirectory.dir("src/assets/shaders"))
+    outputDir.set(layout.buildDirectory.dir("generated/sources/generated/java/main"))
+}
+
 sourceSets {
     main {
         java {
             srcDir("src/main")
+            srcDir(generateUniforms.flatMap { it.outputDir })
         }
         resources {
             srcDir("src/assets")
@@ -56,6 +63,7 @@ val genAtlas = tasks.register<JavaExec>("genAtlas") {
 
 tasks.classes {
     finalizedBy(genAtlas)
+    dependsOn(generateUniforms)
 }
 
 val lwjglVersion = "3.4.1"
@@ -116,6 +124,7 @@ java {
 configurations["toolsImplementation"].extendsFrom(configurations["implementation"])
 
 dependencies {
+    implementation("org.jctools:jctools-core:4.0.6")
     implementation("it.unimi.dsi:fastutil:8.5.18")
     implementation("org.apache.logging.log4j:log4j-api:3.0.0-beta2")
     implementation("org.apache.logging.log4j:log4j-core:3.0.0-beta2")
@@ -199,15 +208,13 @@ fun applyJvmArgs(aotCache: Boolean): List<String> {
     if (System.getProperty("os.name")!!.startsWith("Darwin") || System.getProperty("os.name")!!.startsWith("Mac OS X")) {
         jvmArgs.add("-XstartOnFirstThread")
     }
-    if (JavaLanguageVersion.current().canCompileOrRun(25)) {
-        jvmArgs.add("-XX:+UseCompactObjectHeaders")
-        if (aotCache)
-            jvmArgs.add("-XX:AOTCacheOutput=app.aot")
-    }
-    if (JavaLanguageVersion.current().canCompileOrRun(22)) {
-        jvmArgs.add("--enable-native-access=org.lwjgl.opengl")
-        jvmArgs.add("--enable-native-access=org.lwjgl")
-    }
+    jvmArgs.add("-XX:+UseZGC")
+    jvmArgs.add("-XX:+UseCompactObjectHeaders")
+    if (aotCache)
+        jvmArgs.add("-XX:AOTCacheOutput=app.aot")
+    jvmArgs.add("--enable-native-access=org.lwjgl.opengl")
+    jvmArgs.add("--enable-native-access=org.lwjgl")
+    jvmArgs.add("--enable-native-access=core.main")
     return jvmArgs
 }
 
@@ -249,7 +256,9 @@ tasks.run {
 //    jvmArguments.add("-Xcomp")
 
     jvmArguments.add("-ea:core.main")
-    jvmArguments.add("-XX:+UseZGC") // экспериментируем как бы
+// экспериментируем как бы
+//    jvmArguments.add("-XX:+UseShenandoahGC")
+//    jvmArguments.add("-XX:ShenandoahGCMode=generational")
 
     val mainSourceSet = project.sourceSets["main"]
     val runtimeFiles = configurations.runtimeClasspath.get().files

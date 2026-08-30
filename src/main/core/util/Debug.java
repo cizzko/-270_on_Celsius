@@ -51,7 +51,7 @@ public class Debug {
     // Директория ./tmp для созданных картинок и прочего
     public static final String TEMP_DIR = "tmp";
 
-    // Включается по нажатию F3+M английской
+    // Включается по нажатию F3 английской
     public static boolean debugMesh = false;
     public static boolean frameHistogram = false;
 
@@ -86,7 +86,8 @@ public class Debug {
         if (debugLevel < 1) {
             return;
         }
-        setDebugValue(() -> "RenderFPS: " + app.fps());
+        setDebugValue(() -> "UpdateFPS: " + app.fps());
+        setDebugValue(() -> "RenderFPS: " + renderThread.fps());
 
         if (debugLevel < 2) {
             return;

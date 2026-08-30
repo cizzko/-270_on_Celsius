@@ -286,11 +286,11 @@ public final class WorldDrawing {
             }
         }
 
-        boolean USE_DEFAULT = false;
+        boolean useDefault = !gameSettings.render.batchTileRender;
 
         void draw() {
             if (Global.input.justPressed(GLFW.GLFW_KEY_L)) {
-                USE_DEFAULT = !USE_DEFAULT;
+                useDefault = !useDefault;
             }
 
             var viewport = TmpShapes.aabb1;
@@ -303,7 +303,7 @@ public final class WorldDrawing {
             maxX = viewport.blockMaxX();
             maxY = viewport.blockMaxY();
 
-            if (USE_DEFAULT) {
+            if (useDefault) {
                 notMergingDraw();
             } else {
                 mergingDraw();

@@ -120,6 +120,7 @@ public class Block implements ContentType, Loadable {
 
     // Никогда не переставляйте порядок констант в этом перечислении
     // От этого зависит работа ContentManager
+    // TODO(Skat): есть идея прямо в классе тут хранить beginId,endId промежутки
     public enum Type {
         GAS,
         LIQUID,

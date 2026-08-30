@@ -1,6 +1,8 @@
 package core;
 
+import core.assets.EventLoopExecutor;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
 import java.util.Objects;
@@ -8,7 +10,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.RejectedExecutionException;
 
-public final class TaskScheduler {
+public final class TaskScheduler implements EventLoopExecutor {
     public static final TaskImpl<?>[] ZERO = new TaskImpl[0];
 
     // TODO тут нужна MPSC очередь, желательно фиксированного размера
@@ -16,44 +18,9 @@ public final class TaskScheduler {
     private TaskImpl<?>[] guardedQueue = ZERO;
     private volatile boolean running = true;
 
-    static final class TaskQueue { // аааааа, меня вынудили
-        TaskImpl<?>[] a = ZERO;
-        int size;
-
-        void grow(int capacity) {
-            if (capacity <= a.length) return;
-            if (a != ZERO)
-                capacity = Math.clamp((long) a.length + (a.length >> 1), capacity, it.unimi.dsi.fastutil.Arrays.MAX_ARRAY_SIZE);
-            else if (capacity < ObjectArrayList.DEFAULT_INITIAL_CAPACITY)
-                capacity = ObjectArrayList.DEFAULT_INITIAL_CAPACITY;
-            a = Arrays.copyOf(a, capacity);
-        }
-
-        void add(TaskImpl<?> k) {
-            grow(size + 1);
-            a[size++] = k;
-        }
-
-        void addAllToFront(TaskImpl<?>[] sourceArray, int countToCopy) {
-            if (countToCopy <= 0) return;
-
-            int currentSize = this.size;
-            var arr = this.a;
-            int newSize = currentSize + countToCopy;
-
-            if (newSize > arr.length) {
-                int newCapacity = Math.max(arr.length * 2, newSize);
-                var newElements = new TaskImpl<?>[newCapacity];
-
-                System.arraycopy(arr, 0, newElements, countToCopy, currentSize);
-                this.a = newElements;
-            } else {
-                System.arraycopy(arr, 0, arr, countToCopy, currentSize);
-            }
-
-            System.arraycopy(sourceArray, 0, this.a, 0, countToCopy);
-            this.size = newSize;
-        }
+    @Override
+    public boolean isExecutorThread() {
+        return Global.app.isMainThread();
     }
 
     public void post(Runnable task, float delay) {
@@ -137,27 +104,34 @@ public final class TaskScheduler {
         }
     }
 
-    public CompletableFuture<Void> execute(Runnable runnable) {
+    @Override
+    public CompletableFuture<Void> submit(Runnable action) {
         if (Global.app.isMainThread()) {
             try {
-                runnable.run();
+                action.run();
                 return CompletableFuture.completedFuture(null);
-            } catch (Exception e) {
-                return CompletableFuture.failedFuture(e);
+            } catch (Throwable t) {
+                return CompletableFuture.failedFuture(t);
             }
         }
-        return post(runnable);
+        return null;
     }
 
-    public <T> CompletableFuture<T> execute(Callable<? extends T> callable) {
+    @Override
+    public <T> CompletableFuture<T> submit(Callable<? extends T> action) {
         if (Global.app.isMainThread()) {
             try {
-                return CompletableFuture.completedFuture(callable.call());
-            } catch (Exception e) {
-                return CompletableFuture.failedFuture(e);
+                return CompletableFuture.completedFuture(action.call());
+            } catch (Throwable t) {
+                return CompletableFuture.failedFuture(t);
             }
         }
-        return post(callable);
+        return post(action);
+    }
+
+    @Override
+    public void execute(@NotNull Runnable action) {
+        post(action);
     }
 
     public void shutdown() {
@@ -189,6 +163,46 @@ public final class TaskScheduler {
             } catch (Exception t) {
                 result.completeExceptionally(t);
             }
+        }
+    }
+
+    static final class TaskQueue { // аааааа, меня вынудили
+        TaskImpl<?>[] a = ZERO;
+        int size;
+
+        void grow(int capacity) {
+            if (capacity <= a.length) return;
+            if (a != ZERO)
+                capacity = Math.clamp((long) a.length + (a.length >> 1), capacity, it.unimi.dsi.fastutil.Arrays.MAX_ARRAY_SIZE);
+            else if (capacity < ObjectArrayList.DEFAULT_INITIAL_CAPACITY)
+                capacity = ObjectArrayList.DEFAULT_INITIAL_CAPACITY;
+            a = Arrays.copyOf(a, capacity);
+        }
+
+        void add(TaskImpl<?> k) {
+            grow(size + 1);
+            a[size++] = k;
+        }
+
+        void addAllToFront(TaskImpl<?>[] sourceArray, int countToCopy) {
+            if (countToCopy <= 0) return;
+
+            int currentSize = this.size;
+            var arr = this.a;
+            int newSize = currentSize + countToCopy;
+
+            if (newSize > arr.length) {
+                int newCapacity = Math.max(arr.length * 2, newSize);
+                var newElements = new TaskImpl<?>[newCapacity];
+
+                System.arraycopy(arr, 0, newElements, countToCopy, currentSize);
+                this.a = newElements;
+            } else {
+                System.arraycopy(arr, 0, arr, countToCopy, currentSize);
+            }
+
+            System.arraycopy(sourceArray, 0, this.a, 0, countToCopy);
+            this.size = newSize;
         }
     }
 }

@@ -142,15 +142,16 @@ final class AsyncAssetResolver<T, P, S>
                 break;
             }
 
+            var fjTask = tasks.get(i);
             if (i == 0) { // запустим последний таск на этом потоке, всё равно предстоит ждать
-                t.quietlyInvoke();
-                var exc = t.getException();
+                fjTask.quietlyInvoke();
+                var exc = fjTask.getException();
 
                 if (exc != null) {
                     anyExc = exc;
                 }
             } else {
-                t.fork();
+                fjTask.fork();
             }
         }
 
@@ -183,13 +184,14 @@ final class AsyncAssetResolver<T, P, S>
             return null;
         }
 
-        var syncAction = Global.scheduler.post(() -> {
+
+        var kolbasa = Global.scheduler.post(() -> {
             T assetInst = loader.loadSync(this, name, params, state);
 
             if (assetInst == null) {
                 throw new IllegalStateException(
                         loader + " returned null for asset '" +
-                                name + "', params=" + params + ", state=" + state);
+                        name + "', params=" + params + ", state=" + state);
             }
 
             desc.value = assetInst;
@@ -199,7 +201,7 @@ final class AsyncAssetResolver<T, P, S>
         });
 
         try {
-            return syncAction.join();
+            return kolbasa.join();
         } catch (CompletionException | CancellationException e) {
             cleanupTasks();
             rethrow(e.getCause());

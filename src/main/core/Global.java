@@ -7,6 +7,7 @@ import core.content.EntityPool;
 import core.content.creatures.PlayerEntity;
 import core.g2d.Atlas;
 import core.graphic.Camera;
+import core.g2d.RenderThread;
 import core.input.InputHandler;
 import core.lang.LangTranslation;
 
@@ -52,4 +53,6 @@ public final class Global {
     public static final ContentManager content = new ContentManager();
     public static final TaskScheduler scheduler = new TaskScheduler();
     public static Application app;
+
+    public static RenderThread renderThread;
 }
