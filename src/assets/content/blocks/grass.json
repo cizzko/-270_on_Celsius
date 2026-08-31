@@ -1,8 +1,9 @@
 {
   "ClassType": "block",
-  "Type": "SOLID",
   "Resistance": 40,
-  "MaxHp": 100,
   "Texture": "textures/blocks/grass",
-  "LightTransmission": 120
+  "Type": "SOLID",
+  "MaxHp": 100,
+  "Density": 1,
+  "LightTransmission": 0
 }

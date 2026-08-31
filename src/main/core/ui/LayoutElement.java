@@ -29,14 +29,14 @@ public abstract class LayoutElement<This extends LayoutElement<This>>
     protected static final int ELEMENT_LAST_FLAG = FLAG_LAYOUT_CHANGED;
 
     // Допустимая погрешность в координатах интерфейса
-    public static final float EPSILON = 1e-2f;
+    protected static final float EPSILON = 1e-2f;
 
-    public int flags = FLAG_VISIBLE | FLAG_TOUCHABLE;
+    protected int flags = FLAG_VISIBLE | FLAG_TOUCHABLE;
 
-    public float x, y, width, height;
-    public float minWidth, minHeight;
-    public float prefWidth, prefHeight;
-    public float maxWidth = Float.MAX_VALUE, maxHeight = Float.MAX_VALUE;
+    protected float x, y, width, height;
+    protected float minWidth, minHeight;
+    protected float prefWidth, prefHeight;
+    protected float maxWidth = Float.MAX_VALUE, maxHeight = Float.MAX_VALUE;
 
     /// Коллбек который вызывается при настройке этому элементу новых координат и размеров
     public void onLayoutComplete() { }

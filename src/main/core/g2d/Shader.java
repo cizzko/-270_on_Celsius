@@ -238,4 +238,37 @@ public final class Shader implements Disposable {
             MATRIX3F
         }
     }
+
+    public void setUniformFloat(String name, float value) {
+        var u = uniforms.get(name);
+        if (u == null) return;
+        glUniform1f(u.location, value);
+    }
+
+    public void setUniformInt(String name, int value) {
+        var u = uniforms.get(name);
+        if (u == null) return;
+        glUniform1i(u.location, value);
+    }
+
+    public void setUniformVec2f(String name, float x, float y) {
+        var u = uniforms.get(name);
+        if (u == null) return;
+        glUniform2f(u.location, x, y);
+    }
+
+    public void setUniformMat3(String name,
+                               float m00, float m01, float m02,
+                               float m10, float m11, float m12,
+                               float m20, float m21, float m22) {
+        var u = uniforms.get(name);
+        if (u == null) return;
+        glUniformMatrix3fv((int) u.location, false, new float[]{m00,m01,m02,m10,m11,m12,m20,m21,m22});
+    }
+
+    public void setUniformTexture2d(String name, short texId, int bindSlot) {
+        var u = uniforms.get(name);
+        if (u == null) return;
+        glUniform1i(u.location, texId + bindSlot);
+    }
 }

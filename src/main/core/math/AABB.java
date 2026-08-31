@@ -110,11 +110,25 @@ public final class AABB {
         maxY = Math.min(world.sizeY - 1, margin + maxY);
     }
 
+    public void expand(int margin) {
+        this.minX -= margin;
+        this.maxX += margin;
+        this.minY -= margin;
+        this.maxY += margin;
+    }
+
     public void floorToBlock() {
         minX = toBlock(minX);
         minY = toBlock(minY);
         maxX = toBlock(maxX);
         maxY = toBlock(maxY);
+    }
+
+    public void set(AABB rhs) {
+        this.minX = rhs.minX;
+        this.minY = rhs.minY;
+        this.maxX = rhs.maxX;
+        this.maxY = rhs.maxY;
     }
 
     @Override

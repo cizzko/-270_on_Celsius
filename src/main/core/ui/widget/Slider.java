@@ -117,7 +117,7 @@ public class Slider extends LayoutElement<Slider> {
         for (int i = 0; i < sliderValueStr.length(); i++) { // TODO заменить
             char ch = sliderValueStr.charAt(i);
             Font.Glyph glyph = style.font.getGlyph(ch);
-            StackfulRender.draw(glyph, Styles.DIRTY_WHITE, x, y + rectY);
+            StackfulRender.draw(glyph, Styles.DIRTY_WHITE.rgba8888(), x, y + rectY);
             x += glyph.width();
         }
 

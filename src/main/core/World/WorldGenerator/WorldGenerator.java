@@ -70,15 +70,6 @@ public class WorldGenerator {
                         log("generating: copy " + (System.currentTimeMillis() - startTime) + "ms");
                         copy();
                     })
-                    // TODO(Ociz): тени можно продолжать рисовать после спавна
-                    //  Skat: отличная идея, особенно если рендер теней будет происходит визуально гладко для игрока
-                    //  Самый простой способ: в области видимости прогрузить как есть
-                    //  (область маленькая и навряд ли даже потоки нужны будут)
-                    //  а остальное уже потом крутить в фоне
-                    .thenRun(() -> {
-                        log("regenerating shadow map " + (System.currentTimeMillis() - startTime) + "ms");
-                        ShadowMap.generate();
-                    })
                     .thenRun(() -> {
                         log("generating temperature map " + (System.currentTimeMillis() - startTime) + "ms");
                         TemperatureMap.generate();
@@ -99,10 +90,6 @@ public class WorldGenerator {
                     });
         } else {
             CompletableFuture.runAsync(() -> generateFlatWorld(world))
-                    .thenRun(() -> {
-                        log("regenerating shadow map " + (System.currentTimeMillis() - startTime) + "ms");
-                        ShadowMap.generate();
-                    })
                     .thenRun(() -> {
                         log("generating temperature map " + (System.currentTimeMillis() - startTime) + "ms");
                         TemperatureMap.generate();

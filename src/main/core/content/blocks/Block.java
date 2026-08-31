@@ -24,8 +24,8 @@ public class Block implements ContentType, Loadable {
 
     public short maxHp;
     public byte resistance;
-    public float thermalCapacity, thermalConductivity, emissivity, albedo;
-    public int lightTransmission;
+    public float density, thermalCapacity, thermalConductivity, emissivity, albedo;
+    public byte lightTransmission, lightDiffusion, lightEmission;
     public Atlas.Region texture;
     public ItemStack[] requirements;
     public @Nullable Block createWith;
@@ -58,8 +58,11 @@ public class Block implements ContentType, Loadable {
         String createWithId = cnt.node().path("CreateWith").asText(null);
         this.createWith = (createWithId == null || createWithId.equals("player")) ? null : cnt.readBlockUnresolved("CreateWith");
 
-        this.resistance = toByteExact(cnt.node().path("Resistance").asInt(40));
-        this.lightTransmission = cnt.node().path("LightTransmission").asInt(100);
+        this.density = (float) cnt.node().path("Density").asDouble(1);
+        this.resistance        = toByteExact(cnt.node().path("Resistance").asInt(90));
+        this.lightTransmission = toByteExact(cnt.node().path("LightTransmission").asInt(100));
+        this.lightDiffusion    = toByteExact(cnt.node().path("LightDiffusion").asInt(10));
+        this.lightEmission     = toByteExact(cnt.node().path("LightEmission").asInt(0));
         this.type = Type.valueOf(cnt.node().path("Type").asText(Type.SOLID.name()).toUpperCase(Locale.ROOT));
     }
 
@@ -81,10 +84,6 @@ public class Block implements ContentType, Loadable {
 
     public boolean isMultiblock() { return tileCountX > 1 || tileCountY > 1; }
 
-    public boolean isEntity() {
-        return false;
-    }
-
     public @Nullable BlockEntity createEntity(int x, int y) {
         var ent = constructEntity();
         if (ent != null) {
@@ -92,6 +91,10 @@ public class Block implements ContentType, Loadable {
             ent.init();
         }
         return ent;
+    }
+
+    public boolean isEntity() {
+        return false;
     }
 
     protected @Nullable BlockEntity constructEntity() { return null; }

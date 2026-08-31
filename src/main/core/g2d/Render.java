@@ -12,12 +12,6 @@ import static org.lwjgl.opengl.GL11.*;
 public final class Render {
 
     private Render() {}
-
-    static {
-        if (!Global.renderThread.isRenderThread())
-            throw new ExceptionInInitializerError();
-    }
-
     @Retention(RetentionPolicy.SOURCE)
     @MagicConstant(intValues = {PRIMITIVE_TYPE_TRIANGLES, PRIMITIVE_TYPE_TRIANGLE_STRIP, PRIMITIVE_TYPE_LINES, PRIMITIVE_TYPE_LINE_STRIP})
     public @interface PrimitiveType {}
@@ -187,7 +181,9 @@ public final class Render {
             RENDER_MAX_ITEMS_COUNT, RENDER_MAX_VERTEX_COUNT);
 
     public static void init() {
-        StackfulRender.stateFrame.rlist  = Objects.requireNonNull(queue.buffer.storage[0]);
+        if (StackfulRender.stateFrame == null || StackfulRender.stateFrame.rlist == null) {
+            StackfulRender.stateFrame.rlist = Objects.requireNonNull(queue.buffer.storage[0]);
+        }
     }
 
     public static RenderQueue queue() { return queue; }

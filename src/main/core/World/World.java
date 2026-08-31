@@ -117,6 +117,7 @@ public final class World {
         public /* unsigned */ byte[] hp;
         public int[] surfaces;
         public Meta meta;
+        public short[] heights;
 
         @JsonDeserialize(using = DataDeserializer.class)
         public Int2ObjectOpenHashMap<TileData> data;
@@ -165,6 +166,7 @@ public final class World {
                         ent.x(), ent.y(), ent, e);
             }
         });
+        ShadowMap.updateIfDirty();
     }
 
     public Meta meta() { return meta; }
@@ -321,6 +323,7 @@ public final class World {
 
     /// @return {@code -1} в случае выхода за границу. В остальных случаях неотрицательный blockId
     public int getBlockId(int x, int y) {
+        // Global.app.ensureMainThread();
         if (!inBounds(x, y)) {
             if (Debug.hardBoundsCheck) {
                 Objects.checkIndex(x, world.sizeX);
@@ -388,11 +391,9 @@ public final class World {
             hp[idx] = (byte) block.maxHp;
         }
         if (gameState == GameState.PLAYING) {
-            world.surfaces[x] = (short) findSurfaceY(x, 1);
             TemperatureMap.updateBlock(x, y, block);
         }
-
-        ShadowMap.update();
+        ShadowMap.setDirty(x, y, block.tileCountX,  block.tileCountY);
     }
 
     private void destroyBlock(int x, int y) {
@@ -416,7 +417,7 @@ public final class World {
             data.remove(idx);
             tiles[idx] = 0;
             hp[idx] = 0;
-            ShadowMap.update();
+            ShadowMap.setDirty(x, y, 1, 1);
         }
     }
 
@@ -440,7 +441,7 @@ public final class World {
                 data.remove(idx);
             }
         }
-        ShadowMap.update();
+        ShadowMap.setDirty(x, y, rootBlock.tileCountX, rootBlock.tileCountY);
     }
 
     public boolean checkPlaceRules(int x, int y, Block block) {

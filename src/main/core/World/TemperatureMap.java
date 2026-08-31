@@ -12,6 +12,7 @@ import core.util.Disposable;
 import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -259,14 +260,26 @@ public final class TemperatureMap implements Disposable {
         activeChunkIndices = new int[chunkCount];
         activeChunkCount = 0;
     }
-
     public static void start() {
         if (scheduler != null) {
             scheduler.shutdown();
         }
 
         var scope = new BatchScope(world.genPool);
-        scheduler = Executors.newSingleThreadScheduledExecutor(_ -> new Thread());
+        scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+            private final AtomicInteger threadId = new AtomicInteger(0);
+
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread t = new Thread(r, "TemperatureMap-Update-" + threadId.getAndIncrement());
+                t.setDaemon(true);
+                t.setUncaughtExceptionHandler((thread, e) -> {
+                    System.err.println("[TemperatureMap] Uncaught exception in " + thread.getName() + ": " + e);
+                    e.printStackTrace(System.err);
+                });
+                return t;
+            }
+        });
 
         scheduler.scheduleAtFixedRate(() -> {
             update(scope);

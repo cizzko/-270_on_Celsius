@@ -7,7 +7,7 @@ import core.World.Weather.Sun;
 import core.World.WorldGenerator.Background;
 import core.g2d.Shaders;
 import core.g2d.StackfulRender;
-import core.gen.Uniforms;
+import core.g2d.UniformBuffer.Uniform;
 import core.graphic.GuiDrawing;
 import core.graphic.WorldDrawing;
 import core.util.Commandline;
@@ -69,6 +69,7 @@ public final class PlayGameScene extends GameScene {
 
         StackfulRender.z(LAYER_BACKGROUND);
         sun.draw();
+        Background.draw();
         StackfulRender.z(LAYER_BLOCKS);
         StackfulRender.camera(camera);
         WorldDrawing.drawBlocks();
@@ -80,7 +81,7 @@ public final class PlayGameScene extends GameScene {
             state.shader = worldShader;
             var uniformBuffer = StackfulRender.uniformBuffer();
             var ublock = uniformBuffer.allocate(worldShader);
-            ublock.pushVec2f(Uniforms.WorldShader.u_logical_ratio, Global.camera.projectionScale);
+            ublock.push(Uniform.of("u_logical_ratio", Global.camera.projectionScale));
             uniformBuffer.push(ublock);
 
             state.uniformBlock(ublock);

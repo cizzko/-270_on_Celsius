@@ -63,6 +63,8 @@ public final class Point2i {
 
     public boolean equals(int x, int y) { return this.x == x && this.y == y; }
 
+    public boolean equals(Point2i other) { return this.x == other.x && this.y == other.y; }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {

@@ -76,7 +76,7 @@ public final class UIScene implements InputListener {
     }
 
     public void update(float dt) {
-        updateMouseOver2();
+        updateMouseOver();
 
         rootElement.update(dt);
     }
@@ -102,7 +102,7 @@ public final class UIScene implements InputListener {
         String indent = " ".repeat(nesting) + "|";
         log.info("{} {}", indent, element);
         log.info("{} (x={}, y={}, w={}, h={})", indent,
-                element.x, element.y, element.width, element.height);
+                element.x(), element.y(), element.width(), element.height());
         log.info("{} pref=(w={}, h={})", indent,
                 element.prefWidth(), element.prefHeight());
         log.info("{} min=(w={}, h={})", indent,
@@ -121,7 +121,7 @@ public final class UIScene implements InputListener {
         return null;
     }
 
-    private void updateMouseOver2() {
+    private void updateMouseOver() {
         var mouse = input.mousePos();
         var old = mouseOverElement;
         var over = rootElement.hit(mouse.x, mouse.y);

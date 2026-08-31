@@ -83,7 +83,6 @@ public class Player {
         if (!placeRules || world.checkPlaceRules(blockX, blockY, placeable)) {
             player.takeItemFromHand(1);
             world.set(blockX, blockY, placeable, false);
-            ShadowMap.update();
         }
     }
 
@@ -117,8 +116,7 @@ public class Player {
         int blockId = world.getBlockId(blockX, blockY);
         int hp = world.getHp(blockX, blockY);
 
-        // TODO тут нужен честный raycast
-        if (!breakRules || (getDistanceToMouse() <= tool.maxInteractionRange)) {
+        if ((getDistanceToMouse() <= tool.maxInteractionRange) || !breakRules) {
             WorldDrawing.addBlockPreview(blockX, blockY, (short) blockId, (byte) hp, true);
 
             long nowTime = System.currentTimeMillis();

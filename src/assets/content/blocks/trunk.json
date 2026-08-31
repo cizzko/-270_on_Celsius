@@ -4,5 +4,6 @@
   "Texture": "textures/blocks/trunk",
   "Type": "WALKABLE",
   "MaxHp": 100,
-  "LightTransmission": 150
+  "Density": 1,
+  "LightTransmission": 0
 }

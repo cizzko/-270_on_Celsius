@@ -184,7 +184,7 @@ public final class InputHandler {
         if (framebufferMustBeResized) {
             framebufferMustBeResized = false;
 
-            renderThread.execute(() -> glViewport(vx, vy, vw, vh));
+            glViewport(vx, vy, vw, vh);
         }
     }
 
@@ -329,7 +329,7 @@ public final class InputHandler {
 
     public void setViewportSize(int w, int h) {
         updateViewport(w, h);
-        renderThread.execute(() -> glViewport(vx, vy, vw, vh));
+        glViewport(vx, vy, vw, vh);
         onViewport(vx, vy, vw, vh);
     }
 

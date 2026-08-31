@@ -4,5 +4,6 @@
   "Texture": "textures/blocks/sand",
   "Type": "SOLID",
   "MaxHp": 50,
-  "LightTransmission": 100
+  "Density": 1,
+  "LightTransmission": 0
 }

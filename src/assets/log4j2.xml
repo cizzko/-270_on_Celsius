@@ -27,6 +27,7 @@
         <Logger name="core.g2d" level="TRACE"/>
         <Logger name="Shader" level="ERROR"/>
         <Logger name="AutoLoader" level="TRACE"/>
+        <Logger name="core.graphic.ShadowMap" level="INFO"/>
         <Logger name="AssetsManager" level="ERROR"/>
     </Loggers>
 </Configuration>

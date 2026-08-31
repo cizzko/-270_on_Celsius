@@ -14,7 +14,7 @@ public final class Hotkeys {
         if (Global.input.justPressed(GLFW.GLFW_KEY_F12)) {
             Window.toggleFullscreen();
         }
-        if (input.pressed(GLFW.GLFW_KEY_LEFT_CONTROL)) {
+        if (Debug.debugLevel > 0) {
             if (input.scrollDelta() > 0) {
                 camera.setZoom(camera.zoom() * 1.1f);
             } else if (input.scrollDelta() < 0) {

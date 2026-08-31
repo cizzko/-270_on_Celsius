@@ -77,14 +77,14 @@ public final class Camera {
 
     // Перевод координат экрана в координаты мира
     public void unprojectTo(Vector2f screenCoordinates, Vector2d worldCoordinates) {
-        double ndcX = MathUtil.fma(screenCoordinates.x, 2. / width, -1.);
-        double ndcY = MathUtil.fma(screenCoordinates.y, 2. / height, -1.);
+        double ndcX = Math.fma(screenCoordinates.x, 2. / width, -1.);
+        double ndcY = Math.fma(screenCoordinates.y, 2. / height, -1.);
 
         // NDC * (1/scale) + position
         var lss = logicalScreenSize;
         var pos = position;
-        worldCoordinates.x = MathUtil.fma(ndcX, lss.x * 0.5, pos.x);
-        worldCoordinates.y = MathUtil.fma(ndcY, lss.y * 0.5, pos.y);
+        worldCoordinates.x = Math.fma(ndcX, lss.x * 0.5, pos.x);
+        worldCoordinates.y = Math.fma(ndcY, lss.y * 0.5, pos.y);
     }
 
     public void boundsTo(AABB aabb) {

@@ -220,12 +220,12 @@ public final class RenderQueue implements Disposable {
                 mesh.setVertexFormat(shader.vertexFormat);
 
                 if (currentUblock != ublock) {
-                    var block = rlist.uniforms.id2blocks[ublock];
-                    block.use(shader);
+                    var block = rlist.uniforms.blockSet.id2blocks[ublock];
+                    block.setTo(shader);
                 }
 
                 if (OpenGL.GL_ARB_bindless_texture || currentTextureId != textureId) {
-                    OpenGL.bindTexture(shaderId, Uniforms.DefaultShader.u_texture, textureId, 0);
+                    OpenGL.bindTexture(shaderId, 0, textureId, 0);
                 }
 
                 currentPrimitiveType = toGlType(primitiveType);

@@ -260,7 +260,7 @@ public final class TextField extends LayoutElement<TextField> {
     public void draw() {
         Drawable background = style.background;
         if (background != null) {
-            StackfulRender.draw(background, color, x, y, width, height);
+            StackfulRender.draw(background, color.rgba8888(), x, y, width, height);
         } else {
             float w = Math.min(width, glyphCache.width());
             Fill.rect(x, y, w, glyphCache.height(), color);

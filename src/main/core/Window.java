@@ -1,6 +1,7 @@
 package core;
 
 import com.sun.management.OperatingSystemMXBean;
+import core.assets.AssetsManager;
 import core.g2d.Atlas;
 import core.g2d.Font;
 import core.g2d.RenderThread;
@@ -27,6 +28,7 @@ import java.nio.file.Files;
 import static core.Global.*;
 import static core.graphic.TextureLoader.decodeImage;
 import static org.lwjgl.glfw.GLFW.*;
+import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL46.GL_VERSION;
 import static org.lwjgl.opengl.GL46.glGetString;
 import static org.lwjgl.system.MemoryUtil.NULL;
@@ -304,6 +306,11 @@ public final class Window extends Application {
             }
         }));
 
+        assets.load(Atlas.class, "sprites", AssetsManager.LoadType.SYNC);
+        Shaders.loadAll();
+        Render.init();
+
+        glClearColor(206f / 255f, 246f / 255f, 1.0f, 1.0f);
         lang.load();
 
         setGameScene(new MenuScene());

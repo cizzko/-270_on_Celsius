@@ -1,7 +1,7 @@
 package core.g2d;
 
 import core.Global;
-import core.gen.Uniforms;
+import core.g2d.UniformBuffer.Uniform;
 import core.graphic.Camera;
 import core.graphic.Color;
 import core.math.Vector2f;
@@ -48,12 +48,12 @@ public final class StackfulRender {
 
         var uniformBuffer = uniformBuffer();
         var ublockObj = uniformBuffer.allocate(Shaders.repeat);
-        ublockObj.pushVec2f(Uniforms.RepeatShader.u_logical_ratio, Global.camera.projectionScale);
+        ublockObj.push(Uniform.of("u_logical_ratio", Global.camera.projectionScale));
         // Здесь допустимо отсечение до float, поскольку рендерятся группы тайлов
         var camPos = Global.camera.position;
-        ublockObj.pushVec2f(Uniforms.RepeatShader.u_camera_pos, camPos.xf(), camPos.yf());
-        ublockObj.pushVec2f(Uniforms.RepeatShader.u_reg_uv, u1, v1);
-        ublockObj.pushVec2f(Uniforms.RepeatShader.u_reg_size, u2 - u1, v2 - v1);
+        ublockObj.push(Uniform.of("u_camera_pos", camPos.xf(), camPos.yf()));
+        ublockObj.push(Uniform.of("u_reg_uv", u1, v1));
+        ublockObj.push(Uniform.of("u_reg_size", u2 - u1, v2 - v1));
 
         int ublock = uniformBuffer.push(ublockObj);
 
@@ -134,8 +134,8 @@ public final class StackfulRender {
             if (ublock == StateFrame.UBLOCK_UNSET) {
                 var uniformBuffer = uniformBuffer();
                 var block = uniformBuffer.allocate(shader);
-                block.pushVec2f(Uniforms.DefaultShader.u_logical_ratio, logicalRatio);
-                block.pushVec2f(Uniforms.DefaultShader.u_camera_pos, cameraPosition);
+                block.push(Uniform.of("u_logical_ratio", logicalRatio));
+                block.push(Uniform.of("u_camera_pos", cameraPosition));
                 return uniformBuffer.push(block);
             }
             return ublock;
@@ -215,12 +215,6 @@ public final class StackfulRender {
                 tex.u(), tex.v(),
                 tex.u2(), tex.v2()
         );
-    }
-
-    public static void draw(Drawable tex, Color color, float x, float y) { draw(tex, color.rgba8888(), x, y); }
-
-    public static void draw(Drawable tex, Color color, float x, float y, float w, float h) {
-        draw(tex, color.rgba8888(), x, y, w, h);
     }
 
     public static void draw(Drawable tex, int colorRgba8888, float x, float y, float w, float h) {

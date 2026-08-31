@@ -160,11 +160,12 @@ public final class RenderThread extends Thread implements EventLoopExecutor {
                 var next = buffer.peek();
 
                 glClear(GL_COLOR_BUFFER_BIT);
-
                 queue.submitCommandList(next);
+                glfwSwapBuffers(glfwHandle);
+            } else {
+                //ага костылим??
+                glfwWaitEventsTimeout(0.001);
             }
-
-            glfwSwapBuffers(glfwHandle);
 
             nextFrame();
         }

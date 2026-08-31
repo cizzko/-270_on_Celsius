@@ -29,7 +29,7 @@ public final class InputRingBuffer {
         int currentHead = head;
 
         if (currentTail - currentHead >= capacity) {
-            discardWarn("scroll");
+            log.warn("Scroll overflow");
             return false;
         }
 
@@ -48,7 +48,6 @@ public final class InputRingBuffer {
         int currentHead = head;
 
         if (currentTail - currentHead >= capacity) {
-            discardWarn("framebuffer");
             return false;
         }
 
@@ -67,7 +66,7 @@ public final class InputRingBuffer {
         int currentHead = head;
 
         if (currentTail - currentHead >= capacity) {
-            discardWarn("keyboard");
+            log.warn("Keyboard overflow");
             return false;
         }
 
@@ -86,7 +85,6 @@ public final class InputRingBuffer {
         int currentHead = head;
 
         if (currentTail - currentHead >= capacity) {
-            discardWarn("codepoint");
             return false;
         }
 
@@ -117,7 +115,7 @@ public final class InputRingBuffer {
         }
 
         if (currentTail - currentHead >= capacity) {
-            discardWarn("mouse");
+            log.warn("Mouse overflow");
             return false;
         }
 
@@ -167,9 +165,5 @@ public final class InputRingBuffer {
         }
 
         head = currentHead;
-    }
-
-    private static void discardWarn(String name) {
-        log.warn("{} event discarded: too many input events", name);
     }
 }

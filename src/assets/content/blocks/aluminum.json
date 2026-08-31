@@ -4,5 +4,8 @@
   "Texture": "textures/blocks/aluminum",
   "Type": "SOLID",
   "MaxHp": 100,
-  "LightTransmission": 80
+  "Density": 1,
+  "LightTransmission": 0,
+  "LightEmission": 100,
+  "LightDiffusion": 100
 }
