@@ -269,6 +269,6 @@ public final class Shader implements Disposable {
     public void setUniformTexture2d(String name, short texId, int bindSlot) {
         var u = uniforms.get(name);
         if (u == null) return;
-        glUniform1i(u.location, texId + bindSlot);
+        OpenGL.bindTexture(glHandle, u.location, texId, bindSlot);
     }
 }

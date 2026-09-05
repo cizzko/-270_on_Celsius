@@ -46,6 +46,7 @@ public class WorldGenerator {
                         System.currentTimeMillis()/1000, 0));
         Global.world = world;
 
+        ShadowMap.init();
         boolean simple = params.simple;
 
         log("version: 2.2");
@@ -76,7 +77,7 @@ public class WorldGenerator {
                     })
                     .thenRun(() -> {
                         log("generating player " + (System.currentTimeMillis() - startTime) + "ms");
-                        player = WorldUtils.spawn(content.creatureById("player"), true);
+                        Global.player = WorldUtils.spawn(content.creatureById("player"), true);
                     })
                     .thenRun(() -> {
                         log("generating done! " + (System.currentTimeMillis() - startTime) + "ms");

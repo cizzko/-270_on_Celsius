@@ -1,0 +1,33 @@
+{
+  "attributes": {
+    "a_pos": {
+      "size": 2,
+      "type": "FLOAT",
+      "format": "DIRECT"
+    },
+    "a_uv": {
+      "size": 2,
+      "type": "FLOAT",
+      "format": "DIRECT"
+    },
+    "a_intensity": {
+      "size": 1,
+      "type": "FLOAT",
+      "format": "DIRECT"
+    }
+  },
+  "uniforms": {
+    "u_scene": { "type": "TEXTURE2D" },
+    "u_tempRate": { "type": "TEXTURE2D" },
+    "u_camera_origin": { "type": "VEC2F" },
+    "u_camera_size": { "type": "VEC2F" },
+    "u_mask_origin": { "type": "VEC2F" },
+    "u_mask_cells": { "type": "VEC2F" },
+    "u_region_cells": { "type": "VEC2F" },
+    "u_time": { "type": "FLOAT" },
+    "u_visCut": { "type": "FLOAT" },
+    "u_zoom": { "type": "FLOAT" },
+    "u_flat": { "type": "FLOAT" },
+    "u_maskOverlay": { "type": "FLOAT" }
+  }
+}

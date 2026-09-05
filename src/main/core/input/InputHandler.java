@@ -53,6 +53,7 @@ public final class InputHandler {
     private int width, height;
     // Вьюпорт. Первая инициализация происходит в коллбеке на нормальных системах
     private int vx, vy, vw, vh;
+    private int fbW, fbH;
 
     public InputHandler(int width, int height) {
         this.width = width;
@@ -68,6 +69,11 @@ public final class InputHandler {
         this.width = width;
         this.height = height;
     }
+
+    public int fbWidth()        { return fbW; }
+    public int fbHeight()       { return fbH; }
+    public int viewportX()      { return vx; }
+    public int viewportY()      { return vy; }
 
     public void init() {
         glfwSetWindowSizeCallback(glfwHandle, app.keep(new GLFWWindowSizeCallback() {
@@ -328,6 +334,8 @@ public final class InputHandler {
     }
 
     public void setViewportSize(int w, int h) {
+        fbW = w;
+        fbH = h;
         updateViewport(w, h);
         glViewport(vx, vy, vw, vh);
         onViewport(vx, vy, vw, vh);
@@ -386,6 +394,8 @@ public final class InputHandler {
     }
 
     public void processFramebuffer(int width, int height) {
+        fbW = width;
+        fbH = height;
         updateViewport(width, height); // чисто математика. состояние gl обновляется только 1 раз
         onViewport(vx, vy, vw, vh);
     }

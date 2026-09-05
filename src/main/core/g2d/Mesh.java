@@ -21,6 +21,9 @@ public final class Mesh implements Disposable {
         vbo = OpenGL.createBuffer();
     }
 
+    public static void resetBindState() {
+    }
+
     public void setDirty(boolean state) { dirty = state; }
 
     public void setup(VertexFormat format, @Nullable ElementBufferObject ebo) {

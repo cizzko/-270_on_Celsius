@@ -1,5 +1,6 @@
 package core.World;
 
+import core.Time;
 import core.World.WorldGenerator.Biomes;
 import core.World.Weather.Sun;
 import core.content.blocks.Block;
@@ -121,6 +122,8 @@ public final class TemperatureMap implements Disposable {
     private static volatile int activeChunkCount = 0;
 
     public static int fps = 0, targetFPS = 10, accumFPS = 0;
+    public static float temperatureDt = 0f;
+    private static double tickDtSeconds = 0.1;
     private static long lastSwapFPS = System.currentTimeMillis();
 
     private static ScheduledExecutorService scheduler;
@@ -282,7 +285,9 @@ public final class TemperatureMap implements Disposable {
         });
 
         scheduler.scheduleAtFixedRate(() -> {
+            long tickStartNs = System.nanoTime();
             update(scope);
+            tickDtSeconds = (System.nanoTime() - tickStartNs) / 1_000_000_000.0;
             accumFPS++;
             long now = System.currentTimeMillis();
             if (now - lastSwapFPS >= 1000) {
@@ -1033,15 +1038,68 @@ public final class TemperatureMap implements Disposable {
     }
 
     private static void swapTemps() {
+        publishTempSnapshot();
         float[] t = temps;
         temps = tempsNext;
         tempsNext = t;
+    }
+
+    private static volatile float[] publishedRate;
+    private static volatile float[] publishedTemp;
+
+    private static void publishTempSnapshot() {
+        float[] oldT = temps;
+        float[] newT = tempsNext;
+        if (oldT == null || newT == null) {
+            return;
+        }
+        int n = newT.length;
+        double dt;
+        if (tickDtSeconds > 0.0) {
+            dt = tickDtSeconds;
+        } else if (temperatureDt > 0f) {
+            dt = temperatureDt;
+        } else {
+            dt = 1.0 / Time.ONE_SECOND;
+        }
+        float invDt = (float) (1.0 / dt);
+        float[] rate = new float[n];
+        float[] temp = new float[n];
+        for (int i = 0; i < n; i++) {
+            rate[i] = (newT[i] - oldT[i]) * invDt;
+            temp[i] = newT[i];
+        }
+        publishedRate = rate;
+        publishedTemp = temp;
+        temperatureDt = (float) dt;
     }
 
     private static void swapVx() {
         float[] t = vx;
         vx = vxNext;
         vxNext = t;
+    }
+
+    public static float getTempSnapshotCell(int x, int y) {
+        if (y < 0 || y >= WORLD_HEIGHT) {
+            return 0f;
+        }
+        float[] snap = publishedTemp;
+        if (snap == null) {
+            return 0f;
+        }
+        return snap[pos2index(x, y)];
+    }
+
+    public static float getTempChangeRate(int x, int y) {
+        if (y < 0 || y >= WORLD_HEIGHT) {
+            return 0f;
+        }
+        float[] snap = publishedRate;
+        if (snap == null) {
+            return 0f;
+        }
+        return snap[pos2index(x, y)];
     }
 
     private static void swapVy() {

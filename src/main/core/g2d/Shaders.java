@@ -15,6 +15,7 @@ public final class Shaders {
     public static Shader defaultShader;
     public static Shader repeat;
     public static Shader world;
+    public static Shader heatHaze;
 
     public static Shader prePressureShader;
     public static Shader thermalBuoyancyShader;
@@ -36,6 +37,7 @@ public final class Shaders {
         repeat = assets.load(Shader.class, "repeat", LoadType.SYNC).resultNow();
         world  = assets.load(Shader.class, "world", LoadType.SYNC,
                 (ShaderHandler.Params params) -> params.fragFile = "default").resultNow();
+        heatHaze = assets.load(Shader.class, "heatHaze", LoadType.SYNC).resultNow();
 
         prePressureShader        = loadComputeShader("prePressure");
         thermalBuoyancyShader    = loadComputeShader("thermalBuoyancy");

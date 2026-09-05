@@ -1,5 +1,6 @@
 package core.g2d;
 
+import core.Application;
 import core.assets.EventLoopExecutor;
 import org.jctools.queues.atomic.SpscAtomicArrayQueue;
 import org.lwjgl.opengl.GL;
@@ -10,11 +11,15 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 
 import static core.Global.app;
+import static core.Global.input;
 import static core.Window.glfwHandle;
 import static org.lwjgl.glfw.GLFW.*;
 import static org.lwjgl.opengl.GL11.glClearColor;
 import static org.lwjgl.opengl.GL46C.GL_COLOR_BUFFER_BIT;
 import static org.lwjgl.opengl.GL46C.glClear;
+import static org.lwjgl.opengl.GL11C.GL_RGBA;
+import static org.lwjgl.opengl.GL11C.GL_UNSIGNED_BYTE;
+import static org.lwjgl.opengl.GL11C.glReadPixels;
 
 public final class RenderThread extends Thread implements EventLoopExecutor {
     private final SpscAtomicArrayQueue<Runnable> tasks = new SpscAtomicArrayQueue<>(64);
@@ -158,9 +163,21 @@ public final class RenderThread extends Thread implements EventLoopExecutor {
 
             if (buffer.tryConsume()) {
                 var next = buffer.peek();
-
                 glClear(GL_COLOR_BUFFER_BIT);
+                try {
+                    core.graphic.effects.AirEffects.updateGpu();
+                } catch (Exception e) {
+                    Application.log.error(e);
+                }
+
+                core.graphic.effects.AirEffects.bind();
                 queue.submitCommandList(next);
+                core.graphic.effects.AirEffects.unbind();
+                try {
+                    core.graphic.effects.AirEffects.draw();
+                } catch (Exception e) {
+                    Application.log.error(e);
+                }
                 glfwSwapBuffers(glfwHandle);
             } else {
                 //ага костылим??

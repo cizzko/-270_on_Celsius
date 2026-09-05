@@ -7,6 +7,7 @@ import core.g2d.Font;
 import core.g2d.RenderThread;
 import core.g2d.StackfulRender;
 import core.g2d.*;
+import core.graphic.effects.AirEffects;
 import core.input.InputHandler;
 import core.util.Debug;
 import core.util.JavaInterpreter;
@@ -349,6 +350,12 @@ public final class Window extends Application {
 
         input.update();
         gameScene.loop();
+        //технологии!
+        try {
+            AirEffects.update(Time.delta);
+        } catch (Exception e) {
+            log.error(e);
+        }
         StackfulRender.pushRenderList();
 
         nextFrame();
