@@ -1,4 +1,4 @@
-﻿uniform sampler2D u_texture;
+uniform sampler2D u_texture;
 uniform vec2 u_reg_uv;
 uniform vec2 u_reg_size;
 

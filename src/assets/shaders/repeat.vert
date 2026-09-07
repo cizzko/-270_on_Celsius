@@ -1,4 +1,4 @@
-﻿uniform vec2 u_logical_ratio;
+uniform vec2 u_logical_ratio;
 uniform vec2 u_camera_pos;
 
 in vec2 a_pos;
