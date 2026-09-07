@@ -1,6 +1,10 @@
 import groovy.json.JsonSlurper
 import core.gen.glsl.GLSLPreprocessorTask;
 
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.StandardCopyOption
+
 plugins {
     java
     id("org.beryx.jlink") version "4.0.2"
@@ -192,7 +196,7 @@ jlink {
     }
     jpackage {
         args = applyAppArgs()
-        jvmArgs = applyJvmArgs(true)
+        jvmArgs = applyJvmArgs(true) + mutableListOf("-Dorg.lwjgl.librarypath=\$APPDIR")
     }
 }
 
@@ -276,8 +280,23 @@ tasks.run {
     }
 }
 
+val copyNativesToJpackage = tasks.register("copyNativesToJpackage") {
+    dependsOn(extractNatives)
+    doLast {
+        val nativesDir = layout.buildDirectory.dir("natives/windows/x64/org/lwjgl").get().asFile
+        val appDir = layout.buildDirectory.dir("jpackage/celsius/app").get().asFile
+        appDir.mkdirs()
+        Files.walk(nativesDir.toPath())
+            .filter { it.fileName.toString().endsWith(".dll") }
+            .forEach { dll: Path ->
+                Files.copy(dll, appDir.toPath().resolve(dll.fileName.toString()), StandardCopyOption.REPLACE_EXISTING)
+            }
+    }
+}
+
 tasks.jpackageImage {
     dependsOn(tasks.createDelegatingModules)
+    finalizedBy(copyNativesToJpackage)
 }
 
 tasks.test {
