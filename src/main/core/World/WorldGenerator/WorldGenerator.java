@@ -601,6 +601,7 @@ public class WorldGenerator {
     private static void startGame(PlayGameScene playGameScene) {
         gameScene.onPreloadCompletion(() -> {
             UIMenus.createPlanet().hide();
+            UIMenus.mainMenu().remove();
 
             setGameScene(playGameScene);
             gameState = GameState.PLAYING;

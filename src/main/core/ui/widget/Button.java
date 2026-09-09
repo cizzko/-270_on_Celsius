@@ -42,6 +42,7 @@ public final class Button extends Table {
     }
 
     public Button action(Consumer<? super Button> action) {
+        this.action = action;
         addListener(new ClickListener(GLFW.GLFW_MOUSE_BUTTON_1, null) {
             @Override
             protected void onPress(float x, float y) {
@@ -79,6 +80,19 @@ public final class Button extends Table {
 
     public Button action(Runnable action) {
         return action(b -> action.run());
+    }
+
+    public void click() {
+        if (!isClickable) {
+            return;
+        }
+        isClicked = true;
+        if (action != null) {
+            action.accept(this);
+        }
+        if (oneShot) {
+            isClickable = false;
+        }
     }
 
     @Override

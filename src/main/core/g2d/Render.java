@@ -21,7 +21,7 @@ public final class Render {
     public @interface Layer {}
 
     @Retention(RetentionPolicy.SOURCE)
-    @MagicConstant(intValues = {BLENDING_NORMAL, BLENDING_PREMUL, BLENDING_DISABLE})
+    @MagicConstant(intValues = {BLENDING_NORMAL, BLENDING_PREMUL, BLENDING_DISABLE, BLENDING_ADD})
     public @interface Blending {}
 
     // region PrimitiveType
@@ -43,6 +43,7 @@ public final class Render {
     public static final byte BLENDING_NORMAL  = 0;
     public static final byte BLENDING_PREMUL  = 1;
     public static final byte BLENDING_DISABLE = 2;
+    public static final byte BLENDING_ADD     = 3; // аддитивное (src * srcAlpha + dst)
     // endregion
 
     // Технические ограничения рендера

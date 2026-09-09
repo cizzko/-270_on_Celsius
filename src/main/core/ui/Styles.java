@@ -112,6 +112,17 @@ public class Styles {
         }
     };
 
+    public static final Style.MoltenSlider MOLTEN_SLIDER = new Style.MoltenSlider() {
+        @Override
+        public void load() {
+            font = assets.load(Font.class, "arial.ttf").resultNow();
+            sliderColor = Styles.DEFAULT_PANEL_COLOR;
+            dotColor = Styles.DEFAULT_ORANGE;
+            title = "WORLD SIZE";
+            sidePad = 4f;
+        }
+    };
+
     public static final Style.TextField DEFAULT_TEXT_FIELD = new Style.TextField() {
         @Override
         public void load() {
@@ -132,6 +143,7 @@ public class Styles {
         DEFAULT_TEXT.load();
         DEBUG_TEXT.load();
         DEFAULT_SLIDER.load();
+        MOLTEN_SLIDER.load();
         DEFAULT_TEXT_FIELD.load();
     }
 }

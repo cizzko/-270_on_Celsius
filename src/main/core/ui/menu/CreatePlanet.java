@@ -126,11 +126,11 @@ public class CreatePlanet extends core.ui.widget.Dialog {
                 b.align(Align.BOTTOM);
             });
             p.widget.row();
-            p.widget.cell(slider("WorldSize", Styles.DEFAULT_SLIDER), sl -> {
+            p.widget.cell(slider("WorldSize", Styles.MOLTEN_SLIDER), sl -> {
                 sl.fixedY(20);
                 sl.growX();
-                sl.padTop(255);
-                sl.padBottom(20);
+                sl.padTop(221);
+                sl.padBottom(54);
                 sl.align(Align.BOTTOM);
 
                 sl.widget.bounds(Constants.World.MIN_WORLD_SIZE, Constants.World.MAX_WORLD_SIZE);

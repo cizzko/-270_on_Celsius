@@ -41,9 +41,17 @@ public class Label extends LayoutElement<Label> {
     public Label text(String newText, int offset, int length) {
         setFlag(FLAG_TRANSLATION, false);
         translation = null;
-        cachedText = null;
+        cachedText = newText.substring(offset, offset + length);
         text0(newText, offset, length);
         return this;
+    }
+
+    public @Nullable String text() {
+        return cachedText;
+    }
+
+    public @Nullable String translationKey() {
+        return translation;
     }
 
     private void text0(String newText, int offset, int length) {

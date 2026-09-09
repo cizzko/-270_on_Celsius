@@ -50,4 +50,9 @@ public class Style {
         public Color sliderColor, dotColor;
         public Font font;
     }
+
+    public static abstract class MoltenSlider extends Slider {
+        public String title = "WORLD SIZE";
+        public float sidePad = 4f;
+    }
 }
