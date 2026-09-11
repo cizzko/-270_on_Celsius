@@ -263,6 +263,10 @@ public final class RenderQueue implements Disposable {
             case BLENDING_DISABLE -> {
                 glDisable(GL_BLEND);
             }
+            case BLENDING_ADD -> {
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            }
             default -> throw new IllegalStateException("Unknown blending " + blending);
         }
     }

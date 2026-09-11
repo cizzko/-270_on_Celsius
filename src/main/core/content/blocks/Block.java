@@ -25,6 +25,7 @@ public class Block implements ContentType, Loadable {
     public short maxHp;
     public byte resistance;
     public float density, thermalCapacity, thermalConductivity, emissivity, albedo;
+    public float glowCoeff;
     public byte lightTransmission, lightDiffusion, lightEmission;
     public Atlas.Region texture;
     public ItemStack[] requirements;
@@ -48,6 +49,8 @@ public class Block implements ContentType, Loadable {
         this.emissivity = toShortExact(cnt.node().path("Emissivity").asInt(100));
         //отражение лучей
         this.albedo = toShortExact(cnt.node().path("Albedo").asInt(15));
+        //todo это же альбедо..
+        this.glowCoeff = (float) cnt.node().path("GlowCoeff").asDouble(1);
 
         this.texture = cnt.readTexture("Texture");
         this.requirements = cnt.readItemStacksUnresolved(cnt.node().path("Requirements"));

@@ -265,6 +265,34 @@ public final class WorldDrawing {
 
         }
 
+        void drawGlow() {
+            try (var state = pushState()) {
+                state.layer = Render.LAYER_BLOCKS;
+                state.blending = Render.BLENDING_ADD;
+                for (int y = minY; y <= maxY; y++) {
+                    for (int x = minX; x <= maxX; x++) {
+                        float temp = TemperatureMap.getTempCell(x, y);
+                        int blockId = world.getBlockId(x, y);
+
+                        if (temp <= GLOW_TEMP_MIN || blockId <= 0) {
+                            continue;
+                        }
+
+                        var block = content.blocksRegistry.typeById(blockId);
+                        float strength = glowStrength(temp, block.glowCoeff);
+                        if (strength <= 0f) {
+                            continue;
+                        }
+                        int g = (int) Math.min(255f, 60f + 170f * strength);
+                        int b = (int) Math.min(255f, 30f + 130f * strength);
+
+                        int a = (int) (255f * strength);
+                        StackfulRender.draw(block.texture, Color.rgba8888(255, g, b, a), x, y, block.tileCountX, block.tileCountY);
+                    }
+                }
+            }
+        }
+
         private void drawBlock(int x, int y, Block block, int hp) {
             if (block.isMultiblock() && world.getData(x, y) instanceof TileData.MultiblockPart) {
                 drawDamage(block, hp, x, y);
@@ -309,6 +337,7 @@ public final class WorldDrawing {
             } else {
                 mergingDraw();
             }
+            drawGlow();
         }
 
         private void notMergingDraw() {
@@ -336,17 +365,12 @@ public final class WorldDrawing {
 
     private static Color shadowColorTo(int x, int y) {
         Color color = ShadowMap.getColorTo(x, y, TmpShapes.c1);
-        final int upperLimit = 150;
         final int lowestLimit = -20;
         final int maxColor = 120;
         float temp = TemperatureMap.getTempCell(x, y);
 
-        int a;
-        if (temp > upperLimit) {
-            a = (int) Math.min(maxColor, Math.abs((temp - upperLimit) / 3));
-            color.set(color.r(), color.g() - (a / 2), color.b() - a, color.a());
-        } else if (temp < lowestLimit) {
-            a = (int) Math.min(maxColor, Math.abs((temp + lowestLimit) / 3));
+        if (temp < lowestLimit) {
+            int a = (int) Math.min(maxColor, Math.abs((temp + lowestLimit) / 3));
             color.set(color.r() - a, color.g() - (a / 2), color.b(), color.a());
         }
         return color;
@@ -354,20 +378,25 @@ public final class WorldDrawing {
 
     private static Color rawColorTo(int x, int y) {
         Color color = ShadowMap.rawColorTo(x, y, TmpShapes.c1);
-        final int upperLimit = 150;
         final int lowestLimit = -20;
         final int maxColor = 120;
         float temp = TemperatureMap.getTempCell(x, y);
 
-        int a;
-        if (temp > upperLimit) {
-            a = (int) Math.min(maxColor, Math.abs((temp - upperLimit) / 3));
-            color.set(color.r(), color.g() - (a / 2), color.b() - a, color.a());
-        } else if (temp < lowestLimit) {
-            a = (int) Math.min(maxColor, Math.abs((temp + lowestLimit) / 3));
+        if (temp < lowestLimit) {
+            int a = (int) Math.min(maxColor, Math.abs((temp + lowestLimit) / 3));
             color.set(color.r() - a, color.g() - (a / 2), color.b(), color.a());
         }
         return color;
+    }
+
+    private static final float GLOW_TEMP_MIN = 150f;
+    private static final float GLOW_TEMP_MAX = 1500f;
+
+    private static float glowStrength(float temp, float glowCoeff) {
+        if (temp <= GLOW_TEMP_MIN || glowCoeff <= 0f) {
+            return 0f;
+        }
+        return Math.min(1f, (temp - GLOW_TEMP_MIN) / (GLOW_TEMP_MAX - GLOW_TEMP_MIN) * glowCoeff);
     }
 
     private static final Chunk chunk = new Chunk();
