@@ -10,5 +10,9 @@
     "stickRope": 2,
     "simpleElectricInsulator": 2
   },
-  "CreateWith": "workbenchMedium"
+  "CreateWith": "workbenchMedium",
+  "ThermalCapacity": 500,
+  "ThermalConductivity": 120,
+  "Emissivity": 100,
+  "Albedo": 20
 }

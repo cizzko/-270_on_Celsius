@@ -5,5 +5,9 @@
   "Type": "SOLID",
   "MaxHp": 100,
   "Density": 1,
-  "LightTransmission": 0
+  "LightTransmission": 0,
+  "ThermalCapacity": 700,
+  "ThermalConductivity": 130,
+  "Emissivity": 100,
+  "Albedo": 20
 }

@@ -5,5 +5,9 @@
   "Type": "WALKABLE",
   "MaxHp": 1,
   "Density": 1,
-  "LightTransmission": 100
+  "LightTransmission": 100,
+  "ThermalCapacity": 550,
+  "ThermalConductivity": 90,
+  "Emissivity": 100,
+  "Albedo": 20
 }

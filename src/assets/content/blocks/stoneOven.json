@@ -18,5 +18,9 @@
   "MaxStoredObjects": 10,
   "Output": {
     "trunk": 1
-  }
+  },
+  "ThermalCapacity": 1000,
+  "ThermalConductivity": 190,
+  "Emissivity": 90,
+  "Albedo": 10
 }

@@ -83,11 +83,9 @@ public final class TemperatureMap implements Disposable {
     private static final float CHUNK_SPREAD_TEMP_THRESHOLD = SLEEP_TEMP_THRESHOLD * 1.5f;
 
     //todo нормальная теплопередача
-    private static final float CAP_AIR = 1.0f;
-    private static final float CAP_SOLID = 0.8f;
-    private static final float COND_AIR = 0.4f;
-    private static final float COND_SOLID = 0.8f;
-    private static final float COND_INTERFACE = 0.9f;
+    private static final float CONDUCTIVITY_SCALE = 0.8f / 170f;
+    private static final float CAPACITY_SCALE = 1f / 600f;
+    private static final float MIN_CAPACITY = 0.05f;
     private static final float COND_SKY = 0.1f;
     private static final float COND_GROUND = 0.1f;
 
@@ -96,8 +94,6 @@ public final class TemperatureMap implements Disposable {
     private static final float GRAVITY_STRENGTH = -0.002f;
     private static final float COOLING_SLOPE = 0.005f;
 
-    private static final float INV_CAP_AIR = 1.0f / CAP_AIR;
-    private static final float INV_CAP_SOLID = 1.0f / CAP_SOLID;
     private static final float DIVERGENCE = -0.5f * PRESSURE_K / DT;
     private static final float PRESSURE_GRAD = 0.5f * DT;
 
@@ -363,17 +359,18 @@ public final class TemperatureMap implements Disposable {
         }
     }
 
-    private static float getEdgeConductivity(boolean solid1, boolean solid2) {
-        if (solid1 && solid2) {
-            return COND_SOLID;
-        }
-        if (!solid1 && !solid2) {
-            return COND_AIR;
-        }
-        return COND_INTERFACE;
+    private static float blockCapacity(Block block) {
+        float cap = block.thermalCapacity;
+        return cap > 0f ? Math.max(cap * CAPACITY_SCALE, MIN_CAPACITY) : 1f;
     }
 
-    private static float sampleWithCorrection(float[] field, int idx, int x, int y, float rayX, float rayY, boolean useSolidFallback, float fallback) {
+    private static float getFaceConductance(Block blockA, Block blockB) {
+        float rawK = CONDUCTIVITY_SCALE * (blockA.thermalConductivity + blockB.thermalConductivity) * 0.5f;
+        float maxK = 0.25f * Math.min(blockCapacity(blockA), blockCapacity(blockB)) / DT;
+        return Math.min(rawK, maxK);
+    }
+
+    private static float sampleWithCorrection(float[] field, int idx, int x, int y, double rayX, float rayY, boolean useSolidFallback, float fallback) {
         int sampleX = Math.floorMod((int) rayX, WORLD_WIDTH);
         int sampleY = Math.max(0, Math.min(WORLD_HEIGHT - 1, (int) rayY));
 
@@ -391,11 +388,12 @@ public final class TemperatureMap implements Disposable {
             rayY = y;
         }
 
-        int x0 = Math.floorMod((int) rayX, WORLD_WIDTH);
+        int xi = (int) rayX;
+        int x0 = Math.floorMod(xi, WORLD_WIDTH);
         int x1 = wrapX(x0 + 1);
         int y0 = Math.max(0, Math.min(WORLD_HEIGHT - 2, (int) rayY));
         int y1 = y0 + 1;
-        float s1 = rayX - x0;
+        float s1 = (float) (rayX - xi);
         float s0 = 1 - s1;
         float t1 = rayY - y0;
         float t0 = 1 - t1;
@@ -537,28 +535,23 @@ public final class TemperatureMap implements Disposable {
                         }
 
                         boolean isSolidA = blockSolid[idx] == 1;
-                        float capA = isSolidA ? CAP_SOLID : CAP_AIR;
-                        float invCapA = isSolidA ? INV_CAP_SOLID : INV_CAP_AIR;
+                        Block blockA = world.getBlock(realX, y);
                         float tempA = temps[idx];
                         float totalFlux = 0f;
 
                         if (!cellThermalSimplified) {
-                            boolean solidL = blockSolid[idxL] == 1;
-                            boolean solidR = blockSolid[idxR] == 1;
-                            totalFlux += getEdgeConductivity(isSolidA, solidL) * (temps[idxL] - tempA);
-                            totalFlux += getEdgeConductivity(isSolidA, solidR) * (temps[idxR] - tempA);
+                            totalFlux += getFaceConductance(blockA, world.getBlock(leftX, y)) * (temps[idxL] - tempA);
+                            totalFlux += getFaceConductance(blockA, world.getBlock(rightX, y)) * (temps[idxR] - tempA);
 
                             if (y > 0) {
                                 int idxD = idx - 1;
-                                boolean solidD = blockSolid[idxD] == 1;
-                                totalFlux += getEdgeConductivity(isSolidA, solidD) * (temps[idxD] - tempA);
+                                totalFlux += getFaceConductance(blockA, world.getBlock(realX, y - 1)) * (temps[idxD] - tempA);
                             } else {
                                 totalFlux -= COND_GROUND * tempA;
                             }
                             if (y < WORLD_HEIGHT - 1) {
                                 int idxU = idx + 1;
-                                boolean solidU = blockSolid[idxU] == 1;
-                                totalFlux += getEdgeConductivity(isSolidA, solidU) * (temps[idxU] - tempA);
+                                totalFlux += getFaceConductance(blockA, world.getBlock(realX, y + 1)) * (temps[idxU] - tempA);
                             } else {
                                 totalFlux -= COND_SKY * tempA;
                             }
@@ -569,7 +562,7 @@ public final class TemperatureMap implements Disposable {
                             }
                         }
 
-                        float currentT = cellThermalSimplified ? tempA : MathUtil.fma(totalFlux * DT, invCapA, tempA);
+                        float currentT = cellThermalSimplified ? tempA : MathUtil.fma(totalFlux * DT, 1f / blockCapacity(blockA), tempA);
                         if (y == WORLD_HEIGHT - 1) {
                             currentT = 0f;
                         }
@@ -959,8 +952,10 @@ public final class TemperatureMap implements Disposable {
                         float rawRayY = y - vyHere * DT;
                         float rayY = clamp(rawRayY, 0.5f, WORLD_HEIGHT - 1.5f);
 
-                        float rayX = x - vxHere * DT;
-                        rayX = wrapFloatX(rayX);
+                        double rayX = (x - (double) vxHere * DT) % WORLD_WIDTH;
+                        if (rayX < 0) {
+                            rayX += WORLD_WIDTH;
+                        }
 
                         if (!cellAdvectionSimplified) {
                             tempsNext[idx] = sampleWithCorrection(temps, idx, x, y, rayX, rayY, true, temps[idx]);

@@ -6,5 +6,9 @@
   "MaxHp": 100,
   "Density": 1,
   "LightTransmission": 30,
-  "LightDispersion": 30
+  "LightDispersion": 30,
+  "ThermalCapacity": 550,
+  "ThermalConductivity": 100,
+  "Emissivity": 100,
+  "Albedo": 20
 }

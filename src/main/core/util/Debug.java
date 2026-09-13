@@ -189,7 +189,7 @@ public class Debug {
         log.debug("Saving {}.png", name);
         ex.execute(() -> {
             BufferedImage image = new BufferedImage(world.sizeX, world.sizeY, BufferedImage.TYPE_INT_RGB);
-            Path path = (assets != null) ? assets.workingDir() : Path.of(System.getProperty("user.dir")).toAbsolutePath().resolve(TEMP_DIR).resolve(name + ".png");
+            Path path = ((assets != null) ? assets.workingDir() : Path.of(System.getProperty("user.dir")).toAbsolutePath()).resolve(TEMP_DIR).resolve(name + ".png");
             try {
                 Files.createDirectories(path.getParent());
             } catch (IOException e) {
@@ -221,7 +221,7 @@ public class Debug {
             // FIXME(Skat): забавный факт. на большом мире сохранение изображение настолько долгое, что если выйти из мира, то он упадёт)
             Thread.currentThread().setName("WorldImageSaver");
             BufferedImage image = new BufferedImage(world.sizeX, world.sizeY, BufferedImage.TYPE_INT_RGB);
-            Path path = (assets != null) ? assets.workingDir() : Path.of(System.getProperty("user.dir")).toAbsolutePath().resolve(TEMP_DIR).resolve("worldImage.png");
+            Path path = ((assets != null) ? assets.workingDir() : Path.of(System.getProperty("user.dir")).toAbsolutePath()).resolve(TEMP_DIR).resolve("worldImage.png");
             try {
                 Files.createDirectories(path.getParent());
             } catch (IOException e) {

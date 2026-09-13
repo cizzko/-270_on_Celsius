@@ -14,7 +14,7 @@ import static core.Global.*;
 public class AutoSaveController {
     private static long lastSaveTimestamp = System.currentTimeMillis();
 
-    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH:mm:ss")
+    private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH-mm-ss")
             .localizedBy(Locale.getDefault());
 
     public static void update() {

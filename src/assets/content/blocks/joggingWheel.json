@@ -13,5 +13,9 @@
     "simpleElectricMotor": 1,
     "simpleElectricInsulator": 2
   },
-  "CreateWith": "workbenchMedium"
+  "CreateWith": "workbenchMedium",
+  "ThermalCapacity": 520,
+  "ThermalConductivity": 110,
+  "Emissivity": 100,
+  "Albedo": 15
 }

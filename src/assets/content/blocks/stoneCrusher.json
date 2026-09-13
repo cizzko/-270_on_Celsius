@@ -19,5 +19,9 @@
   "Output": {
     "smallStone": 1,
     "aluminumPiece": 1
-  }
+  },
+  "ThermalCapacity": 800,
+  "ThermalConductivity": 180,
+  "Emissivity": 90,
+  "Albedo": 15
 }

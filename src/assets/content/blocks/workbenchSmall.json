@@ -11,5 +11,9 @@
     "stickRope": 2
   },
   "CreateWith": "player",
-  "LightTransmission": 100
+  "LightTransmission": 100,
+  "ThermalCapacity": 550,
+  "ThermalConductivity": 90,
+  "Emissivity": 100,
+  "Albedo": 15
 }

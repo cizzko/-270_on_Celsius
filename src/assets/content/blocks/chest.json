@@ -12,5 +12,9 @@
   "Size": {
     "Width": 3,
     "Height": 3
-  }
+  },
+  "ThermalCapacity": 550,
+  "ThermalConductivity": 80,
+  "Emissivity": 100,
+  "Albedo": 15
 }

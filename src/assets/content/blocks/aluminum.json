@@ -7,5 +7,9 @@
   "Density": 1,
   "LightTransmission": 0,
   "LightEmission": 100,
-  "LightDiffusion": 100
+  "LightDiffusion": 100,
+  "ThermalCapacity": 300,
+  "ThermalConductivity": 400,
+  "Emissivity": 15,
+  "Albedo": 75
 }

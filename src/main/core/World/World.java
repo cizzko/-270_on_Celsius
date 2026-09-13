@@ -48,8 +48,7 @@ import static core.World.WorldGenerator.WorldGeneratorConstants.COPY_SIZE;
 public final class World {
     private static final Logger log = LogManager.getLogger(World.class);
 
-    static short lastId = -1;
-    static Block lastBlock = null;
+    static volatile Block lastBlock = null;
     static final Point2i tmp = new Point2i();
 
     public final ForkJoinPool genPool = new ForkJoinPool(availableProcessors);
@@ -265,12 +264,13 @@ public final class World {
         short blockId = tiles[pos2index(x, y)];
 
         //прикольно бустит скорость но надо потестить получше
-        if (lastId != blockId) {
-            lastId = blockId;
-            return lastBlock = content.blocksRegistry.typeById(Short.toUnsignedInt(blockId));
+        Block last = lastBlock;
+        if (last == null || last.id != blockId) {
+            last = content.blocksRegistry.typeById(Short.toUnsignedInt(blockId));
+            lastBlock = last;
         }
 
-        return lastBlock;
+        return last;
     }
 
     public Block getBlock(Point2i pos) { return getBlock(pos.x, pos.y); }
@@ -439,6 +439,9 @@ public final class World {
                 tiles[idx] = 0;
                 hp[idx] = 0;
                 data.remove(idx);
+                if (gameState == GameState.PLAYING) {
+                    TemperatureMap.updateBlock(x + blockX, y + blockY, Block.AIR);
+                }
             }
         }
         ShadowMap.setDirty(x, y, rootBlock.tileCountX, rootBlock.tileCountY);
@@ -591,6 +594,8 @@ public final class World {
             gen.writeNumberField("sizeY", value.sizeY);
             gen.writeObjectField("tiles", value.tiles);
             gen.writeObjectField("hp", value.hp);
+            gen.writeObjectField("surfaces", value.surfaces);
+            gen.writeObjectField("meta", value.meta);
 
             if (!value.data.isEmpty()) {
                 gen.writeObjectFieldStart("data");

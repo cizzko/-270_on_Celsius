@@ -79,11 +79,8 @@ public class WorldGeneratorTMP {
                             timedRun("generating: copy",
                             () -> copy()))
                     .thenRun(
-                            timedRun("generating temperature map",
-                            () -> TemperatureMap.generate()))
-                    .thenRun(
                             timedRun("height map generation",
-                                    () -> genHeightMap()))
+                            () -> genHeightMap()))
                     .thenRun(
                             timedRun("generating player",
                             () -> spawnPlayer()))
